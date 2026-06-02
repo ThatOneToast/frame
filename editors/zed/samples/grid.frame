@@ -1,0 +1,25 @@
+grid Dashboard {
+  columns sidebar content inspector
+  rows main
+  gap medium
+  height screen
+}
+
+area Sidebar {
+  in Dashboard
+  place sidebar
+  surface panel
+  padding medium
+}
+
+area Content {
+  in Dashboard
+  place content
+  surface main
+  padding large
+}
+
+grid Cards {
+  columns responsive cards
+  gap large
+}

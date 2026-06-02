@@ -1,0 +1,8 @@
+[package]
+name = "frame_parser"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+frame_core = { path = "../frame_core" }
+thiserror.workspace = true

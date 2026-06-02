@@ -1,0 +1,18 @@
+card QuickLinkCard {
+  surface gradient aurora
+  padding large
+  radius large
+  shadow medium
+}
+
+button PrimaryButton {
+  surface accent
+  padding medium
+  radius small
+  shadow small
+}
+
+text MutedText {
+  theme muted
+  margin none
+}

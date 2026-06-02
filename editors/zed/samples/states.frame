@@ -1,0 +1,21 @@
+card InteractiveCard {
+  surface panel
+  padding large
+  radius large
+
+  hover {
+    lift small
+    glow accent
+    brighten subtle
+  }
+
+  focus {
+    ring accent
+    glow muted
+  }
+
+  active {
+    press small
+    dim subtle
+  }
+}

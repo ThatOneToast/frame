@@ -1,0 +1,30 @@
+{
+  "name": "tree-sitter-frame",
+  "version": "0.0.1",
+  "description": "Tree-sitter grammar for the Frame CSS DSL.",
+  "license": "MIT",
+  "main": "bindings/node",
+  "keywords": [
+    "tree-sitter",
+    "frame"
+  ],
+  "scripts": {
+    "generate": "tree-sitter generate --abi 14",
+    "parse:app": "tree-sitter parse --grammar-path . ../samples/app.frame"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.26.0"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.frame",
+      "file-types": [
+        "frame"
+      ],
+      "parser": "src/parser.c",
+      "highlights": "queries/highlights.scm",
+      "locals": "queries/locals.scm",
+      "injections": "queries/injections.scm"
+    }
+  ]
+}

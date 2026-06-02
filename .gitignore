@@ -1,0 +1,29 @@
+# Rust
+/target/
+editors/zed/target/
+editors/zed/extension.wasm
+editors/zed/grammars/
+
+# Node / Svelte examples
+node_modules/
+editors/zed/tree-sitter-frame/node_modules/
+.svelte-kit/
+.vite/
+dist/
+build/
+coverage/
+
+# Generated DSL output
+**/generated.css
+**/generated.ts
+**/*.ui.snap
+
+# Editor / OS
+.DS_Store
+.idea/
+.zed/settings.json
+.vscode/
+*.swp
+
+# Logs
+*.log

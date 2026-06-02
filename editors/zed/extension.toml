@@ -1,0 +1,15 @@
+id = "frame"
+name = "Frame"
+version = "0.0.1"
+schema_version = 1
+authors = ["ThatOneToast"]
+description = "Language support for the Frame CSS DSL."
+repository = "https://github.com/ThatOneToast/frame"
+
+[grammars.frame]
+repository = "file:///Users/whitebread/projects/svelte/frame/editors/zed/tree-sitter-frame"
+rev = "main"
+
+[language_servers.frame-lsp]
+name = "Frame LSP"
+languages = ["Frame"]

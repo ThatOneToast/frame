@@ -1,0 +1,28 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "frame",
+      "camelcase": "Frame",
+      "scope": "source.frame",
+      "path": ".",
+      "file-types": [
+        "frame"
+      ],
+      "injection-regex": "^frame$"
+    }
+  ],
+  "metadata": {
+    "version": "0.0.1",
+    "license": "MIT",
+    "description": "Tree-sitter grammar for the Frame CSS DSL.",
+    "authors": [
+      {
+        "name": "ThatOneToast"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/ThatOneToast/frame"
+    }
+  }
+}
