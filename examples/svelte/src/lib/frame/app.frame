@@ -8,7 +8,8 @@ area Sidebar {
   in AppShell
   place sidebar
   surface panel
-  padding medium
+  padding small
+  
 }
 
 area Content {
@@ -16,6 +17,13 @@ area Content {
   place content
   surface main
   padding large
+}
+
+button InlineLink {
+  surface glass
+  padding medium
+  radius pill
+  text accent
 }
 
 area Inspector {

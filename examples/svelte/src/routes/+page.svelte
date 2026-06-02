@@ -7,9 +7,11 @@
   <aside class={ui.Sidebar}>Channels</aside>
 
   <main class={ui.Content}>
+    <a class={ui.InlineLink} href="/inline-frame">Inline Frame route</a>
+
     <div class={ui.QuickLinks}>
-      <a class={ui.QuickLinkCard}>Docs</a>
-      <a class={ui.QuickLinkCard}>GitHub</a>
+      <a class={ui.QuickLinkCard} href="https://github.com/ThatOneToast/frame">Docs</a>
+      <a class={ui.QuickLinkCard} href="https://github.com/ThatOneToast/frame">GitHub</a>
     </div>
   </main>
 

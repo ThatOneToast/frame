@@ -1,20 +1,21 @@
 # Frame Svelte Example
 
-This example uses `src/lib/frame/app.frame` as the source of generated classes.
+This example demonstrates both Frame integration paths:
 
-Compile generated files:
+- External `.frame` files through the Vite plugin.
+- Inline Svelte `<style lang="frame">` blocks through the Svelte preprocessor.
+
+The local package uses the Rust CLI as the compiler backend. The example config sets `frameBin` to `cargo run -p frame_cli --quiet --`, so it works from this repository without installing a global `frame` command.
+
+Install and run:
 
 ```bash
-cargo run -p frame_cli -- compile examples/svelte/src/lib/frame/app.frame --out examples/svelte/src/lib/frame
+cd examples/svelte
+npm install
+npm run dev
 ```
 
-Watch while editing:
-
-```bash
-cargo run -p frame_cli -- watch examples/svelte/src/lib/frame/app.frame --out examples/svelte/src/lib/frame
-```
-
-Svelte usage:
+External Frame usage:
 
 ```svelte
 <script lang="ts">
@@ -36,4 +37,29 @@ Svelte usage:
 </div>
 ```
 
-If imports fail, run the compile command and confirm `generated.css` and `generated.ts` exist in `src/lib/frame`.
+Inline Frame usage:
+
+```svelte
+<main class="fr-PageShell">
+  <section class="fr-HeroCard">
+    <h1>Frame Inline Style</h1>
+  </section>
+</main>
+
+<style lang="frame">
+  stack PageShell {
+    gap large
+    padding large
+    surface main
+  }
+
+  card HeroCard {
+    surface gradient dusk
+    padding large
+    radius large
+    shadow medium
+  }
+</style>
+```
+
+Inline blocks emit CSS only. Use raw class names like `fr-HeroCard` for inline-only declarations, or use external `.frame` files when you want typed `ui` exports from `generated.ts`.
