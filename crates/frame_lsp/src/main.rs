@@ -1,15 +1,19 @@
 use std::collections::HashMap;
 
-use frame_core::{semantic::validate, Diagnostic as FrameDiagnostic, Severity, Span};
-use frame_parser::parse;
+mod completions;
+mod diagnostics;
+mod formatting;
+mod hover;
+
 use tokio::sync::Mutex;
 use tower_lsp::{
     jsonrpc::Result,
     lsp_types::{
-        Diagnostic as LspDiagnostic, DiagnosticSeverity, DidChangeTextDocumentParams,
-        DidOpenTextDocumentParams, InitializeParams, InitializeResult, InitializedParams,
-        MessageType, Position, Range, ServerCapabilities, TextDocumentSyncCapability,
-        TextDocumentSyncKind, Url,
+        CompletionItem, CompletionOptions, CompletionParams, CompletionResponse,
+        DidChangeTextDocumentParams, DidOpenTextDocumentParams, DocumentFormattingParams, Hover,
+        HoverContents, HoverParams, HoverProviderCapability, InitializeParams, InitializeResult,
+        InitializedParams, MarkedString, MessageType, OneOf, Position, Range, ServerCapabilities,
+        TextDocumentSyncCapability, TextDocumentSyncKind, TextEdit, Url,
     },
     Client, LanguageServer, LspService, Server,
 };
@@ -27,6 +31,9 @@ impl LanguageServer for Backend {
                 text_document_sync: Some(TextDocumentSyncCapability::Kind(
                     TextDocumentSyncKind::FULL,
                 )),
+                completion_provider: Some(CompletionOptions::default()),
+                hover_provider: Some(HoverProviderCapability::Simple(true)),
+                document_formatting_provider: Some(OneOf::Left(true)),
                 ..ServerCapabilities::default()
             },
             server_info: None,
@@ -66,13 +73,70 @@ impl LanguageServer for Backend {
             .insert(uri.clone(), change.text.clone());
         self.publish_diagnostics(uri, &change.text).await;
     }
+
+    async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
+        let uri = params.text_document_position.text_document.uri;
+        let position = params.text_document_position.position;
+        let documents = self.documents.lock().await;
+        let Some(source) = documents.get(&uri) else {
+            return Ok(None);
+        };
+        let offset = diagnostics::offset_for_position(source, position);
+        let items = completions::completions_at(source, offset)
+            .into_iter()
+            .map(|suggestion| CompletionItem {
+                label: suggestion.label.to_string(),
+                detail: Some(suggestion.detail.to_string()),
+                documentation: Some(tower_lsp::lsp_types::Documentation::String(
+                    suggestion.documentation.to_string(),
+                )),
+                ..CompletionItem::default()
+            })
+            .collect();
+
+        Ok(Some(CompletionResponse::Array(items)))
+    }
+
+    async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
+        let uri = params.text_document_position_params.text_document.uri;
+        let position = params.text_document_position_params.position;
+        let documents = self.documents.lock().await;
+        let Some(source) = documents.get(&uri) else {
+            return Ok(None);
+        };
+        let offset = diagnostics::offset_for_position(source, position);
+        let Some(word) = hover::word_at(source, offset) else {
+            return Ok(None);
+        };
+        let Some(contents) = hover::hover_doc(word) else {
+            return Ok(None);
+        };
+
+        Ok(Some(Hover {
+            contents: HoverContents::Scalar(MarkedString::String(contents.to_string())),
+            range: None,
+        }))
+    }
+
+    async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
+        let uri = params.text_document.uri;
+        let documents = self.documents.lock().await;
+        let Some(source) = documents.get(&uri) else {
+            return Ok(None);
+        };
+
+        Ok(Some(vec![TextEdit {
+            range: full_document_range(source),
+            new_text: formatting::format_document(source),
+        }]))
+    }
 }
 
 impl Backend {
     async fn publish_diagnostics(&self, uri: Url, source: &str) {
-        let diagnostics = diagnostics_for_source(source)
+        let diagnostics = diagnostics::diagnostics_for_source(source)
             .into_iter()
-            .map(|diagnostic| to_lsp_diagnostic(source, diagnostic))
+            .map(|diagnostic| diagnostics::to_lsp_diagnostic(source, diagnostic))
             .collect();
 
         self.client
@@ -81,56 +145,14 @@ impl Backend {
     }
 }
 
-fn diagnostics_for_source(source: &str) -> Vec<FrameDiagnostic> {
-    match parse(source) {
-        Ok(document) => validate(&document),
-        Err(error) => error.diagnostics,
+fn full_document_range(source: &str) -> Range {
+    Range {
+        start: Position {
+            line: 0,
+            character: 0,
+        },
+        end: diagnostics::position_for_offset(source, source.len()),
     }
-}
-
-fn to_lsp_diagnostic(source: &str, diagnostic: FrameDiagnostic) -> LspDiagnostic {
-    LspDiagnostic {
-        range: range_for_span(source, diagnostic.span),
-        severity: Some(match diagnostic.severity {
-            Severity::Error => DiagnosticSeverity::ERROR,
-            Severity::Warning => DiagnosticSeverity::WARNING,
-            Severity::Info => DiagnosticSeverity::INFORMATION,
-        }),
-        source: Some("frame".to_string()),
-        message: diagnostic.message,
-        ..LspDiagnostic::default()
-    }
-}
-
-fn range_for_span(source: &str, span: Span) -> Range {
-    let start = position_for_offset(source, span.start);
-    let mut end = position_for_offset(source, span.end);
-
-    if start == end {
-        end.character += 1;
-    }
-
-    Range { start, end }
-}
-
-fn position_for_offset(source: &str, offset: usize) -> Position {
-    let mut line = 0;
-    let mut character = 0;
-
-    for (index, value) in source.char_indices() {
-        if index >= offset {
-            break;
-        }
-
-        if value == '\n' {
-            line += 1;
-            character = 0;
-        } else {
-            character += value.len_utf16() as u32;
-        }
-    }
-
-    Position { line, character }
 }
 
 #[tokio::main]
@@ -151,34 +173,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn converts_byte_offsets_to_utf16_positions() {
-        let source = "grid A {\n  gap médium\n}\n";
-        let offset = source.find("médium").expect("sample contains value");
+    fn creates_full_document_range() {
+        let range = full_document_range("card A {\n}\n");
 
-        assert_eq!(
-            position_for_offset(source, offset),
-            Position {
-                line: 1,
-                character: 6,
-            }
-        );
-    }
-
-    #[test]
-    fn returns_parser_diagnostics() {
-        let diagnostics = diagnostics_for_source("card Broken {\n  magic {\n  }\n}\n");
-
-        assert_eq!(diagnostics.len(), 1);
-        assert!(diagnostics[0].message.contains("unknown nested block"));
-    }
-
-    #[test]
-    fn returns_semantic_diagnostics() {
-        let diagnostics = diagnostics_for_source(
-            "grid AppShell {\n  columns sidebar\n}\narea Sidebar {\n  in Missing\n}\n",
-        );
-
-        assert_eq!(diagnostics.len(), 1);
-        assert!(diagnostics[0].message.contains("unknown grid"));
+        assert_eq!(range.start.line, 0);
+        assert_eq!(range.end.line, 2);
     }
 }

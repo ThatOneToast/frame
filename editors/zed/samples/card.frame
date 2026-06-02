@@ -6,7 +6,7 @@ card QuickLinkCard {
 }
 
 button PrimaryButton {
-  surface accent
+  surface gradient accent
   padding medium
   radius small
   shadow small

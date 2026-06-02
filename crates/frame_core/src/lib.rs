@@ -5,6 +5,7 @@
 
 pub mod ast;
 pub mod diagnostics;
+pub mod formatting;
 pub mod semantic;
 pub mod tokens;
 

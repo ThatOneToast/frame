@@ -124,7 +124,15 @@ fn validate_statement(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) 
         Some("radius") => validate_value(statement, tokens::RADII, diagnostics),
         Some("surface") => validate_surface(statement, diagnostics),
         Some("shadow") => validate_value(statement, tokens::SHADOWS, diagnostics),
-        Some("height" | "width") => validate_value(statement, tokens::SIZES, diagnostics),
+        Some("height" | "width" | "min-height" | "max-height" | "min-width" | "max-width") => {
+            validate_value(statement, tokens::SIZES, diagnostics)
+        }
+        Some("align") => validate_value(statement, tokens::ALIGN, diagnostics),
+        Some("justify") => validate_value(statement, tokens::JUSTIFY, diagnostics),
+        Some("position") => validate_value(statement, tokens::POSITIONS, diagnostics),
+        Some("theme" | "color" | "background" | "text") => {
+            validate_value(statement, tokens::COLORS, diagnostics)
+        }
         _ => {}
     }
 }

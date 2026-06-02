@@ -23,6 +23,10 @@ pub enum DeclarationKind {
     Button,
     Text,
     Tokens,
+    Center,
+    Split,
+    Overlay,
+    Dock,
     Unknown(String),
 }
 

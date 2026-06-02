@@ -121,6 +121,10 @@ impl<'a> Parser<'a> {
             "button" => DeclarationKind::Button,
             "text" => DeclarationKind::Text,
             "tokens" => DeclarationKind::Tokens,
+            "center" => DeclarationKind::Center,
+            "split" => DeclarationKind::Split,
+            "overlay" => DeclarationKind::Overlay,
+            "dock" => DeclarationKind::Dock,
             other => DeclarationKind::Unknown(other.to_string()),
         };
 
@@ -169,7 +173,7 @@ impl<'a> Parser<'a> {
 
             if content.ends_with('{') {
                 let name = content.trim_end_matches('{').trim();
-                if !matches!(name, "hover" | "focus" | "active") {
+                if !matches!(name, "hover" | "focus" | "active" | "disabled") {
                     return Err(ParseError::one(
                         format!("unknown nested block `{name}`"),
                         Span {
@@ -295,13 +299,23 @@ text MutedText {
 }
 tokens AppTheme {
 }
+center EmptyState {
+}
+split AppLayout {
+}
+overlay ModalLayer {
+}
+dock AppDock {
+}
 "#;
 
         let document = parse(source).expect("parse should succeed");
 
-        assert_eq!(document.declarations.len(), 8);
+        assert_eq!(document.declarations.len(), 12);
         assert_eq!(document.declarations[0].kind, DeclarationKind::Grid);
         assert_eq!(document.declarations[7].kind, DeclarationKind::Tokens);
+        assert_eq!(document.declarations[8].kind, DeclarationKind::Center);
+        assert_eq!(document.declarations[11].kind, DeclarationKind::Dock);
     }
 
     #[test]

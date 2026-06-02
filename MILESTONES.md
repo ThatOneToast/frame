@@ -115,8 +115,8 @@ Goal: provide a usable command-line workflow.
 Deliverables:
 - [x] `frame check <file>`
 - [x] `frame compile <file> --out <dir>`
-- [ ] `frame format <file>`
-- [ ] `frame watch <file> --out <dir>`
+- [x] `frame format <file>`
+- [x] `frame watch <file> --out <dir>`
 - [x] Exit codes for CI.
 - [x] Human-readable diagnostics.
 
@@ -157,10 +157,10 @@ Goal: provide editor intelligence.
 Deliverables:
 - [x] `frame_lsp` executable.
 - [x] Publish diagnostics from parser and semantic model.
-- [ ] Completion items for known keywords.
-- [ ] Completion items for known token values.
-- [ ] Hover docs for common concepts.
-- [ ] Format document support.
+- [x] Completion items for known keywords.
+- [x] Completion items for known token values.
+- [x] Hover docs for common concepts.
+- [x] Format document support.
 
 Success criteria:
 - Zed can run the LSP.
@@ -174,10 +174,11 @@ Goal: make Frame feel native in Svelte projects.
 
 Deliverables:
 - [ ] Vite plugin or Svelte preprocessor.
-- [ ] External `.frame` file support.
+- [x] External `.frame` file support.
 - [ ] Optional `<style lang="frame">` exploration.
-- [ ] Generated CSS/TS path configuration.
-- [ ] Example Svelte app.
+- [x] Generated CSS/TS path configuration.
+- [x] `frame watch` development workflow.
+- [x] Example Svelte usage documentation.
 
 Success criteria:
 - A Svelte component can use generated Frame classes without manual CSS.

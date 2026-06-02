@@ -4,9 +4,9 @@
 
 Build **Frame**, a CSS DSL for Svelte projects.
 
-Frame should let developers describe UI intent without needing to understand raw CSS syntax first. The compiler should emit normal CSS and TypeScript class exports.
+Frame lets developers describe UI intent without needing to understand raw CSS syntax first. The compiler emits normal CSS and TypeScript class exports.
 
-The language should feel like this:
+Frame should feel like this:
 
 ```frame
 grid Dashboard {
@@ -39,26 +39,31 @@ card HoverCard {
 
 1. **Do not recreate CSS with different punctuation.**
    - Frame should be design-intent-first.
-   - Avoid CSS property names unless inside an explicit advanced escape hatch.
+   - Avoid raw CSS property thinking unless inside an explicit advanced escape hatch.
+   - Prefer concepts like `surface panel`, `hover lift`, `columns responsive cards`, and `radius large`.
 
 2. **`grid` is a first-class keyword.**
    - Grid layout must support named columns, named rows, responsive card grids, and child placement.
    - Areas/items must be able to claim their own space.
+   - Grid should be powerful enough to replace most direct CSS grid usage.
 
 3. **Svelte is the first integration target.**
    - Compile `.frame` files to:
      - `generated.css`
      - `generated.ts`
-   - The generated TypeScript should export stable class names.
+   - Generated TypeScript should export stable class names.
+   - Svelte examples should stay working.
 
 4. **Editor tooling matters from day one.**
-   - Parser diagnostics must be structured enough for LSP.
-   - Zed extension support is part of the roadmap.
-   - Syntax highlighting and semantic diagnostics should be planned early.
+   - Zed syntax highlighting must work.
+   - LSP diagnostics, completions, hover docs, and formatting are first-class features.
+   - Parser diagnostics must include enough span information for LSP use.
+   - Hover documentation should teach users how to use Frame concepts.
 
 5. **Rust workspace architecture is required.**
    - Keep crates separated.
    - Do not cram parser, codegen, CLI, and LSP into one crate.
+   - Prefer reusable logic outside protocol-specific LSP glue.
 
 ## Repository Architecture
 
@@ -92,6 +97,10 @@ crates/
   frame_lsp/
     src/
       main.rs
+      completions.rs
+      hover.rs
+      formatting.rs
+      diagnostics.rs
 
 editors/
   zed/
@@ -102,22 +111,43 @@ editors/
 examples/
   svelte/
     src/lib/frame/app.frame
+
+docs/
+  language.md
+  grid.md
+  layout.md
+  cards.md
+  surfaces.md
+  effects.md
+  typography.md
+  svelte.md
+  lsp.md
+  examples.md
 ```
 
 ## Implementation Rules
 
 - Prefer small modules with clear responsibility.
+- Treat LSP diagnostics, completions, hover docs, and formatting as core compiler features, not optional editor polish.
+- Keep Svelte integration working through generated `generated.css` and `generated.ts`; `frame watch` is the default local development loop until a Vite plugin lands.
+- Expand common design concepts natively with docs and examples before considering raw CSS-like escape hatches.
+- Keep documentation plentiful, example-driven, and accurate with the current compiler behavior.
 - Add tests for every parser and codegen feature.
+- Add tests for LSP helper logic where practical.
 - Keep compiler output deterministic.
 - Use snapshot tests where useful.
 - Avoid adding dependencies until needed.
 - CLI should fail with useful diagnostics, not panics.
 - Generated CSS should be readable enough to debug.
 - Generated TS exports should be stable.
+- Keep examples updated when syntax changes.
+- Update `TODO.md` after completing work.
+- Update `MILESTONES.md` after completing milestones.
+- Continue implementing until an issue arises, a question is needed, or tests cannot be made to pass.
 
-## Initial Language Scope
+## Current Language Scope
 
-Implement these top-level declarations first:
+Top-level declarations:
 
 ```frame
 tokens AppTheme { ... }
@@ -128,9 +158,13 @@ stack SettingsPanel { ... }
 row Toolbar { ... }
 button PrimaryButton { ... }
 text MutedText { ... }
+center EmptyState { ... }
+split AppLayout { ... }
+overlay ModalLayer { ... }
+dock AppDock { ... }
 ```
 
-## MVP Keywords
+## Core Keywords
 
 ### Layout
 
@@ -143,6 +177,10 @@ center
 split
 overlay
 dock
+layout
+position
+align
+justify
 ```
 
 ### Grid
@@ -160,6 +198,9 @@ responsive
 cards
 compact
 comfortable
+auto
+fill
+screen
 ```
 
 ### Surface / Color
@@ -178,6 +219,11 @@ muted
 danger
 success
 warning
+info
+primary
+secondary
+transparent
+bright
 ```
 
 ### Shape / Space
@@ -191,12 +237,20 @@ border
 shadow
 height
 width
+min-height
+max-height
+min-width
+max-width
 screen
 fill
+content
 small
 medium
 large
 xlarge
+pill
+full
+none
 ```
 
 ### Effects
@@ -205,6 +259,7 @@ xlarge
 hover
 focus
 active
+disabled
 lift
 glow
 brighten
@@ -213,9 +268,44 @@ blur
 press
 ring
 smooth
+fade
+scale
+rotate
+slide
 ```
 
-## MVP Output
+### Typography
+
+```txt
+font
+size
+weight
+line
+letter
+heading
+body
+caption
+mono
+bold
+semibold
+normal
+thin
+```
+
+### Responsive
+
+```txt
+mobile
+tablet
+desktop
+wide
+stack
+hide
+show
+only
+```
+
+## Desired Output
 
 A `.frame` file should compile into:
 
@@ -232,6 +322,63 @@ export const ui = {
   Sidebar: 'fr-Sidebar',
   QuickLinkCard: 'fr-QuickLinkCard'
 } as const;
+
+export type UiClass = keyof typeof ui;
+```
+
+## LSP Expectations
+
+The LSP should provide:
+
+- diagnostics from parser errors
+- diagnostics from semantic validation
+- completions for declaration keywords
+- completions for property keywords
+- completions for token values
+- completions for effect keywords
+- hover docs for every major concept
+- formatting support
+
+Hover docs should explain Frame intent first.
+
+Example hover for `grid`:
+
+```txt
+Defines a layout container using Frame's grid system.
+Use `columns`, `rows`, `gap`, and child `area` declarations to place content.
+```
+
+Example hover for `surface`:
+
+```txt
+Sets the visual surface of a component.
+Use named surfaces like `panel`, `main`, `glass`, or gradients like `gradient dusk`.
+```
+
+## Svelte Expectations
+
+Frame should be easy to use from Svelte.
+
+Example:
+
+```svelte
+<script lang="ts">
+  import { ui } from '$lib/frame/generated';
+  import '$lib/frame/generated.css';
+</script>
+
+<div class={ui.AppShell}>
+  <aside class={ui.Sidebar}>Sidebar</aside>
+
+  <main class={ui.Content}>
+    <div class={ui.QuickLinks}>
+      <a class={ui.QuickLinkCard}>Docs</a>
+      <a class={ui.QuickLinkCard}>GitHub</a>
+    </div>
+  </main>
+
+  <section class={ui.Inspector}>Inspector</section>
+</div>
 ```
 
 ## Testing Expectations
@@ -246,6 +393,12 @@ Add tests for:
 - Hover effects generation.
 - TypeScript class export generation.
 - CLI compile command.
+- CLI format command.
+- CLI watch logic where practical.
+- LSP completions.
+- LSP hover docs.
+- LSP formatting.
+- Svelte integration smoke behavior where practical.
 
 ## Suggested Commands
 
@@ -253,14 +406,21 @@ Add tests for:
 cargo fmt
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
+
 cargo run -p frame_cli -- check examples/svelte/src/lib/frame/app.frame
 cargo run -p frame_cli -- compile examples/svelte/src/lib/frame/app.frame --out examples/svelte/src/lib/frame
+cargo run -p frame_cli -- format examples/svelte/src/lib/frame/app.frame
+cargo run -p frame_cli -- watch examples/svelte/src/lib/frame/app.frame --out examples/svelte/src/lib/frame
 ```
 
 ## Codex Behavior
 
 When implementing:
+
 - Update `TODO.md` after completing tasks.
+- Update `MILESTONES.md` after completing milestones.
 - Add tests alongside code.
 - Prefer complete working vertical slices over many half-finished features.
 - Keep generated examples updated.
+- Keep docs accurate with current syntax.
+- Continue implementing until an issue arises, a question is needed, or tests cannot be made to pass.
