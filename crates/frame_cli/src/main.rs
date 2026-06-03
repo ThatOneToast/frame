@@ -1,4 +1,5 @@
 use std::{
+    collections::HashSet,
     env, fs,
     io::{self, Read},
     path::{Path, PathBuf},
@@ -24,11 +25,15 @@ struct Cli {
 enum Command {
     Check {
         file: PathBuf,
+        #[arg(long = "include")]
+        includes: Vec<PathBuf>,
     },
     Compile {
         file: PathBuf,
         #[arg(long)]
         out: PathBuf,
+        #[arg(long = "include")]
+        includes: Vec<PathBuf>,
     },
     CompileStdin {
         #[arg(long)]
@@ -45,6 +50,8 @@ enum Command {
         file: PathBuf,
         #[arg(long)]
         out: PathBuf,
+        #[arg(long = "include")]
+        includes: Vec<PathBuf>,
     },
     Init {
         #[command(subcommand)]
@@ -68,13 +75,21 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Command::Check { file } => check_file(&file),
-        Command::Compile { file, out } => compile_file(&file, &out),
+        Command::Check { file, includes } => check_file(&file, &includes),
+        Command::Compile {
+            file,
+            out,
+            includes,
+        } => compile_file(&file, &out, &includes),
         Command::CompileStdin { css_only, filename } => {
             compile_stdin(css_only, filename.as_deref())
         }
         Command::Format { file, check } => format_file(&file, check),
-        Command::Watch { file, out } => watch_file(&file, &out),
+        Command::Watch {
+            file,
+            out,
+            includes,
+        } => watch_file(&file, &out, &includes),
         Command::Init { target } => match target {
             InitTarget::Svelte {
                 dry_run,
@@ -124,7 +139,7 @@ fn init_svelte(dry_run: bool, force: bool, _yes: bool) -> anyhow::Result<()> {
         fs::write(&frame_file, INITIAL_FRAME_SOURCE)?;
     }
 
-    compile_file(&frame_file, &frame_dir)?;
+    compile_file(&frame_file, &frame_dir, std::slice::from_ref(&frame_dir))?;
 
     update_svelte_config(&svelte_config)?;
     update_vite_config(&vite_config)?;
@@ -341,16 +356,8 @@ const DEFAULT_SVELTE_CONFIG: &str =
 const DEFAULT_VITE_CONFIG: &str =
     "import { framePlugin } from '@frame/svelte/vite';\n\nexport default {\n  plugins: [\n    framePlugin({\n      input: 'src/lib/frame/app.frame',\n      outDir: 'src/lib/frame'\n    })\n  ]\n};\n";
 
-fn check_file(file: &Path) -> anyhow::Result<()> {
-    let source =
-        fs::read_to_string(file).with_context(|| format!("failed to read {}", file.display()))?;
-    let document = match parse(&source) {
-        Ok(document) => document,
-        Err(error) => {
-            print_diagnostics(&error.diagnostics);
-            anyhow::bail!("Frame check failed");
-        }
-    };
+fn check_file(file: &Path, includes: &[PathBuf]) -> anyhow::Result<()> {
+    let document = compile_file_document(file, includes)?;
     let diagnostics = validate(&document);
 
     if diagnostics.is_empty() {
@@ -362,10 +369,8 @@ fn check_file(file: &Path) -> anyhow::Result<()> {
     }
 }
 
-fn compile_file(file: &Path, out: &Path) -> anyhow::Result<()> {
-    let source =
-        fs::read_to_string(file).with_context(|| format!("failed to read {}", file.display()))?;
-    let document = compile_source(&source)?;
+fn compile_file(file: &Path, out: &Path, includes: &[PathBuf]) -> anyhow::Result<()> {
+    let document = compile_file_document(file, includes)?;
 
     fs::create_dir_all(out)?;
     fs::write(out.join("generated.css"), generate_css(&document))?;
@@ -392,6 +397,114 @@ fn compile_stdin(css_only: bool, filename: Option<&Path>) -> anyhow::Result<()> 
 
     print!("{}", generate_css(&document));
     Ok(())
+}
+
+fn compile_file_document(
+    file: &Path,
+    includes: &[PathBuf],
+) -> anyhow::Result<frame_core::Document> {
+    let mut stack = Vec::new();
+    let mut seen = HashSet::new();
+    let document = load_frame_document(file, includes, &mut stack, &mut seen)?;
+    let diagnostics = validate(&document);
+
+    if !diagnostics.is_empty() {
+        print_diagnostics(&diagnostics);
+        anyhow::bail!("Frame compile failed");
+    }
+
+    Ok(document)
+}
+
+fn load_frame_document(
+    file: &Path,
+    include_paths: &[PathBuf],
+    stack: &mut Vec<PathBuf>,
+    seen: &mut HashSet<PathBuf>,
+) -> anyhow::Result<frame_core::Document> {
+    let file = fs::canonicalize(file).unwrap_or_else(|_| file.to_path_buf());
+
+    if let Some(index) = stack.iter().position(|path| path == &file) {
+        let mut cycle = stack[index..]
+            .iter()
+            .chain(std::iter::once(&file))
+            .map(|path| path.display().to_string())
+            .collect::<Vec<_>>();
+        cycle.dedup();
+        anyhow::bail!(
+            "Include cycle detected:\n\n{}\n\nRemove one include to break the cycle.",
+            cycle.join(" -> ")
+        );
+    }
+
+    if !seen.insert(file.clone()) {
+        return Ok(frame_core::Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+        });
+    }
+
+    let source =
+        fs::read_to_string(&file).with_context(|| format!("failed to read {}", file.display()))?;
+    let document = match parse(&source) {
+        Ok(document) => document,
+        Err(error) => {
+            print_diagnostics(&error.diagnostics);
+            anyhow::bail!("Frame compile failed");
+        }
+    };
+
+    stack.push(file.clone());
+    let mut declarations = Vec::new();
+    for include in &document.includes {
+        let candidates = include_candidates(&file, &include.target, include_paths);
+        let Some(target) = candidates.iter().find(|candidate| candidate.exists()) else {
+            let searched = candidates
+                .iter()
+                .map(|path| format!("- {}", path.display()))
+                .collect::<Vec<_>>()
+                .join("\n");
+            anyhow::bail!(
+                "Could not resolve include `{}`.\n\nSearched:\n{}",
+                include.target,
+                searched
+            );
+        };
+        let included = load_frame_document(target, include_paths, stack, seen)?;
+        declarations.extend(included.declarations);
+    }
+    stack.pop();
+
+    declarations.extend(document.declarations);
+    Ok(frame_core::Document {
+        includes: document.includes,
+        declarations,
+    })
+}
+
+fn include_candidates(file: &Path, target: &str, include_paths: &[PathBuf]) -> Vec<PathBuf> {
+    let mut candidates = Vec::new();
+    let current_dir = file.parent().unwrap_or_else(|| Path::new("."));
+    let target_path = Path::new(target);
+    let with_extension = |path: PathBuf| {
+        if path.extension().is_some() {
+            path
+        } else {
+            path.with_extension("frame")
+        }
+    };
+
+    if target.starts_with("./") || target.starts_with("../") || target_path.is_absolute() {
+        candidates.push(with_extension(current_dir.join(target_path)));
+    } else {
+        candidates.push(with_extension(current_dir.join(target)));
+        candidates.push(with_extension(PathBuf::from(target)));
+        for include_path in include_paths {
+            candidates.push(with_extension(include_path.join(target)));
+        }
+    }
+
+    candidates
 }
 
 fn compile_source(source: &str) -> anyhow::Result<frame_core::Document> {
@@ -431,9 +544,9 @@ fn format_file(file: &Path, check: bool) -> anyhow::Result<()> {
     }
 }
 
-fn watch_file(file: &Path, out: &Path) -> anyhow::Result<()> {
+fn watch_file(file: &Path, out: &Path, includes: &[PathBuf]) -> anyhow::Result<()> {
     println!("watching {}", file.display());
-    compile_once_for_watch(file, out);
+    compile_once_for_watch(file, out, includes);
 
     let mut last_modified = modified_time(file)?;
     loop {
@@ -448,13 +561,13 @@ fn watch_file(file: &Path, out: &Path) -> anyhow::Result<()> {
 
         if modified > last_modified {
             last_modified = modified;
-            compile_once_for_watch(file, out);
+            compile_once_for_watch(file, out, includes);
         }
     }
 }
 
-fn compile_once_for_watch(file: &Path, out: &Path) {
-    match compile_file(file, out) {
+fn compile_once_for_watch(file: &Path, out: &Path, includes: &[PathBuf]) {
+    match compile_file(file, out, includes) {
         Ok(()) => println!("Frame compiled successfully"),
         Err(error) => eprintln!("{error:#}"),
     }

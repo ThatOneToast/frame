@@ -65,6 +65,65 @@ fn compiles_example_file() {
 }
 
 #[test]
+fn compile_resolves_includes() {
+    let root = temp_out_dir();
+    let out = root.join("out");
+    fs::create_dir_all(root.join("styles")).expect("temporary input should be creatable");
+    fs::write(
+        root.join("styles/tokens.frame"),
+        "tokens Brand {\n  color brand #7c3aed\n}\n",
+    )
+    .expect("tokens include should be writable");
+    fs::write(
+        root.join("app.frame"),
+        "#include tokens\n\ncard BrandCard {\n  background brand\n}\n",
+    )
+    .expect("app should be writable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("compile")
+        .arg(root.join("app.frame"))
+        .arg("--out")
+        .arg(&out)
+        .arg("--include")
+        .arg(root.join("styles"))
+        .output()
+        .expect("frame compile should run");
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let css = fs::read_to_string(out.join("generated.css")).expect("css should exist");
+    let ts = fs::read_to_string(out.join("generated.ts")).expect("ts should exist");
+    assert!(css.contains("--frame-color-brand: #7c3aed;"));
+    assert!(css.contains("background: var(--frame-color-brand);"));
+    assert!(ts.contains("BrandCard"));
+    assert!(!ts.contains("Brand:"));
+
+    fs::remove_dir_all(root).expect("temporary output should be removable");
+}
+
+#[test]
+fn check_reports_missing_include() {
+    let root = temp_out_dir();
+    fs::create_dir_all(&root).expect("temporary input should be creatable");
+    fs::write(root.join("app.frame"), "#include dashbord\n").expect("app should be writable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("check")
+        .arg(root.join("app.frame"))
+        .output()
+        .expect("frame check should run");
+
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("Could not resolve include"));
+
+    fs::remove_dir_all(root).expect("temporary output should be removable");
+}
+
+#[test]
 fn formats_file_in_place() {
     let out = temp_out_dir();
     fs::create_dir_all(&out).expect("temporary output should be creatable");

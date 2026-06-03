@@ -65,9 +65,13 @@ export function framePlugin(options: FramePluginOptions = {}) {
       }
 
       const inputs = settings.input.map((input) => resolve(config.root, input));
-      server.watcher.add(inputs);
+      const includePaths = settings.include.map((include) => resolve(config.root, include));
+      server.watcher.add([...inputs, ...includePaths]);
       server.watcher.on('change', async (changedPath) => {
-        if (!inputs.includes(resolve(changedPath))) {
+        const resolvedChanged = resolve(changedPath);
+        const changedInput = inputs.includes(resolvedChanged);
+        const changedInclude = includePaths.some((includePath) => resolvedChanged.startsWith(includePath)) && resolvedChanged.endsWith('.frame');
+        if (!changedInput && !changedInclude) {
           return;
         }
 
@@ -81,7 +85,7 @@ export function framePlugin(options: FramePluginOptions = {}) {
   };
 }
 
-export function normalizeOptions(options: FramePluginOptions = RequiredDefaults): Required<Pick<FramePluginOptions, 'outDir' | 'generatedCssName' | 'generatedTsName' | 'watch'>> & {
+export function normalizeOptions(options: FramePluginOptions = RequiredDefaults): Required<Pick<FramePluginOptions, 'outDir' | 'generatedCssName' | 'generatedTsName' | 'watch' | 'include'>> & {
   input: string[];
   frameBin?: string;
   cwd?: string;
@@ -94,6 +98,7 @@ export function normalizeOptions(options: FramePluginOptions = RequiredDefaults)
     generatedCssName: options.generatedCssName ?? RequiredDefaults.generatedCssName,
     generatedTsName: options.generatedTsName ?? RequiredDefaults.generatedTsName,
     watch: options.watch ?? RequiredDefaults.watch,
+    include: [...(options.include ?? RequiredDefaults.include)],
     frameBin: options.frameBin,
     cwd: options.cwd
   };
@@ -104,6 +109,7 @@ const RequiredDefaults = {
   outDir: 'src/lib/frame',
   generatedCssName: 'generated.css',
   generatedTsName: 'generated.ts',
+  include: ['src/lib/frame'],
   watch: true
 } as const;
 

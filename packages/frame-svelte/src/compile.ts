@@ -22,6 +22,7 @@ export interface FrameCompileOptions {
   frameBin?: string;
   generatedCssName?: string;
   generatedTsName?: string;
+  include?: readonly string[];
 }
 
 export interface ResolvedFrameCommand {
@@ -81,7 +82,7 @@ export async function compileFrameFile(options: CompileFrameFileOptions): Promis
   try {
     const result = await runFrame(
       frame.command,
-      [...frame.args, 'compile', input, '--out', tempDir],
+      [...frame.args, 'compile', input, '--out', tempDir, ...includeArgs(options.include ?? [])],
       undefined,
       cwd
     );
@@ -105,6 +106,10 @@ export async function compileFrameFile(options: CompileFrameFileOptions): Promis
   } finally {
     await rm(tempDir, { recursive: true, force: true });
   }
+}
+
+function includeArgs(include: readonly string[]): string[] {
+  return include.flatMap((path) => ['--include', path]);
 }
 
 export class FrameCompileError extends Error {

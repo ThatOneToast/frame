@@ -7,8 +7,8 @@
 use std::{error::Error, fmt};
 
 use frame_core::{
-    Block, Declaration, DeclarationKind, Diagnostic, Document, Identifier, Node, Severity, Span,
-    Statement,
+    Block, Declaration, DeclarationKind, Diagnostic, Document, Identifier, Include, Node, Severity,
+    Span, Statement,
 };
 
 pub fn parse(source: &str) -> Result<Document, ParseError> {
@@ -63,6 +63,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_document(&mut self) -> Result<Document, ParseError> {
+        let mut includes = Vec::new();
         let mut declarations = Vec::new();
 
         while let Some(line) = self.current_content() {
@@ -71,10 +72,70 @@ impl<'a> Parser<'a> {
                 continue;
             }
 
+            if line.starts_with("#include") {
+                includes.push(self.parse_include()?);
+                continue;
+            }
+
             declarations.push(self.parse_declaration()?);
         }
 
-        Ok(Document { declarations })
+        Ok(Document {
+            includes,
+            declarations,
+        })
+    }
+
+    fn parse_include(&mut self) -> Result<Include, ParseError> {
+        let line = self.current_line().expect("parse_include needs a line");
+        let content = content_without_comment(line.text);
+        let mut parts = content.split_whitespace();
+        let keyword = parts.next().unwrap_or_default();
+
+        if keyword != "#include" {
+            return Err(ParseError::one(
+                format!("expected `#include`, found `{keyword}`"),
+                Span {
+                    start: line.start,
+                    end: line.end,
+                },
+            ));
+        }
+
+        let target = parts.next().ok_or_else(|| {
+            ParseError::one(
+                "#include expects a style name or .frame path",
+                Span {
+                    start: line.start,
+                    end: line.end,
+                },
+            )
+        })?;
+
+        if parts.next().is_some() {
+            return Err(ParseError::one(
+                "#include accepts exactly one target",
+                Span {
+                    start: line.start,
+                    end: line.end,
+                },
+            ));
+        }
+
+        let target_start = line.start + line.text.find(target).unwrap_or(0);
+        self.advance();
+
+        Ok(Include {
+            target: target.to_string(),
+            span: Span {
+                start: line.start,
+                end: line.end,
+            },
+            target_span: Span {
+                start: target_start,
+                end: target_start + target.len(),
+            },
+        })
     }
 
     fn parse_declaration(&mut self) -> Result<Declaration, ParseError> {
@@ -173,7 +234,7 @@ impl<'a> Parser<'a> {
 
             if content.ends_with('{') {
                 let name = content.trim_end_matches('{').trim();
-                if !matches!(name, "hover" | "focus" | "active" | "disabled") {
+                if !is_allowed_nested_block(name) {
                     return Err(ParseError::one(
                         format!("unknown nested block `{name}`"),
                         Span {
@@ -243,6 +304,13 @@ impl<'a> Parser<'a> {
     fn advance(&mut self) {
         self.index += 1;
     }
+}
+
+fn is_allowed_nested_block(name: &str) -> bool {
+    matches!(name, "hover" | "focus" | "active" | "disabled" | "advanced")
+        || name == "gradient"
+        || name.starts_with("gradient ")
+        || name.starts_with("section ")
 }
 
 fn source_lines(source: &str) -> Vec<Line<'_>> {
@@ -316,6 +384,85 @@ dock AppDock {
         assert_eq!(document.declarations[7].kind, DeclarationKind::Tokens);
         assert_eq!(document.declarations[8].kind, DeclarationKind::Center);
         assert_eq!(document.declarations[11].kind, DeclarationKind::Dock);
+    }
+
+    #[test]
+    fn parses_root_includes() {
+        let source = "#include base\n#include ./styles/cards.frame\n\ncard Demo {\n}\n";
+
+        let document = parse(source).expect("parse should succeed");
+
+        assert_eq!(document.includes.len(), 2);
+        assert_eq!(document.includes[0].target, "base");
+        assert_eq!(document.includes[1].target, "./styles/cards.frame");
+        assert_eq!(document.declarations.len(), 1);
+    }
+
+    #[test]
+    fn parses_gradient_token_blocks_and_advanced_blocks() {
+        let source = r##"
+tokens Brand {
+  color brand-purple #7c3aed
+
+  gradient hero-gradient {
+    type linear
+    angle 135deg
+    stop brand-purple 0%
+    stop #181820 100%
+  }
+}
+
+card GlassCard {
+  advanced {
+    css "backdrop-filter" blur(12px)
+  }
+}
+"##;
+
+        let document = parse(source).expect("parse should succeed");
+
+        assert_eq!(document.declarations.len(), 2);
+        assert!(matches!(
+            document.declarations[0].body[1],
+            Node::Block(ref block) if block.name == "gradient hero-gradient"
+        ));
+        assert!(matches!(
+            document.declarations[1].body[0],
+            Node::Block(ref block) if block.name == "advanced"
+        ));
+    }
+
+    #[test]
+    fn tolerates_partial_gradient_block_while_editing() {
+        let source = "tokens Brand {\n  gradient {\n  }\n}\n";
+
+        let document = parse(source).expect("partial gradient block should parse");
+
+        assert!(matches!(
+            document.declarations[0].body[0],
+            Node::Block(ref block) if block.name == "gradient"
+        ));
+    }
+
+    #[test]
+    fn parses_grid_section_blocks() {
+        let source = r#"
+grid HoverCardInfo {
+  flow vertical
+  columns title description
+
+  section title {
+    padding bottom small
+  }
+}
+"#;
+
+        let document = parse(source).expect("section block should parse");
+
+        assert!(matches!(
+            document.declarations[0].body[2],
+            Node::Block(ref block) if block.name == "section title"
+        ));
     }
 
     #[test]

@@ -8,6 +8,7 @@ pub mod diagnostics;
 pub mod formatting;
 pub mod knowledge;
 pub mod semantic;
+pub mod symbols;
 pub mod tokens;
 
 pub use ast::*;

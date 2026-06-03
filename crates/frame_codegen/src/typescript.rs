@@ -1,9 +1,12 @@
-use frame_core::Document;
+use frame_core::{DeclarationKind, Document};
 
 pub fn generate_typescript(document: &Document) -> String {
     let mut ts = String::from("export const ui = {\n");
 
     for declaration in &document.declarations {
+        if declaration.kind == DeclarationKind::Tokens {
+            continue;
+        }
         ts.push_str(&format!(
             "  {}: 'fr-{}',\n",
             property_name(&declaration.name.text),
@@ -42,6 +45,7 @@ mod tests {
     #[test]
     fn generates_ui_exports() {
         let document = Document {
+            includes: Vec::new(),
             declarations: vec![Declaration {
                 kind: DeclarationKind::Card,
                 name: Identifier::new("QuickLinkCard", Span::default()),

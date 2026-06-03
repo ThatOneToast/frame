@@ -1,18 +1,23 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{
-    knowledge, tokens, Declaration, DeclarationKind, Diagnostic, Document, Node, Statement,
+    knowledge,
+    symbols::{index_document, SymbolIndex},
+    tokens, Declaration, DeclarationKind, Diagnostic, Document, Node, Statement,
 };
 
 pub fn validate(document: &Document) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
     let mut names = HashSet::new();
-    let grids = collect_grids(document);
+    let symbols = index_document("", document);
 
     for declaration in &document.declarations {
         if !names.insert(declaration.name.text.clone()) {
             diagnostics.push(Diagnostic::error(
-                format!("duplicate declaration `{}`", declaration.name.text),
+                format!(
+                    "Duplicate declaration `{}`.\n\nEach Frame declaration exports one stable class name, so names must be unique within the compiled graph.\n\nRename one declaration, or merge the rules if they describe the same UI concept.",
+                    declaration.name.text
+                ),
                 declaration.name.span,
             ));
         }
@@ -29,16 +34,17 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
             ));
         }
 
-        validate_statements(declaration, &mut diagnostics);
+        validate_statements(declaration, &symbols, &mut diagnostics);
 
         if declaration.kind == DeclarationKind::Area {
-            validate_area(declaration, &grids, &mut diagnostics);
+            validate_area(declaration, &symbols, &mut diagnostics);
         }
     }
 
     diagnostics
 }
 
+#[allow(dead_code)]
 fn collect_grids(document: &Document) -> HashMap<String, HashSet<String>> {
     document
         .declarations
@@ -66,9 +72,30 @@ fn collect_grids(document: &Document) -> HashMap<String, HashSet<String>> {
         .collect()
 }
 
+#[allow(dead_code)]
+fn collect_custom_colors(document: &Document) -> HashSet<String> {
+    let mut colors = HashSet::new();
+    for declaration in &document.declarations {
+        if declaration.kind != DeclarationKind::Tokens {
+            continue;
+        }
+        for node in &declaration.body {
+            let Some(statement) = statement(node) else {
+                continue;
+            };
+            if first_word(statement) == Some("color") {
+                if let Some(name) = statement.words.get(1) {
+                    colors.insert(name.clone());
+                }
+            }
+        }
+    }
+    colors
+}
+
 fn validate_area(
     declaration: &Declaration,
-    grids: &HashMap<String, HashSet<String>>,
+    symbols: &SymbolIndex,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let grid_name = find_statement_value(declaration, "in");
@@ -84,8 +111,8 @@ fn validate_area(
         return;
     };
 
-    let Some(grid_places) = grids.get(grid_name) else {
-        let grid_names = grids.keys().map(String::as_str).collect::<Vec<_>>();
+    let Some(_grid_symbol) = symbols.grids.get(grid_name) else {
+        let grid_names = symbols.grids.keys().map(String::as_str).collect::<Vec<_>>();
         let suggestion = closest(grid_name, &grid_names)
             .map(|value| format!("\n\nDid you mean `{value}`?"))
             .unwrap_or_default();
@@ -99,8 +126,12 @@ fn validate_area(
     };
 
     if let Some(place) = find_statement_value(declaration, "place") {
-        if !grid_places.is_empty() && !grid_places.contains(place) {
-            let mut known = grid_places.iter().cloned().collect::<Vec<_>>();
+        let grid_places = symbols.grid_sections.get(grid_name);
+        if let Some(grid_places) = grid_places {
+            if grid_places.is_empty() || grid_places.contains_key(place) {
+                return;
+            }
+            let mut known = grid_places.keys().cloned().collect::<Vec<_>>();
             known.sort();
             let known_list = known
                 .iter()
@@ -118,14 +149,33 @@ fn validate_area(
     }
 }
 
-fn validate_statements(declaration: &Declaration, diagnostics: &mut Vec<Diagnostic>) {
+fn validate_statements(
+    declaration: &Declaration,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     for node in &declaration.body {
         match node {
-            Node::Statement(statement) => validate_statement(statement, diagnostics),
+            Node::Statement(statement) if declaration.kind == DeclarationKind::Tokens => {
+                validate_token_statement(statement, symbols, diagnostics);
+            }
+            Node::Statement(statement) => validate_statement(statement, symbols, diagnostics),
+            Node::Block(block) if declaration.kind == DeclarationKind::Tokens => {
+                validate_token_block(block, symbols, diagnostics);
+            }
+            Node::Block(block)
+                if declaration.kind == DeclarationKind::Grid
+                    && block.name.starts_with("section ") =>
+            {
+                validate_section_block(block, diagnostics);
+            }
+            Node::Block(block) if block.name == "advanced" => {
+                validate_advanced_block(block, diagnostics);
+            }
             Node::Block(block) => {
                 for node in &block.body {
                     if let Node::Statement(statement) = node {
-                        validate_effect_statement(statement, diagnostics);
+                        validate_effect_statement(statement, symbols, diagnostics);
                     }
                 }
             }
@@ -133,7 +183,232 @@ fn validate_statements(declaration: &Declaration, diagnostics: &mut Vec<Diagnost
     }
 }
 
-fn validate_statement(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
+fn validate_section_block(block: &crate::Block, diagnostics: &mut Vec<Diagnostic>) {
+    for node in &block.body {
+        let Node::Statement(statement) = node else {
+            continue;
+        };
+        match statement.words.first().map(String::as_str) {
+            Some("padding" | "margin") => validate_box_space(statement, diagnostics),
+            Some("align") => validate_value(statement, tokens::ALIGN, diagnostics),
+            Some("justify") => validate_value(statement, tokens::JUSTIFY, diagnostics),
+            Some("gap") => validate_value(statement, tokens::SPACING, diagnostics),
+            Some("width" | "height" | "min-height" | "max-height" | "min-width" | "max-width") => {
+                validate_size_value(statement, diagnostics)
+            }
+            Some(other) => diagnostics.push(Diagnostic::error(
+                format!(
+                    "Unknown section property `{other}`.\n\nUse spacing and alignment properties like `padding top small`, `margin bottom medium`, `align center`, or `justify between`."
+                ),
+                statement.span,
+            )),
+            None => {}
+        }
+    }
+}
+
+fn validate_advanced_block(block: &crate::Block, diagnostics: &mut Vec<Diagnostic>) {
+    for node in &block.body {
+        let Node::Statement(statement) = node else {
+            continue;
+        };
+        if statement.words.first().map(String::as_str) != Some("css") {
+            diagnostics.push(Diagnostic::error(
+                "advanced blocks currently support `css \"property\" value` entries",
+                statement.span,
+            ));
+            continue;
+        }
+        if statement.words.len() < 3 {
+            diagnostics.push(Diagnostic::error(
+                "advanced css expects `css \"property\" value`",
+                statement.span,
+            ));
+        }
+    }
+}
+
+fn validate_token_statement(
+    statement: &Statement,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let Some(keyword) = first_word(statement) else {
+        return;
+    };
+
+    if keyword != "color" {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown token kind `{keyword}`.\n\nSupported token definitions use `color name #hex` or `gradient name {{ ... }}`."
+            ),
+            statement.span,
+        ));
+        return;
+    }
+
+    if statement.words.len() < 3 {
+        diagnostics.push(Diagnostic::error(
+            "color token expects `color name #hex`",
+            statement.span,
+        ));
+        return;
+    }
+
+    let value = &statement.words[2];
+    if !is_hex_color(value) {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "`{value}` is not a valid color token value.\n\nUse hex colors like `#fff`, `#ffffff`, or `#ffffffff`.\n\nFunction colors such as `rgb(...)` are planned for a later Frame release."
+            ),
+            statement.span,
+        ));
+    }
+
+    if let Some(name) = statement.words.get(1) {
+        if symbols.gradients.contains_key(name) {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "Duplicate token `{name}`.\n\nA color and gradient cannot share a token name."
+                ),
+                statement.span,
+            ));
+        }
+    }
+}
+
+fn validate_token_block(
+    block: &crate::Block,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if block.name == "gradient" {
+        diagnostics.push(Diagnostic::error(
+            "gradient token blocks expect a name, for example `gradient hero-gradient { ... }`",
+            block.span,
+        ));
+        return;
+    }
+
+    if !block.name.starts_with("gradient ") {
+        diagnostics.push(Diagnostic::error(
+            format!("Unknown token block `{}`.", block.name),
+            block.span,
+        ));
+        return;
+    }
+
+    let mut stops = 0usize;
+
+    for node in &block.body {
+        let Node::Statement(statement) = node else {
+            continue;
+        };
+        match statement.words.first().map(String::as_str) {
+            Some("type") => {
+                let gradient_type = statement.words.get(1).map(String::as_str).unwrap_or("");
+                if !tokens::GRADIENT_TYPES.contains(&gradient_type) {
+                    diagnostics.push(Diagnostic::error(
+                        format!("Unknown gradient type `{gradient_type}`.\n\nUse `linear`, `radial`, `conic`, or `layered`."),
+                        statement.span,
+                    ));
+                }
+            }
+            Some("angle") => {
+                let Some(angle) = statement.words.get(1) else {
+                    diagnostics.push(Diagnostic::error("gradient angle expects a value like `135deg`", statement.span));
+                    continue;
+                };
+                if !is_valid_angle(angle) {
+                    diagnostics.push(Diagnostic::error(
+                        format!("`{angle}` is not a valid gradient angle.\n\nUse degree values like `135deg`."),
+                        statement.span,
+                    ));
+                }
+            }
+            Some("stop") => {
+                stops += 1;
+                let (Some(color), Some(position)) = (statement.words.get(1), statement.words.get(2)) else {
+                    diagnostics.push(Diagnostic::error(
+                        "gradient stop expects `stop color 0%`",
+                        statement.span,
+                    ));
+                    continue;
+                };
+                if !is_hex_color(color)
+                    && !tokens::COLORS.contains(&color.as_str())
+                    && !symbols.colors.contains_key(color)
+                {
+                    diagnostics.push(Diagnostic::error(
+                        format!("Unknown gradient stop color `{color}`.\n\nGradient stops must reference a built-in color, custom color token, or valid hex color."),
+                        statement.span,
+                    ));
+                }
+                if !is_valid_percentage(position) {
+                    diagnostics.push(Diagnostic::error(
+                        format!("`{position}` is not a valid gradient stop percentage."),
+                        statement.span,
+                    ));
+                }
+            }
+            Some("corner") => {
+                let (Some(corner), Some(color)) = (statement.words.get(1), statement.words.get(2))
+                else {
+                    diagnostics.push(Diagnostic::error(
+                        "gradient corner expects `corner top-left color`",
+                        statement.span,
+                    ));
+                    continue;
+                };
+                if !tokens::GRADIENT_CORNERS.contains(&corner.as_str()) {
+                    diagnostics.push(Diagnostic::error(
+                        format!(
+                            "Unknown gradient corner `{corner}`.\n\nUse top-left, top-right, bottom-left, or bottom-right."
+                        ),
+                        statement.span,
+                    ));
+                }
+                if !is_hex_color(color)
+                    && !tokens::COLORS.contains(&color.as_str())
+                    && !symbols.colors.contains_key(color)
+                {
+                    diagnostics.push(Diagnostic::error(
+                        format!("Unknown gradient corner color `{color}`."),
+                        statement.span,
+                    ));
+                }
+            }
+            Some(other) => diagnostics.push(Diagnostic::error(
+                format!("Unknown gradient property `{other}`.\n\nUse `type linear`, `angle 135deg`, `stop color 0%`, or `corner top-left color`."),
+                statement.span,
+            )),
+            None => {}
+        }
+    }
+
+    let corners = block
+        .body
+        .iter()
+        .filter_map(|node| match node {
+            Node::Statement(statement) => statement.words.first().map(String::as_str),
+            Node::Block(_) => None,
+        })
+        .filter(|keyword| *keyword == "corner")
+        .count();
+
+    if stops < 2 && corners == 0 {
+        diagnostics.push(Diagnostic::error(
+            "gradient needs at least two `stop` entries or one `corner` entry",
+            block.span,
+        ));
+    }
+}
+
+fn validate_statement(
+    statement: &Statement,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     let Some(keyword) = first_word(statement) else {
         return;
     };
@@ -152,26 +427,37 @@ fn validate_statement(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) 
     }
 
     match first_word(statement) {
-        Some("padding" | "gap" | "margin") => {
-            validate_value(statement, tokens::SPACING, diagnostics)
-        }
+        Some("padding" | "margin") => validate_box_space(statement, diagnostics),
+        Some("gap") => validate_value(statement, tokens::SPACING, diagnostics),
         Some("radius") => validate_value(statement, tokens::RADII, diagnostics),
-        Some("surface") => validate_surface(statement, diagnostics),
+        Some("surface") => validate_surface(statement, symbols, diagnostics),
         Some("shadow") => validate_value(statement, tokens::SHADOWS, diagnostics),
+        Some("border") => validate_border(statement, symbols, diagnostics),
         Some("height" | "width" | "min-height" | "max-height" | "min-width" | "max-width") => {
             validate_size_value(statement, diagnostics)
         }
         Some("align") => validate_value(statement, tokens::ALIGN, diagnostics),
         Some("justify") => validate_value(statement, tokens::JUSTIFY, diagnostics),
         Some("position") => validate_value(statement, tokens::POSITIONS, diagnostics),
-        Some("theme" | "color" | "text") => validate_value(statement, tokens::COLORS, diagnostics),
-        Some("background") => validate_background(statement, diagnostics),
+        Some("anchor") => validate_value(statement, tokens::ANCHORS, diagnostics),
+        Some("z") => validate_value(statement, tokens::Z_LAYERS, diagnostics),
+        Some("theme" | "color" | "text") => validate_color(statement, symbols, diagnostics),
+        Some("background") => validate_background(statement, symbols, diagnostics),
         Some("columns") => validate_grid_columns(statement, diagnostics),
+        Some("flow") => validate_value(statement, tokens::GRID_FLOWS, diagnostics),
+        Some("transition") => validate_value(statement, tokens::TRANSITIONS, diagnostics),
+        Some("duration") => validate_value(statement, tokens::DURATIONS, diagnostics),
+        Some("ease") => validate_value(statement, tokens::EASES, diagnostics),
+        Some("animation" | "animate") => validate_value(statement, tokens::ANIMATIONS, diagnostics),
         _ => {}
     }
 }
 
-fn validate_effect_statement(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
+fn validate_effect_statement(
+    statement: &Statement,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     let Some(effect) = first_word(statement) else {
         return;
     };
@@ -194,14 +480,35 @@ fn validate_effect_statement(statement: &Statement, diagnostics: &mut Vec<Diagno
             format!("Unknown effect `{effect}`.{suggestion}\n\nUse interaction effects like `lift`, `glow`, `brighten`, `dim`, `press`, and `ring`."),
             statement.span,
         ));
+        return;
+    }
+
+    match effect {
+        "glow" | "ring" => validate_glow(statement, symbols, diagnostics),
+        "transition" => validate_value(statement, tokens::TRANSITIONS, diagnostics),
+        "duration" => validate_value(statement, tokens::DURATIONS, diagnostics),
+        "ease" => validate_value(statement, tokens::EASES, diagnostics),
+        "animation" | "animate" => validate_value(statement, tokens::ANIMATIONS, diagnostics),
+        _ => {}
     }
 }
 
-fn validate_surface(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
+fn validate_surface(
+    statement: &Statement,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     let Some(value) = statement.words.get(1) else {
-        diagnostics.push(Diagnostic::error("surface expects a value", statement.span));
+        diagnostics.push(Diagnostic::error(
+            "surface expects a value.\n\nUse named surfaces like `panel`, `main`, `glass`, `raised`, or `surface gradient dusk`.",
+            statement.span,
+        ));
         return;
     };
+
+    if symbols.gradients.contains_key(value) || symbols.colors.contains_key(value) {
+        return;
+    }
 
     if !tokens::SURFACES.contains(&value.as_str()) {
         let suggestion = closest(value, tokens::SURFACES)
@@ -224,10 +531,14 @@ fn validate_surface(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
             return;
         };
 
-        if !tokens::COLORS.contains(&gradient.as_str()) {
+        if !matches!(
+            gradient.as_str(),
+            "dusk" | "midnight" | "aurora" | "ember" | "ocean" | "forest"
+        ) && !symbols.gradients.contains_key(gradient)
+        {
             diagnostics.push(Diagnostic::error(
                 format!(
-                    "Unknown gradient `{gradient}`.\n\nUse named gradients like `dusk`, `midnight`, or `aurora`."
+                    "Unknown gradient `{gradient}`.\n\nUse named gradients like `dusk`, `midnight`, `aurora`, `ember`, `ocean`, or `forest`, or define a custom gradient token."
                 ),
                 statement.span,
             ));
@@ -235,26 +546,208 @@ fn validate_surface(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
     }
 }
 
-fn validate_background(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
+fn validate_background(
+    statement: &Statement,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     let Some(value) = statement.words.get(1) else {
         diagnostics.push(Diagnostic::error(
-            "background expects a value",
+            "background expects a value.\n\nUse a semantic color like `accent`, a surface like `panel`, a preset gradient, or a custom token from `tokens`.",
             statement.span,
         ));
         return;
     };
 
-    if tokens::COLORS.contains(&value.as_str()) || tokens::SURFACES.contains(&value.as_str()) {
+    if tokens::COLORS.contains(&value.as_str())
+        || tokens::SURFACES.contains(&value.as_str())
+        || symbols.colors.contains_key(value)
+        || symbols.gradients.contains_key(value)
+    {
         return;
     }
 
+    let mut candidates = tokens::COLORS
+        .iter()
+        .chain(tokens::SURFACES.iter())
+        .copied()
+        .collect::<Vec<_>>();
+    candidates.sort_unstable();
+    let suggestion = closest(value, &candidates)
+        .map(|value| format!("\n\nDid you mean `{value}`?"))
+        .unwrap_or_default();
     diagnostics.push(Diagnostic::error(
-        format!("invalid background value `{value}`"),
+        format!(
+            "Unknown background `{value}`.{suggestion}\n\n`background` accepts built-in color intent, surface names, custom color tokens, and custom gradient tokens.\n\nUse `background panel` for a secondary region, `background accent` for emphasis, or define a token before referencing it."
+        ),
+        statement.span,
+    ));
+}
+
+fn validate_color(statement: &Statement, symbols: &SymbolIndex, diagnostics: &mut Vec<Diagnostic>) {
+    let Some(value) = statement.words.get(1) else {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "{} expects a color value.\n\nUse semantic colors like `accent`, `muted`, `danger`, `success`, or a custom color token from `tokens`.",
+                statement.words[0]
+            ),
+            statement.span,
+        ));
+        return;
+    };
+
+    if tokens::COLORS.contains(&value.as_str()) || symbols.colors.contains_key(value) {
+        return;
+    }
+
+    let suggestion = closest(value, tokens::COLORS)
+        .map(|value| format!("\n\nDid you mean `{value}`?"))
+        .unwrap_or_default();
+    let property = statement.words[0].as_str();
+    let label = if property == "color" {
+        "color".to_string()
+    } else {
+        format!("{property} color")
+    };
+    diagnostics.push(Diagnostic::error(
+        format!(
+            "Unknown {label} `{value}`.{suggestion}\n\nFrame color properties accept semantic color intent, not raw CSS property names. Use built-in values like `accent`, `muted`, `danger`, `success`, `warning`, or define a custom color token."
+        ),
+        statement.span,
+    ));
+}
+
+fn validate_border(
+    statement: &Statement,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let Some(value) = statement.words.get(1) else {
+        diagnostics.push(Diagnostic::error(
+            "border expects a value.\n\nUse border styles like `soft`, `strong`, `accent`, `muted`, `danger`, `none`, or custom color tokens.",
+            statement.span,
+        ));
+        return;
+    };
+
+    if value == "width" {
+        if statement
+            .words
+            .get(2)
+            .is_some_and(|value| matches!(value.as_str(), "small" | "medium" | "large"))
+        {
+            return;
+        }
+        diagnostics.push(Diagnostic::error(
+            "border width expects `small`, `medium`, or `large`",
+            statement.span,
+        ));
+        return;
+    }
+
+    if value == "radius" {
+        let Some(radius) = statement.words.get(2) else {
+            diagnostics.push(Diagnostic::error(
+                "border radius expects a radius value",
+                statement.span,
+            ));
+            return;
+        };
+        if tokens::RADII.contains(&radius.as_str()) {
+            return;
+        }
+        let suggestion = closest(radius, tokens::RADII)
+            .map(|value| format!("\n\nDid you mean `{value}`?"))
+            .unwrap_or_default();
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown border radius `{radius}`.{suggestion}\n\nUse radius values like `small`, `medium`, `large`, `pill`, `full`, or `none`."
+            ),
+            statement.span,
+        ));
+        return;
+    }
+
+    if tokens::BORDER_STYLES.contains(&value.as_str())
+        || tokens::COLORS.contains(&value.as_str())
+        || symbols.colors.contains_key(value)
+    {
+        return;
+    }
+
+    let suggestion = closest(value, tokens::BORDER_STYLES)
+        .or_else(|| closest(value, tokens::COLORS))
+        .map(|value| format!("\n\nDid you mean `{value}`?"))
+        .unwrap_or_default();
+    diagnostics.push(Diagnostic::error(
+        format!(
+            "Unknown border value `{value}`.{suggestion}\n\nUse border intent like `soft`, `strong`, `accent`, `muted`, `danger`, or `none`. Use `border width medium` when changing thickness."
+        ),
+        statement.span,
+    ));
+}
+
+fn validate_glow(statement: &Statement, symbols: &SymbolIndex, diagnostics: &mut Vec<Diagnostic>) {
+    let Some(value) = statement.words.get(1) else {
+        return;
+    };
+
+    if tokens::GLOWS.contains(&value.as_str())
+        || tokens::COLORS.contains(&value.as_str())
+        || symbols.colors.contains_key(value)
+    {
+        return;
+    }
+
+    let suggestion = closest(value, tokens::GLOWS)
+        .or_else(|| closest(value, tokens::COLORS))
+        .map(|value| format!("\n\nDid you mean `{value}`?"))
+        .unwrap_or_default();
+    diagnostics.push(Diagnostic::error(
+        format!(
+            "Unknown glow color `{value}`.{suggestion}\n\n`glow` accepts semantic colors like `accent`, `danger`, and `success`, or a custom color token."
+        ),
         statement.span,
     ));
 }
 
 fn validate_value(statement: &Statement, allowed: &[&str], diagnostics: &mut Vec<Diagnostic>) {
+    let Some(value) = statement.words.get(1) else {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "{} expects a value.\n\nValid values include: {}.",
+                statement.words[0],
+                allowed
+                    .iter()
+                    .map(|value| format!("`{value}`"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            statement.span,
+        ));
+        return;
+    };
+
+    if !allowed.contains(&value.as_str()) {
+        let suggestion = closest(value, allowed)
+            .map(|value| format!("\n\nDid you mean `{value}`?"))
+            .unwrap_or_default();
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown {} value `{value}`.{suggestion}\n\nValid values include: {}.",
+                statement.words[0],
+                allowed
+                    .iter()
+                    .map(|value| format!("`{value}`"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            statement.span,
+        ));
+    }
+}
+
+fn validate_box_space(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
     let Some(value) = statement.words.get(1) else {
         diagnostics.push(Diagnostic::error(
             format!("{} expects a value", statement.words[0]),
@@ -263,12 +756,30 @@ fn validate_value(statement: &Statement, allowed: &[&str], diagnostics: &mut Vec
         return;
     };
 
-    if !allowed.contains(&value.as_str()) {
-        diagnostics.push(Diagnostic::error(
-            format!("invalid {} value `{value}`", statement.words[0]),
-            statement.span,
-        ));
+    if tokens::SPACING.contains(&value.as_str()) {
+        return;
     }
+
+    if tokens::EDGES.contains(&value.as_str()) {
+        let Some(amount) = statement.words.get(2) else {
+            diagnostics.push(Diagnostic::error(
+                format!("{} {value} expects a spacing value", statement.words[0]),
+                statement.span,
+            ));
+            return;
+        };
+        if tokens::SPACING.contains(&amount.as_str()) {
+            return;
+        }
+    }
+
+    diagnostics.push(Diagnostic::error(
+        format!(
+            "invalid {} value `{value}`.\n\nUse spacing values like `medium`, or targeted spacing like `{} top medium`.",
+            statement.words[0], statement.words[0]
+        ),
+        statement.span,
+    ));
 }
 
 fn validate_size_value(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
@@ -320,6 +831,20 @@ fn is_valid_percentage(value: &str) -> bool {
     }
 
     number.parse::<u8>().is_ok_and(|value| value <= 100)
+}
+
+fn is_valid_angle(value: &str) -> bool {
+    value
+        .strip_suffix("deg")
+        .is_some_and(|number| !number.is_empty() && number.parse::<i16>().is_ok())
+}
+
+fn is_hex_color(value: &str) -> bool {
+    let Some(hex) = value.strip_prefix('#') else {
+        return false;
+    };
+
+    matches!(hex.len(), 3 | 6 | 8) && hex.chars().all(|character| character.is_ascii_hexdigit())
 }
 
 fn find_statement_value<'a>(declaration: &'a Declaration, keyword: &str) -> Option<&'a str> {
@@ -397,9 +922,18 @@ mod tests {
         })
     }
 
+    fn block(name: &str, body: Vec<Node>) -> Node {
+        Node::Block(crate::Block {
+            name: name.to_string(),
+            body,
+            span: Span::default(),
+        })
+    }
+
     #[test]
     fn validates_area_grid_references_and_places() {
         let document = Document {
+            includes: Vec::new(),
             declarations: vec![
                 declaration(
                     DeclarationKind::Grid,
@@ -428,6 +962,7 @@ mod tests {
     #[test]
     fn accepts_percent_size_values() {
         let document = Document {
+            includes: Vec::new(),
             declarations: vec![declaration(
                 DeclarationKind::Card,
                 "Panel",
@@ -441,6 +976,7 @@ mod tests {
     #[test]
     fn rejects_invalid_percent_size_values() {
         let document = Document {
+            includes: Vec::new(),
             declarations: vec![
                 declaration(
                     DeclarationKind::Card,
@@ -465,5 +1001,262 @@ mod tests {
         assert!(diagnostics[2]
             .message
             .contains("invalid columns percentage"));
+    }
+
+    #[test]
+    fn accepts_custom_color_tokens_and_usage() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Tokens,
+                    "Brand",
+                    vec![
+                        statement(&["color", "brand", "#7c3aed"]),
+                        statement(&["color", "panel-bg", "#181820"]),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Card,
+                    "BrandCard",
+                    vec![
+                        statement(&["background", "brand"]),
+                        statement(&["color", "white"]),
+                        statement(&["border", "panel-bg"]),
+                    ],
+                ),
+            ],
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn accepts_custom_gradient_tokens_and_usage() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Tokens,
+                    "Brand",
+                    vec![
+                        statement(&["color", "brand-purple", "#7c3aed"]),
+                        Node::Block(crate::Block {
+                            name: "gradient hero-gradient".to_string(),
+                            body: vec![
+                                statement(&["type", "linear"]),
+                                statement(&["angle", "135deg"]),
+                                statement(&["stop", "brand-purple", "0%"]),
+                                statement(&["stop", "#181820", "100%"]),
+                            ],
+                            span: Span::default(),
+                        }),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Card,
+                    "Hero",
+                    vec![statement(&["background", "hero-gradient"])],
+                ),
+            ],
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn accepts_corner_gradients_targeted_padding_and_anchor() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Tokens,
+                    "Brand",
+                    vec![
+                        statement(&["color", "brand-purple", "#7c3aed"]),
+                        Node::Block(crate::Block {
+                            name: "gradient four-corners".to_string(),
+                            body: vec![
+                                statement(&["type", "layered"]),
+                                statement(&["corner", "top-left", "brand-purple", "65%"]),
+                                statement(&["corner", "bottom-right", "#181820", "70%"]),
+                            ],
+                            span: Span::default(),
+                        }),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Card,
+                    "PinnedHero",
+                    vec![
+                        statement(&["background", "four-corners"]),
+                        statement(&["padding", "top", "large"]),
+                        statement(&["padding", "x", "medium"]),
+                        statement(&["anchor", "top"]),
+                    ],
+                ),
+            ],
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn accepts_vertical_grid_flow_and_section_spacing() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Grid,
+                "HoverCardInfo",
+                vec![
+                    statement(&["flow", "vertical"]),
+                    statement(&["columns", "title", "description"]),
+                    block(
+                        "section title",
+                        vec![statement(&["padding", "bottom", "small"])],
+                    ),
+                    block(
+                        "section description",
+                        vec![statement(&["margin", "top", "none"])],
+                    ),
+                ],
+            )],
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn rejects_invalid_grid_flow_and_section_properties() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Grid,
+                "HoverCardInfo",
+                vec![
+                    statement(&["flow", "diagonal"]),
+                    block("section title", vec![statement(&["surface", "panel"])]),
+                ],
+            )],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics[0].message.contains("Unknown flow value"));
+        assert!(diagnostics[0].message.contains("Valid values include"));
+        assert!(diagnostics[1]
+            .message
+            .contains("Unknown section property `surface`"));
+    }
+
+    #[test]
+    fn explains_unknown_color_and_background_values() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "Panel",
+                vec![
+                    statement(&["background", "accnt"]),
+                    statement(&["color", "primry"]),
+                ],
+            )],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics[0].message.contains("Unknown background"));
+        assert!(diagnostics[0].message.contains("Did you mean"));
+        assert!(diagnostics[0].message.contains("custom color tokens"));
+        assert!(diagnostics[1].message.contains("Unknown color"));
+        assert!(diagnostics[1].message.contains("semantic color intent"));
+    }
+
+    #[test]
+    fn explains_duplicate_declarations() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(DeclarationKind::Card, "Panel", Vec::new()),
+                declaration(DeclarationKind::Card, "Panel", Vec::new()),
+            ],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("Each Frame declaration exports one stable class name"));
+    }
+
+    #[test]
+    fn rejects_invalid_corner_gradient_values() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Tokens,
+                "Brand",
+                vec![Node::Block(crate::Block {
+                    name: "gradient bad".to_string(),
+                    body: vec![statement(&["corner", "middle", "missing-color"])],
+                    span: Span::default(),
+                })],
+            )],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics[0].message.contains("Unknown gradient corner"));
+        assert!(diagnostics[1]
+            .message
+            .contains("Unknown gradient corner color"));
+    }
+
+    #[test]
+    fn rejects_invalid_gradient_stop_color() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Tokens,
+                "Brand",
+                vec![Node::Block(crate::Block {
+                    name: "gradient hero-gradient".to_string(),
+                    body: vec![
+                        statement(&["angle", "135deg"]),
+                        statement(&["stop", "missing-color", "0%"]),
+                        statement(&["stop", "#181820", "100%"]),
+                    ],
+                    span: Span::default(),
+                })],
+            )],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("Unknown gradient stop color"));
+    }
+
+    #[test]
+    fn rejects_invalid_hex_color_tokens() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Tokens,
+                "Brand",
+                vec![statement(&["color", "brand", "#12"])],
+            )],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("valid color token"));
     }
 }
