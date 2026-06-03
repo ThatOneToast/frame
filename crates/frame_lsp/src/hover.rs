@@ -1,9 +1,22 @@
-use frame_core::knowledge;
+use frame_core::{knowledge, symbols::SymbolIndex};
 
+#[allow(dead_code)]
 pub fn hover_doc_at(source: &str, offset: usize) -> Option<String> {
+    hover_doc_at_with_symbols(source, offset, None)
+}
+
+pub fn hover_doc_at_with_symbols(
+    source: &str,
+    offset: usize,
+    symbols: Option<&SymbolIndex>,
+) -> Option<String> {
     let word = word_at(source, offset)?;
     let line = line_at(source, offset);
     let words = line.split_whitespace().collect::<Vec<_>>();
+
+    if line.starts_with("#include") {
+        return Some(INCLUDE_DOC.to_string());
+    }
 
     match words.as_slice() {
         ["surface", "panel"] if word == "panel" || word == "surface" => {
@@ -22,6 +35,27 @@ pub fn hover_doc_at(source: &str, offset: usize) -> Option<String> {
             return Some(doc_for("width 25%", WIDTH_PERCENT_DOC))
         }
         _ => {}
+    }
+
+    if let Some(symbols) = symbols {
+        if let Some(color) = symbols.colors.get(word) {
+            return Some(format!(
+                "## `{}`\n\nCustom color token.\n\nValue:\n\n```css\n{}\n```\n\nUse it anywhere Frame accepts color intent, including `background`, `color`, `border`, `glow`, and `ring`.\n\n### Frame\n\n```frame\ncard BrandCard {{\n  background {}\n  color {}\n}}\n```",
+                color.name,
+                color.value.as_deref().unwrap_or("custom color"),
+                color.name,
+                color.name
+            ));
+        }
+
+        if let Some(gradient) = symbols.gradients.get(word) {
+            return Some(format!(
+                "## `{}`\n\nCustom gradient token.\n\nGenerated behavior:\n\n```css\n{}\n```\n\nUse it for hero cards, highlighted dashboard cards, panels, and sign-in screens.\n\n### Frame\n\n```frame\ncard HeroCard {{\n  background {}\n  color white\n}}\n```",
+                gradient.name,
+                gradient.value.as_deref().unwrap_or("linear-gradient(...)"),
+                gradient.name
+            ));
+        }
     }
 
     hover_doc(word)
@@ -61,6 +95,10 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "radius" => "Sets corner shape with named values like small, large, pill, or none.",
         "border" => "Sets border intent with named styles like soft, accent, danger, or none.",
         "shadow" => "Sets depth using named shadow values like soft, medium, or deep.",
+        "transition" => TRANSITION_DOC,
+        "duration" => "Sets motion duration intent. Use `fast`, `normal`, or `slow` with transitions and animations.",
+        "ease" => "Sets easing intent. Use `linear`, `smooth`, `bounce`, or `sharp` to describe motion feel.",
+        "animation" | "animate" => ANIMATION_DOC,
         "height" => "Sets height intent with values such as screen, fill, content, or percentages.\nGenerated CSS writes `height`, with `screen` becoming `100vh`.",
         "width" => "Sets width intent with values such as fill, content, screen, sidebar, or percentages.\nGenerated CSS writes `width`.",
         "min-width" => "Sets minimum width intent using named sizes or percentages.",
@@ -192,6 +230,67 @@ Svelte example:
 const SURFACE_GLASS_DOC: &str = "surface glass\n\nA translucent surface for overlays, floating panels, and command palettes.\nGenerated CSS uses `background: var(--frame-surface-glass);`.";
 const SURFACE_GRADIENT_DOC: &str = "surface gradient\n\nApplies a named Frame gradient such as `dusk`, `midnight`, or `aurora`.\nUse gradients for feature cards, callouts, and interactive surfaces that need extra emphasis.";
 const WIDTH_PERCENT_DOC: &str = "width 25%\n\nMakes this item take a percentage of the available width.\nUseful for sidebars and split layouts.\nGenerated CSS writes values like `width: 25%;` or `height: 50%;`.";
+
+const INCLUDE_DOC: &str = r#"#include
+
+Includes another Frame file before the current declarations.
+
+Use it to split large style systems into focused files such as `tokens.frame`, `layout.frame`, and `cards.frame`.
+
+Frame:
+
+#include tokens
+#include ./styles/cards.frame
+
+card LocalCard {
+  surface panel
+  padding medium
+}
+
+CLI:
+
+frame compile src/lib/frame/app.frame --out src/lib/frame --include src/lib/frame
+
+Docs: `docs/imports.md`"#;
+
+const TRANSITION_DOC: &str = r#"transition
+
+Sets named transition intent for interactive changes.
+
+Use `transition smooth` on a component or inside `hover`, `focus`, and `active` blocks.
+
+Frame:
+
+card HoverCard {
+  transition smooth
+
+  hover {
+    lift small
+    glow accent
+    transition fast
+  }
+}
+
+Generated CSS writes predictable transition timing such as `all 200ms ease`.
+
+Docs: `docs/animations.md`"#;
+
+const ANIMATION_DOC: &str = r#"animation
+
+Applies a named entrance or emphasis animation.
+
+Common values: `fade-in`, `slide-up`, `pop-in`, `pulse`, and `none`.
+
+Frame:
+
+card Notice {
+  surface panel
+  animation pop-in
+}
+
+Generated CSS uses deterministic keyframes such as `frame-pop-in`.
+
+Docs: `docs/animations.md`"#;
 
 const GRID_DOC: &str = r#"grid
 

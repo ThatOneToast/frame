@@ -21,7 +21,12 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
         }
 
         let first = words[0].trim_end_matches('{');
-        if knowledge::declaration_keywords().contains(&first) {
+        if first == "#include" {
+            push_word(line, line_index, first, 0, &mut raw);
+            if let Some(target) = words.get(1) {
+                push_word(line, line_index, target, 4, &mut raw);
+            }
+        } else if knowledge::declaration_keywords().contains(&first) {
             push_word(line, line_index, first, 0, &mut raw);
             if let Some(name) = words.get(1) {
                 push_word(line, line_index, name.trim_end_matches('{'), 1, &mut raw);
@@ -35,7 +40,9 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                 let token_type =
                     if value.ends_with('%') || value.chars().all(|c| c.is_ascii_digit()) {
                         5
-                    } else if tokens::COLORS.contains(&value) || tokens::SURFACES.contains(&value) {
+                    } else if value.starts_with('#') {
+                        4
+                    } else if is_known_value(value) {
                         3
                     } else {
                         4
@@ -77,6 +84,27 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
         result_id: None,
         data,
     }
+}
+
+fn is_known_value(value: &str) -> bool {
+    tokens::COLORS.contains(&value)
+        || tokens::SURFACES.contains(&value)
+        || tokens::SPACING.contains(&value)
+        || tokens::RADII.contains(&value)
+        || tokens::SHADOWS.contains(&value)
+        || tokens::ALIGN.contains(&value)
+        || tokens::JUSTIFY.contains(&value)
+        || tokens::POSITIONS.contains(&value)
+        || tokens::ANCHORS.contains(&value)
+        || tokens::EDGES.contains(&value)
+        || tokens::GRADIENT_TYPES.contains(&value)
+        || tokens::GRADIENT_CORNERS.contains(&value)
+        || tokens::TRANSITIONS.contains(&value)
+        || tokens::DURATIONS.contains(&value)
+        || tokens::EASES.contains(&value)
+        || tokens::ANIMATIONS.contains(&value)
+        || tokens::BORDER_STYLES.contains(&value)
+        || tokens::Z_LAYERS.contains(&value)
 }
 
 fn push_word(

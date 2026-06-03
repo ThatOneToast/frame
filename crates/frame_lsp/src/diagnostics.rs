@@ -1,6 +1,8 @@
+use std::{collections::HashSet, fs, path::Path};
+
 use frame_core::{semantic::validate, Diagnostic as FrameDiagnostic, Severity, Span};
 use frame_parser::parse;
-use tower_lsp::lsp_types::{Diagnostic as LspDiagnostic, DiagnosticSeverity, Position, Range};
+use tower_lsp::lsp_types::{Diagnostic as LspDiagnostic, DiagnosticSeverity, Position, Range, Url};
 
 use crate::embedded::{frame_blocks, map_diagnostic_from_block};
 
@@ -20,11 +22,192 @@ pub fn diagnostics_for_source(source: &str) -> Vec<FrameDiagnostic> {
     diagnostics_for_frame_source(source)
 }
 
+pub fn diagnostics_for_uri(source: &str, uri: &Url) -> Vec<FrameDiagnostic> {
+    let mut diagnostics = diagnostics_for_source_with_imports(source, uri);
+    diagnostics.extend(include_diagnostics(source, uri));
+    diagnostics
+}
+
+fn diagnostics_for_source_with_imports(source: &str, uri: &Url) -> Vec<FrameDiagnostic> {
+    let prefix = included_source_prefix(source, uri);
+    if prefix.is_empty() {
+        return diagnostics_for_source(source);
+    }
+
+    let prefix_len = prefix.len() + 1;
+    let merged = format!("{prefix}\n{source}");
+    diagnostics_for_source(&merged)
+        .into_iter()
+        .filter_map(|mut diagnostic| {
+            if diagnostic.span.start < prefix_len {
+                return None;
+            }
+            diagnostic.span.start -= prefix_len;
+            diagnostic.span.end = diagnostic.span.end.saturating_sub(prefix_len);
+            Some(diagnostic)
+        })
+        .collect()
+}
+
 fn diagnostics_for_frame_source(source: &str) -> Vec<FrameDiagnostic> {
     match parse(source) {
         Ok(document) => validate(&document),
         Err(error) => error.diagnostics,
     }
+}
+
+fn include_diagnostics(source: &str, uri: &Url) -> Vec<FrameDiagnostic> {
+    let Ok(path) = uri.to_file_path() else {
+        return Vec::new();
+    };
+    let Some(parent) = path.parent() else {
+        return Vec::new();
+    };
+
+    source
+        .lines()
+        .scan(0usize, |offset, line| {
+            let start = *offset;
+            *offset += line.len() + 1;
+            Some((start, line))
+        })
+        .filter_map(|(line_start, line)| {
+            let trimmed = line.trim_start();
+            if !trimmed.starts_with("#include") {
+                return None;
+            }
+            let target = trimmed.split_whitespace().nth(1)?;
+            let target_start = line_start + line.find(target).unwrap_or(0);
+            let target_path = include_candidate(parent, target);
+            if !target_path.exists() {
+                return Some(FrameDiagnostic::error(
+                    format!(
+                        "Could not resolve include `{target}`.\n\nSearched:\n- {}",
+                        target_path.display()
+                    ),
+                    Span {
+                        start: target_start,
+                        end: target_start + target.len(),
+                    },
+                ));
+            }
+
+            let root = fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
+            let mut stack = vec![root];
+            let mut seen = HashSet::new();
+            detect_cycle(&target_path, &mut stack, &mut seen).map(|cycle| {
+                FrameDiagnostic::error(
+                    format!(
+                        "Include cycle detected:\n\n{}\n\nRemove one include to break the cycle.",
+                        cycle
+                    ),
+                    Span {
+                        start: target_start,
+                        end: target_start + target.len(),
+                    },
+                )
+            })
+        })
+        .collect()
+}
+
+fn include_candidate(parent: &Path, target: &str) -> std::path::PathBuf {
+    let candidate = parent.join(target);
+    if candidate.extension().is_some() {
+        candidate
+    } else {
+        candidate.with_extension("frame")
+    }
+}
+
+fn included_source_prefix(source: &str, uri: &Url) -> String {
+    let Ok(path) = uri.to_file_path() else {
+        return String::new();
+    };
+    let Some(parent) = path.parent() else {
+        return String::new();
+    };
+
+    let mut seen = HashSet::new();
+    source
+        .lines()
+        .filter_map(|line| {
+            let trimmed = line.trim_start();
+            if !trimmed.starts_with("#include") {
+                return None;
+            }
+            let target = trimmed.split_whitespace().nth(1)?;
+            let candidate = include_candidate(parent, target);
+            read_include_recursive(&candidate, &mut seen)
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn read_include_recursive(path: &Path, seen: &mut HashSet<std::path::PathBuf>) -> Option<String> {
+    let canonical = fs::canonicalize(path).ok()?;
+    if !seen.insert(canonical.clone()) {
+        return None;
+    }
+    let source = fs::read_to_string(&canonical).ok()?;
+    let parent = canonical.parent()?;
+    let prefix = source
+        .lines()
+        .filter_map(|line| {
+            let trimmed = line.trim_start();
+            if !trimmed.starts_with("#include") {
+                return None;
+            }
+            let target = trimmed.split_whitespace().nth(1)?;
+            read_include_recursive(&include_candidate(parent, target), seen)
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    Some(if prefix.is_empty() {
+        source
+    } else {
+        format!("{prefix}\n{source}")
+    })
+}
+
+fn detect_cycle(
+    path: &Path,
+    stack: &mut Vec<std::path::PathBuf>,
+    seen: &mut HashSet<std::path::PathBuf>,
+) -> Option<String> {
+    let canonical = fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    if let Some(index) = stack.iter().position(|item| item == &canonical) {
+        return Some(
+            stack[index..]
+                .iter()
+                .chain(std::iter::once(&canonical))
+                .map(|path| path.display().to_string())
+                .collect::<Vec<_>>()
+                .join(" -> "),
+        );
+    }
+    if !seen.insert(canonical.clone()) {
+        return None;
+    }
+
+    let source = fs::read_to_string(&canonical).ok()?;
+    let parent = canonical.parent()?.to_path_buf();
+    stack.push(canonical);
+    for line in source.lines() {
+        let trimmed = line.trim_start();
+        if !trimmed.starts_with("#include") {
+            continue;
+        }
+        let Some(target) = trimmed.split_whitespace().nth(1) else {
+            continue;
+        };
+        let candidate = include_candidate(&parent, target);
+        if let Some(cycle) = detect_cycle(&candidate, stack, seen) {
+            return Some(cycle);
+        }
+    }
+    stack.pop();
+    None
 }
 
 pub fn to_lsp_diagnostic(source: &str, diagnostic: FrameDiagnostic) -> LspDiagnostic {

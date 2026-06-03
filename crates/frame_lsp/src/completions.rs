@@ -1,4 +1,6 @@
-use frame_core::{knowledge, tokens};
+use frame_core::{knowledge, symbols::index_document, tokens};
+use frame_parser::parse;
+use std::path::PathBuf;
 
 use crate::context::{completion_context, CompletionScope};
 
@@ -51,17 +53,39 @@ const SNIPPETS: &[FrameSnippet] = &[
 ];
 
 const GRID_PROPERTIES: &[&str] = &[
-    "columns", "rows", "gap", "height", "width", "padding", "surface", "align", "justify",
+    "columns", "rows", "flow", "section", "gap", "height", "width", "padding", "surface", "align",
+    "justify", "anchor",
 ];
 
 const AREA_PROPERTIES: &[&str] = &[
     "in", "place", "col", "row", "span", "surface", "padding", "margin", "width", "height",
-    "align", "justify", "border", "shadow",
+    "align", "justify", "border", "shadow", "anchor",
 ];
 
 const CARD_PROPERTIES: &[&str] = &[
-    "surface", "padding", "margin", "radius", "border", "shadow", "text", "color", "width",
-    "height", "align", "justify", "hover", "focus", "active", "disabled",
+    "surface",
+    "background",
+    "padding",
+    "margin",
+    "radius",
+    "border",
+    "shadow",
+    "text",
+    "color",
+    "width",
+    "height",
+    "align",
+    "justify",
+    "anchor",
+    "transition",
+    "duration",
+    "ease",
+    "animation",
+    "advanced",
+    "hover",
+    "focus",
+    "active",
+    "disabled",
 ];
 
 const COMMON_PROPERTIES: &[&str] = &[
@@ -78,6 +102,26 @@ const COMMON_PROPERTIES: &[&str] = &[
     "background",
     "border",
     "shadow",
+    "transition",
+    "animation",
+    "advanced",
+];
+
+const TOKEN_PROPERTIES: &[&str] = &["color", "gradient"];
+const GRADIENT_PROPERTIES: &[&str] = &["type", "angle", "stop", "corner"];
+const ADVANCED_PROPERTIES: &[&str] = &["css"];
+const SECTION_PROPERTIES: &[&str] = &[
+    "padding",
+    "margin",
+    "gap",
+    "align",
+    "justify",
+    "width",
+    "height",
+    "min-width",
+    "max-width",
+    "min-height",
+    "max-height",
 ];
 
 const COLUMN_VALUES: &[&str] = &[
@@ -94,7 +138,7 @@ const COLUMN_VALUES: &[&str] = &[
 ];
 
 const ROW_VALUES: &[&str] = &["auto", "fill", "header", "main", "content", "footer"];
-const GRADIENT_VALUES: &[&str] = &["dusk", "midnight", "aurora"];
+const GRADIENT_VALUES: &[&str] = &["dusk", "midnight", "aurora", "ember", "ocean", "forest"];
 const BORDER_WIDTH_VALUES: &[&str] = &["small", "medium", "large"];
 
 const SURFACE_VALUES: &[&str] = &[
@@ -103,9 +147,15 @@ const SURFACE_VALUES: &[&str] = &[
     "glass",
     "raised",
     "flat",
+    "overlay",
+    "inset",
+    "sunken",
     "gradient dusk",
     "gradient midnight",
     "gradient aurora",
+    "gradient ember",
+    "gradient ocean",
+    "gradient forest",
 ];
 
 const PERCENT_SIZE_VALUES: &[&str] = &[
@@ -117,19 +167,74 @@ const TYPOGRAPHY: &[&str] = &[
     "heading", "body", "caption", "mono", "bold", "semibold", "normal", "thin",
 ];
 
+#[cfg(test)]
 pub fn completions_at(source: &str, offset: usize) -> Vec<CompletionSuggestion> {
+    completions_at_with_includes(source, offset, Vec::new())
+}
+
+pub fn completions_at_with_includes(
+    source: &str,
+    offset: usize,
+    include_files: Vec<PathBuf>,
+) -> Vec<CompletionSuggestion> {
     let context = completion_context(source, offset);
     let line_words = line_words_at(source, offset);
+    let line = line_at(source, offset);
+    let symbols = parse(source)
+        .ok()
+        .map(|document| index_document(source, &document))
+        .unwrap_or_default();
+
+    if line.trim_start().starts_with("#include") {
+        return include_suggestions(include_files);
+    }
+
+    if is_inside_block(source, offset, "gradient") {
+        if let Some(property) = line_words.first() {
+            return value_completions(property, &line_words, &symbols);
+        }
+        return suggestions(
+            GRADIENT_PROPERTIES,
+            "gradient property",
+            "Property inside a custom gradient token.",
+        );
+    }
+
+    if is_inside_block(source, offset, "advanced") {
+        return suggestions(
+            ADVANCED_PROPERTIES,
+            "advanced css",
+            "Explicit scoped CSS escape hatch.",
+        );
+    }
+
+    if is_inside_block(source, offset, "section") {
+        if let Some(property) = line_words.first() {
+            return value_completions(property, &line_words, &symbols);
+        }
+        return suggestions(
+            SECTION_PROPERTIES,
+            "section property",
+            "Spacing, sizing, and alignment for a named grid section.",
+        );
+    }
 
     match context.scope {
         CompletionScope::Root => {
             let mut items = suggestions(DECLARATIONS, "declaration", "Starts a Frame declaration.");
+            items.push(CompletionSuggestion {
+                label: "#include".to_string(),
+                detail: "include",
+                documentation: include_documentation(),
+                insert_text: Some("#include ".to_string()),
+                is_snippet: false,
+            });
             items.extend(snippet_suggestions());
             items
         }
         CompletionScope::State { property } => property
             .as_deref()
-            .map(|property| value_completions(property, &line_words))
+            .map(|property| value_completions(property, &line_words, &symbols))
             .filter(|items| !items.is_empty())
             .unwrap_or_else(|| {
                 suggestions(
@@ -166,10 +271,15 @@ pub fn completions_at(source: &str, offset: usize) -> Vec<CompletionSuggestion> 
                     _ => {}
                 }
 
-                return value_completions(&property, &line_words);
+                return value_completions(&property, &line_words, &symbols);
             }
 
             match kind.as_str() {
+                "tokens" => suggestions(
+                    TOKEN_PROPERTIES,
+                    "token property",
+                    "Token definition for reusable colors and gradients.",
+                ),
                 "grid" => suggestions(
                     GRID_PROPERTIES,
                     "grid property",
@@ -195,7 +305,11 @@ pub fn completions_at(source: &str, offset: usize) -> Vec<CompletionSuggestion> 
     }
 }
 
-fn value_completions(keyword: &str, line_words: &[String]) -> Vec<CompletionSuggestion> {
+fn value_completions(
+    keyword: &str,
+    line_words: &[String],
+    symbols: &frame_core::symbols::SymbolIndex,
+) -> Vec<CompletionSuggestion> {
     match keyword {
         "columns" if line_words.get(1).map(String::as_str) == Some("responsive") => suggestions(
             &["cards"],
@@ -211,6 +325,11 @@ fn value_completions(keyword: &str, line_words: &[String]) -> Vec<CompletionSugg
             ROW_VALUES,
             "row value",
             "Named or automatic grid row value.",
+        ),
+        "flow" => suggestions(
+            tokens::GRID_FLOWS,
+            "grid flow",
+            "Use `vertical` to stack named columns as rows.",
         ),
         "place" => suggestions(
             COLUMN_VALUES,
@@ -229,22 +348,62 @@ fn value_completions(keyword: &str, line_words: &[String]) -> Vec<CompletionSugg
             "Number of grid tracks to span.",
         ),
         "surface" if line_words.get(1).map(String::as_str) == Some("gradient") => {
-            suggestions(GRADIENT_VALUES, "gradient", "Named Frame gradient.")
+            let mut items = suggestions(GRADIENT_VALUES, "gradient", "Named Frame gradient.");
+            items.extend(dynamic_suggestions(
+                symbols.gradient_names(),
+                "custom gradient",
+                "Custom gradient token from the project graph.",
+            ));
+            items
         }
-        "surface" => suggestions(
-            SURFACE_VALUES,
-            "surface value",
-            "Named visual surface or gradient.",
-        ),
-        "background" => suggestions(
-            &[
-                "main", "panel", "accent", "danger", "success", "warning", "info",
-            ],
-            "background value",
-            "Surface or semantic color background.",
-        ),
+        "surface" => {
+            let mut items = suggestions(
+                SURFACE_VALUES,
+                "surface value",
+                "Named visual surface or gradient.",
+            );
+            items.extend(dynamic_suggestions(
+                symbols.color_names(),
+                "custom color",
+                "Custom color token from the project graph.",
+            ));
+            items.extend(dynamic_suggestions(
+                symbols.gradient_names(),
+                "custom gradient",
+                "Custom gradient token from the project graph.",
+            ));
+            items
+        }
+        "background" => {
+            let mut items = suggestions(
+                &[
+                    "main", "panel", "accent", "danger", "success", "warning", "info",
+                ],
+                "background value",
+                "Surface, color, or gradient background.",
+            );
+            items.extend(dynamic_suggestions(
+                symbols.color_names(),
+                "custom color",
+                "Custom color token from the project graph.",
+            ));
+            items.extend(dynamic_suggestions(
+                symbols.gradient_names(),
+                "custom gradient",
+                "Custom gradient token from the project graph.",
+            ));
+            items
+        }
         "padding" | "margin" | "gap" | "radius" => {
-            suggestions(tokens::SPACING, "space value", "Named spacing token.")
+            let mut items = suggestions(tokens::SPACING, "space value", "Named spacing token.");
+            if matches!(keyword, "padding" | "margin") {
+                items.extend(suggestions(
+                    tokens::EDGES,
+                    "box edge",
+                    "Target one side or axis, such as `padding top medium`.",
+                ));
+            }
+            items
         }
         "shadow" => suggestions(tokens::SHADOWS, "shadow value", "Named shadow depth."),
         "width" | "height" | "min-width" | "max-width" | "min-height" | "max-height" => {
@@ -255,9 +414,20 @@ fn value_completions(keyword: &str, line_words: &[String]) -> Vec<CompletionSugg
             )
         }
         "theme" | "text" | "color" | "glow" | "ring" => {
-            suggestions(tokens::COLORS, "color value", "Named color intent.")
+            let mut items = suggestions(tokens::COLORS, "color value", "Named color intent.");
+            items.extend(dynamic_suggestions(
+                symbols.color_names(),
+                "custom color",
+                "Custom color token from the project graph.",
+            ));
+            items
         }
         "align" => suggestions(tokens::ALIGN, "alignment value", "Cross-axis alignment."),
+        "anchor" => suggestions(
+            tokens::ANCHORS,
+            "anchor value",
+            "Anchor this declaration to an edge using sticky positioning.",
+        ),
         "justify" => suggestions(
             tokens::JUSTIFY,
             "justification value",
@@ -266,10 +436,68 @@ fn value_completions(keyword: &str, line_words: &[String]) -> Vec<CompletionSugg
         "border" if line_words.get(1).map(String::as_str) == Some("width") => {
             suggestions(BORDER_WIDTH_VALUES, "border width", "Named border width.")
         }
-        "border" => suggestions(
-            &["none", "soft", "accent", "danger", "success", "width"],
-            "border value",
-            "Named border style.",
+        "border" => {
+            let mut items = suggestions(
+                &[
+                    "none", "soft", "strong", "accent", "muted", "danger", "success", "warning",
+                    "width", "radius",
+                ],
+                "border value",
+                "Named border style.",
+            );
+            items.extend(dynamic_suggestions(
+                symbols.color_names(),
+                "custom color",
+                "Custom color token from the project graph.",
+            ));
+            items
+        }
+        "transition" => suggestions(
+            tokens::TRANSITIONS,
+            "transition value",
+            "Named transition intent.",
+        ),
+        "duration" => suggestions(
+            tokens::DURATIONS,
+            "duration value",
+            "Named duration intent.",
+        ),
+        "ease" => suggestions(tokens::EASES, "ease value", "Named easing intent."),
+        "animation" | "animate" => suggestions(
+            tokens::ANIMATIONS,
+            "animation value",
+            "Named animation intent.",
+        ),
+        "type" => suggestions(
+            tokens::GRADIENT_TYPES,
+            "gradient type",
+            "Gradient type. `layered` can combine corner gradients with linear stops.",
+        ),
+        "angle" => suggestions(
+            &[
+                "0deg", "45deg", "90deg", "135deg", "180deg", "225deg", "270deg",
+            ],
+            "gradient angle",
+            "Linear gradient angle.",
+        ),
+        "stop" => {
+            let mut items = suggestions(tokens::COLORS, "gradient color", "Gradient stop color.");
+            items.extend(dynamic_suggestions(
+                symbols.color_names(),
+                "custom color",
+                "Custom color token from the project graph.",
+            ));
+            items
+        }
+        "corner" => suggestions(
+            tokens::GRADIENT_CORNERS,
+            "gradient corner",
+            "Adds a radial gradient layer from a corner.",
+        ),
+        "gradient" => dynamic_suggestions(
+            symbols.gradient_names(),
+            "custom gradient",
+            "Custom gradient token from the project graph.",
         ),
         "font" | "size" | "weight" | "line" | "letter" => {
             suggestions(TYPOGRAPHY, "type value", "Typography token.")
@@ -279,6 +507,58 @@ fn value_completions(keyword: &str, line_words: &[String]) -> Vec<CompletionSugg
         }
         _ => Vec::new(),
     }
+}
+
+fn is_inside_block(source: &str, offset: usize, block: &str) -> bool {
+    let safe_offset = offset.min(source.len());
+    let mut stack = Vec::new();
+    let mut line_start = 0usize;
+
+    for (index, character) in source[..safe_offset].char_indices() {
+        match character {
+            '\n' => line_start = index + 1,
+            '{' => {
+                let header = source[line_start..index].trim();
+                stack.push(header.to_string());
+            }
+            '}' => {
+                stack.pop();
+            }
+            _ => {}
+        }
+    }
+
+    stack
+        .last()
+        .is_some_and(|header| header == block || header.starts_with(&format!("{block} ")))
+}
+
+fn include_suggestions(mut include_files: Vec<PathBuf>) -> Vec<CompletionSuggestion> {
+    include_files.sort();
+    include_files.dedup();
+    include_files
+        .into_iter()
+        .filter_map(|path| {
+            let label = path
+                .file_stem()
+                .and_then(|stem| stem.to_str())
+                .map(ToOwned::to_owned)?;
+            Some(CompletionSuggestion {
+                label,
+                detail: "Frame include",
+                documentation: include_documentation(),
+                insert_text: path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .map(ToOwned::to_owned),
+                is_snippet: false,
+            })
+        })
+        .collect()
+}
+
+fn include_documentation() -> String {
+    "Includes another Frame file before the current declarations.\n\nWhere: root of a `.frame` file.\n\nFrame:\n\n```frame\n#include tokens\n#include ./cards.frame\n\ncard LocalCard {\n  surface panel\n  padding medium\n}\n```\n\nSvelte:\n\n```svelte\n<script lang=\"ts\">\n  import { ui } from '$lib/frame/generated';\n  import '$lib/frame/generated.css';\n</script>\n```\n\nRelated: `tokens`, `grid`, `area`\n\nDocs: `docs/imports.md`".to_string()
 }
 
 fn suggestions(
@@ -343,6 +623,14 @@ fn line_words_at(source: &str, offset: usize) -> Vec<String> {
         .collect()
 }
 
+fn line_at(source: &str, offset: usize) -> &str {
+    let safe_offset = offset.min(source.len());
+    let start = source[..safe_offset]
+        .rfind('\n')
+        .map_or(0, |index| index + 1);
+    &source[start..safe_offset]
+}
+
 fn completion_documentation(label: &str) -> Option<String> {
     Some(match label {
         "tokens" => "Declares reusable design tokens for a Frame file.",
@@ -359,6 +647,8 @@ fn completion_documentation(label: &str) -> Option<String> {
         "dock" => "Defines a docked command region. Current output docks to the bottom; use `row NavBar` for top navigation.",
         "columns" => "Defines grid columns. Examples: `columns sidebar content`, `columns 25% 50% 25%`, `columns responsive cards`.",
         "rows" => "Defines grid rows. Examples: `rows header main footer` or `rows auto fill auto`.",
+        "flow" => "Controls grid section direction. Use `flow vertical` to stack named `columns` as rows.",
+        "section" => "Starts spacing and alignment controls for a named grid section.\n\nExample:\n\nsection title {\n  padding bottom small\n}",
         "gap" => "Sets spacing between children using `none`, `small`, `medium`, `large`, or `xlarge`.",
         "height" => "Sets height intent. Use `screen`, `fill`, `content`, `auto`, or percentages like `50%`.",
         "width" => "Sets width intent. Use `fill`, `content`, `sidebar`, `narrow`, `wide`, or percentages like `25%`.",
@@ -376,6 +666,8 @@ fn completion_documentation(label: &str) -> Option<String> {
         "shadow" => "Sets depth using shadow tokens like `soft`, `medium`, or `deep`.",
         "color" => "Sets text color using semantic color tokens.",
         "background" => "Sets background with surface or semantic color tokens.",
+        "advanced" => "Starts an explicit escape hatch block for scoped raw CSS declarations.\n\nExample:\n\nadvanced {\n  css \"backdrop-filter\" blur(12px)\n}",
+        "gradient" => "Defines or selects a structured gradient token.\n\nToken example:\n\ngradient hero-gradient {\n  type linear\n  angle 135deg\n  stop brand-purple 0%\n  stop brand-panel 100%\n}",
         "theme" => "Applies semantic color intent to text and border.",
         "hover" => "Starts hover effects. Only effect keywords are valid inside.",
         "focus" => "Starts keyboard focus effects, usually `ring accent`.",
@@ -442,6 +734,14 @@ mod tests {
             .collect()
     }
 
+    fn labels_at(source: &str, marker: &str) -> Vec<String> {
+        let offset = source.find(marker).expect("marker should exist") + marker.len();
+        completions_at(source, offset)
+            .into_iter()
+            .map(|item| item.label)
+            .collect()
+    }
+
     #[test]
     fn root_scope_only_suggests_declarations() {
         let labels = labels_for("");
@@ -471,6 +771,23 @@ mod tests {
     }
 
     #[test]
+    fn grid_flow_and_section_blocks_have_contextual_completions() {
+        let labels = labels_for("grid HoverCardInfo {\n  flow ");
+
+        assert_eq!(
+            labels,
+            vec!["horizontal".to_string(), "vertical".to_string()]
+        );
+
+        let labels = labels_for("grid HoverCardInfo {\n  section title {\n    ");
+
+        assert!(labels.contains(&"padding".to_string()));
+        assert!(labels.contains(&"margin".to_string()));
+        assert!(labels.contains(&"align".to_string()));
+        assert!(!labels.contains(&"surface".to_string()));
+    }
+
+    #[test]
     fn area_in_suggests_grid_names() {
         let labels =
             labels_for("grid Dashboard {\n  columns sidebar content\n}\narea Sidebar {\n  in ");
@@ -485,6 +802,35 @@ mod tests {
         );
 
         assert_eq!(labels, vec!["content".to_string(), "sidebar".to_string()]);
+    }
+
+    #[test]
+    fn styling_values_suggest_custom_colors_and_gradients() {
+        let labels = labels_at(
+            "tokens Brand {\n  color brand-panel #181820\n  color brand-text #f8fafc\n  gradient hero-gradient {\n    type linear\n    angle 135deg\n    stop brand-panel 0%\n    stop brand-text 100%\n  }\n}\ncard Hero {\n  background \n}\n",
+            "background ",
+        );
+
+        assert!(labels.contains(&"brand-panel".to_string()));
+        assert!(labels.contains(&"hero-gradient".to_string()));
+
+        let labels = labels_at(
+            "tokens Brand {\n  color brand-panel #181820\n}\ncard Hero {\n  border \n}\n",
+            "border ",
+        );
+        assert!(labels.contains(&"brand-panel".to_string()));
+    }
+
+    #[test]
+    fn gradient_blocks_suggest_gradient_properties_and_values() {
+        let labels = labels_for("tokens Brand {\n  gradient hero {\n    ");
+
+        assert!(labels.contains(&"type".to_string()));
+        assert!(labels.contains(&"stop".to_string()));
+        assert!(labels.contains(&"corner".to_string()));
+
+        let labels = labels_for("tokens Brand {\n  gradient hero {\n    corner ");
+        assert!(labels.contains(&"top-left".to_string()));
     }
 
     #[test]
@@ -535,7 +881,10 @@ mod tests {
             vec![
                 "dusk".to_string(),
                 "midnight".to_string(),
-                "aurora".to_string()
+                "aurora".to_string(),
+                "ember".to_string(),
+                "ocean".to_string(),
+                "forest".to_string()
             ]
         );
         assert_eq!(
@@ -557,5 +906,19 @@ mod tests {
 
         assert!(item.documentation.contains("columns sidebar content"));
         assert!(item.documentation.contains("columns responsive cards"));
+    }
+
+    #[test]
+    fn include_line_suggests_frame_files() {
+        let labels = completions_at_with_includes(
+            "#include ",
+            "#include ".len(),
+            vec![PathBuf::from("tokens.frame"), PathBuf::from("cards.frame")],
+        )
+        .into_iter()
+        .map(|item| item.label)
+        .collect::<Vec<_>>();
+
+        assert_eq!(labels, vec!["cards".to_string(), "tokens".to_string()]);
     }
 }
