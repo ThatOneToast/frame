@@ -1,0 +1,22 @@
+card DemoCard {
+  surface gradient aurora
+  padding large
+  radius large
+  shadow floating
+  transition smooth
+  duration normal
+  ease bounce
+  animation pop-in
+
+  hover {
+    lift small
+    glow accent
+    brighten subtle
+    transition fast
+  }
+
+  active {
+    press
+    scale small
+  }
+}

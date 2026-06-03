@@ -1,0 +1,38 @@
+grid Dashboard {
+  columns sidebar content inspector
+  rows header content
+  gap medium
+  height screen
+}
+
+area Sidebar {
+  in Dashboard
+  place sidebar
+  min-width medium
+  max-width wide
+  align stretch
+}
+
+dock AppDock {
+  position sticky bottom
+  offset small
+  z sticky
+  align center
+  justify between
+}
+
+grid HoverCardInfo {
+  flow vertical
+  columns title description
+  gap small
+  padding small
+  height narrow
+
+  section title {
+    padding bottom small
+  }
+
+  section description {
+    padding top none
+  }
+}

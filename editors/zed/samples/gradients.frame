@@ -1,0 +1,31 @@
+tokens Brand {
+  color brand-purple #7c3aed
+  color brand-blue #2563eb
+  color brand-bg #0f172a
+
+  gradient hero-gradient {
+    type linear
+    angle 135deg
+    stop brand-purple 0%
+    stop brand-blue 45%
+    stop brand-bg 100%
+  }
+
+  gradient corner-wash {
+    type layered
+    corner top-left brand-purple 65%
+    corner top-right brand-blue 65%
+    corner bottom-left brand-bg 70%
+    corner bottom-right #0f172a 70%
+  }
+}
+
+card HeroCard {
+  background corner-wash
+  color white
+  padding top large
+  padding x medium
+  radius large
+  shadow floating
+  anchor top
+}

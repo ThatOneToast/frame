@@ -20,6 +20,7 @@ const STATE_KEYWORDS = ["hover", "focus", "active", "disabled"];
 const PROPERTY_KEYWORDS = [
   "columns",
   "rows",
+  "flow",
   "gap",
   "height",
   "width",
@@ -32,11 +33,16 @@ const PROPERTY_KEYWORDS = [
   "theme",
   "text",
   "color",
+  "palette",
+  "tone",
+  "opacity",
   "padding",
+  "anchor",
   "margin",
   "radius",
   "border",
   "shadow",
+  "outline",
   "place",
   "in",
   "col",
@@ -52,6 +58,18 @@ const PROPERTY_KEYWORDS = [
   "weight",
   "line",
   "letter",
+  "transition",
+  "duration",
+  "ease",
+  "animation",
+  "animate",
+  "type",
+  "angle",
+  "stop",
+  "corner",
+  "at",
+  "shape",
+  "css",
 ];
 
 const EFFECT_KEYWORDS = [
@@ -77,7 +95,14 @@ module.exports = grammar({
   word: ($) => $.identifier,
 
   rules: {
-    source_file: ($) => repeat(choice($.declaration, $._newline)),
+    source_file: ($) => repeat(choice($.include, $.declaration, $._newline)),
+
+    include: ($) =>
+      seq(
+        field("keyword", $.include_keyword),
+        field("target", $.include_target),
+        $._newline,
+      ),
 
     declaration: ($) =>
       seq(
@@ -89,12 +114,21 @@ module.exports = grammar({
     block: ($) =>
       seq(
         "{",
-        repeat(choice($._newline, $.state_block, $.statement)),
+        repeat(choice($._newline, $.state_block, $.gradient_block, $.section_block, $.advanced_block, $.statement)),
         "}",
       ),
 
     state_block: ($) =>
       seq(field("name", $.state_keyword), $.block),
+
+    gradient_block: ($) =>
+      seq("gradient", field("name", $.identifier), $.block),
+
+    section_block: ($) =>
+      seq("section", field("name", $.identifier), $.block),
+
+    advanced_block: ($) =>
+      seq(field("name", $.special_block_keyword), $.block),
 
     statement: ($) =>
       seq(
@@ -109,17 +143,27 @@ module.exports = grammar({
 
     state_keyword: (_) => choice(...STATE_KEYWORDS),
 
+    special_block_keyword: (_) => "advanced",
+
     property_keyword: (_) => choice(...PROPERTY_KEYWORDS),
 
     effect_keyword: (_) => choice(...EFFECT_KEYWORDS),
 
-    value: ($) => choice($.identifier, $.percentage, $.number),
+    include_keyword: (_) => "#include",
+
+    include_target: (_) => /[^ \t\r\n]+/,
+
+    value: ($) => choice($.string, $.color_literal, $.identifier, $.percentage, $.number),
+
+    string: (_) => /"[^"\r\n]*"/,
 
     identifier: (_) => /[A-Za-z_][A-Za-z0-9_-]*/,
 
     percentage: (_) => /[0-9]+%/,
 
     number: (_) => /[0-9]+/,
+
+    color_literal: (_) => /#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?([0-9a-fA-F]{2})?/,
 
     comment: (_) => token(seq("//", /.*/)),
 

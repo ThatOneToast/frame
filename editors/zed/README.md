@@ -1,67 +1,68 @@
 # Frame Zed Extension
 
-This directory contains local Zed language support for Frame.
+This directory contains Zed language support for Frame, the CSS DSL for Svelte
+projects.
 
-## Current Support
+Repository: `https://github.com/ThatOneToast/frame`
+
+## Support
 
 - Associates `.frame` files with the Frame language.
-- Uses Tree-sitter for parsing and syntax highlighting.
-- Highlights declaration keywords, declaration names, state blocks, property words, values, and `//` comments.
-- Registers `frame_lsp` as the Frame language server for diagnostics, completions, hover docs, and formatting.
-- Registers `frame_lsp` only for `.frame` files. Svelte buffers keep their normal Svelte/CSS tooling.
-- Includes samples for layout, cards, and state blocks.
-
-Milestone 7 supports diagnostics, completions, hover docs, and document formatting. Code actions and rename are intentionally not implemented yet.
+- Uses Tree-sitter for syntax parsing and highlighting.
+- Highlights declarations, declaration names, `#include`, state blocks,
+  properties, values, numeric values, percentages, hex colors, and `//`
+  comments.
+- Registers `frame_lsp` for diagnostics, scope-aware completions, rich
+  completion docs, hover docs, formatting, document symbols, document links,
+  go-to-definition, references, code actions, semantic tokens, and folding.
+- Includes samples for layouts, colors, effects, gradients, imports, and broad
+  keyword highlighting.
 
 ## Local Installation
 
-1. Open Zed.
-2. Run `zed: install dev extension`.
-3. Select this directory:
-
-```txt
-editors/zed
-```
-
-For LSP support, build the LSP binary:
+1. Build the language server:
 
 ```bash
 cargo build -p frame_lsp
 ```
 
-The extension first checks `FRAME_LSP`, then searches for `frame_lsp` on `PATH`. When developing locally, it also falls back to:
+2. Open Zed.
+3. Run `zed: install dev extension`.
+4. Select this directory:
 
 ```txt
-/Users/whitebread/projects/svelte/frame/target/debug/frame_lsp
+editors/zed
 ```
 
-If you use the extension from another project, either install `frame_lsp` on `PATH` or launch Zed from a shell with the Frame target directory available:
+The extension resolves the server command in this order:
+
+1. `FRAME_LSP`
+2. `frame_lsp` on `PATH`
+3. `target/debug/frame_lsp` inside this repository checkout, when present
+
+You can point directly at the binary:
 
 ```bash
-PATH="/Users/whitebread/projects/svelte/frame/target/debug:$PATH" zed .
+FRAME_LSP="/path/to/frame/target/debug/frame_lsp" zed .
 ```
 
-You can also point directly at the binary:
+Or launch Zed with the binary on `PATH`:
 
 ```bash
-FRAME_LSP="/Users/whitebread/projects/svelte/frame/target/debug/frame_lsp" zed .
+PATH="/path/to/frame/target/debug:$PATH" zed .
 ```
 
-The local manifest uses a filesystem grammar repository:
+## Tree-Sitter Grammar
+
+The public extension metadata points at the public Frame repository:
 
 ```toml
 [grammars.frame]
-repository = "file:///Users/whitebread/projects/svelte/frame/editors/zed/tree-sitter-frame"
+repository = "https://github.com/ThatOneToast/frame"
 rev = "main"
 ```
 
-If this checkout moves, replace the repository value with the new absolute path:
-
-```toml
-repository = "file:///path/to/frame/editors/zed/tree-sitter-frame"
-```
-
-## Generate The Parser
+For local parser work, generate the grammar from the grammar directory:
 
 ```bash
 cd editors/zed/tree-sitter-frame
@@ -69,55 +70,98 @@ npm install
 npx tree-sitter generate --abi 14
 ```
 
-## Test Parsing
+Parse sample files:
 
 ```bash
 cd editors/zed/tree-sitter-frame
 npx tree-sitter parse --grammar-path . ../samples/app.frame
+npx tree-sitter parse --grammar-path . ../samples/highlighting.frame
+npx tree-sitter parse --grammar-path . ../samples/imports.frame
 npx tree-sitter parse --grammar-path . ../samples/grid.frame
 npx tree-sitter parse --grammar-path . ../samples/card.frame
 npx tree-sitter parse --grammar-path . ../samples/states.frame
 ```
 
-Malformed files should produce Tree-sitter `ERROR` nodes rather than crashing the parser. For a quick check:
-
-```bash
-cd editors/zed/tree-sitter-frame
-printf 'card Broken {\n  hover {\n    lift small\n}\n' > /tmp/broken.frame
-npx tree-sitter parse --grammar-path . /tmp/broken.frame
-```
-
-## Test Highlighting
+Test highlighting:
 
 ```bash
 cd editors/zed/tree-sitter-frame
 npx tree-sitter highlight --grammar-path . --query-paths queries/highlights.scm --check ../samples/app.frame
+npx tree-sitter highlight --grammar-path . --query-paths queries/highlights.scm --check ../samples/highlighting.frame
+npx tree-sitter highlight --grammar-path . --query-paths queries/highlights.scm --check ../samples/imports.frame
 ```
 
-In Zed, open `editors/zed/samples/app.frame` after installing the dev extension and confirm the buffer language is `Frame`.
+Check that `dock`, `min-height`, `align`, `text`, `justify`, `surface`,
+`background`, `border`, `transition`, `animation`, `#include`, percentages,
+numeric values, and hex colors are styled.
 
-For best editor support, put shared Frame code in `.frame` files. Inline Svelte `<style lang="frame">` blocks still compile through the Svelte preprocessor, but this extension does not attach `frame_lsp` to Svelte buffers because it conflicts with Svelte/CSS completions.
+## Examples
 
-For install failures, launch Zed from a terminal with foreground logs:
+```frame
+grid Dashboard {
+  columns sidebar content inspector
+  gap medium
+  height screen
+}
+
+area Sidebar {
+  in Dashboard
+  place sidebar
+  surface panel
+  padding medium
+}
+
+card ProjectCard {
+  surface gradient dusk
+  padding large
+  radius large
+  shadow medium
+
+  hover {
+    lift small
+    glow accent
+  }
+}
+```
+
+Svelte usage:
+
+```svelte
+<script lang="ts">
+  import { ui } from '$lib/frame/generated';
+  import '$lib/frame/generated.css';
+</script>
+
+<div class={ui.Dashboard}>
+  <aside class={ui.Sidebar}>Sidebar</aside>
+  <main class={ui.Content}>Content</main>
+</div>
+```
+
+## Svelte Style Blocks
+
+Inline Svelte `<style lang="frame">` blocks compile through the Svelte
+preprocessor, but this Zed extension registers `frame_lsp` only for `.frame`
+files. That avoids conflicts with Svelte and CSS tooling in `.svelte` buffers.
+
+For the best editor experience, keep shared Frame code in external `.frame`
+files and import the generated CSS/TypeScript from Svelte.
+
+## Troubleshooting
+
+For install or server launch failures, start Zed from a terminal:
 
 ```bash
 zed --foreground .
 ```
 
-## Test LSP Diagnostics
-
-```bash
-cargo build -p frame_lsp
-zed .
-```
-
-Then open a `.frame` file with an invalid declaration, duplicate declaration name, or invalid area placement. Zed should show diagnostics published by `frame_lsp`.
+Then open a `.frame` file with an invalid declaration, duplicate declaration
+name, or invalid area placement. Zed should show diagnostics from `frame_lsp`.
 
 ## Known Limitations
 
-- The grammar intentionally covers the current MVP language only.
-- Statement values are parsed as bare identifiers; semantic validity still belongs to the Rust compiler.
-- `hover`, `focus`, `active`, and `disabled` nested blocks are recognized.
-- Inline Svelte `<style lang="frame">` blocks compile through the preprocessor, but Frame LSP support is intentionally limited to `.frame` files.
-- The Zed extension does not download or build the server automatically yet.
-- The generated parser is intentionally emitted with Tree-sitter ABI 14 for broader Zed compatibility.
+- The extension does not download or build `frame_lsp` automatically yet.
+- Inline Svelte `<style lang="frame">` blocks compile, but full Zed LSP support
+  is intentionally limited to `.frame` files.
+- The generated parser is emitted with Tree-sitter ABI 14 for broader Zed
+  compatibility.

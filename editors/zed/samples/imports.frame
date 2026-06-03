@@ -1,0 +1,9 @@
+#include base
+#include dashboard
+#include cards
+#include ./styles/cards.frame
+
+card LocalCard {
+  surface panel
+  padding medium
+}

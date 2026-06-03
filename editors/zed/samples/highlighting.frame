@@ -1,0 +1,41 @@
+#include base
+#include dashboard
+#include ./styles/cards.frame
+
+tokens Brand {
+  color brand #7c3aed
+  color brand-muted #a78bfa
+  color page-bg #0f0f14
+}
+
+grid Dashboard {
+  columns 25% 50% 25%
+  rows header content footer
+  gap medium
+  height screen
+  background page-bg
+}
+
+dock AppDock {
+  position sticky bottom
+  surface panel
+  min-height small
+  align center
+  justify between
+  text bright
+}
+
+card DemoCard {
+  surface gradient dusk
+  border accent
+  border width medium
+  shadow medium
+  color bright
+  animation fade-in
+
+  hover {
+    lift small
+    glow accent
+    transition smooth
+  }
+}

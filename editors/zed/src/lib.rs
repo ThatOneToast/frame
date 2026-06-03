@@ -18,9 +18,7 @@ impl zed::Extension for FrameExtension {
             .find(|(key, _)| key == "FRAME_LSP")
             .map(|(_, value)| value.clone())
             .or_else(|| worktree.which("frame_lsp"))
-            .unwrap_or_else(|| {
-                "/Users/whitebread/projects/svelte/frame/target/debug/frame_lsp".to_string()
-            });
+            .unwrap_or_else(|| "target/debug/frame_lsp".to_string());
 
         Ok(zed::Command {
             command,

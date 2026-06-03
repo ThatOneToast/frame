@@ -1,5 +1,31 @@
 [
   {
+    "type": "advanced_block",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "special_block_keyword",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "block",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "block",
     "named": true,
     "fields": {},
@@ -7,6 +33,18 @@
       "multiple": true,
       "required": false,
       "types": [
+        {
+          "type": "advanced_block",
+          "named": true
+        },
+        {
+          "type": "gradient_block",
+          "named": true
+        },
+        {
+          "type": "section_block",
+          "named": true
+        },
         {
           "type": "state_block",
           "named": true
@@ -80,9 +118,87 @@
     "fields": {}
   },
   {
+    "type": "gradient_block",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "block",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "include",
+    "named": true,
+    "fields": {
+      "keyword": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "include_keyword",
+            "named": true
+          }
+        ]
+      },
+      "target": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "include_target",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "property_keyword",
     "named": true,
     "fields": {}
+  },
+  {
+    "type": "section_block",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "block",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "source_file",
@@ -95,6 +211,10 @@
       "types": [
         {
           "type": "declaration",
+          "named": true
+        },
+        {
+          "type": "include",
           "named": true
         }
       ]
@@ -174,6 +294,10 @@
       "required": true,
       "types": [
         {
+          "type": "color_literal",
+          "named": true
+        },
+        {
           "type": "identifier",
           "named": true
         },
@@ -183,6 +307,10 @@
         },
         {
           "type": "percentage",
+          "named": true
+        },
+        {
+          "type": "string",
           "named": true
         }
       ]
@@ -197,7 +325,27 @@
     "named": false
   },
   {
+    "type": "anchor",
+    "named": false
+  },
+  {
+    "type": "angle",
+    "named": false
+  },
+  {
+    "type": "animate",
+    "named": false
+  },
+  {
+    "type": "animation",
+    "named": false
+  },
+  {
     "type": "area",
+    "named": false
+  },
+  {
+    "type": "at",
     "named": false
   },
   {
@@ -237,6 +385,10 @@
     "named": false
   },
   {
+    "type": "color_literal",
+    "named": true
+  },
+  {
     "type": "columns",
     "named": false
   },
@@ -244,6 +396,14 @@
     "type": "comment",
     "named": true,
     "extra": true
+  },
+  {
+    "type": "corner",
+    "named": false
+  },
+  {
+    "type": "css",
+    "named": false
   },
   {
     "type": "dim",
@@ -258,7 +418,19 @@
     "named": false
   },
   {
+    "type": "duration",
+    "named": false
+  },
+  {
+    "type": "ease",
+    "named": false
+  },
+  {
     "type": "fade",
+    "named": false
+  },
+  {
+    "type": "flow",
     "named": false
   },
   {
@@ -275,6 +447,10 @@
   },
   {
     "type": "glow",
+    "named": false
+  },
+  {
+    "type": "gradient",
     "named": false
   },
   {
@@ -296,6 +472,14 @@
   {
     "type": "in",
     "named": false
+  },
+  {
+    "type": "include_keyword",
+    "named": true
+  },
+  {
+    "type": "include_target",
+    "named": true
   },
   {
     "type": "justify",
@@ -342,11 +526,23 @@
     "named": false
   },
   {
+    "type": "opacity",
+    "named": false
+  },
+  {
+    "type": "outline",
+    "named": false
+  },
+  {
     "type": "overlay",
     "named": false
   },
   {
     "type": "padding",
+    "named": false
+  },
+  {
+    "type": "palette",
     "named": false
   },
   {
@@ -390,7 +586,15 @@
     "named": false
   },
   {
+    "type": "section",
+    "named": false
+  },
+  {
     "type": "shadow",
+    "named": false
+  },
+  {
+    "type": "shape",
     "named": false
   },
   {
@@ -410,12 +614,24 @@
     "named": false
   },
   {
+    "type": "special_block_keyword",
+    "named": true
+  },
+  {
     "type": "split",
     "named": false
   },
   {
     "type": "stack",
     "named": false
+  },
+  {
+    "type": "stop",
+    "named": false
+  },
+  {
+    "type": "string",
+    "named": true
   },
   {
     "type": "surface",
@@ -431,6 +647,18 @@
   },
   {
     "type": "tokens",
+    "named": false
+  },
+  {
+    "type": "tone",
+    "named": false
+  },
+  {
+    "type": "transition",
+    "named": false
+  },
+  {
+    "type": "type",
     "named": false
   },
   {
