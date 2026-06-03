@@ -8,6 +8,7 @@ This directory contains local Zed language support for Frame.
 - Uses Tree-sitter for parsing and syntax highlighting.
 - Highlights declaration keywords, declaration names, state blocks, property words, values, and `//` comments.
 - Registers `frame_lsp` as the Frame language server for diagnostics, completions, hover docs, and formatting.
+- Registers `frame_lsp` only for `.frame` files. Svelte buffers keep their normal Svelte/CSS tooling.
 - Includes samples for layout, cards, and state blocks.
 
 Milestone 7 supports diagnostics, completions, hover docs, and document formatting. Code actions and rename are intentionally not implemented yet.
@@ -28,16 +29,22 @@ For LSP support, build the LSP binary:
 cargo build -p frame_lsp
 ```
 
-The extension first searches for `frame_lsp` on `PATH`. When developing inside this repository, it also falls back to:
+The extension first checks `FRAME_LSP`, then searches for `frame_lsp` on `PATH`. When developing locally, it also falls back to:
 
 ```txt
-target/debug/frame_lsp
+/Users/whitebread/projects/svelte/frame/target/debug/frame_lsp
 ```
 
 If you use the extension from another project, either install `frame_lsp` on `PATH` or launch Zed from a shell with the Frame target directory available:
 
 ```bash
 PATH="/Users/whitebread/projects/svelte/frame/target/debug:$PATH" zed .
+```
+
+You can also point directly at the binary:
+
+```bash
+FRAME_LSP="/Users/whitebread/projects/svelte/frame/target/debug/frame_lsp" zed .
 ```
 
 The local manifest uses a filesystem grammar repository:
@@ -89,6 +96,8 @@ npx tree-sitter highlight --grammar-path . --query-paths queries/highlights.scm 
 
 In Zed, open `editors/zed/samples/app.frame` after installing the dev extension and confirm the buffer language is `Frame`.
 
+For best editor support, put shared Frame code in `.frame` files. Inline Svelte `<style lang="frame">` blocks still compile through the Svelte preprocessor, but this extension does not attach `frame_lsp` to Svelte buffers because it conflicts with Svelte/CSS completions.
+
 For install failures, launch Zed from a terminal with foreground logs:
 
 ```bash
@@ -109,6 +118,6 @@ Then open a `.frame` file with an invalid declaration, duplicate declaration nam
 - The grammar intentionally covers the current MVP language only.
 - Statement values are parsed as bare identifiers; semantic validity still belongs to the Rust compiler.
 - `hover`, `focus`, `active`, and `disabled` nested blocks are recognized.
-- There are no injections or local bindings yet.
+- Inline Svelte `<style lang="frame">` blocks compile through the preprocessor, but Frame LSP support is intentionally limited to `.frame` files.
 - The Zed extension does not download or build the server automatically yet.
 - The generated parser is intentionally emitted with Tree-sitter ABI 14 for broader Zed compatibility.

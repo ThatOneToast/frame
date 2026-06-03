@@ -58,6 +58,31 @@ Generated usage in Svelte:
 </div>
 ```
 
+Set up Frame in an existing Svelte project:
+
+```bash
+frame init svelte
+```
+
+During local development from this repository:
+
+```bash
+cargo run -p frame_cli -- init svelte
+```
+
+Use external `.frame` files when you want typed `ui` exports. Use Svelte `<style lang="frame">` blocks for component-local styles:
+
+```svelte
+<div class="fr-HoverCard">Docs</div>
+
+<style lang="frame">
+  card HoverCard {
+    surface gradient dusk
+    padding large
+  }
+</style>
+```
+
 ## Workspace
 
 ```txt
@@ -65,7 +90,7 @@ crates/
   frame_core/      AST, diagnostics, semantic model, tokens
   frame_parser/    parser and parse errors
   frame_codegen/   CSS and TypeScript generation
-  frame_cli/       compile, check, format, watch
+  frame_cli/       compile, check, format, watch, init
   frame_lsp/       LSP server
 editors/
   zed/             Zed extension scaffold

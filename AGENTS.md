@@ -73,6 +73,7 @@ crates/
     src/
       ast.rs
       diagnostics.rs
+      knowledge.rs
       lib.rs
       semantic.rs
       tokens.rs
@@ -97,10 +98,26 @@ crates/
   frame_lsp/
     src/
       main.rs
+      code_actions.rs
       completions.rs
+      context.rs
+      document_symbols.rs
+      document_links.rs
+      embedded.rs
+      folding.rs
       hover.rs
       formatting.rs
+      navigation.rs
+      semantic_tokens.rs
       diagnostics.rs
+
+packages/
+  frame-svelte/
+    src/
+      index.ts
+      vite.ts
+      preprocess.ts
+      compile.ts
 
 editors/
   zed/
@@ -118,18 +135,27 @@ docs/
   layout.md
   cards.md
   surfaces.md
+  colors.md
   effects.md
   typography.md
   svelte.md
+  vite.md
+  style-blocks.md
   lsp.md
   examples.md
+  agents/
+    README.md
+    language-cheatsheet.md
+    svelte-patterns.md
+    recipes.md
+    troubleshooting.md
 ```
 
 ## Implementation Rules
 
 - Prefer small modules with clear responsibility.
 - Treat LSP diagnostics, completions, hover docs, and formatting as core compiler features, not optional editor polish.
-- Keep Svelte integration working through generated `generated.css` and `generated.ts`; `frame watch` is the default local development loop until a Vite plugin lands.
+- Keep Svelte integration working through generated `generated.css` and `generated.ts`; the Vite plugin is the default Svelte development loop, with `frame watch` still available as a CLI fallback.
 - Expand common design concepts natively with docs and examples before considering raw CSS-like escape hatches.
 - Keep documentation plentiful, example-driven, and accurate with the current compiler behavior.
 - Add tests for every parser and codegen feature.

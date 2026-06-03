@@ -16,6 +16,6 @@
 
 ; Statement arguments.
 (statement
-  value: (identifier) @constant)
+  value: (_) @constant)
 
 (comment) @comment

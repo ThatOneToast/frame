@@ -173,12 +173,64 @@ Success criteria:
 Goal: make Frame feel native in Svelte projects.
 
 Deliverables:
-- [ ] Vite plugin or Svelte preprocessor.
+- [x] Vite plugin.
+- [x] Svelte preprocessor.
+- [x] `<style lang="frame">` support.
 - [x] External `.frame` file support.
-- [ ] Optional `<style lang="frame">` exploration.
+- [x] Inline style block documentation.
 - [x] Generated CSS/TS path configuration.
 - [x] `frame watch` development workflow.
 - [x] Example Svelte usage documentation.
 
 Success criteria:
 - A Svelte component can use generated Frame classes without manual CSS.
+- A Svelte component can compile component-local Frame through `<style lang="frame">`.
+
+---
+
+## Milestone 9 — Svelte Setup And Practical Editor Guidance
+
+Goal: make Frame usable inside real Svelte projects with one setup command and clearer editor guidance.
+
+Deliverables:
+- [x] `frame init svelte`.
+- [x] `frame init svelte --dry-run`.
+- [x] Safe Svelte/Vite config updates with backups.
+- [x] Initial `src/lib/frame/app.frame` generation.
+- [x] Generated `generated.css` and `generated.ts` from init.
+- [x] Scope-aware LSP completions.
+- [x] Embedded Svelte `<style lang="frame">` LSP routing.
+- [x] Practical hover docs with Svelte examples.
+- [x] Percentage-based sizing.
+- [x] Expanded color and surface tokens.
+- [x] Grid, layout, color, surface, Svelte, and LSP docs.
+
+Success criteria:
+- A Svelte project can add Frame in one command.
+- Frame style blocks receive Frame completions and hover docs.
+- Users can build sidebar/content/inspector layouts with named or percentage columns.
+
+---
+
+## Milestone 10 — Production-Grade LSP Guidance
+
+Goal: make the Frame LSP act like an expert editor guide, not just a keyword autocomplete server.
+
+Deliverables:
+- [x] Central Frame knowledge base for completion and hover documentation.
+- [x] Rich markdown completion docs with Frame and Svelte examples.
+- [x] Completion snippets for dashboards, percentage dashboards, hover cards, toolbars, and empty states.
+- [x] Stronger diagnostics with suggestions and concept guidance.
+- [x] Code actions for typos, missing grids, missing placements, generated areas, percentage columns, and hover effects.
+- [x] Go-to-definition for `area in GridName` and `place section`.
+- [x] References for grid declarations and grid sections.
+- [x] Document symbols with nested state blocks.
+- [x] Document links to markdown docs.
+- [x] Semantic tokens for declarations, properties, values, colors, and percentages.
+- [x] Folding ranges for declarations and state blocks.
+- [x] Embedded Svelte `<style lang="frame">` diagnostics, completion, hover, and formatting routing.
+- [x] Additional documentation for areas, spacing, sizing, interactions, diagnostics, and code actions.
+
+Success criteria:
+- `cargo test --workspace` passes.
+- Frame files and inline Svelte Frame style blocks receive practical editor guidance.

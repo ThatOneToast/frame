@@ -89,8 +89,8 @@ Add diagnostics:
 - [x] Invalid positioning values.
 - [ ] Invalid responsive values.
 - [ ] Invalid state block names.
-- [ ] Invalid effect values inside state blocks.
-- [ ] Better diagnostics with suggestions.
+- [x] Invalid effect values inside state blocks.
+- [x] Better diagnostics with suggestions.
 
 ## Phase 5 — CSS Codegen
 
@@ -156,9 +156,12 @@ Commands:
 
 - [x] `frame check <file>`
 - [x] `frame compile <file> --out <dir>`
+- [x] `frame compile-stdin --css-only`
 - [x] `frame format <file>`
 - [x] `frame format <file> --check`
 - [x] `frame watch <file> --out <dir>`
+- [x] `frame init svelte`
+- [x] `frame init svelte --dry-run`
 
 ## Phase 8 — Zed Extension
 
@@ -180,17 +183,31 @@ LSP:
 - [x] Hover docs for common concepts.
 - [x] Formatting.
 - [x] Zed docs for enabling the LSP.
+- [x] Scope-aware completions.
+- [x] Embedded Svelte `<style lang="frame">` routing.
+- [x] Completion snippets for dashboards, hover cards, toolbars, and empty states.
+- [x] Go-to-definition for grid and grid section references.
+- [x] References for grid declarations and grid sections.
+- [x] Document symbols.
+- [x] Document links to Frame docs.
+- [x] Code actions for typo fixes and common layout scaffolds.
+- [x] Semantic tokens.
+- [x] Folding ranges.
 
 ## Phase 9 — Svelte Integration
 
 - [x] Document current generated CSS/TS usage.
 - [x] Add `examples/svelte/README.md`.
 - [x] Implement `frame watch`.
-- [ ] Add Vite plugin if practical.
+- [x] Add Vite plugin.
+- [x] Add Svelte preprocessor.
+- [x] Support `<style lang="frame">` CSS output.
+- [x] Add `frame init svelte` setup command.
 - [x] Recompile `.frame` on file changes.
 - [x] Print diagnostics during Svelte dev.
 - [x] Keep generated files importable from Svelte.
 - [x] Add example Svelte component using generated classes.
+- [x] Add example Svelte route using inline Frame styles.
 - [x] Add troubleshooting docs for missing generated files.
 
 ## Phase 10 — Docs
@@ -202,11 +219,25 @@ Create or expand:
 - [x] `docs/layout.md`
 - [x] `docs/cards.md`
 - [x] `docs/surfaces.md`
+- [x] `docs/colors.md`
 - [x] `docs/effects.md`
 - [x] `docs/typography.md`
 - [x] `docs/svelte.md`
+- [x] `docs/vite.md`
+- [x] `docs/style-blocks.md`
 - [x] `docs/lsp.md`
+- [x] `docs/areas.md`
+- [x] `docs/spacing.md`
+- [x] `docs/sizing.md`
+- [x] `docs/interactions.md`
+- [x] `docs/diagnostics.md`
+- [x] `docs/code-actions.md`
 - [x] `docs/examples.md`
+- [x] `docs/agents/README.md`
+- [x] `docs/agents/language-cheatsheet.md`
+- [x] `docs/agents/svelte-patterns.md`
+- [x] `docs/agents/recipes.md`
+- [x] `docs/agents/troubleshooting.md`
 
 Docs should include plentiful examples and explain the design intent behind each keyword.
 
@@ -219,6 +250,10 @@ Completed:
 - [x] CSS codegen behavior tests.
 - [x] TS codegen behavior tests.
 - [x] CLI integration tests.
+- [x] CLI stdin compile tests.
+- [x] CLI init tests.
+- [x] Svelte preprocessor helper tests.
+- [x] Vite plugin option/helper tests.
 
 Add:
 
@@ -227,7 +262,11 @@ Add:
 - [x] LSP completion tests.
 - [x] LSP hover tests.
 - [x] LSP formatting tests.
-- [ ] Svelte integration smoke test.
+- [x] LSP code action tests.
+- [x] LSP definition and reference tests.
+- [x] LSP semantic token tests.
+- [x] LSP folding tests.
+- [ ] Full Svelte integration smoke test.
 - [x] Expanded CSS concept codegen tests.
 - [ ] Documentation example compile tests where practical.
 
@@ -250,6 +289,9 @@ Add native support for common design concepts without turning Frame into raw CSS
 - [x] `width content`
 - [x] `width screen`
 - [x] `width sidebar`
+- [x] `width 25%`
+- [x] `height 50%`
+- [x] percentage grid columns
 - [x] `height screen`
 - [x] `height fill`
 - [x] `min-height screen`
@@ -281,6 +323,10 @@ Add native support for common design concepts without turning Frame into raw CSS
 - [x] `theme danger`
 - [x] `theme success`
 - [x] `theme warning`
+- [x] `background main`
+- [x] `background panel`
+- [x] `background danger`
+- [x] Expanded semantic palette tokens.
 
 ### Borders
 

@@ -7,7 +7,8 @@ pub const EFFECTS: &[&str] = &[
 ];
 pub const SHADOWS: &[&str] = &["none", "soft", "small", "medium", "large", "deep"];
 pub const SIZES: &[&str] = &[
-    "screen", "fill", "content", "sidebar", "small", "medium", "large", "xlarge",
+    "screen", "fill", "content", "auto", "sidebar", "narrow", "wide", "small", "medium", "large",
+    "xlarge",
 ];
 pub const COLORS: &[&str] = &[
     "main",
@@ -20,6 +21,16 @@ pub const COLORS: &[&str] = &[
     "primary",
     "secondary",
     "bright",
+    "white",
+    "black",
+    "gray",
+    "red",
+    "orange",
+    "yellow",
+    "green",
+    "blue",
+    "purple",
+    "pink",
     "transparent",
     "dusk",
     "midnight",

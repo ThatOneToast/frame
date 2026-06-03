@@ -15,6 +15,18 @@ npm install
 npm run dev
 ```
 
+To set up a separate Svelte project, run:
+
+```bash
+frame init svelte
+```
+
+From this repository:
+
+```bash
+cargo run -p frame_cli -- init svelte
+```
+
 External Frame usage:
 
 ```svelte

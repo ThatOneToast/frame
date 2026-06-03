@@ -1,0 +1,43 @@
+grid AppShell {
+  rows auto fill auto
+  gap medium
+  min-height screen
+}
+
+area Header {
+  in AppShell
+  row 1
+  surface panel
+  padding medium
+}
+
+row NavBar {
+  align center
+  justify between
+  gap medium
+}
+
+split Workspace {
+  gap medium
+}
+
+overlay ModalLayer {
+  surface glass
+  position center
+  z modal
+}
+
+dock CommandBar {
+  surface glass
+  padding medium
+}
+
+center EmptyState {
+  height screen
+  text muted
+}
+
+grid TwoPane {
+  columns 33% 67%
+  gap medium
+}

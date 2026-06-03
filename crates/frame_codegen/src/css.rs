@@ -30,9 +30,23 @@ pub fn generate_css(document: &Document) -> String {
     css.push_str("  --frame-color-bright: #ffffff;\n");
     css.push_str("  --frame-color-muted: #a3a3a3;\n");
     css.push_str("  --frame-color-accent: #8ab4ff;\n");
+    css.push_str("  --frame-color-primary: #93c5fd;\n");
+    css.push_str("  --frame-color-secondary: #c4b5fd;\n");
     css.push_str("  --frame-color-danger: #f87171;\n");
     css.push_str("  --frame-color-success: #34d399;\n");
     css.push_str("  --frame-color-warning: #fbbf24;\n");
+    css.push_str("  --frame-color-info: #38bdf8;\n");
+    css.push_str("  --frame-color-white: #ffffff;\n");
+    css.push_str("  --frame-color-black: #000000;\n");
+    css.push_str("  --frame-color-gray: #9ca3af;\n");
+    css.push_str("  --frame-color-red: #ef4444;\n");
+    css.push_str("  --frame-color-orange: #fb923c;\n");
+    css.push_str("  --frame-color-yellow: #facc15;\n");
+    css.push_str("  --frame-color-green: #22c55e;\n");
+    css.push_str("  --frame-color-blue: #60a5fa;\n");
+    css.push_str("  --frame-color-purple: #a78bfa;\n");
+    css.push_str("  --frame-color-pink: #f472b6;\n");
+    css.push_str("  --frame-color-transparent: transparent;\n");
     css.push_str("  --frame-shadow-none: none;\n");
     css.push_str("  --frame-shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.14);\n");
     css.push_str("  --frame-shadow-small: 0 6px 18px rgba(0, 0, 0, 0.18);\n");
@@ -58,6 +72,15 @@ pub fn generate_css(document: &Document) -> String {
                 emit_common(&mut css, &declaration.body);
                 if let Some(value) = find_statement_value(&declaration.body, "place") {
                     css.push_str(&format!("  grid-area: {value};\n"));
+                }
+                if let Some(value) = find_statement_value(&declaration.body, "col") {
+                    css.push_str(&format!("  grid-column: {value};\n"));
+                }
+                if let Some(value) = find_statement_value(&declaration.body, "row") {
+                    css.push_str(&format!("  grid-row: {value};\n"));
+                }
+                if let Some(value) = find_statement_value(&declaration.body, "span") {
+                    css.push_str(&format!("  grid-column: span {value};\n"));
                 }
                 css.push_str("}\n\n");
             }
@@ -137,14 +160,16 @@ fn emit_columns(css: &mut String, statement: &Statement) {
     } else if !names.is_empty() {
         let columns = names
             .iter()
-            .map(|_| "minmax(0, 1fr)")
+            .map(|value| column_css_value(value))
             .collect::<Vec<_>>()
             .join(" ");
         css.push_str(&format!("  grid-template-columns: {columns};\n"));
-        css.push_str(&format!(
-            "  grid-template-areas: \"{}\";\n",
-            names.join(" ")
-        ));
+        if names.iter().all(|name| is_identifier_grid_name(name)) {
+            css.push_str(&format!(
+                "  grid-template-areas: \"{}\";\n",
+                names.join(" ")
+            ));
+        }
     }
 }
 
@@ -166,6 +191,15 @@ fn emit_common(css: &mut String, body: &[Node]) {
                     }
                 } else if let Some(name) = statement.words.get(1) {
                     css.push_str(&format!("  background: var(--frame-surface-{name});\n"));
+                }
+            }
+            Some("background") => {
+                if let Some(name) = statement.words.get(1) {
+                    if surface_value(name) {
+                        css.push_str(&format!("  background: var(--frame-surface-{name});\n"));
+                    } else {
+                        css.push_str(&format!("  background: var(--frame-color-{name});\n"));
+                    }
                 }
             }
             Some("padding") => emit_space_property(css, "padding", statement),
@@ -303,11 +337,44 @@ fn emit_size_property(css: &mut String, property: &str, statement: &Statement) {
             "screen" if property.contains("width") => "100vw".to_string(),
             "fill" => "100%".to_string(),
             "content" => "max-content".to_string(),
+            "auto" => "auto".to_string(),
             "sidebar" => "18rem".to_string(),
+            "narrow" => "12rem".to_string(),
+            "wide" => "32rem".to_string(),
+            value if is_percentage(value) => value.to_string(),
             value => format!("var(--frame-space-{value})"),
         };
         css.push_str(&format!("  {property}: {css_value};\n"));
     }
+}
+
+fn column_css_value(value: &str) -> &str {
+    match value {
+        value if is_percentage(value) => value,
+        "auto" => "auto",
+        "fill" => "minmax(0, 1fr)",
+        _ => "minmax(0, 1fr)",
+    }
+}
+
+fn is_percentage(value: &str) -> bool {
+    value
+        .strip_suffix('%')
+        .is_some_and(|number| !number.is_empty() && number.chars().all(|c| c.is_ascii_digit()))
+}
+
+fn is_identifier_grid_name(value: &str) -> bool {
+    value
+        .chars()
+        .next()
+        .is_some_and(|first| first.is_ascii_alphabetic())
+        && value.chars().all(|character| {
+            character.is_ascii_alphanumeric() || character == '-' || character == '_'
+        })
+}
+
+fn surface_value(value: &str) -> bool {
+    matches!(value, "panel" | "main" | "glass" | "flat" | "raised")
 }
 
 fn emit_border(css: &mut String, statement: &Statement) {
@@ -561,5 +628,69 @@ mod tests {
         assert!(css.contains("border: 1px solid var(--frame-color-accent);"));
         assert!(css.contains("font-size: 2rem;"));
         assert!(css.contains("font-weight: 700;"));
+    }
+
+    #[test]
+    fn generates_percentage_columns_and_sizes() {
+        let document = Document {
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Grid,
+                    "Dashboard",
+                    vec![statement(&["columns", "25%", "50%", "25%"])],
+                ),
+                declaration(
+                    DeclarationKind::Area,
+                    "Sidebar",
+                    vec![statement(&["width", "25%"]), statement(&["height", "100%"])],
+                ),
+            ],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("grid-template-columns: 25% 50% 25%;"));
+        assert!(!css.contains("grid-template-areas: \"25% 50% 25%\";"));
+        assert!(css.contains("width: 25%;"));
+        assert!(css.contains("height: 100%;"));
+    }
+
+    #[test]
+    fn generates_numeric_area_placement() {
+        let document = Document {
+            declarations: vec![declaration(
+                DeclarationKind::Area,
+                "Sidebar",
+                vec![statement(&["col", "1"]), statement(&["row", "2"])],
+            )],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("grid-column: 1;"));
+        assert!(css.contains("grid-row: 2;"));
+    }
+
+    #[test]
+    fn generates_expanded_color_and_surface_tokens() {
+        let document = Document {
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "Status",
+                vec![
+                    statement(&["surface", "raised"]),
+                    statement(&["text", "primary"]),
+                    statement(&["background", "danger"]),
+                ],
+            )],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("--frame-color-primary"));
+        assert!(css.contains("--frame-color-secondary"));
+        assert!(css.contains("--frame-color-info"));
+        assert!(css.contains("background: var(--frame-color-danger);"));
+        assert!(css.contains("color: var(--frame-color-primary);"));
     }
 }

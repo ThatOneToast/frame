@@ -12,14 +12,20 @@ impl zed::Extension for FrameExtension {
         _language_server_id: &zed::LanguageServerId,
         worktree: &zed::Worktree,
     ) -> Result<zed::Command> {
-        let command = worktree
-            .which("frame_lsp")
-            .unwrap_or_else(|| format!("{}/target/debug/frame_lsp", worktree.root_path()));
+        let env = worktree.shell_env();
+        let command = env
+            .iter()
+            .find(|(key, _)| key == "FRAME_LSP")
+            .map(|(_, value)| value.clone())
+            .or_else(|| worktree.which("frame_lsp"))
+            .unwrap_or_else(|| {
+                "/Users/whitebread/projects/svelte/frame/target/debug/frame_lsp".to_string()
+            });
 
         Ok(zed::Command {
             command,
             args: Vec::new(),
-            env: worktree.shell_env(),
+            env,
         })
     }
 }

@@ -9,9 +9,13 @@ const DECLARATION_KEYWORDS = [
   "row",
   "button",
   "text",
+  "center",
+  "split",
+  "overlay",
+  "dock",
 ];
 
-const STATE_KEYWORDS = ["hover", "focus", "active"];
+const STATE_KEYWORDS = ["hover", "focus", "active", "disabled"];
 
 const PROPERTY_KEYWORDS = [
   "columns",
@@ -19,9 +23,15 @@ const PROPERTY_KEYWORDS = [
   "gap",
   "height",
   "width",
+  "min-height",
+  "max-height",
+  "min-width",
+  "max-width",
   "surface",
   "background",
   "theme",
+  "text",
+  "color",
   "padding",
   "margin",
   "radius",
@@ -32,6 +42,16 @@ const PROPERTY_KEYWORDS = [
   "col",
   "row",
   "span",
+  "position",
+  "offset",
+  "z",
+  "align",
+  "justify",
+  "font",
+  "size",
+  "weight",
+  "line",
+  "letter",
 ];
 
 const EFFECT_KEYWORDS = [
@@ -43,6 +63,10 @@ const EFFECT_KEYWORDS = [
   "press",
   "ring",
   "smooth",
+  "fade",
+  "scale",
+  "rotate",
+  "slide",
 ];
 
 module.exports = grammar({
@@ -75,7 +99,7 @@ module.exports = grammar({
     statement: ($) =>
       seq(
         field("property", choice($.property_keyword, $.effect_keyword, $.identifier)),
-        repeat(field("value", $.identifier)),
+        repeat(field("value", $.value)),
         $._newline,
       ),
 
@@ -89,7 +113,13 @@ module.exports = grammar({
 
     effect_keyword: (_) => choice(...EFFECT_KEYWORDS),
 
+    value: ($) => choice($.identifier, $.percentage, $.number),
+
     identifier: (_) => /[A-Za-z_][A-Za-z0-9_-]*/,
+
+    percentage: (_) => /[0-9]+%/,
+
+    number: (_) => /[0-9]+/,
 
     comment: (_) => token(seq("//", /.*/)),
 

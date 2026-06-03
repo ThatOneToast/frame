@@ -9,7 +9,6 @@ area Sidebar {
   place sidebar
   surface panel
   padding small
-  
 }
 
 area Content {

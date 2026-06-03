@@ -2,7 +2,25 @@ use frame_core::{semantic::validate, Diagnostic as FrameDiagnostic, Severity, Sp
 use frame_parser::parse;
 use tower_lsp::lsp_types::{Diagnostic as LspDiagnostic, DiagnosticSeverity, Position, Range};
 
+use crate::embedded::{frame_blocks, map_diagnostic_from_block};
+
 pub fn diagnostics_for_source(source: &str) -> Vec<FrameDiagnostic> {
+    let blocks = frame_blocks(source);
+    if !blocks.is_empty() {
+        return blocks
+            .into_iter()
+            .flat_map(|block| {
+                diagnostics_for_frame_source(block.content)
+                    .into_iter()
+                    .map(move |diagnostic| map_diagnostic_from_block(diagnostic, &block))
+            })
+            .collect();
+    }
+
+    diagnostics_for_frame_source(source)
+}
+
+fn diagnostics_for_frame_source(source: &str) -> Vec<FrameDiagnostic> {
     match parse(source) {
         Ok(document) => validate(&document),
         Err(error) => error.diagnostics,
@@ -108,5 +126,15 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.contains("unknown grid"));
+    }
+
+    #[test]
+    fn returns_embedded_svelte_frame_diagnostics() {
+        let source = "<div />\n<style lang=\"frame\">\nunknown Broken {\n}\n</style>\n";
+        let diagnostics = diagnostics_for_source(source);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("unknown declaration"));
+        assert!(diagnostics[0].span.start > source.find("<style").unwrap());
     }
 }

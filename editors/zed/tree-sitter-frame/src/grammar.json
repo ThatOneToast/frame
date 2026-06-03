@@ -125,7 +125,7 @@
             "name": "value",
             "content": {
               "type": "SYMBOL",
-              "name": "identifier"
+              "name": "value"
             }
           }
         },
@@ -173,6 +173,22 @@
         {
           "type": "STRING",
           "value": "text"
+        },
+        {
+          "type": "STRING",
+          "value": "center"
+        },
+        {
+          "type": "STRING",
+          "value": "split"
+        },
+        {
+          "type": "STRING",
+          "value": "overlay"
+        },
+        {
+          "type": "STRING",
+          "value": "dock"
         }
       ]
     },
@@ -190,6 +206,10 @@
         {
           "type": "STRING",
           "value": "active"
+        },
+        {
+          "type": "STRING",
+          "value": "disabled"
         }
       ]
     },
@@ -218,6 +238,22 @@
         },
         {
           "type": "STRING",
+          "value": "min-height"
+        },
+        {
+          "type": "STRING",
+          "value": "max-height"
+        },
+        {
+          "type": "STRING",
+          "value": "min-width"
+        },
+        {
+          "type": "STRING",
+          "value": "max-width"
+        },
+        {
+          "type": "STRING",
           "value": "surface"
         },
         {
@@ -227,6 +263,14 @@
         {
           "type": "STRING",
           "value": "theme"
+        },
+        {
+          "type": "STRING",
+          "value": "text"
+        },
+        {
+          "type": "STRING",
+          "value": "color"
         },
         {
           "type": "STRING",
@@ -267,6 +311,46 @@
         {
           "type": "STRING",
           "value": "span"
+        },
+        {
+          "type": "STRING",
+          "value": "position"
+        },
+        {
+          "type": "STRING",
+          "value": "offset"
+        },
+        {
+          "type": "STRING",
+          "value": "z"
+        },
+        {
+          "type": "STRING",
+          "value": "align"
+        },
+        {
+          "type": "STRING",
+          "value": "justify"
+        },
+        {
+          "type": "STRING",
+          "value": "font"
+        },
+        {
+          "type": "STRING",
+          "value": "size"
+        },
+        {
+          "type": "STRING",
+          "value": "weight"
+        },
+        {
+          "type": "STRING",
+          "value": "line"
+        },
+        {
+          "type": "STRING",
+          "value": "letter"
         }
       ]
     },
@@ -304,12 +388,53 @@
         {
           "type": "STRING",
           "value": "smooth"
+        },
+        {
+          "type": "STRING",
+          "value": "fade"
+        },
+        {
+          "type": "STRING",
+          "value": "scale"
+        },
+        {
+          "type": "STRING",
+          "value": "rotate"
+        },
+        {
+          "type": "STRING",
+          "value": "slide"
+        }
+      ]
+    },
+    "value": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "percentage"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "number"
         }
       ]
     },
     "identifier": {
       "type": "PATTERN",
       "value": "[A-Za-z_][A-Za-z0-9_-]*"
+    },
+    "percentage": {
+      "type": "PATTERN",
+      "value": "[0-9]+%"
+    },
+    "number": {
+      "type": "PATTERN",
+      "value": "[0-9]+"
     },
     "comment": {
       "type": "TOKEN",
