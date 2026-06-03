@@ -9,6 +9,7 @@ repository = "https://github.com/ThatOneToast/frame"
 [grammars.frame]
 repository = "https://github.com/ThatOneToast/frame"
 rev = "main"
+path = "editors/zed/tree-sitter-frame"
 
 [language_servers.frame-lsp]
 name = "Frame LSP"

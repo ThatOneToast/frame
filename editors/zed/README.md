@@ -60,7 +60,12 @@ The public extension metadata points at the public Frame repository:
 [grammars.frame]
 repository = "https://github.com/ThatOneToast/frame"
 rev = "main"
+path = "editors/zed/tree-sitter-frame"
 ```
+
+The `path` entry is required because Frame is a monorepo and the generated
+Tree-sitter parser lives under `editors/zed/tree-sitter-frame`, not at the
+repository root.
 
 For local parser work, generate the grammar from the grammar directory:
 
