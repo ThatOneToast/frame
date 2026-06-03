@@ -59,11 +59,12 @@ PATH="/path/to/frame/target/debug:$PATH" zed .
 
 ## Tree-Sitter Grammar
 
-The public extension metadata points at the public Frame repository:
+For local dev installs, the grammar metadata points at this local checkout so
+Zed compiles the same unpushed grammar changes as the installed extension:
 
 ```toml
 [grammars.frame]
-repository = "https://github.com/ThatOneToast/frame"
+repository = "file:///Users/whitebread/projects/svelte/frame"
 rev = "main"
 path = "editors/zed/tree-sitter-frame"
 ```
@@ -71,6 +72,9 @@ path = "editors/zed/tree-sitter-frame"
 The `path` entry is required because Frame is a monorepo and the generated
 Tree-sitter parser lives under `editors/zed/tree-sitter-frame`, not at the
 repository root.
+
+For publication, change `repository` back to `https://github.com/ThatOneToast/frame`
+after the grammar commits are pushed.
 
 For local parser work, generate the grammar from the grammar directory:
 
