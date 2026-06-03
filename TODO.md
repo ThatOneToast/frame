@@ -27,6 +27,7 @@ Current pipeline:
 Required structures:
 
 - [x] `Document`
+- [x] `Include`
 - [x] `Declaration`
 - [x] `DeclarationKind`
 - [x] `Block`
@@ -56,6 +57,7 @@ Declaration kinds:
 - [x] Parse declaration names.
 - [x] Parse `{ ... }` blocks.
 - [x] Parse bare statement lines.
+- [x] Parse root `#include` statements.
 - [x] Parse nested state blocks like `hover { ... }`.
 - [x] Return diagnostics instead of panicking.
 - [ ] Preserve comments for formatting.
@@ -87,6 +89,9 @@ Add diagnostics:
 - [x] Invalid layout values.
 - [x] Invalid typography values.
 - [x] Invalid positioning values.
+- [x] Invalid custom color token hex values.
+- [x] Invalid gradient stop colors, percentages, angles, and stop counts.
+- [x] Invalid border, transition, duration, ease, animation, and z-layer values.
 - [ ] Invalid responsive values.
 - [ ] Invalid state block names.
 - [x] Invalid effect values inside state blocks.
@@ -99,6 +104,7 @@ Generated output currently supports:
 - [x] `grid AppShell`
 - [x] named columns
 - [x] responsive card grids
+- [x] vertical named grid flow with section spacing controls
 - [x] `area Sidebar in AppShell`
 - [x] `place sidebar`
 - [x] `card`
@@ -131,6 +137,18 @@ Add support for:
 - [x] `offset`
 - [x] `z`
 - [x] `border`
+- [x] custom color tokens
+- [x] custom gradient tokens
+- [x] layered corner gradient tokens
+- [x] `background brand`
+- [x] `background hero-gradient`
+- [x] `advanced { css "property" value }`
+- [x] `padding top medium`, `padding x medium`, and `anchor top`.
+- [x] `grid flow vertical` and `section name { padding ... }`.
+- [x] `transition`
+- [x] `duration`
+- [x] `ease`
+- [x] `animation`
 - [x] `theme`
 - [x] `text bright`
 - [x] `text muted`
@@ -160,6 +178,7 @@ Commands:
 - [x] `frame format <file>`
 - [x] `frame format <file> --check`
 - [x] `frame watch <file> --out <dir>`
+- [x] `--include <dir>` for `check`, `compile`, and `watch`.
 - [x] `frame init svelte`
 - [x] `frame init svelte --dry-run`
 
@@ -193,6 +212,8 @@ LSP:
 - [x] Code actions for typo fixes and common layout scaffolds.
 - [x] Semantic tokens.
 - [x] Folding ranges.
+- [x] Include highlighting, document links, missing include diagnostics, and include completions.
+- [x] Imported grid/color/gradient symbols in completions, hover, diagnostics, and go-to-definition.
 
 ## Phase 9 — Svelte Integration
 
@@ -204,6 +225,7 @@ LSP:
 - [x] Support `<style lang="frame">` CSS output.
 - [x] Add `frame init svelte` setup command.
 - [x] Recompile `.frame` on file changes.
+- [x] Pass Vite plugin `include` paths to the CLI.
 - [x] Print diagnostics during Svelte dev.
 - [x] Keep generated files importable from Svelte.
 - [x] Add example Svelte component using generated classes.
@@ -233,6 +255,11 @@ Create or expand:
 - [x] `docs/diagnostics.md`
 - [x] `docs/code-actions.md`
 - [x] `docs/examples.md`
+- [x] `docs/setup.md`
+- [x] `docs/imports.md`
+- [x] `docs/tokens.md`
+- [x] `docs/borders.md`
+- [x] `docs/animations.md`
 - [x] `docs/agents/README.md`
 - [x] `docs/agents/language-cheatsheet.md`
 - [x] `docs/agents/svelte-patterns.md`

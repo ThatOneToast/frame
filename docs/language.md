@@ -64,3 +64,55 @@ button PrimaryButton {
 ```
 
 The compiler emits readable CSS and a `generated.ts` file for Svelte imports.
+# Frame Language
+
+Frame is a design-intent CSS DSL. It compiles declarations such as `grid`, `area`, `card`, `row`, `stack`, `dock`, and `text` into normal CSS classes and stable TypeScript exports.
+
+Top-level declarations:
+
+```frame
+#include tokens
+
+tokens Brand {
+  color brand #7c3aed
+}
+
+grid Dashboard {
+  columns sidebar content inspector
+  gap medium
+  height screen
+}
+
+area Sidebar {
+  in Dashboard
+  place sidebar
+  surface panel
+  padding medium
+}
+
+card DemoCard {
+  surface gradient dusk
+  border accent
+  shadow medium
+  transition smooth
+
+  hover {
+    lift small
+    glow accent
+  }
+}
+```
+
+Core docs:
+
+- `docs/imports.md`
+- `docs/tokens.md`
+- `docs/colors.md`
+- `docs/surfaces.md`
+- `docs/borders.md`
+- `docs/effects.md`
+- `docs/animations.md`
+- `docs/layout.md`
+- `docs/sizing.md`
+- `docs/grid.md`
+- `docs/svelte.md`

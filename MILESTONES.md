@@ -234,3 +234,36 @@ Deliverables:
 Success criteria:
 - `cargo test --workspace` passes.
 - Frame files and inline Svelte Frame style blocks receive practical editor guidance.
+
+---
+
+## Milestone 11 — Styling Vocabulary, Imports, And Highlighting Hardening
+
+Goal: make Frame feel like a complete styling language for real Svelte projects.
+
+Deliverables:
+- [x] Tree-sitter grammar support for `#include` and hex color literals.
+- [x] Highlight query coverage for declarations, layout properties, color/surface properties, borders, effects, animation, percentages, numbers, and includes.
+- [x] Zed highlighting samples for layout, colors, effects, imports, and broad keyword coverage.
+- [x] Custom color token syntax: `color brand #7c3aed`.
+- [x] CSS variables for custom colors and use in `background`, `color`, `border`, and state effects.
+- [x] Custom gradient token syntax with `type linear`, `angle`, and `stop` entries.
+- [x] CSS variables for custom gradients and use in `background` and `surface`.
+- [x] Layered corner gradients for multi-corner background washes.
+- [x] Targeted padding/margin and sticky `anchor` positioning.
+- [x] Vertical grid flow with per-section spacing, sizing, and alignment controls.
+- [x] Explicit advanced styling escape hatch with scoped `css "property" value` output.
+- [x] Expanded surface, color, border, shadow, glow, transition, animation, alignment, position, z-layer, and sizing vocabulary.
+- [x] Deterministic keyframes for named animations.
+- [x] `#include` support in parser, CLI, Vite plugin, LSP diagnostics, document links, go-to-definition, and completions.
+- [x] Include cycle and missing include diagnostics.
+- [x] Cross-file LSP completions, hover, diagnostics, and go-to-definition for imported grids and tokens.
+- [x] Practical docs for setup, imports, tokens, borders, animations, and examples.
+
+Success criteria:
+- `cargo fmt`
+- `cargo clippy --workspace --all-targets -- -D warnings`
+- `cargo test --workspace`
+- Tree-sitter parser and highlight checks pass for `highlighting.frame` and `imports.frame`.
+- `npm test` passes in `packages/frame-svelte`.
+- `npm run build` passes in `examples/svelte`.

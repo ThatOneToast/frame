@@ -78,3 +78,38 @@ surface gradient dusk
 surface gradient midnight
 surface gradient aurora
 ```
+# Surfaces
+
+`surface` sets the visual background role for a component.
+
+```frame
+area Sidebar {
+  in Dashboard
+  place sidebar
+  surface panel
+  padding medium
+}
+```
+
+Use:
+
+- `surface main` for primary page/content backgrounds.
+- `surface panel` for sidebars, cards, inspectors, menus, and settings panels.
+- `surface raised` for cards/buttons that should visually pop forward.
+- `surface flat` for minimal or transparent UI.
+- `surface glass` for translucent overlays and floating regions.
+- `surface overlay` for modals, menus, and popovers.
+- `surface inset` for field/input-like regions.
+- `surface sunken` for recessed panels.
+
+Gradients:
+
+```frame
+card FeatureCard {
+  surface gradient aurora
+  padding large
+  radius large
+}
+```
+
+Supported gradients: `dusk`, `midnight`, `aurora`, `ember`, `ocean`, and `forest`.

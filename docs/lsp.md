@@ -1,132 +1,190 @@
 # LSP
 
-The Frame LSP provides editor intelligence for `.frame` files.
+Frame's language server is the editor-independent teaching layer for `.frame`
+files. Tree-sitter handles syntax highlighting. The LSP handles semantic help:
+diagnostics, completions, hover docs, formatting, document symbols, links,
+navigation, code actions, semantic tokens, and folding.
 
-Current support:
+## Features
 
-- Parser and semantic diagnostics.
-- Scope-aware completions.
-- Completion snippets for dashboards, percentage dashboards, hover cards, toolbars, and empty states.
-- Completion menu documentation for declarations, properties, values, surfaces, colors, and effects.
-- Hover docs with Frame intent, generated CSS behavior, and Svelte examples.
-- Document formatting for `.frame` documents.
-- Document symbols.
-- Go-to-definition for grid references and named grid sections.
+- Parser and semantic diagnostics with suggestions and examples.
+- Scope-aware completions for root declarations, grid properties, area
+  placement, component styling, token blocks, gradient blocks, and state blocks.
+- Markdown completion docs with Frame examples, Svelte examples, related
+  concepts, and docs paths.
+- Hover docs that explain intent, generated CSS behavior, common values, and
+  when to use a concept.
+- Formatting for `.frame` files and embedded `<style lang="frame">` blocks.
+- Document symbols for declarations, with nested state blocks as children.
+- Go-to-definition for `#include`, `area in GridName`, `place section`, and
+  imported color/gradient token references.
 - References for grid declarations and grid sections.
-- Document links to Frame markdown docs.
-- Code actions for common fixes and layout scaffolds.
-- Semantic tokens.
-- Folding ranges.
+- Document links from supported concepts to markdown docs.
+- Code actions for common typo fixes and safe layout scaffolds.
+- Semantic tokens for declarations, names, properties, values, colors,
+  percentages, includes, and comments.
+- Folding ranges for declarations and nested state blocks.
 
-## Scope-aware Completions
+## Scope-Aware Completions
 
-At file root, completions suggest declarations only:
+At file root, Frame suggests declarations and imports only:
 
 ```txt
-tokens grid area card stack row button text center split overlay dock
+#include
+tokens
+grid
+area
+card
+stack
+row
+button
+text
+center
+split
+overlay
+dock
 ```
 
-Inside a `grid`, completions focus on grid layout:
+Inside a grid, suggestions focus on layout:
 
 ```frame
 grid Dashboard {
-  columns
-  rows
-  gap
-  height
-  width
-  padding
-  surface
-  align
-  justify
+  columns sidebar content inspector
+  rows header main footer
+  gap medium
+  height screen
+  surface main
+  align stretch
+  justify between
 }
 ```
 
-Inside an `area`, `in` suggests grid declarations from the current document, and `place` suggests known columns from the referenced grid.
-
-Inside `hover`, `focus`, `active`, and `disabled`, completions suggest effects like `lift`, `glow`, `brighten`, `dim`, `blur`, `press`, `ring`, `scale`, `fade`, and `slide`.
-
-Property values are contextual:
-
-```frame
-surface panel
-surface gradient dusk
-width 50%
-rows auto
-align center
-justify between
-color accent
-```
-
-Chained values narrow as you type:
-
-```frame
-columns responsive
-```
-
-then suggests:
+After `columns`, values include common named sections and layout helpers:
 
 ```txt
-cards
+responsive cards sidebar content inspector header footer main auto fill
+25% 33% 50% 66% 75% 100%
 ```
+
+Inside an area, `in` suggests known grids and `place` suggests sections from
+the referenced grid:
 
 ```frame
-surface gradient
+area Sidebar {
+  in Dashboard
+  place sidebar
+  surface panel
+  padding medium
+}
 ```
 
-then suggests:
+Inside `hover`, `focus`, `active`, and `disabled`, Frame suggests effects only:
 
-```txt
-dusk midnight aurora
+```frame
+card ProjectCard {
+  hover {
+    lift small
+    glow accent
+    transition smooth
+  }
+}
 ```
 
-## Svelte Style Blocks
+## Hover Docs
 
-Inline Svelte `<style lang="frame">` blocks compile through the Svelte preprocessor and can be routed through the Frame LSP when the editor sends the `.svelte` buffer to `frame_lsp`.
+Hover docs teach the concept before describing syntax. For example, hovering
+`surface panel` explains that panels are secondary UI regions, shows generated
+background behavior, gives a Frame example, gives a Svelte class usage example,
+and links to `docs/surfaces.md`.
 
-The server detects Frame style blocks, maps diagnostics back to the Svelte buffer, and only serves completion/hover/formatting inside the Frame block. Outside the block, Frame completions return empty results so they do not dominate normal Svelte or CSS editing.
+Hover docs are available for declarations, grid placement, surfaces, colors,
+spacing, sizing, alignment, effects, transitions, animations, includes, and
+custom color/gradient tokens.
 
-Shared app styles can still live in external `.frame` files when generated `generated.css` and `generated.ts` exports are preferred.
+## Diagnostics
 
-## Code Actions
+Diagnostics come from the parser and semantic validator, so the CLI and LSP
+share the same messages.
 
-The LSP can:
+```frame
+card Demo {
+  surface pannel
+}
+```
 
-- Replace close typos like `pannel` with `panel`.
-- Create a missing grid referenced by an area.
-- Add a missing `place` line.
-- Create matching areas from a named grid.
-- Convert three named columns to `columns 25% 50% 25%`.
-- Add hover lift/glow effects to cards.
+Reports an unknown surface and suggests `panel`.
 
-See `docs/code-actions.md`.
+```frame
+area Sidebar {
+  in Dashbord
+}
+```
+
+Reports an unknown grid and suggests the closest grid name when one exists.
+
+```frame
+grid Dashboard {
+  columns 25%% 50% 25%
+}
+```
+
+Reports an invalid percentage and suggests values like `25%`, `50%`, and
+`100%`.
+
+More examples are in `docs/diagnostics.md`.
 
 ## Navigation
 
 Go-to-definition supports:
 
-- `in Dashboard` to `grid Dashboard`.
-- `place sidebar` to the matching `columns sidebar ...` token.
+- `#include theme` to `theme.frame`
+- `in Dashboard` to `grid Dashboard`
+- `place sidebar` to the matching `columns sidebar ...` section
+- imported `background brand-panel` to a color token
+- imported `background hero-gradient` to a gradient token
 
-References include grid declarations, `in GridName` usages, named grid columns, and matching `place` usages.
+References include grid declarations, `in GridName` usages, named grid columns,
+and matching `place` usages.
+
+## Svelte
+
+External `.frame` files are the best-supported workflow for editors:
+
+```svelte
+<script lang="ts">
+  import { ui } from '$lib/frame/generated';
+  import '$lib/frame/generated.css';
+</script>
+
+<div class={ui.Dashboard}>
+  <aside class={ui.Sidebar}>Sidebar</aside>
+</div>
+```
+
+Inline Svelte `<style lang="frame">` blocks compile through the Svelte
+preprocessor. The server can map diagnostics, completion, hover, and formatting
+inside embedded Frame blocks when an editor routes `.svelte` buffers to
+`frame_lsp`. The Zed extension intentionally registers the LSP only for
+`.frame` files so it does not conflict with Svelte and CSS tooling.
 
 ## Zed Setup
 
-Install the local extension from `editors/zed`, then build the server:
+Install the extension from `editors/zed`, then build the server:
 
 ```bash
 cargo build -p frame_lsp
 ```
 
-The extension associates `.frame` files with Frame and registers `frame_lsp` only for the Frame language.
-
 The extension resolves the LSP command in this order:
 
 1. `FRAME_LSP`
 2. `frame_lsp` on `PATH`
-3. `/Users/whitebread/projects/svelte/frame/target/debug/frame_lsp`
+3. `target/debug/frame_lsp` from this repository checkout when available
 
 ## Known Limitations
 
-- The current formatter is line-oriented because the parser does not preserve comments in the AST yet.
 - Workspace symbols, rename, inlay hints, and code lens are not implemented yet.
+- Token references are strongest across direct includes; full workspace-wide
+  indexing is planned.
+- The formatter is line-oriented because the parser does not preserve comments
+  in the AST yet.

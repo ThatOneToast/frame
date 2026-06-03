@@ -67,3 +67,60 @@ color pink
 ```
 
 The current generated root tokens use sensible dark-theme defaults for dashboards and chat-style apps.
+# Colors
+
+Use color intent for text, backgrounds, borders, glows, and themes.
+
+```frame
+card StatusCard {
+  color bright
+  background panel
+  border accent
+
+  hover {
+    glow accent
+  }
+}
+```
+
+Named colors include:
+
+```txt
+white black gray slate red orange yellow green blue purple pink cyan
+primary secondary accent muted bright danger success warning info
+```
+
+Custom color tokens:
+
+```frame
+tokens Brand {
+  color brand #7c3aed
+  color brand-muted #a78bfa
+  color page-bg #0f0f14
+  color panel-bg #181820
+}
+
+card BrandCard {
+  background brand
+  color white
+  border brand-muted
+}
+```
+
+Supported token values today are `#fff`, `#ffffff`, and `#ffffffff`.
+
+Custom color tokens from included files are available anywhere built-in colors are valid:
+
+```frame
+#include theme
+
+card BrandCard {
+  background brand-panel
+  color brand-text
+  border brand-purple
+
+  hover {
+    glow brand-purple
+  }
+}
+```

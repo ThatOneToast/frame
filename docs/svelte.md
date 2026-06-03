@@ -36,7 +36,8 @@ export default {
   plugins: [
     framePlugin({
       input: 'src/lib/frame/app.frame',
-      outDir: 'src/lib/frame'
+      outDir: 'src/lib/frame',
+      include: ['src/lib/frame', 'src/lib/frame/shared']
     })
   ]
 };
@@ -91,8 +92,10 @@ Then write Frame inside the component style block:
 </div>
 
 <style lang="frame">
+  #include theme
+
   card HoverCard {
-    surface gradient dusk
+    background hero-gradient
     padding large
     radius large
   }
@@ -100,6 +103,8 @@ Then write Frame inside the component style block:
 ```
 
 The preprocessor returns normal CSS to Svelte, so Svelte applies its normal component style scoping. Frame does not add Svelte scope hashes itself.
+
+Imports inside `<style lang="frame">` resolve relative to the `.svelte` file and configured include paths.
 
 ## Class names
 

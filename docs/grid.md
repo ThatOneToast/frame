@@ -76,6 +76,48 @@ grid QuickLinks {
 
 This generates an auto-fitting card grid using normal CSS grid.
 
+## Vertical Flow
+
+Named `columns` normally lay out left to right. Add `flow vertical` when the named sections should stack top to bottom while keeping the same readable section names:
+
+```frame
+grid HoverCardInfo {
+  flow vertical
+  columns title description
+  gap small
+  padding small
+  height narrow
+
+  section title {
+    padding bottom small
+  }
+
+  section description {
+    padding top none
+  }
+}
+```
+
+Generated CSS uses one column, named row areas, and child assignment rules. Children map by order:
+
+```svelte
+<section class="fr-HoverCardInfo">
+  <h2>HoverCard</h2>
+  <p>description</p>
+</section>
+```
+
+For more explicit markup, add `data-frame-section`:
+
+```svelte
+<section class="fr-HoverCardInfo">
+  <h2 data-frame-section="title">HoverCard</h2>
+  <p data-frame-section="description">description</p>
+</section>
+```
+
+`section name { ... }` currently supports section-level spacing, sizing, and alignment such as `padding top small`, `margin bottom medium`, `gap small`, `align center`, `justify between`, `width fill`, and `height content`.
+
 ## Rows For Header, Content, Footer
 
 Rows split a grid vertically. This is the clearest way to make a top NavBar area.

@@ -131,12 +131,17 @@ examples/
 
 docs/
   language.md
+  setup.md
+  imports.md
+  tokens.md
   grid.md
   layout.md
   cards.md
   surfaces.md
   colors.md
+  borders.md
   effects.md
+  animations.md
   typography.md
   svelte.md
   vite.md
@@ -176,6 +181,7 @@ docs/
 Top-level declarations:
 
 ```frame
+#include base
 tokens AppTheme { ... }
 grid AppShell { ... }
 area Sidebar { ... }
@@ -236,6 +242,10 @@ surface
 theme
 text
 background
+color
+palette
+tone
+opacity
 gradient
 glass
 panel
@@ -250,6 +260,18 @@ primary
 secondary
 transparent
 bright
+white
+black
+gray
+slate
+red
+orange
+yellow
+green
+blue
+purple
+pink
+cyan
 ```
 
 ### Shape / Space
@@ -261,6 +283,7 @@ margin
 radius
 border
 shadow
+outline
 height
 width
 min-height
@@ -298,6 +321,11 @@ fade
 scale
 rotate
 slide
+transition
+duration
+ease
+animation
+animate
 ```
 
 ### Typography
@@ -435,6 +463,7 @@ cargo test --workspace
 
 cargo run -p frame_cli -- check examples/svelte/src/lib/frame/app.frame
 cargo run -p frame_cli -- compile examples/svelte/src/lib/frame/app.frame --out examples/svelte/src/lib/frame
+cargo run -p frame_cli -- compile examples/svelte/src/lib/frame/app.frame --out examples/svelte/src/lib/frame --include examples/svelte/src/lib/frame
 cargo run -p frame_cli -- format examples/svelte/src/lib/frame/app.frame
 cargo run -p frame_cli -- watch examples/svelte/src/lib/frame/app.frame --out examples/svelte/src/lib/frame
 ```
