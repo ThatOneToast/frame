@@ -14,6 +14,39 @@ grid Dashboard {
   gap medium
   height screen
   background page-bg
+
+  below tablet {
+    columns content
+    rows header content footer
+  }
+
+  above desktop {
+    columns sidebar content inspector
+  }
+
+  between tablet desktop {
+    columns content inspector
+  }
+
+  container narrow {
+    columns content
+  }
+}
+
+keyframes FloatIn {
+  from {
+    opacity 0
+    transform translateY(12px) scale(0.98)
+  }
+
+  50% {
+    opacity 0.72
+  }
+
+  to {
+    opacity 1
+    transform translateY(0) scale(1)
+  }
 }
 
 dock AppDock {
@@ -32,6 +65,16 @@ card DemoCard {
   shadow medium
   color bright
   animation fade-in
+
+  animation FloatIn {
+    duration 240ms
+    delay 0ms
+    ease smooth
+    iteration 1
+    direction normal
+    fill both
+    play-state running
+  }
 
   hover {
     lift small

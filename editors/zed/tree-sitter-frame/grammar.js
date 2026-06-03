@@ -13,6 +13,7 @@ const DECLARATION_KEYWORDS = [
   "split",
   "overlay",
   "dock",
+  "keyframes",
 ];
 
 const STATE_KEYWORDS = ["hover", "focus", "active", "disabled"];
@@ -63,6 +64,15 @@ const PROPERTY_KEYWORDS = [
   "ease",
   "animation",
   "animate",
+  "delay",
+  "iteration",
+  "direction",
+  "fill",
+  "play-state",
+  "opacity",
+  "transform",
+  "filter",
+  "translate",
   "type",
   "angle",
   "stop",
@@ -94,6 +104,10 @@ module.exports = grammar({
 
   word: ($) => $.identifier,
 
+  conflicts: ($) => [
+    [$.animation_block, $.property_keyword],
+  ],
+
   rules: {
     source_file: ($) => repeat(choice($.include, $.declaration, $._newline)),
 
@@ -114,7 +128,18 @@ module.exports = grammar({
     block: ($) =>
       seq(
         "{",
-        repeat(choice($._newline, $.state_block, $.gradient_block, $.section_block, $.advanced_block, $.statement)),
+        repeat(choice(
+          $._newline,
+          $.state_block,
+          $.gradient_block,
+          $.section_block,
+          $.advanced_block,
+          $.animation_block,
+          $.responsive_block,
+          $.container_block,
+          $.keyframe_block,
+          $.statement,
+        )),
         "}",
       ),
 
@@ -129,6 +154,26 @@ module.exports = grammar({
 
     advanced_block: ($) =>
       seq(field("name", $.special_block_keyword), $.block),
+
+    animation_block: ($) =>
+      seq("animation", field("name", $.identifier), $.block),
+
+    responsive_block: ($) =>
+      choice(
+        seq(field("kind", choice("below", "above")), field("breakpoint", $.identifier), $.block),
+        seq(
+          field("kind", "between"),
+          field("start", $.identifier),
+          field("end", $.identifier),
+          $.block,
+        ),
+      ),
+
+    container_block: ($) =>
+      seq("container", field("name", $.identifier), $.block),
+
+    keyframe_block: ($) =>
+      seq(field("selector", $.keyframe_selector), $.block),
 
     statement: ($) =>
       seq(
@@ -153,7 +198,7 @@ module.exports = grammar({
 
     include_target: (_) => /[^ \t\r\n]+/,
 
-    value: ($) => choice($.string, $.color_literal, $.identifier, $.percentage, $.number),
+    value: ($) => choice($.string, $.color_literal, $.percentage, $.number, $.identifier, $.raw_value),
 
     string: (_) => /"[^"\r\n]*"/,
 
@@ -161,7 +206,11 @@ module.exports = grammar({
 
     percentage: (_) => /[0-9]+%/,
 
+    keyframe_selector: (_) => choice("from", "to", /[0-9]+%/),
+
     number: (_) => /[0-9]+/,
+
+    raw_value: (_) => /[^ \t\r\n{}]+/,
 
     color_literal: (_) => /#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?([0-9a-fA-F]{2})?/,
 

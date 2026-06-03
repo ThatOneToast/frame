@@ -23,6 +23,27 @@
 (advanced_block
   name: (special_block_keyword) @keyword)
 
+(animation_block
+  "animation" @keyword
+  name: (identifier) @constant)
+
+(responsive_block
+  kind: _ @keyword)
+
+(responsive_block
+  breakpoint: (identifier) @constant)
+
+(responsive_block
+  start: (identifier) @constant
+  end: (identifier) @constant)
+
+(container_block
+  "container" @keyword
+  name: (identifier) @constant)
+
+(keyframe_block
+  selector: (keyframe_selector) @keyword)
+
 (string) @string
 
 ; Intent words and effects.
@@ -34,6 +55,7 @@
 
 ; Statement arguments.
 (statement value: (value (identifier) @constant))
+(statement value: (value (raw_value) @constant))
 (statement value: (value (percentage) @number))
 (statement value: (value (number) @number))
 (statement value: (value (color_literal) @string.special))

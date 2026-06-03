@@ -38,7 +38,12 @@ The extension resolves the server command in this order:
 
 1. `FRAME_LSP`
 2. `frame_lsp` on `PATH`
-3. `target/debug/frame_lsp` inside this repository checkout, when present
+
+Install the language server on `PATH` from this repository:
+
+```bash
+cargo install --path crates/frame_lsp
+```
 
 You can point directly at the binary:
 
