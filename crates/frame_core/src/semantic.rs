@@ -39,6 +39,10 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
         if declaration.kind == DeclarationKind::Area {
             validate_area(declaration, &symbols, &mut diagnostics);
         }
+
+        if declaration.kind == DeclarationKind::Keyframes {
+            validate_keyframes(declaration, &mut diagnostics);
+        }
     }
 
     diagnostics
@@ -172,6 +176,15 @@ fn validate_statements(
             Node::Block(block) if block.name == "advanced" => {
                 validate_advanced_block(block, diagnostics);
             }
+            Node::Block(block) if block.name.starts_with("animation ") => {
+                validate_animation_block(block, symbols, diagnostics);
+            }
+            Node::Block(block) if is_condition_block(&block.name) => {
+                validate_condition_block(declaration, block, symbols, diagnostics);
+            }
+            Node::Block(block) if declaration.kind == DeclarationKind::Keyframes => {
+                validate_keyframe_block(block, diagnostics);
+            }
             Node::Block(block) => {
                 for node in &block.body {
                     if let Node::Statement(statement) = node {
@@ -179,6 +192,147 @@ fn validate_statements(
                     }
                 }
             }
+        }
+    }
+}
+
+fn validate_condition_block(
+    declaration: &Declaration,
+    block: &crate::Block,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    validate_condition_header(&block.name, diagnostics, block.span);
+    for node in &block.body {
+        let Node::Statement(statement) = node else {
+            continue;
+        };
+        match declaration.kind {
+            DeclarationKind::Grid => validate_statement(statement, symbols, diagnostics),
+            DeclarationKind::Area => validate_statement(statement, symbols, diagnostics),
+            _ => validate_statement(statement, symbols, diagnostics),
+        }
+    }
+}
+
+fn validate_condition_header(name: &str, diagnostics: &mut Vec<Diagnostic>, span: crate::Span) {
+    let words = name.split_whitespace().collect::<Vec<_>>();
+    match words.as_slice() {
+        ["below" | "above", breakpoint] if tokens::BREAKPOINTS.contains(breakpoint) => {}
+        ["between", start, end]
+            if tokens::BREAKPOINTS.contains(start) && tokens::BREAKPOINTS.contains(end) => {}
+        ["container", container] if tokens::CONTAINERS.contains(container) => {}
+        ["below" | "above", breakpoint] => diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown breakpoint `{breakpoint}`.\n\nUse `mobile`, `tablet`, `desktop`, or `wide`."
+            ),
+            span,
+        )),
+        ["between", start, end] => diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown breakpoint range `{start} {end}`.\n\nUse `between tablet desktop` or another known breakpoint pair."
+            ),
+            span,
+        )),
+        ["container", container] => diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown container size `{container}`.\n\nUse `narrow`, `content`, or `wide`."
+            ),
+            span,
+        )),
+        _ => {}
+    }
+}
+
+fn validate_animation_block(
+    block: &crate::Block,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let Some(name) = block.name.split_whitespace().nth(1) else {
+        diagnostics.push(Diagnostic::error(
+            "animation blocks expect an animation name, for example `animation FloatIn { ... }`",
+            block.span,
+        ));
+        return;
+    };
+
+    if !tokens::ANIMATIONS.contains(&name) && !symbols.keyframes.contains_key(name) {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown animation `{name}`.\n\nUse a preset like `fade-in`, `slide-up`, `pop-in`, or define `keyframes {name} {{ ... }}`."
+            ),
+            block.span,
+        ));
+    }
+
+    for node in &block.body {
+        let Node::Statement(statement) = node else {
+            continue;
+        };
+        match statement.words.first().map(String::as_str) {
+            Some("duration" | "delay") => validate_animation_time(statement, diagnostics),
+            Some("ease") => validate_value(statement, tokens::EASES, diagnostics),
+            Some("iteration") => validate_animation_iteration(statement, diagnostics),
+            Some("direction") => validate_value(statement, tokens::ANIMATION_DIRECTIONS, diagnostics),
+            Some("fill") => validate_value(statement, tokens::ANIMATION_FILLS, diagnostics),
+            Some("play-state") => validate_value(statement, tokens::ANIMATION_PLAY_STATES, diagnostics),
+            Some(other) => diagnostics.push(Diagnostic::error(
+                format!(
+                    "Unknown animation option `{other}`.\n\nUse `duration`, `delay`, `ease`, `iteration`, `direction`, `fill`, or `play-state`."
+                ),
+                statement.span,
+            )),
+            None => {}
+        }
+    }
+}
+
+fn validate_keyframes(declaration: &Declaration, diagnostics: &mut Vec<Diagnostic>) {
+    let mut selectors = 0usize;
+    for node in &declaration.body {
+        if let Node::Block(block) = node {
+            if is_keyframe_selector(&block.name) {
+                selectors += 1;
+            }
+        }
+    }
+    if selectors == 0 {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "keyframes `{}` needs at least one selector block like `from`, `to`, or `50%`.",
+                declaration.name.text
+            ),
+            declaration.span,
+        ));
+    }
+}
+
+fn validate_keyframe_block(block: &crate::Block, diagnostics: &mut Vec<Diagnostic>) {
+    if !is_keyframe_selector(&block.name) {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown keyframe selector `{}`.\n\nUse `from`, `to`, or percentages like `50%`.",
+                block.name
+            ),
+            block.span,
+        ));
+        return;
+    }
+
+    for node in &block.body {
+        let Node::Statement(statement) = node else {
+            continue;
+        };
+        match statement.words.first().map(String::as_str) {
+            Some(property) if tokens::KEYFRAME_PROPERTIES.contains(&property) => {}
+            Some(other) => diagnostics.push(Diagnostic::error(
+                format!(
+                    "Unknown keyframe property `{other}`.\n\nFrame keyframes currently support `opacity`, `transform`, `filter`, `scale`, `translate`, and `rotate`."
+                ),
+                statement.span,
+            )),
+            None => {}
         }
     }
 }
@@ -747,6 +901,51 @@ fn validate_value(statement: &Statement, allowed: &[&str], diagnostics: &mut Vec
     }
 }
 
+fn validate_animation_time(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
+    let Some(value) = statement.words.get(1) else {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "{} expects a duration like `fast`, `240ms`, or `1s`.",
+                statement.words[0]
+            ),
+            statement.span,
+        ));
+        return;
+    };
+
+    if tokens::DURATIONS.contains(&value.as_str()) || is_time_value(value) {
+        return;
+    }
+
+    diagnostics.push(Diagnostic::error(
+        format!(
+            "`{value}` is not a valid animation time.\n\nUse named duration tokens like `fast`, `normal`, `slow`, or CSS time values like `240ms` and `1s`."
+        ),
+        statement.span,
+    ));
+}
+
+fn validate_animation_iteration(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
+    let Some(value) = statement.words.get(1) else {
+        diagnostics.push(Diagnostic::error(
+            "iteration expects a count like `1`, `3`, or `infinite`",
+            statement.span,
+        ));
+        return;
+    };
+
+    if value == "infinite" || value.chars().all(|character| character.is_ascii_digit()) {
+        return;
+    }
+
+    diagnostics.push(Diagnostic::error(
+        format!(
+            "`{value}` is not a valid animation iteration count.\n\nUse a number or `infinite`."
+        ),
+        statement.span,
+    ));
+}
+
 fn validate_box_space(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
     let Some(value) = statement.words.get(1) else {
         diagnostics.push(Diagnostic::error(
@@ -831,6 +1030,32 @@ fn is_valid_percentage(value: &str) -> bool {
     }
 
     number.parse::<u8>().is_ok_and(|value| value <= 100)
+}
+
+fn is_time_value(value: &str) -> bool {
+    value
+        .strip_suffix("ms")
+        .or_else(|| value.strip_suffix('s'))
+        .is_some_and(|number| {
+            !number.is_empty()
+                && number
+                    .chars()
+                    .all(|character| character.is_ascii_digit() || character == '.')
+        })
+}
+
+fn is_condition_block(name: &str) -> bool {
+    name.starts_with("below ")
+        || name.starts_with("above ")
+        || name.starts_with("between ")
+        || name.starts_with("container ")
+}
+
+fn is_keyframe_selector(name: &str) -> bool {
+    matches!(name, "from" | "to")
+        || name
+            .strip_suffix('%')
+            .is_some_and(|number| !number.is_empty() && number.chars().all(|c| c.is_ascii_digit()))
 }
 
 fn is_valid_angle(value: &str) -> bool {
@@ -1241,6 +1466,118 @@ mod tests {
         assert!(diagnostics[0]
             .message
             .contains("Unknown gradient stop color"));
+    }
+
+    #[test]
+    fn accepts_keyframes_animation_blocks_and_responsive_conditions() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Keyframes,
+                    "FloatIn",
+                    vec![
+                        block(
+                            "from",
+                            vec![
+                                statement(&["opacity", "0"]),
+                                statement(&["transform", "translateY(12px)"]),
+                            ],
+                        ),
+                        block(
+                            "to",
+                            vec![
+                                statement(&["opacity", "1"]),
+                                statement(&["transform", "translateY(0)"]),
+                            ],
+                        ),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Grid,
+                    "AppShell",
+                    vec![
+                        statement(&["columns", "sidebar", "content"]),
+                        block("below tablet", vec![statement(&["columns", "content"])]),
+                        block("container narrow", vec![statement(&["columns", "content"])]),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Card,
+                    "Panel",
+                    vec![block(
+                        "animation FloatIn",
+                        vec![
+                            statement(&["duration", "240ms"]),
+                            statement(&["delay", "0ms"]),
+                            statement(&["ease", "smooth"]),
+                            statement(&["iteration", "1"]),
+                            statement(&["direction", "normal"]),
+                            statement(&["fill", "both"]),
+                            statement(&["play-state", "running"]),
+                        ],
+                    )],
+                ),
+            ],
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn rejects_invalid_keyframes_animation_and_responsive_values() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Keyframes,
+                    "FloatIn",
+                    vec![block("middle", vec![statement(&["left", "0"])])],
+                ),
+                declaration(
+                    DeclarationKind::Grid,
+                    "AppShell",
+                    vec![block(
+                        "below phablet",
+                        vec![statement(&["columns", "content"])],
+                    )],
+                ),
+                declaration(
+                    DeclarationKind::Card,
+                    "Panel",
+                    vec![block(
+                        "animation MissingMotion",
+                        vec![statement(&["fill", "sideways"])],
+                    )],
+                ),
+            ],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("Unknown keyframe selector")));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("Unknown breakpoint")));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("Unknown animation")));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("Unknown fill value")));
+    }
+
+    #[test]
+    fn knowledge_catalog_documents_new_motion_and_responsive_concepts() {
+        let keyframes = knowledge::concept("keyframes").expect("keyframes concept");
+        let below = knowledge::concept("below").expect("below concept");
+        let container = knowledge::concept("container").expect("container concept");
+
+        assert!(keyframes.markdown().contains("@keyframes frame-Name"));
+        assert!(below.markdown().contains("@media"));
+        assert!(container.markdown().contains("@container"));
     }
 
     #[test]

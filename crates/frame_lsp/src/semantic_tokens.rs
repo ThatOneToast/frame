@@ -31,8 +31,22 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
             if let Some(name) = words.get(1) {
                 push_word(line, line_index, name.trim_end_matches('{'), 1, &mut raw);
             }
-        } else if matches!(first, "hover" | "focus" | "active" | "disabled") {
+        } else if matches!(
+            first,
+            "hover" | "focus" | "active" | "disabled" | "from" | "to"
+        ) || first.ends_with('%')
+        {
             push_word(line, line_index, first, 0, &mut raw);
+        } else if matches!(first, "below" | "above" | "between" | "container") {
+            push_word(line, line_index, first, 0, &mut raw);
+            for value in words.iter().skip(1) {
+                push_word(line, line_index, value.trim_end_matches('{'), 3, &mut raw);
+            }
+        } else if first == "animation" && words.get(1).is_some_and(|word| word.ends_with('{')) {
+            push_word(line, line_index, first, 2, &mut raw);
+            if let Some(name) = words.get(1) {
+                push_word(line, line_index, name.trim_end_matches('{'), 1, &mut raw);
+            }
         } else if knowledge::property_keywords().contains(&first) {
             push_word(line, line_index, first, 2, &mut raw);
             for value in words.iter().skip(1) {
@@ -103,6 +117,11 @@ fn is_known_value(value: &str) -> bool {
         || tokens::DURATIONS.contains(&value)
         || tokens::EASES.contains(&value)
         || tokens::ANIMATIONS.contains(&value)
+        || tokens::BREAKPOINTS.contains(&value)
+        || tokens::CONTAINERS.contains(&value)
+        || tokens::ANIMATION_FILLS.contains(&value)
+        || tokens::ANIMATION_DIRECTIONS.contains(&value)
+        || tokens::ANIMATION_PLAY_STATES.contains(&value)
         || tokens::BORDER_STYLES.contains(&value)
         || tokens::Z_LAYERS.contains(&value)
 }

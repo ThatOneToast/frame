@@ -79,6 +79,7 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "split" => SPLIT_DOC,
         "overlay" => OVERLAY_DOC,
         "dock" => DOCK_DOC,
+        "keyframes" => KEYFRAMES_DOC,
         "columns" => COLUMNS_DOC,
         "rows" => ROWS_DOC,
         "gap" => "Sets spacing between children using Frame spacing tokens like small, medium, and large.",
@@ -99,6 +100,17 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "duration" => "Sets motion duration intent. Use `fast`, `normal`, or `slow` with transitions and animations.",
         "ease" => "Sets easing intent. Use `linear`, `smooth`, `bounce`, or `sharp` to describe motion feel.",
         "animation" | "animate" => ANIMATION_DOC,
+        "delay" => "Sets the delay before an animation starts. Use named timing or CSS time values like `120ms`.",
+        "iteration" => "Sets animation repeat count. Use a number or `infinite`.",
+        "direction" => "Sets animation playback direction such as `normal`, `reverse`, or `alternate`.",
+        "play-state" => "Controls whether an animation is `running` or `paused`.",
+        "below" => RESPONSIVE_DOC,
+        "above" => RESPONSIVE_DOC,
+        "between" => RESPONSIVE_DOC,
+        "container" => CONTAINER_DOC,
+        "from" | "to" => KEYFRAME_SELECTOR_DOC,
+        "opacity" => "Animates opacity in keyframes.\n\nGenerated CSS writes `opacity: ...`.",
+        "transform" => "Animates transform functions in keyframes.\n\nGenerated CSS writes `transform: ...`.",
         "height" => "Sets height intent with values such as screen, fill, content, or percentages.\nGenerated CSS writes `height`, with `screen` becoming `100vh`.",
         "width" => "Sets width intent with values such as fill, content, screen, sidebar, or percentages.\nGenerated CSS writes `width`.",
         "min-width" => "Sets minimum width intent using named sizes or percentages.",
@@ -122,7 +134,7 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "responsive" => "Requests viewport-aware behavior, such as responsive card grids.",
         "cards" => "Used with `columns responsive` to create an auto-fitting card grid.",
         "screen" => "Sizes an element to the viewport in the relevant axis.",
-        "fill" => "Sizes an element to fill available space.",
+        "fill" => "Sizes an element to fill available space. Inside an `animation` block, `fill` sets animation fill mode such as `both`.",
         "panel" => SURFACE_PANEL_DOC,
         "main" => SURFACE_MAIN_DOC,
         "glass" => SURFACE_GLASS_DOC,
@@ -291,6 +303,79 @@ card Notice {
 Generated CSS uses deterministic keyframes such as `frame-pop-in`.
 
 Docs: `docs/animations.md`"#;
+
+const KEYFRAMES_DOC: &str = r#"keyframes
+
+Defines reusable animation keyframes in Frame's structured syntax.
+
+Use `from`, `to`, and percentage selector blocks to describe animation states. Inside selectors, use animatable properties such as `opacity`, `transform`, and `filter`.
+
+Frame:
+
+keyframes FloatIn {
+  from {
+    opacity 0
+    transform translateY(12px) scale(0.98)
+  }
+
+  to {
+    opacity 1
+    transform translateY(0) scale(1)
+  }
+}
+
+Generated CSS:
+
+@keyframes frame-FloatIn { ... }
+
+Related: `animation`, `duration`, `ease`, `fill`
+
+Docs: `docs/animations.md`"#;
+
+const KEYFRAME_SELECTOR_DOC: &str = r#"keyframe selector
+
+Marks a point in an animation timeline.
+
+Use `from` for the initial state, `to` for the final state, and percentages like `50%` for intermediate states.
+
+Generated CSS keeps the selector inside `@keyframes frame-Name`."#;
+
+const RESPONSIVE_DOC: &str = r#"responsive block
+
+Overrides declaration rules at viewport breakpoints.
+
+Use `below tablet`, `above desktop`, or `between tablet desktop` inside a declaration when layout should change with viewport size.
+
+Frame:
+
+grid AppShell {
+  columns sidebar content inspector
+
+  below tablet {
+    columns content
+    rows sidebar content inspector
+  }
+}
+
+Generated CSS emits an `@media` rule for the same generated class."#;
+
+const CONTAINER_DOC: &str = r#"container
+
+Overrides declaration rules based on container size instead of viewport size.
+
+Use `container narrow` when a component should adapt to the space it receives.
+
+Frame:
+
+grid Cards {
+  columns responsive cards
+
+  container narrow {
+    columns content
+  }
+}
+
+Generated CSS emits an `@container` rule."#;
 
 const GRID_DOC: &str = r#"grid
 

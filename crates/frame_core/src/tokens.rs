@@ -99,6 +99,28 @@ pub const TRANSITIONS: &[&str] = &["smooth", "fast", "slow", "none"];
 pub const DURATIONS: &[&str] = &["fast", "normal", "slow"];
 pub const EASES: &[&str] = &["linear", "smooth", "bounce", "sharp"];
 pub const ANIMATIONS: &[&str] = &["fade-in", "slide-up", "pop-in", "pulse", "none"];
+pub const ANIMATION_PROPERTIES: &[&str] = &[
+    "duration",
+    "delay",
+    "iteration",
+    "direction",
+    "fill",
+    "play-state",
+    "ease",
+];
+pub const ANIMATION_FILLS: &[&str] = &["none", "forwards", "backwards", "both"];
+pub const ANIMATION_DIRECTIONS: &[&str] = &["normal", "reverse", "alternate", "alternate-reverse"];
+pub const ANIMATION_PLAY_STATES: &[&str] = &["running", "paused"];
+pub const BREAKPOINTS: &[&str] = &["mobile", "tablet", "desktop", "wide"];
+pub const CONTAINERS: &[&str] = &["narrow", "content", "wide"];
+pub const KEYFRAME_PROPERTIES: &[&str] = &[
+    "opacity",
+    "transform",
+    "filter",
+    "scale",
+    "translate",
+    "rotate",
+];
 pub const BORDER_STYLES: &[&str] = &[
     "none", "soft", "strong", "accent", "muted", "danger", "success", "warning", "width", "radius",
 ];

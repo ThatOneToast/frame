@@ -403,5 +403,9 @@ Add native support for common design concepts without turning Frame into raw CSS
 
 - [ ] `mobile { stack }`
 - [ ] `mobile { hide Inspector }`
+- [x] `below tablet { columns content }`
+- [x] `above desktop { columns sidebar content inspector }`
+- [x] `between tablet desktop { ... }`
+- [x] `container narrow { columns content }`
 - [ ] `tablet { columns content }`
 - [ ] `desktop { columns sidebar content inspector }`

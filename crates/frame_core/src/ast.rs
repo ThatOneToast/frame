@@ -35,6 +35,7 @@ pub enum DeclarationKind {
     Split,
     Overlay,
     Dock,
+    Keyframes,
     Unknown(String),
 }
 

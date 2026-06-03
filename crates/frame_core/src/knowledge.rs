@@ -16,6 +16,12 @@ pub enum FrameScope {
     Component,
     Text,
     State,
+    Tokens,
+    Gradient,
+    Animation,
+    Keyframes,
+    Responsive,
+    Container,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -93,8 +99,19 @@ pub fn completion_doc(name: &str) -> Option<String> {
 
 pub fn declaration_keywords() -> &'static [&'static str] {
     &[
-        "tokens", "grid", "area", "card", "stack", "row", "button", "text", "center", "split",
-        "overlay", "dock",
+        "tokens",
+        "grid",
+        "area",
+        "card",
+        "stack",
+        "row",
+        "button",
+        "text",
+        "center",
+        "split",
+        "overlay",
+        "dock",
+        "keyframes",
     ]
 }
 
@@ -165,6 +182,21 @@ pub fn property_keywords() -> &'static [&'static str] {
         "ease",
         "animation",
         "animate",
+        "keyframes",
+        "below",
+        "above",
+        "between",
+        "container",
+        "delay",
+        "iteration",
+        "direction",
+        "fill",
+        "play-state",
+        "from",
+        "to",
+        "opacity",
+        "transform",
+        "filter",
         "type",
         "angle",
         "stop",
@@ -184,6 +216,10 @@ const CARD_FRAME: &str = "card HoverCard {\n  surface gradient dusk\n  padding l
 const TOOLBAR_FRAME: &str = "row Toolbar {\n  align center\n  justify between\n  gap small\n  padding medium\n  surface panel\n}";
 const TOOLBAR_SVELTE: &str =
     "<div class=\"fr-Toolbar\">\n  <button>Back</button>\n  <button>Save</button>\n</div>";
+const KEYFRAMES_FRAME: &str = "keyframes FloatIn {\n  from {\n    opacity 0\n    transform translateY(12px) scale(0.98)\n  }\n\n  to {\n    opacity 1\n    transform translateY(0) scale(1)\n  }\n}";
+const RESPONSIVE_FRAME: &str = "grid AppShell {\n  columns sidebar content inspector\n\n  below tablet {\n    columns content\n    rows sidebar content inspector\n  }\n}";
+const CONTAINER_FRAME: &str =
+    "grid Cards {\n  columns responsive cards\n\n  container narrow {\n    columns content\n  }\n}";
 
 pub static CONCEPTS: &[FrameConcept] = &[
     FrameConcept {
@@ -367,6 +403,58 @@ pub static CONCEPTS: &[FrameConcept] = &[
         related: &["focus", "active", "lift", "glow"],
         values: &["lift", "glow", "brighten", "dim"],
         docs_anchor: Some("docs/effects.md"),
+    },
+    FrameConcept {
+        name: "keyframes",
+        kind: ConceptKind::Declaration,
+        summary: "Defines reusable animation keyframes.",
+        description: "Defines reusable animation keyframes with structured timeline selectors. Use `from`, `to`, and percentage blocks to teach Frame how an animation changes over time.",
+        generated_css: Some("Emits `@keyframes frame-Name` with supported animatable properties."),
+        frame_examples: &[KEYFRAMES_FRAME],
+        svelte_examples: &["<section class=\"fr-Panel\">...</section>"],
+        allowed_in: &[FrameScope::Root],
+        related: &["animation", "duration", "ease", "fill"],
+        values: &["from", "to", "50%", "opacity", "transform"],
+        docs_anchor: Some("docs/animations.md"),
+    },
+    FrameConcept {
+        name: "animation",
+        kind: ConceptKind::Property,
+        summary: "Applies preset or custom animation motion.",
+        description: "Applies a preset animation or a custom `keyframes` declaration. Use a one-line preset for common motion, or an `animation Name { ... }` block when timing, delay, iteration, direction, fill mode, or play state matter.",
+        generated_css: Some("Emits `animation: frame-name ...` and `animation-play-state` when configured."),
+        frame_examples: &["card Panel {\n  animation FloatIn {\n    duration 240ms\n    ease smooth\n    fill both\n  }\n}"],
+        svelte_examples: &["<section class=\"fr-Panel\">...</section>"],
+        allowed_in: &[FrameScope::Component, FrameScope::State],
+        related: &["keyframes", "duration", "delay", "ease", "iteration"],
+        values: &["fade-in", "slide-up", "pop-in", "pulse"],
+        docs_anchor: Some("docs/animations.md"),
+    },
+    FrameConcept {
+        name: "below",
+        kind: ConceptKind::Property,
+        summary: "Starts a max-width responsive override.",
+        description: "Starts a responsive override for viewports below a named breakpoint. Use it when a layout should simplify on smaller screens.",
+        generated_css: Some("Emits an `@media (max-width: ...)` rule for the current class."),
+        frame_examples: &[RESPONSIVE_FRAME],
+        svelte_examples: &[GRID_SVELTE],
+        allowed_in: &[FrameScope::Grid, FrameScope::Area, FrameScope::Component],
+        related: &["above", "between", "columns", "rows"],
+        values: &["mobile", "tablet", "desktop", "wide"],
+        docs_anchor: Some("docs/grid.md"),
+    },
+    FrameConcept {
+        name: "container",
+        kind: ConceptKind::Property,
+        summary: "Starts a container query override.",
+        description: "Starts a container query override so a component can adapt to the space it receives instead of the whole viewport.",
+        generated_css: Some("Emits an `@container` rule for the current class."),
+        frame_examples: &[CONTAINER_FRAME],
+        svelte_examples: &["<section class=\"fr-Cards\">...</section>"],
+        allowed_in: &[FrameScope::Grid, FrameScope::Area, FrameScope::Component],
+        related: &["below", "above", "columns"],
+        values: &["narrow", "content", "wide"],
+        docs_anchor: Some("docs/grid.md"),
     },
     FrameConcept {
         name: "width 25%",

@@ -267,3 +267,27 @@ Success criteria:
 - Tree-sitter parser and highlight checks pass for `highlighting.frame` and `imports.frame`.
 - `npm test` passes in `packages/frame-svelte`.
 - `npm run build` passes in `examples/svelte`.
+
+---
+
+## Milestone 12 — Structured CSS Teacher Slice
+
+Goal: continue the language/LSP overhaul with first-class motion, responsive overrides, and broader centralized language metadata.
+
+Deliverables:
+- [x] `keyframes` top-level declaration in the AST and parser.
+- [x] Custom keyframes CSS generation with deterministic `frame-Name` names.
+- [x] Structured `animation Name { ... }` blocks with duration, delay, ease, iteration, direction, fill, and play-state.
+- [x] Responsive declaration blocks: `below`, `above`, and `between`.
+- [x] Container query declaration blocks with named container sizes.
+- [x] Symbol indexing for custom keyframes and custom animation completions.
+- [x] LSP completions for keyframe selectors, keyframe properties, animation options, and custom keyframe references.
+- [x] Hover docs for keyframes, responsive blocks, container queries, and animation controls.
+- [x] Semantic token coverage for keyframe selectors and responsive/container block keywords.
+- [x] Parser, codegen, LSP completion, and semantic validation tests for the new slice.
+- [x] README and docs updated to reflect structured full-CSS coverage rather than intentionally hiding CSS.
+
+Success criteria:
+- `cargo fmt`
+- `cargo test --workspace`
+- `cargo clippy --workspace --all-targets -- -D warnings`

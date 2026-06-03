@@ -4,7 +4,10 @@ pub fn generate_typescript(document: &Document) -> String {
     let mut ts = String::from("export const ui = {\n");
 
     for declaration in &document.declarations {
-        if declaration.kind == DeclarationKind::Tokens {
+        if matches!(
+            declaration.kind,
+            DeclarationKind::Tokens | DeclarationKind::Keyframes
+        ) {
             continue;
         }
         ts.push_str(&format!(

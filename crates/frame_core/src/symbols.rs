@@ -7,6 +7,7 @@ pub enum SymbolKind {
     Declaration(DeclarationKind),
     Color,
     Gradient,
+    Keyframes,
     GridSection { grid: String },
 }
 
@@ -23,6 +24,7 @@ pub struct SymbolIndex {
     pub declarations: HashMap<String, FrameSymbol>,
     pub colors: HashMap<String, FrameSymbol>,
     pub gradients: HashMap<String, FrameSymbol>,
+    pub keyframes: HashMap<String, FrameSymbol>,
     pub grids: HashMap<String, FrameSymbol>,
     pub grid_sections: HashMap<String, HashMap<String, FrameSymbol>>,
 }
@@ -49,6 +51,10 @@ impl SymbolIndex {
     pub fn grid_names(&self) -> Vec<String> {
         sorted_keys(&self.grids)
     }
+
+    pub fn keyframe_names(&self) -> Vec<String> {
+        sorted_keys(&self.keyframes)
+    }
 }
 
 pub fn index_document(source: &str, document: &Document) -> SymbolIndex {
@@ -74,6 +80,18 @@ pub fn index_document(source: &str, document: &Document) -> SymbolIndex {
                 declaration.name.text.as_str(),
                 &declaration.body,
                 &mut index,
+            );
+        }
+
+        if declaration.kind == DeclarationKind::Keyframes {
+            index.keyframes.insert(
+                declaration.name.text.clone(),
+                FrameSymbol {
+                    name: declaration.name.text.clone(),
+                    kind: SymbolKind::Keyframes,
+                    span: declaration.name.span,
+                    value: Some(format!("@keyframes frame-{}", declaration.name.text)),
+                },
             );
         }
 

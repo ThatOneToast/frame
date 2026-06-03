@@ -1,8 +1,8 @@
 # Frame Language
 
-Frame is a design-intent CSS DSL for Svelte projects. A `.frame` file describes components and layout regions with concepts like `surface panel`, `columns responsive cards`, `radius large`, and `hover { lift small }`.
+Frame is a structured CSS language for Svelte projects. A `.frame` file describes components and layout regions with concepts like `surface panel`, `columns responsive cards`, `radius large`, and `hover { lift small }`.
 
-Frame is not raw CSS with different punctuation. When a concept is common, Frame should name the UI intent directly. Lower-level CSS escape hatches can come later, but the core language stays readable first.
+Frame is not raw CSS with different punctuation. The goal is to expose CSS power through readable, guided syntax: first-class grids, responsive rules, container queries, gradients, transitions, animations, keyframes, tokens, states, and safe advanced CSS escape hatches.
 
 ## Declarations
 
@@ -19,6 +19,18 @@ card ProjectCard {
   padding large
   radius large
   shadow soft
+}
+
+keyframes FloatIn {
+  from {
+    opacity 0
+    transform translateY(12px)
+  }
+
+  to {
+    opacity 1
+    transform translateY(0)
+  }
 }
 ```
 

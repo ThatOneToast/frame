@@ -82,6 +82,12 @@ pub fn generate_css(document: &Document) -> String {
                 emit_grid(&mut css, &declaration.body);
                 css.push_str("}\n\n");
                 emit_grid_section_rules(&mut css, &class_name, &declaration.body);
+                emit_condition_blocks(
+                    &mut css,
+                    &class_name,
+                    declaration.kind.clone(),
+                    &declaration.body,
+                );
             }
             DeclarationKind::Area => {
                 css.push_str(&format!(".{class_name} {{\n"));
@@ -99,6 +105,12 @@ pub fn generate_css(document: &Document) -> String {
                     css.push_str(&format!("  grid-column: span {value};\n"));
                 }
                 css.push_str("}\n\n");
+                emit_condition_blocks(
+                    &mut css,
+                    &class_name,
+                    declaration.kind.clone(),
+                    &declaration.body,
+                );
             }
             DeclarationKind::Card
             | DeclarationKind::Stack
@@ -144,6 +156,15 @@ pub fn generate_css(document: &Document) -> String {
                         css.push_str("}\n\n");
                     }
                 }
+                emit_condition_blocks(
+                    &mut css,
+                    &class_name,
+                    declaration.kind.clone(),
+                    &declaration.body,
+                );
+            }
+            DeclarationKind::Keyframes => {
+                emit_custom_keyframes(&mut css, &declaration.name.text, &declaration.body);
             }
             _ => {}
         }
@@ -254,6 +275,56 @@ fn emit_custom_tokens(css: &mut String, document: &Document) {
             }
         }
     }
+}
+
+fn emit_custom_keyframes(css: &mut String, name: &str, body: &[Node]) {
+    css.push_str(&format!("@keyframes frame-{name} {{\n"));
+    for node in body {
+        let Node::Block(block) = node else {
+            continue;
+        };
+        if !is_keyframe_selector(&block.name) {
+            continue;
+        }
+        css.push_str(&format!("  {} {{\n", block.name));
+        for statement in statements(&block.body) {
+            emit_keyframe_statement(css, statement);
+        }
+        css.push_str("  }\n");
+    }
+    css.push_str("}\n\n");
+}
+
+fn emit_keyframe_statement(css: &mut String, statement: &Statement) {
+    let Some(property) = statement.words.first().map(String::as_str) else {
+        return;
+    };
+    let value = statement
+        .words
+        .iter()
+        .skip(1)
+        .cloned()
+        .collect::<Vec<_>>()
+        .join(" ");
+    if value.is_empty() {
+        return;
+    }
+    match property {
+        "opacity" | "transform" | "filter" => {
+            css.push_str(&format!("    {property}: {value};\n"));
+        }
+        "scale" | "translate" | "rotate" => {
+            css.push_str(&format!("    transform: {property}({value});\n"));
+        }
+        _ => {}
+    }
+}
+
+fn is_keyframe_selector(name: &str) -> bool {
+    matches!(name, "from" | "to")
+        || name
+            .strip_suffix('%')
+            .is_some_and(|number| !number.is_empty() && number.chars().all(|c| c.is_ascii_digit()))
 }
 
 fn gradient_css(body: &[Node]) -> Option<String> {
@@ -479,6 +550,9 @@ fn emit_common(css: &mut String, body: &[Node], symbols: &frame_core::symbols::S
             continue;
         };
         if block.name != "advanced" {
+            if let Some(animation_name) = block.name.strip_prefix("animation ") {
+                emit_animation_block(css, animation_name, &block.body);
+            }
             continue;
         }
         for statement in statements(&block.body) {
@@ -486,6 +560,166 @@ fn emit_common(css: &mut String, body: &[Node], symbols: &frame_core::symbols::S
                 emit_advanced_css(css, statement);
             }
         }
+    }
+}
+
+fn emit_animation_block(css: &mut String, name: &str, body: &[Node]) {
+    let mut duration = "240ms".to_string();
+    let mut ease = "ease".to_string();
+    let mut delay = "0ms".to_string();
+    let mut iteration = "1".to_string();
+    let mut direction = "normal".to_string();
+    let mut fill = "both".to_string();
+    let mut play_state = "running".to_string();
+
+    for statement in statements(body) {
+        match statement.words.first().map(String::as_str) {
+            Some("duration") => {
+                duration = animation_duration(statement.words.get(1).map(String::as_str));
+            }
+            Some("delay") => {
+                delay = animation_duration(statement.words.get(1).map(String::as_str));
+            }
+            Some("ease") => {
+                ease = animation_ease(statement.words.get(1).map(String::as_str));
+            }
+            Some("iteration") => {
+                iteration = statement
+                    .words
+                    .get(1)
+                    .cloned()
+                    .unwrap_or_else(|| "1".to_string());
+            }
+            Some("direction") => {
+                direction = statement
+                    .words
+                    .get(1)
+                    .cloned()
+                    .unwrap_or_else(|| "normal".to_string());
+            }
+            Some("fill") => {
+                fill = statement
+                    .words
+                    .get(1)
+                    .cloned()
+                    .unwrap_or_else(|| "both".to_string());
+            }
+            Some("play-state") => {
+                play_state = statement
+                    .words
+                    .get(1)
+                    .cloned()
+                    .unwrap_or_else(|| "running".to_string());
+            }
+            _ => {}
+        }
+    }
+
+    css.push_str(&format!(
+        "  animation: frame-{name} {duration} {ease} {delay} {iteration} {direction} {fill};\n"
+    ));
+    css.push_str(&format!("  animation-play-state: {play_state};\n"));
+}
+
+fn animation_duration(value: Option<&str>) -> String {
+    match value {
+        Some("fast") => "120ms".to_string(),
+        Some("normal") => "200ms".to_string(),
+        Some("slow") => "360ms".to_string(),
+        Some(value) if value.ends_with("ms") || value.ends_with('s') => value.to_string(),
+        _ => "240ms".to_string(),
+    }
+}
+
+fn animation_ease(value: Option<&str>) -> String {
+    match value {
+        Some("linear") => "linear".to_string(),
+        Some("bounce") => "cubic-bezier(.2, 1.4, .4, 1)".to_string(),
+        Some("sharp") => "cubic-bezier(.4, 0, 1, 1)".to_string(),
+        _ => "ease".to_string(),
+    }
+}
+
+fn emit_condition_blocks(css: &mut String, class_name: &str, kind: DeclarationKind, body: &[Node]) {
+    for node in body {
+        let Node::Block(block) = node else {
+            continue;
+        };
+        let Some(rule) = condition_rule(&block.name) else {
+            continue;
+        };
+        css.push_str(&format!("{rule} {{\n  .{class_name} {{\n"));
+        emit_conditional_body(css, &kind, &block.body);
+        css.push_str("  }\n}\n\n");
+    }
+}
+
+fn emit_conditional_body(css: &mut String, kind: &DeclarationKind, body: &[Node]) {
+    match kind {
+        DeclarationKind::Grid => emit_grid(css, body),
+        DeclarationKind::Area => {
+            emit_common(css, body, &frame_core::symbols::SymbolIndex::default());
+            if let Some(value) = find_statement_value(body, "place") {
+                css.push_str(&format!("    grid-area: {value};\n"));
+            }
+            if let Some(value) = find_statement_value(body, "col") {
+                css.push_str(&format!("    grid-column: {value};\n"));
+            }
+            if let Some(value) = find_statement_value(body, "row") {
+                css.push_str(&format!("    grid-row: {value};\n"));
+            }
+        }
+        _ => emit_common(css, body, &frame_core::symbols::SymbolIndex::default()),
+    }
+}
+
+fn condition_rule(name: &str) -> Option<String> {
+    let words = name.split_whitespace().collect::<Vec<_>>();
+    match words.as_slice() {
+        ["below", breakpoint] => Some(format!(
+            "@media (max-width: {})",
+            breakpoint_max(breakpoint)
+        )),
+        ["above", breakpoint] => Some(format!(
+            "@media (min-width: {})",
+            breakpoint_min(breakpoint)
+        )),
+        ["between", start, end] => Some(format!(
+            "@media (min-width: {}) and (max-width: {})",
+            breakpoint_min(start),
+            breakpoint_max(end)
+        )),
+        ["container", name] => Some(format!("@container (max-width: {})", container_width(name))),
+        _ => None,
+    }
+}
+
+fn breakpoint_min(name: &str) -> &str {
+    match name {
+        "mobile" => "0px",
+        "tablet" => "768px",
+        "desktop" => "1024px",
+        "wide" => "1280px",
+        _ => "0px",
+    }
+}
+
+fn breakpoint_max(name: &str) -> &str {
+    match name {
+        "mobile" => "767px",
+        "tablet" => "1023px",
+        "desktop" => "1279px",
+        "wide" => "1535px",
+        _ => "1023px",
+    }
+}
+
+fn container_width(name: &str) -> &str {
+    match name {
+        "narrow" => "42rem",
+        "content" => "64rem",
+        "wide" => "80rem",
+        _ => name,
     }
 }
 
@@ -1203,6 +1437,88 @@ mod tests {
         assert!(css.contains("--frame-gradient-hero-gradient: linear-gradient(135deg, var(--frame-color-brand-purple) 0%, var(--frame-color-brand-bg) 100%);"));
         assert!(css.contains("background: var(--frame-gradient-hero-gradient);"));
         assert!(css.contains("backdrop-filter: blur(12px);"));
+    }
+
+    #[test]
+    fn generates_custom_keyframes_and_animation_blocks() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Keyframes,
+                    "FloatIn",
+                    vec![
+                        Node::Block(frame_core::Block {
+                            name: "from".to_string(),
+                            body: vec![
+                                statement(&["opacity", "0"]),
+                                statement(&["transform", "translateY(12px)", "scale(0.98)"]),
+                            ],
+                            span: Span::default(),
+                        }),
+                        Node::Block(frame_core::Block {
+                            name: "to".to_string(),
+                            body: vec![
+                                statement(&["opacity", "1"]),
+                                statement(&["transform", "translateY(0)", "scale(1)"]),
+                            ],
+                            span: Span::default(),
+                        }),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Card,
+                    "Panel",
+                    vec![Node::Block(frame_core::Block {
+                        name: "animation FloatIn".to_string(),
+                        body: vec![
+                            statement(&["duration", "240ms"]),
+                            statement(&["ease", "smooth"]),
+                            statement(&["fill", "both"]),
+                        ],
+                        span: Span::default(),
+                    })],
+                ),
+            ],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("@keyframes frame-FloatIn"));
+        assert!(css.contains("from {"));
+        assert!(css.contains("opacity: 0;"));
+        assert!(css.contains("transform: translateY(12px) scale(0.98);"));
+        assert!(css.contains("animation: frame-FloatIn 240ms ease 0ms 1 normal both;"));
+    }
+
+    #[test]
+    fn generates_responsive_and_container_rules() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Grid,
+                "AppShell",
+                vec![
+                    statement(&["columns", "sidebar", "content", "inspector"]),
+                    Node::Block(frame_core::Block {
+                        name: "below tablet".to_string(),
+                        body: vec![statement(&["columns", "content"])],
+                        span: Span::default(),
+                    }),
+                    Node::Block(frame_core::Block {
+                        name: "container narrow".to_string(),
+                        body: vec![statement(&["columns", "content"])],
+                        span: Span::default(),
+                    }),
+                ],
+            )],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("@media (max-width: 1023px)"));
+        assert!(css.contains("@container (max-width: 42rem)"));
+        assert!(css.contains(".fr-AppShell"));
     }
 
     #[test]

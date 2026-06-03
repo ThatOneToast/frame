@@ -186,6 +186,7 @@ impl<'a> Parser<'a> {
             "split" => DeclarationKind::Split,
             "overlay" => DeclarationKind::Overlay,
             "dock" => DeclarationKind::Dock,
+            "keyframes" => DeclarationKind::Keyframes,
             other => DeclarationKind::Unknown(other.to_string()),
         };
 
@@ -311,6 +312,18 @@ fn is_allowed_nested_block(name: &str) -> bool {
         || name == "gradient"
         || name.starts_with("gradient ")
         || name.starts_with("section ")
+        || name.starts_with("animation ")
+        || matches!(name, "from" | "to")
+        || is_percentage_selector(name)
+        || name.starts_with("below ")
+        || name.starts_with("above ")
+        || name.starts_with("between ")
+        || name.starts_with("container ")
+}
+
+fn is_percentage_selector(name: &str) -> bool {
+    name.strip_suffix('%')
+        .is_some_and(|number| !number.is_empty() && number.chars().all(|c| c.is_ascii_digit()))
 }
 
 fn source_lines(source: &str) -> Vec<Line<'_>> {
@@ -375,15 +388,18 @@ overlay ModalLayer {
 }
 dock AppDock {
 }
+keyframes FloatIn {
+}
 "#;
 
         let document = parse(source).expect("parse should succeed");
 
-        assert_eq!(document.declarations.len(), 12);
+        assert_eq!(document.declarations.len(), 13);
         assert_eq!(document.declarations[0].kind, DeclarationKind::Grid);
         assert_eq!(document.declarations[7].kind, DeclarationKind::Tokens);
         assert_eq!(document.declarations[8].kind, DeclarationKind::Center);
         assert_eq!(document.declarations[11].kind, DeclarationKind::Dock);
+        assert_eq!(document.declarations[12].kind, DeclarationKind::Keyframes);
     }
 
     #[test]
@@ -484,6 +500,63 @@ card QuickLinkCard {
         assert_eq!(declaration.name.text, "QuickLinkCard");
         assert_eq!(declaration.body.len(), 2);
         assert!(matches!(declaration.body[1], Node::Block(_)));
+    }
+
+    #[test]
+    fn parses_keyframes_and_responsive_blocks() {
+        let source = r#"
+keyframes FloatIn {
+  from {
+    opacity 0
+    transform translateY(12px)
+  }
+
+  50% {
+    opacity 0.8
+  }
+
+  to {
+    opacity 1
+    transform translateY(0)
+  }
+}
+
+grid AppShell {
+  columns sidebar content
+
+  below tablet {
+    columns content
+  }
+
+  container narrow {
+    columns content
+  }
+}
+
+card Panel {
+  animation FloatIn {
+    duration fast
+    ease smooth
+    fill both
+  }
+}
+"#;
+
+        let document = parse(source).expect("parse should succeed");
+
+        assert_eq!(document.declarations[0].kind, DeclarationKind::Keyframes);
+        assert!(matches!(
+            document.declarations[0].body[0],
+            Node::Block(ref block) if block.name == "from"
+        ));
+        assert!(matches!(
+            document.declarations[1].body[1],
+            Node::Block(ref block) if block.name == "below tablet"
+        ));
+        assert!(matches!(
+            document.declarations[2].body[0],
+            Node::Block(ref block) if block.name == "animation FloatIn"
+        ));
     }
 
     #[test]

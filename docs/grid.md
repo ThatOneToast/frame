@@ -76,6 +76,49 @@ grid QuickLinks {
 
 This generates an auto-fitting card grid using normal CSS grid.
 
+## Responsive Overrides
+
+Use breakpoint blocks inside a declaration when a layout should change with viewport size:
+
+```frame
+grid AppShell {
+  columns sidebar content inspector
+
+  below tablet {
+    columns content
+    rows sidebar content inspector
+  }
+
+  above desktop {
+    columns sidebar content inspector
+  }
+}
+```
+
+Supported breakpoint blocks:
+
+- `below mobile`, `below tablet`, `below desktop`, `below wide`
+- `above mobile`, `above tablet`, `above desktop`, `above wide`
+- `between tablet desktop`
+
+Generated CSS emits `@media` rules for the same generated class.
+
+## Container Queries
+
+Use container blocks when a component should adapt to its own available space:
+
+```frame
+grid Cards {
+  columns responsive cards
+
+  container narrow {
+    columns content
+  }
+}
+```
+
+Supported named containers are `narrow`, `content`, and `wide`. Generated CSS emits an `@container` rule.
+
 ## Vertical Flow
 
 Named `columns` normally lay out left to right. Add `flow vertical` when the named sections should stack top to bottom while keeping the same readable section names:

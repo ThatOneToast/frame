@@ -14,8 +14,19 @@ pub struct CompletionSuggestion {
 }
 
 const DECLARATIONS: &[&str] = &[
-    "tokens", "grid", "area", "card", "stack", "row", "button", "text", "center", "split",
-    "overlay", "dock",
+    "tokens",
+    "grid",
+    "area",
+    "card",
+    "stack",
+    "row",
+    "button",
+    "text",
+    "center",
+    "split",
+    "overlay",
+    "dock",
+    "keyframes",
 ];
 
 struct FrameSnippet {
@@ -49,6 +60,21 @@ const SNIPPETS: &[FrameSnippet] = &[
         label: "empty-state",
         body: "center EmptyState {\n  height screen\n  surface main\n  text muted\n}",
         documentation: "Creates a centered empty state.\n\nSvelte:\n\n```svelte\n<section class=\"fr-EmptyState\">\n  <h2>No messages yet</h2>\n  <p>Select a channel to begin.</p>\n</section>\n```",
+    },
+    FrameSnippet {
+        label: "keyframe-animation",
+        body: "keyframes FloatIn {\n  from {\n    opacity 0\n    transform translateY(12px) scale(0.98)\n  }\n\n  to {\n    opacity 1\n    transform translateY(0) scale(1)\n  }\n}\n\ncard Panel {\n  animation FloatIn {\n    duration 240ms\n    ease smooth\n    fill both\n  }\n}",
+        documentation: "Creates custom keyframes and applies them to a component with structured animation controls.\n\nCSS output includes `@keyframes frame-FloatIn` and an `animation` declaration on `.fr-Panel`.",
+    },
+    FrameSnippet {
+        label: "responsive-breakpoint",
+        body: "grid AppShell {\n  columns sidebar content inspector\n\n  below tablet {\n    columns content\n    rows sidebar content inspector\n  }\n}",
+        documentation: "Creates a responsive grid override. `below tablet` emits a media query for tablet-and-smaller viewports.",
+    },
+    FrameSnippet {
+        label: "container-query",
+        body: "grid Cards {\n  columns responsive cards\n\n  container narrow {\n    columns content\n  }\n}",
+        documentation: "Creates a container-query override for a grid when its container becomes narrow.",
     },
 ];
 
@@ -109,6 +135,16 @@ const COMMON_PROPERTIES: &[&str] = &[
 
 const TOKEN_PROPERTIES: &[&str] = &["color", "gradient"];
 const GRADIENT_PROPERTIES: &[&str] = &["type", "angle", "stop", "corner"];
+const ANIMATION_PROPERTIES: &[&str] = &[
+    "duration",
+    "delay",
+    "iteration",
+    "direction",
+    "fill",
+    "play-state",
+    "ease",
+];
+const KEYFRAME_SELECTORS: &[&str] = &["from", "to", "0%", "25%", "50%", "75%", "100%"];
 const ADVANCED_PROPERTIES: &[&str] = &["css"];
 const SECTION_PROPERTIES: &[&str] = &[
     "padding",
@@ -200,6 +236,28 @@ pub fn completions_at_with_includes(
         );
     }
 
+    if is_inside_block(source, offset, "animation") {
+        if let Some(property) = line_words.first() {
+            return value_completions(property, &line_words, &symbols);
+        }
+        return suggestions(
+            ANIMATION_PROPERTIES,
+            "animation option",
+            "Timing, easing, iteration, and fill options for a custom animation.",
+        );
+    }
+
+    if is_inside_keyframe_selector(source, offset) {
+        if let Some(property) = line_words.first() {
+            return value_completions(property, &line_words, &symbols);
+        }
+        return suggestions(
+            tokens::KEYFRAME_PROPERTIES,
+            "keyframe property",
+            "Animatable property inside a keyframe selector.",
+        );
+    }
+
     if is_inside_block(source, offset, "advanced") {
         return suggestions(
             ADVANCED_PROPERTIES,
@@ -284,6 +342,11 @@ pub fn completions_at_with_includes(
                     GRID_PROPERTIES,
                     "grid property",
                     "Property for grid layout and child placement.",
+                ),
+                "keyframes" => suggestions(
+                    KEYFRAME_SELECTORS,
+                    "keyframe selector",
+                    "Selector inside a keyframes declaration.",
                 ),
                 "area" => suggestions(
                     AREA_PROPERTIES,
@@ -463,10 +526,43 @@ fn value_completions(
             "Named duration intent.",
         ),
         "ease" => suggestions(tokens::EASES, "ease value", "Named easing intent."),
-        "animation" | "animate" => suggestions(
-            tokens::ANIMATIONS,
-            "animation value",
-            "Named animation intent.",
+        "animation" | "animate" => suggestions(&[], "animation value", "Named animation intent.")
+            .into_iter()
+            .chain(suggestions(
+                tokens::ANIMATIONS,
+                "animation preset",
+                "Named animation preset.",
+            ))
+            .chain(dynamic_suggestions(
+                symbols.keyframe_names(),
+                "custom keyframes",
+                "Custom keyframes declaration from the project graph.",
+            ))
+            .collect(),
+        "delay" => suggestions(
+            &["0ms", "80ms", "120ms", "240ms", "1s"],
+            "animation delay",
+            "Time before an animation starts.",
+        ),
+        "iteration" => suggestions(
+            &["1", "2", "3", "infinite"],
+            "animation iteration",
+            "Number of animation repeats.",
+        ),
+        "direction" => suggestions(
+            tokens::ANIMATION_DIRECTIONS,
+            "animation direction",
+            "Direction used when an animation runs or repeats.",
+        ),
+        "fill" => suggestions(
+            tokens::ANIMATION_FILLS,
+            "animation fill mode",
+            "How animation styles apply before and after playback.",
+        ),
+        "play-state" => suggestions(
+            tokens::ANIMATION_PLAY_STATES,
+            "animation play state",
+            "Whether an animation is running or paused.",
         ),
         "type" => suggestions(
             tokens::GRADIENT_TYPES,
@@ -505,6 +601,21 @@ fn value_completions(
         "lift" | "brighten" | "dim" | "blur" | "press" | "scale" | "fade" | "slide" => {
             suggestions(tokens::SPACING, "effect value", "Effect strength token.")
         }
+        "opacity" => suggestions(
+            &["0", "0.25", "0.5", "0.75", "1"],
+            "opacity value",
+            "Opacity value used in keyframes.",
+        ),
+        "transform" => suggestions(
+            &[
+                "translateY(12px)",
+                "translateY(0)",
+                "scale(0.98)",
+                "scale(1)",
+            ],
+            "transform value",
+            "Transform function used in keyframes.",
+        ),
         _ => Vec::new(),
     }
 }
@@ -531,6 +642,30 @@ fn is_inside_block(source: &str, offset: usize, block: &str) -> bool {
     stack
         .last()
         .is_some_and(|header| header == block || header.starts_with(&format!("{block} ")))
+}
+
+fn is_inside_keyframe_selector(source: &str, offset: usize) -> bool {
+    let safe_offset = offset.min(source.len());
+    let mut stack = Vec::new();
+    let mut line_start = 0usize;
+
+    for (index, character) in source[..safe_offset].char_indices() {
+        match character {
+            '\n' => line_start = index + 1,
+            '{' => {
+                let header = source[line_start..index].trim();
+                stack.push(header.to_string());
+            }
+            '}' => {
+                stack.pop();
+            }
+            _ => {}
+        }
+    }
+
+    stack
+        .last()
+        .is_some_and(|header| matches!(header.as_str(), "from" | "to") || header.ends_with('%'))
 }
 
 fn include_suggestions(mut include_files: Vec<PathBuf>) -> Vec<CompletionSuggestion> {
@@ -645,6 +780,7 @@ fn completion_documentation(label: &str) -> Option<String> {
         "split" => "Defines a two-region layout. For exact horizontal ratios, use `grid` with percentage `columns`.",
         "overlay" => "Defines a fixed layer above the page. Use for modals, command palettes, and blocking dialogs.",
         "dock" => "Defines a docked command region. Current output docks to the bottom; use `row NavBar` for top navigation.",
+        "keyframes" => "Defines reusable animation keyframes.\n\nExample:\n\nkeyframes FloatIn {\n  from {\n    opacity 0\n  }\n\n  to {\n    opacity 1\n  }\n}",
         "columns" => "Defines grid columns. Examples: `columns sidebar content`, `columns 25% 50% 25%`, `columns responsive cards`.",
         "rows" => "Defines grid rows. Examples: `rows header main footer` or `rows auto fill auto`.",
         "flow" => "Controls grid section direction. Use `flow vertical` to stack named `columns` as rows.",
@@ -668,6 +804,10 @@ fn completion_documentation(label: &str) -> Option<String> {
         "background" => "Sets background with surface or semantic color tokens.",
         "advanced" => "Starts an explicit escape hatch block for scoped raw CSS declarations.\n\nExample:\n\nadvanced {\n  css \"backdrop-filter\" blur(12px)\n}",
         "gradient" => "Defines or selects a structured gradient token.\n\nToken example:\n\ngradient hero-gradient {\n  type linear\n  angle 135deg\n  stop brand-purple 0%\n  stop brand-panel 100%\n}",
+        "below" => "Starts a responsive override for viewports below a breakpoint.\n\nExample:\n\nbelow tablet {\n  columns content\n}",
+        "above" => "Starts a responsive override for viewports at or above a breakpoint.",
+        "between" => "Starts a responsive override between two breakpoints.\n\nExample:\n\nbetween tablet desktop {\n  columns sidebar content\n}",
+        "container" => "Starts a container query override.\n\nExample:\n\ncontainer narrow {\n  columns content\n}",
         "theme" => "Applies semantic color intent to text and border.",
         "hover" => "Starts hover effects. Only effect keywords are valid inside.",
         "focus" => "Starts keyboard focus effects, usually `ring accent`.",
@@ -719,6 +859,15 @@ fn completion_documentation(label: &str) -> Option<String> {
         "scale" => "Slightly scales an element.",
         "fade" => "Reduces opacity.",
         "slide" => "Expresses slide movement intent.",
+        "from" => "Keyframe selector for the starting state. Generates `from { ... }` inside `@keyframes`.",
+        "to" => "Keyframe selector for the ending state. Generates `to { ... }` inside `@keyframes`.",
+        "0%" | "25%" | "50%" | "75%" | "100%" => "Percentage keyframe selector for intermediate animation states.",
+        "delay" => "Sets how long an animation waits before starting.",
+        "iteration" => "Sets how many times an animation repeats. Use a number or `infinite`.",
+        "direction" => "Sets animation playback direction.",
+        "play-state" => "Controls whether an animation is running or paused.",
+        "opacity" => "Animates opacity in keyframes. Generates `opacity: ...`.",
+        "transform" => "Animates transform functions in keyframes. Generates `transform: ...`.",
         _ => return None,
     }.to_string())
 }
@@ -748,6 +897,7 @@ mod tests {
 
         assert!(labels.contains(&"grid".to_string()));
         assert!(labels.contains(&"card".to_string()));
+        assert!(labels.contains(&"keyframes".to_string()));
         assert!(!labels.contains(&"panel".to_string()));
         assert!(!labels.contains(&"medium".to_string()));
     }
@@ -849,6 +999,37 @@ mod tests {
         assert!(labels.contains(&"lift".to_string()));
         assert!(labels.contains(&"glow".to_string()));
         assert!(!labels.contains(&"grid".to_string()));
+    }
+
+    #[test]
+    fn keyframes_and_animation_blocks_have_contextual_completions() {
+        let labels = labels_for("keyframes FloatIn {\n  ");
+
+        assert!(labels.contains(&"from".to_string()));
+        assert!(labels.contains(&"50%".to_string()));
+
+        let labels = labels_for("keyframes FloatIn {\n  from {\n    ");
+
+        assert!(labels.contains(&"opacity".to_string()));
+        assert!(labels.contains(&"transform".to_string()));
+        assert!(!labels.contains(&"surface".to_string()));
+
+        let labels = labels_for("card Panel {\n  animation FloatIn {\n    ");
+
+        assert!(labels.contains(&"duration".to_string()));
+        assert!(labels.contains(&"fill".to_string()));
+        assert!(labels.contains(&"play-state".to_string()));
+    }
+
+    #[test]
+    fn animation_values_include_custom_keyframes() {
+        let labels = labels_at(
+            "keyframes FloatIn {\n  from {\n    opacity 0\n  }\n}\ncard Panel {\n  animation \n}\n",
+            "animation ",
+        );
+
+        assert!(labels.contains(&"fade-in".to_string()));
+        assert!(labels.contains(&"FloatIn".to_string()));
     }
 
     #[test]

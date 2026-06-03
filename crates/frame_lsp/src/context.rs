@@ -114,6 +114,7 @@ fn declaration_kind(header: &str) -> Option<&str> {
             | "split"
             | "overlay"
             | "dock"
+            | "keyframes"
     )
     .then_some(kind)
 }

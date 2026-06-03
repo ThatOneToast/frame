@@ -215,6 +215,7 @@ fn declaration_kind_label(kind: &DeclarationKind) -> &str {
         DeclarationKind::Split => "split",
         DeclarationKind::Overlay => "overlay",
         DeclarationKind::Dock => "dock",
+        DeclarationKind::Keyframes => "keyframes",
         DeclarationKind::Unknown(value) => value.as_str(),
     }
 }
