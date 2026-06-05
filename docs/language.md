@@ -117,6 +117,7 @@ card DemoCard {
 
 Core docs:
 
+- `docs/app-vocabulary.md`
 - `docs/imports.md`
 - `docs/tokens.md`
 - `docs/colors.md`

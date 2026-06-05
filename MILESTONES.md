@@ -313,3 +313,51 @@ Success criteria:
 - `cargo fmt`
 - `cargo test --workspace`
 - `cargo clippy --workspace --all-targets -- -D warnings`
+
+---
+
+## Milestone 14 — Reference Chat Application
+
+Goal: provide a real SvelteKit implementation that demonstrates Frame in a modular application.
+
+Deliverables:
+- [x] `implementations/chat-app` SvelteKit project.
+- [x] External `.frame` styling only.
+- [x] Modular layout, channel, message, user, and composer components.
+- [x] Typed models, mocked API services, and Svelte stores.
+- [x] Generated Frame CSS and TypeScript class exports.
+- [x] README documenting architecture and extension points.
+
+Success criteria:
+- The implementation can compile Frame sources into generated CSS/TS.
+- UI data flows from API services to stores to Svelte components.
+
+---
+
+## Milestone 15 — App-Driven Styling Vocabulary
+
+Goal: use the chat app's `advanced` usage as product feedback and promote repeated escape-hatch patterns into Frame-native language features.
+
+Deliverables:
+- [x] Native multi-row grid area templates for app shells and dashboards.
+- [x] Native grid track syntax for fixed rails, fixed side panels, auto tracks, content tracks, and fill tracks.
+- [x] Component-internal row/grid patterns for icon/content/action layouts.
+- [x] Overflow and scrolling intent: hidden overflow, vertical scroll panels, horizontal scroll panels, and dense-panel scrollbar behavior.
+- [x] Border edge syntax for top, right, bottom, and left separators.
+- [x] Text behavior syntax for truncation, wrapping, casing, line height, letter spacing, and label alignment.
+- [x] Control affordance syntax for reset controls, pointer-like interaction, border-box sizing, and accessible outline removal.
+- [x] Practical sizing primitives for icons, avatars, presence dots, badges, bounded panels, and safe shrinking.
+- [x] Semantic element reset syntax for text margins and form fill behavior.
+- [x] Parser, semantic validation, formatter, CSS codegen, TypeScript stability, LSP completions, hover docs, diagnostics, and tests for the new concepts.
+- [x] Diagnostics/code actions that suggest native Frame equivalents for common `advanced { css ... }` declarations.
+- [x] Updated docs and examples showing when to use the new native concepts versus the advanced escape hatch.
+- [x] Chat app Frame files rewritten to use the new native language where practical.
+
+Success criteria:
+- `cargo fmt`
+- `cargo test --workspace`
+- `cargo clippy --workspace --all-targets -- -D warnings`
+- `npm run check`, `npm run test`, and `npm run build` pass in `implementations/chat-app`.
+- [x] The chat app keeps its intended app-shell layout without raw `grid-template-*` advanced CSS.
+- [x] The chat app reduces `advanced` usage by at least 70% while preserving the terminal-inspired design.
+- LSP hover/completion guidance teaches the new concepts with examples from real app layouts.

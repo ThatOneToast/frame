@@ -1,0 +1,100 @@
+tokens TerminalTheme {
+  color terminal-bg #07090d
+  color terminal-panel #0d1117
+  color terminal-raised #121822
+  color terminal-inset #05070a
+  color terminal-border #263241
+  color terminal-border-strong #3f5166
+  color terminal-text #d9e2ef
+  color terminal-dim #7f8ea3
+  color terminal-faint #526174
+  color terminal-accent #7dd3fc
+  color terminal-accent-strong #38bdf8
+  color terminal-green #86efac
+  color terminal-yellow #fde68a
+  color terminal-red #fca5a5
+  color terminal-purple #c4b5fd
+
+  gradient terminal-depth {
+    type linear
+    angle 180deg
+    stop terminal-panel 0%
+    stop terminal-bg 100%
+  }
+}
+
+text MonoBase {
+  font mono
+  size body
+  text terminal-text
+  line relaxed
+  letter normal
+}
+
+text PanelTitle {
+  font mono
+  size caption
+  weight semibold
+  text terminal-text
+  case uppercase
+}
+
+text PanelMeta {
+  font mono
+  size caption
+  text terminal-dim
+}
+
+text SectionLabel {
+  font mono
+  size caption
+  text terminal-faint
+  padding x small
+  case uppercase
+}
+
+button IconButton {
+  font mono
+  text terminal-dim
+  background terminal-inset
+  border terminal-border
+  padding small
+  radius small
+  transition fast
+  control reset
+  interactive
+  min-width icon
+
+  hover {
+    brighten subtle
+  }
+
+  focus {
+    ring accent
+  }
+}
+
+button SendButton {
+  font mono
+  text black
+  background terminal-accent
+  border terminal-accent-strong
+  padding x medium
+  radius small
+  weight semibold
+  transition fast
+  control reset
+  interactive
+
+  hover {
+    brighten subtle
+  }
+
+  focus {
+    ring accent
+  }
+
+  disabled {
+    fade
+  }
+}

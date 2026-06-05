@@ -1,0 +1,68 @@
+#include theme
+stack UserList {
+  padding medium
+  gap small
+  scroll y
+  scrollbar dense
+}
+
+card UserRow {
+  background transparent
+  radius small
+  padding small
+  transition fast
+  layout icon-content-action
+  gap small
+
+  hover {
+    brighten subtle
+  }
+}
+
+center PresenceDot {
+  radius full
+  background terminal-faint
+  square presence
+}
+
+center PresenceOnline {
+  background terminal-green
+}
+
+center PresenceIdle {
+  background terminal-yellow
+}
+
+center PresenceBusy {
+  background terminal-red
+}
+
+center PresenceOffline {
+  background terminal-faint
+}
+
+stack UserIdentity {
+  gap none
+  min-width zero
+}
+
+text UserName {
+  font mono
+  text terminal-text
+  truncate
+}
+
+text UserHandle {
+  font mono
+  size caption
+  text terminal-faint
+}
+
+card RoleTag {
+  background terminal-inset
+  border terminal-border
+  radius small
+  padding x small
+  text terminal-dim
+  size caption
+}

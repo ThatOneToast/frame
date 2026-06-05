@@ -218,6 +218,12 @@ LSP:
 - [x] Scope-specific snippets for responsive grids, container queries, component states, animation controls, and keyframes.
 - [x] Contextual value hover docs for grid sections, breakpoints, spacing tokens, color intent, animation controls, and keyframe percentages.
 - [x] Teacher-style diagnostics for raw CSS property aliases and area declarations missing placement.
+
+## Reference Implementations
+
+- [x] Add `implementations/chat-app` SvelteKit reference application.
+- [x] Keep chat app styling in modular external `.frame` files.
+- [x] Add typed mock API, models, and stores for the chat app.
 - [x] Imported keyframes symbols in completions, hover, and go-to-definition.
 
 ## Phase 9 — Svelte Integration
@@ -423,3 +429,57 @@ Add native support for common design concepts without turning Frame into raw CSS
 - [x] Teach values through hover docs that depend on the current statement.
 - [x] Explain raw CSS property mistakes with Frame equivalents and escape-hatch guidance.
 - [x] Explain missing area placement with concrete `place`, `col`, or `row` examples.
+
+## Phase 14 — Reduce Advanced Usage From Reference Apps
+
+Goal: turn repeated `advanced { css ... }` patterns from `implementations/chat-app` into Frame-native language concepts without recreating CSS property syntax.
+
+Current chat-app escape clusters:
+
+- [x] App shell grid templates:
+  - [x] Named multi-row grid areas without `css "grid-template-areas"`.
+  - [x] Explicit column and row tracks with readable intent, such as fixed rails, side panels, and fill regions.
+  - [x] Section sizing tied to named grid areas.
+- [x] Component-internal layout grids:
+  - [x] Icon/content/action row templates for channel rows, user rows, message rows, composer rows, and header rows.
+  - [x] Dense row alignment presets that combine grid/flex display, alignment, and gap without raw `display grid`.
+- [x] Overflow and scrolling:
+  - [x] `overflow hidden`.
+  - [x] `scroll y`.
+  - [x] `scroll x`.
+  - [x] Optional scrollbar intent for dense panels.
+- [x] Border edges:
+  - [x] `border top ...`.
+  - [x] `border right ...`.
+  - [x] `border bottom ...`.
+  - [x] `border left ...`.
+- [x] Text behavior:
+  - [x] `truncate` for nowrap/hidden/ellipsis.
+  - [x] `wrap anywhere` for chat message bodies.
+  - [x] `case uppercase`.
+  - [x] `line relaxed` or numeric line-height tokens.
+  - [x] `letter normal` to replace raw letter-spacing resets.
+  - [x] `align-text left` for dense controls.
+- [x] Control affordances:
+  - [x] `control reset` for button/input appearance cleanup.
+  - [x] `interactive` for pointer affordance.
+  - [x] `box border` for border-box sizing.
+  - [x] `outline none` only when paired with a Frame focus style.
+- [x] Practical sizing primitives:
+  - [x] Square/icon/avatar/presence-dot sizes without raw rem values.
+  - [x] `min-width zero` for grid/flex children that need truncation.
+  - [x] Bounded widths such as `width modal` without raw `min(...)`.
+  - [x] Offset nudges for badges/dots without raw negative lengths.
+- [x] Resets for semantic elements:
+  - [x] `margin none` for text elements like `p`.
+  - [x] Form input fill behavior without raw width declarations.
+
+Implementation requirements:
+
+- [x] Add parser, semantic, codegen, formatter, and LSP support for the chosen syntax.
+- [x] Add hover docs that explain the intent-first concept and show Frame examples.
+- [x] Add diagnostics/code actions that suggest native Frame replacements for common `advanced` CSS properties.
+- [x] Update docs for grid, layout, typography, borders, sizing, interactions, and advanced styling.
+- [x] Rewrite `implementations/chat-app` to use the new language features.
+- [x] Keep `advanced` available as an explicit escape hatch, but reduce chat-app `advanced` usage by at least 70%.
+- [x] Add regression tests proving the chat-app shell layout does not require raw grid-template CSS.

@@ -76,6 +76,23 @@ grid QuickLinks {
 
 This generates an auto-fitting card grid using normal CSS grid.
 
+## App Shell Templates
+
+Use `tracks` and repeated `areas` lines when an app shell needs named columns and rows:
+
+```frame
+grid AppShell {
+  columns header sidebar content users composer
+  tracks columns rail panel fill side
+  tracks rows header fill composer
+  areas header header header header
+  areas sidebar channels chat users
+  areas composer composer composer composer
+}
+```
+
+This emits explicit `grid-template-columns`, `grid-template-rows`, and `grid-template-areas` without using the advanced CSS escape hatch.
+
 ## Responsive Overrides
 
 Use breakpoint blocks inside a declaration when a layout should change with viewport size:

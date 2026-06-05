@@ -1,0 +1,65 @@
+#include theme
+overlay AppViewport {
+  background terminal-bg
+  font mono
+  text terminal-text
+  box border
+  overflow hidden
+}
+
+grid AppShell {
+  columns header sidebar channels chat users composer
+  rows header content composer
+  tracks columns rail panel fill side
+  tracks rows header fill composer
+  areas header header header header
+  areas sidebar channels chat users
+  areas composer composer composer composer
+  height screen
+  width screen
+  background terminal-depth
+  overflow hidden
+  box border
+}
+
+area SidebarRail {
+  in AppShell
+  place sidebar
+  background terminal-inset
+  border terminal-border
+  padding small
+  border right terminal-border
+  overflow hidden
+}
+
+area ChannelPanel {
+  in AppShell
+  place channels
+  background terminal-panel
+  border terminal-border
+  border right terminal-border
+  overflow hidden
+}
+
+area ChatPanel {
+  in AppShell
+  place chat
+  background terminal-bg
+  padding large
+  scroll y
+  scrollbar dense
+  outline none
+
+  focus {
+    ring accent
+  }
+}
+
+area UserPanel {
+  in AppShell
+  place users
+  background terminal-panel
+  border terminal-border
+  border left terminal-border
+  overflow hidden
+}

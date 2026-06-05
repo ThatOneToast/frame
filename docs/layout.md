@@ -73,6 +73,42 @@ justify around
 justify evenly
 ```
 
+## Dense App Rows
+
+Use `layout` presets when a component needs a repeated internal structure:
+
+```frame
+button ChannelButton {
+  layout icon-content-action
+  gap small
+  control reset
+  interactive
+  align-text left
+}
+
+card MessageItem {
+  layout avatar-content
+  gap medium
+}
+```
+
+Use `scroll y`, `overflow hidden`, `box border`, directional borders, and `square` sizes for common application panels and controls:
+
+```frame
+area ChatPanel {
+  scroll y
+}
+
+area Sidebar {
+  border right terminal-border
+}
+
+button ServerButton {
+  square server
+  layout center
+}
+```
+
 ## Top NavBar
 
 Use `rows` to create a page header band, then put a `row` NavBar in that header.

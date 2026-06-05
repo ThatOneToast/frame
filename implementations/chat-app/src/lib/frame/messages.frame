@@ -1,0 +1,110 @@
+#include theme
+#include app-shell
+stack MessageList {
+  gap medium
+  animation fade-in
+}
+
+card MessageItem {
+  surface flat
+  padding medium
+  radius small
+  transition fast
+  layout avatar-content
+  gap medium
+
+  hover {
+    brighten subtle
+  }
+}
+
+center MessageAvatar {
+  background terminal-raised
+  text terminal-accent
+  border terminal-border
+  radius small
+  font mono
+  weight bold
+  square avatar
+}
+
+stack MessageBody {
+  gap small
+  min-width zero
+}
+
+row MessageMeta {
+  align center
+  gap small
+}
+
+text MessageAuthor {
+  font mono
+  weight semibold
+  text terminal-text
+}
+
+text MessageTime {
+  font mono
+  size caption
+  text terminal-faint
+}
+
+text MessageEdited {
+  font mono
+  size caption
+  text terminal-dim
+}
+
+text MessageText {
+  font mono
+  text terminal-text
+  margin none
+  wrap anywhere
+}
+
+row ReactionRow {
+  gap small
+}
+
+card ReactionPill {
+  background terminal-inset
+  border terminal-border
+  text terminal-dim
+  radius pill
+  padding x small
+  size caption
+}
+
+area MessageComposer {
+  in AppShell
+  place composer
+  background terminal-panel
+  border terminal-border
+  padding medium
+  layout composer
+  gap medium
+  border top terminal-border
+}
+
+text ComposerLabel {
+  font mono
+  size caption
+  text terminal-faint
+}
+
+button ComposerInput {
+  background terminal-inset
+  text terminal-text
+  border terminal-border
+  padding medium
+  radius small
+  font mono
+  control reset
+  width fill
+  box border
+
+  focus {
+    ring accent
+  }
+}

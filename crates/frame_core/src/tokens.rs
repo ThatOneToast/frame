@@ -33,8 +33,31 @@ pub const GLOWS: &[&str] = &[
 ];
 pub const SIZES: &[&str] = &[
     "screen", "fill", "content", "auto", "sidebar", "narrow", "wide", "small", "medium", "large",
-    "xlarge",
+    "xlarge", "zero", "modal", "icon",
 ];
+pub const TRACKS: &[&str] = &[
+    "rail", "panel", "side", "header", "composer", "fill", "auto", "content",
+];
+pub const LAYOUTS: &[&str] = &[
+    "icon-content-action",
+    "avatar-content",
+    "header",
+    "composer",
+    "center",
+];
+pub const OVERFLOWS: &[&str] = &["hidden", "visible", "auto", "clip"];
+pub const SCROLL_AXES: &[&str] = &["x", "y", "both"];
+pub const SCROLLBARS: &[&str] = &["dense", "normal"];
+pub const TEXT_WRAPS: &[&str] = &["anywhere", "normal"];
+pub const TEXT_CASES: &[&str] = &["uppercase", "normal"];
+pub const TEXT_ALIGN: &[&str] = &["left", "center", "right", "start", "end"];
+pub const LINES: &[&str] = &["normal", "relaxed", "tight"];
+pub const LETTERS: &[&str] = &["normal"];
+pub const CONTROLS: &[&str] = &["reset"];
+pub const BOX_SIZING: &[&str] = &["border", "content"];
+pub const SQUARES: &[&str] = &["server", "avatar", "icon", "presence", "unread"];
+pub const SELF_ALIGN: &[&str] = &["center", "start", "end", "stretch"];
+pub const NUDGES: &[&str] = &["top-right"];
 pub const COLORS: &[&str] = &[
     "main",
     "accent",

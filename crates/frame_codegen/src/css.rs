@@ -80,6 +80,7 @@ pub fn generate_css(document: &Document) -> String {
             DeclarationKind::Grid => {
                 css.push_str(&format!(".{class_name} {{\n  display: grid;\n"));
                 emit_grid(&mut css, &declaration.body);
+                emit_common(&mut css, &declaration.body, &symbols);
                 css.push_str("}\n\n");
                 emit_grid_section_rules(&mut css, &class_name, &declaration.body);
                 emit_condition_blocks(
@@ -180,6 +181,8 @@ fn emit_grid(css: &mut String, body: &[Node]) {
         match statement.words.first().map(String::as_str) {
             Some("columns") => emit_columns(css, statement, vertical),
             Some("rows") => emit_rows(css, statement),
+            Some("tracks") => emit_tracks(css, statement),
+            Some("areas") => {}
             Some("gap") => emit_space_property(css, "gap", statement),
             Some("height") if statement.words.get(1).map(String::as_str) == Some("screen") => {
                 css.push_str("  min-height: 100vh;\n");
@@ -190,6 +193,7 @@ fn emit_grid(css: &mut String, body: &[Node]) {
             _ => {}
         }
     }
+    emit_area_template(css, body);
 }
 
 fn emit_grid_section_rules(css: &mut String, class_name: &str, body: &[Node]) {
@@ -448,6 +452,48 @@ fn emit_rows(css: &mut String, statement: &Statement) {
     }
 }
 
+fn emit_tracks(css: &mut String, statement: &Statement) {
+    let Some(axis) = statement.words.get(1).map(String::as_str) else {
+        return;
+    };
+    let values = statement
+        .words
+        .iter()
+        .skip(2)
+        .map(|value| track_css_value(value))
+        .collect::<Vec<_>>();
+    if values.is_empty() {
+        return;
+    }
+    match axis {
+        "columns" => css.push_str(&format!("  grid-template-columns: {};\n", values.join(" "))),
+        "rows" => css.push_str(&format!("  grid-template-rows: {};\n", values.join(" "))),
+        _ => {}
+    }
+}
+
+fn emit_area_template(css: &mut String, body: &[Node]) {
+    let rows = statements(body)
+        .filter(|statement| statement.words.first().map(String::as_str) == Some("areas"))
+        .map(|statement| {
+            format!(
+                "\"{}\"",
+                statement
+                    .words
+                    .iter()
+                    .skip(1)
+                    .cloned()
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            )
+        })
+        .collect::<Vec<_>>();
+
+    if !rows.is_empty() {
+        css.push_str(&format!("  grid-template-areas: {};\n", rows.join(" ")));
+    }
+}
+
 fn emit_common(css: &mut String, body: &[Node], symbols: &frame_core::symbols::SymbolIndex) {
     for statement in statements(body) {
         match statement.words.first().map(String::as_str) {
@@ -492,6 +538,14 @@ fn emit_common(css: &mut String, body: &[Node], symbols: &frame_core::symbols::S
             }
             Some("border") => emit_border(css, statement),
             Some("outline") => emit_outline(css, statement),
+            Some("layout") => emit_layout(css, statement),
+            Some("overflow") => emit_overflow(css, statement),
+            Some("scroll") => emit_scroll(css, statement),
+            Some("scrollbar") => emit_scrollbar(css, statement),
+            Some("box") => emit_box(css, statement),
+            Some("square") => emit_square(css, statement),
+            Some("self") => emit_self(css, statement),
+            Some("nudge") => emit_nudge(css, statement),
             Some("height") => emit_size_property(css, "height", statement),
             Some("width") => emit_size_property(css, "width", statement),
             Some("min-height") => emit_size_property(css, "min-height", statement),
@@ -538,8 +592,20 @@ fn emit_common(css: &mut String, body: &[Node], symbols: &frame_core::symbols::S
                     );
                 }
             }
+            Some("truncate") => {
+                css.push_str(
+                    "  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n",
+                );
+            }
+            Some("wrap") => emit_wrap(css, statement),
+            Some("case") => emit_text_case(css, statement),
+            Some("align-text") => emit_text_align(css, statement),
             Some("size") => emit_type_size(css, statement),
             Some("weight") => emit_weight(css, statement),
+            Some("line") => emit_line(css, statement),
+            Some("letter") => emit_letter(css, statement),
+            Some("control") => emit_control(css, statement),
+            Some("interactive") => css.push_str("  cursor: pointer;\n"),
             Some("css") => emit_advanced_css(css, statement),
             _ => {}
         }
@@ -848,10 +914,147 @@ fn emit_size_property(css: &mut String, property: &str, statement: &Statement) {
             "sidebar" => "18rem".to_string(),
             "narrow" => "12rem".to_string(),
             "wide" => "32rem".to_string(),
+            "zero" if property.starts_with("min-") => "0".to_string(),
+            "modal" if property == "width" => "min(42rem, 100%)".to_string(),
+            "icon" => "2.5rem".to_string(),
             value if is_percentage(value) => value.to_string(),
             value => format!("var(--frame-space-{value})"),
         };
         css.push_str(&format!("  {property}: {css_value};\n"));
+    }
+}
+
+fn emit_layout(css: &mut String, statement: &Statement) {
+    match statement.words.get(1).map(String::as_str) {
+        Some("icon-content-action") | Some("composer") => {
+            css.push_str("  display: grid;\n");
+            css.push_str("  grid-template-columns: auto minmax(0, 1fr) auto;\n");
+            css.push_str("  align-items: center;\n");
+        }
+        Some("avatar-content") => {
+            css.push_str("  display: grid;\n");
+            css.push_str("  grid-template-columns: 2.5rem minmax(0, 1fr);\n");
+        }
+        Some("header") => {
+            css.push_str("  display: grid;\n");
+            css.push_str("  grid-template-columns: 16rem minmax(0, 1fr) auto;\n");
+            css.push_str("  align-items: center;\n");
+        }
+        Some("center") => {
+            css.push_str("  display: grid;\n");
+            css.push_str("  place-items: center;\n");
+        }
+        _ => {}
+    }
+}
+
+fn emit_overflow(css: &mut String, statement: &Statement) {
+    if let Some(value) = statement.words.get(1) {
+        css.push_str(&format!("  overflow: {value};\n"));
+    }
+}
+
+fn emit_scroll(css: &mut String, statement: &Statement) {
+    match statement.words.get(1).map(String::as_str) {
+        Some("x") => css.push_str("  overflow-x: auto;\n"),
+        Some("y") => css.push_str("  overflow-y: auto;\n"),
+        Some("both") => css.push_str("  overflow: auto;\n"),
+        _ => {}
+    }
+}
+
+fn emit_scrollbar(css: &mut String, statement: &Statement) {
+    match statement.words.get(1).map(String::as_str) {
+        Some("dense") => {
+            css.push_str("  scrollbar-width: thin;\n");
+            css.push_str("  scrollbar-color: var(--frame-color-muted) transparent;\n");
+        }
+        Some("normal") => css.push_str("  scrollbar-width: auto;\n"),
+        _ => {}
+    }
+}
+
+fn emit_box(css: &mut String, statement: &Statement) {
+    match statement.words.get(1).map(String::as_str) {
+        Some("border") => css.push_str("  box-sizing: border-box;\n"),
+        Some("content") => css.push_str("  box-sizing: content-box;\n"),
+        _ => {}
+    }
+}
+
+fn emit_square(css: &mut String, statement: &Statement) {
+    let Some(value) = statement.words.get(1).map(String::as_str) else {
+        return;
+    };
+    let size = match value {
+        "server" => "3rem",
+        "avatar" | "icon" => "2.5rem",
+        "presence" => "0.65rem",
+        "unread" => "0.55rem",
+        _ => return,
+    };
+    css.push_str(&format!("  width: {size};\n  height: {size};\n"));
+}
+
+fn emit_self(css: &mut String, statement: &Statement) {
+    if let Some(value) = statement.words.get(1) {
+        css.push_str(&format!(
+            "  justify-self: {value};\n  align-self: {value};\n"
+        ));
+    }
+}
+
+fn emit_nudge(css: &mut String, statement: &Statement) {
+    match statement.words.get(1).map(String::as_str) {
+        Some("top-right") => css.push_str("  top: -0.1rem;\n  right: -0.1rem;\n"),
+        _ => {}
+    }
+}
+
+fn emit_wrap(css: &mut String, statement: &Statement) {
+    match statement.words.get(1).map(String::as_str) {
+        Some("anywhere") => css.push_str("  overflow-wrap: anywhere;\n"),
+        Some("normal") => css.push_str("  overflow-wrap: normal;\n"),
+        _ => {}
+    }
+}
+
+fn emit_text_case(css: &mut String, statement: &Statement) {
+    match statement.words.get(1).map(String::as_str) {
+        Some("uppercase") => css.push_str("  text-transform: uppercase;\n"),
+        Some("normal") => css.push_str("  text-transform: none;\n"),
+        _ => {}
+    }
+}
+
+fn emit_text_align(css: &mut String, statement: &Statement) {
+    if let Some(value) = statement.words.get(1) {
+        css.push_str(&format!("  text-align: {value};\n"));
+    }
+}
+
+fn emit_line(css: &mut String, statement: &Statement) {
+    let Some(value) = statement.words.get(1).map(String::as_str) else {
+        return;
+    };
+    let line_height = match value {
+        "relaxed" => "1.45",
+        "tight" => "1.15",
+        "normal" => "1.3",
+        _ => return,
+    };
+    css.push_str(&format!("  line-height: {line_height};\n"));
+}
+
+fn emit_letter(css: &mut String, statement: &Statement) {
+    if statement.words.get(1).map(String::as_str) == Some("normal") {
+        css.push_str("  letter-spacing: 0;\n");
+    }
+}
+
+fn emit_control(css: &mut String, statement: &Statement) {
+    if statement.words.get(1).map(String::as_str) == Some("reset") {
+        css.push_str("  appearance: none;\n");
     }
 }
 
@@ -861,6 +1064,21 @@ fn column_css_value(value: &str) -> &str {
         "auto" => "auto",
         "fill" => "minmax(0, 1fr)",
         _ => "minmax(0, 1fr)",
+    }
+}
+
+fn track_css_value(value: &str) -> String {
+    match value {
+        "rail" => "4.5rem".to_string(),
+        "panel" => "18rem".to_string(),
+        "side" => "16rem".to_string(),
+        "header" => "3.25rem".to_string(),
+        "composer" => "4.75rem".to_string(),
+        "fill" => "minmax(0, 1fr)".to_string(),
+        "auto" => "auto".to_string(),
+        "content" => "max-content".to_string(),
+        value if is_percentage(value) => value.to_string(),
+        _ => "minmax(0, 1fr)".to_string(),
     }
 }
 
@@ -890,6 +1108,25 @@ fn surface_value(value: &str) -> bool {
 fn emit_border(css: &mut String, statement: &Statement) {
     match statement.words.get(1).map(String::as_str) {
         Some("none") => css.push_str("  border: 0;\n"),
+        Some(edge @ ("top" | "right" | "bottom" | "left")) => {
+            let value = statement.words.get(2).map(String::as_str).unwrap_or("soft");
+            match value {
+                "soft" => {
+                    css.push_str(&format!(
+                        "  border-{edge}: 1px solid rgba(255, 255, 255, 0.14);\n"
+                    ));
+                }
+                "strong" => {
+                    css.push_str(&format!(
+                        "  border-{edge}: 1px solid rgba(255, 255, 255, 0.32);\n"
+                    ));
+                }
+                "none" => css.push_str(&format!("  border-{edge}: 0;\n")),
+                value => css.push_str(&format!(
+                    "  border-{edge}: 1px solid var(--frame-color-{value});\n"
+                )),
+            }
+        }
         Some("radius") => {
             let value = statement
                 .words
@@ -1176,6 +1413,122 @@ mod tests {
 
         assert!(css.contains("grid-template-areas: \"sidebar content inspector\";"));
         assert!(css.contains("grid-area: sidebar;"));
+    }
+
+    #[test]
+    fn grids_emit_common_and_advanced_properties() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Grid,
+                "AppShell",
+                vec![
+                    statement(&["columns", "sidebar", "content"]),
+                    statement(&["background", "panel"]),
+                    Node::Block(frame_core::Block {
+                        name: "advanced".to_string(),
+                        body: vec![statement(&[
+                            "css",
+                            "\"grid-template-areas\"",
+                            "\"header",
+                            "header\"",
+                            "\"sidebar",
+                            "content\"",
+                        ])],
+                        span: Span::default(),
+                    }),
+                ],
+            )],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("background: var(--frame-surface-panel);"));
+        assert!(css.contains("grid-template-areas: \"header header\" \"sidebar content\";"));
+    }
+
+    #[test]
+    fn generates_app_driven_layout_vocabulary() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Grid,
+                    "AppShell",
+                    vec![
+                        statement(&["columns", "header", "sidebar", "content", "users"]),
+                        statement(&["tracks", "columns", "rail", "panel", "fill", "side"]),
+                        statement(&["tracks", "rows", "header", "fill", "composer"]),
+                        statement(&["areas", "header", "header", "header", "header"]),
+                        statement(&["areas", "sidebar", "channels", "chat", "users"]),
+                        statement(&["areas", "composer", "composer", "composer", "composer"]),
+                        statement(&["overflow", "hidden"]),
+                        statement(&["box", "border"]),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Button,
+                    "ChannelButton",
+                    vec![
+                        statement(&["layout", "icon-content-action"]),
+                        statement(&["gap", "small"]),
+                        statement(&["control", "reset"]),
+                        statement(&["interactive"]),
+                        statement(&["align-text", "left"]),
+                        statement(&["width", "fill"]),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Text,
+                    "ChannelName",
+                    vec![statement(&["truncate"])],
+                ),
+                declaration(
+                    DeclarationKind::Text,
+                    "MessageText",
+                    vec![
+                        statement(&["margin", "none"]),
+                        statement(&["wrap", "anywhere"]),
+                        statement(&["line", "relaxed"]),
+                        statement(&["letter", "normal"]),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Center,
+                    "PresenceDot",
+                    vec![statement(&["square", "presence"])],
+                ),
+                declaration(
+                    DeclarationKind::Area,
+                    "Panel",
+                    vec![
+                        statement(&["border", "right", "accent"]),
+                        statement(&["scroll", "y"]),
+                        statement(&["scrollbar", "dense"]),
+                    ],
+                ),
+            ],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("grid-template-columns: 4.5rem 18rem minmax(0, 1fr) 16rem;"));
+        assert!(css.contains("grid-template-rows: 3.25rem minmax(0, 1fr) 4.75rem;"));
+        assert!(css.contains(
+            "grid-template-areas: \"header header header header\" \"sidebar channels chat users\" \"composer composer composer composer\";"
+        ));
+        assert!(css.contains("grid-template-columns: auto minmax(0, 1fr) auto;"));
+        assert!(css.contains("appearance: none;"));
+        assert!(css.contains("cursor: pointer;"));
+        assert!(css.contains("text-align: left;"));
+        assert!(css.contains("white-space: nowrap;"));
+        assert!(css.contains("overflow-wrap: anywhere;"));
+        assert!(css.contains("line-height: 1.45;"));
+        assert!(css.contains("letter-spacing: 0;"));
+        assert!(css.contains("width: 0.65rem;\n  height: 0.65rem;"));
+        assert!(css.contains("border-right: 1px solid var(--frame-color-accent);"));
+        assert!(css.contains("overflow-y: auto;"));
+        assert!(css.contains("scrollbar-width: thin;"));
     }
 
     #[test]

@@ -1,0 +1,17 @@
+#include theme
+overlay SettingsOverlay {
+  background overlay
+  z modal
+  padding xlarge
+}
+
+card SettingsPanel {
+  background terminal-panel
+  border terminal-border
+  radius small
+  padding large
+  shadow medium
+  animation pop-in
+  width modal
+  self center
+}

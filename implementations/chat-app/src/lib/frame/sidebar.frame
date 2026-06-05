@@ -1,0 +1,53 @@
+#include theme
+stack SidebarTop {
+  align center
+  padding bottom medium
+}
+
+text RailLabel {
+  font mono
+  size caption
+  text terminal-faint
+}
+
+stack ServerList {
+  gap small
+  align center
+}
+
+button ServerButton {
+  background terminal-panel
+  text terminal-text
+  border terminal-border
+  radius medium
+  transition fast
+  position relative
+  control reset
+  interactive
+  square server
+  layout center
+  weight bold
+
+  hover {
+    lift small
+    brighten subtle
+  }
+
+  focus {
+    ring accent
+  }
+}
+
+button ServerButtonActive {
+  background terminal-accent
+  text black
+  border terminal-accent-strong
+}
+
+center UnreadDot {
+  background terminal-red
+  radius full
+  position absolute top-right
+  square unread
+  nudge top-right
+}

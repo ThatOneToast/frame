@@ -85,7 +85,92 @@ pub fn code_actions_for_source(source: &str, uri: &Url) -> Vec<CodeActionOrComma
         ));
     }
 
+    for replacement in advanced_css_replacements(source) {
+        actions.push(edit_action(
+            &format!("Replace advanced CSS with `{}`", replacement.frame.trim()),
+            uri,
+            replacement.range,
+            replacement.frame,
+        ));
+    }
+
     actions
+}
+
+struct AdvancedReplacement {
+    range: Range,
+    frame: String,
+}
+
+fn advanced_css_replacements(source: &str) -> Vec<AdvancedReplacement> {
+    let mut replacements = Vec::new();
+    let mut offset = 0usize;
+    let mut in_advanced = false;
+
+    for line in source.lines() {
+        let trimmed = line.trim();
+        if trimmed == "advanced {" {
+            in_advanced = true;
+        } else if in_advanced && trimmed == "}" {
+            in_advanced = false;
+        } else if in_advanced {
+            if let Some(frame) = advanced_css_replacement(trimmed) {
+                let leading = line.find("css").unwrap_or(0);
+                replacements.push(AdvancedReplacement {
+                    range: Range {
+                        start: position_for_offset(source, offset + leading),
+                        end: position_for_offset(source, offset + line.len()),
+                    },
+                    frame,
+                });
+            }
+        }
+        offset += line.len() + 1;
+    }
+
+    replacements
+}
+
+fn advanced_css_replacement(line: &str) -> Option<String> {
+    let words = line.split_whitespace().collect::<Vec<_>>();
+    let property = words.get(1)?.trim_matches('"');
+    let value = words.get(2).copied().unwrap_or_default();
+
+    let replacement = match (property, value) {
+        ("appearance", "none") => "control reset".to_string(),
+        ("cursor", "pointer") => "interactive".to_string(),
+        ("box-sizing", "border-box") => "box border".to_string(),
+        ("overflow", "hidden") => "overflow hidden".to_string(),
+        ("overflow-y", "auto") => "scroll y".to_string(),
+        ("overflow-x", "auto") => "scroll x".to_string(),
+        ("width", "100%") => "width fill".to_string(),
+        ("margin", "0") => "margin none".to_string(),
+        ("overflow-wrap", "anywhere") => "wrap anywhere".to_string(),
+        ("text-transform", "uppercase") => "case uppercase".to_string(),
+        ("line-height", "1.45") => "line relaxed".to_string(),
+        ("letter-spacing", "0") => "letter normal".to_string(),
+        ("white-space", "nowrap") => "truncate".to_string(),
+        ("text-align", value) => format!("align-text {value}"),
+        ("min-width", "0") => "min-width zero".to_string(),
+        ("justify-self", "center") | ("align-self", "center") => "self center".to_string(),
+        ("border-top", _) => edge_border_replacement("top", &words)?,
+        ("border-right", _) => edge_border_replacement("right", &words)?,
+        ("border-bottom", _) => edge_border_replacement("bottom", &words)?,
+        ("border-left", _) => edge_border_replacement("left", &words)?,
+        _ => return None,
+    };
+
+    Some(replacement)
+}
+
+fn edge_border_replacement(edge: &str, words: &[&str]) -> Option<String> {
+    let value = words.join(" ");
+    let color = value
+        .split("var(--frame-color-")
+        .nth(1)?
+        .split(')')
+        .next()?;
+    Some(format!("border {edge} {color}"))
 }
 
 fn typo_action(
@@ -345,5 +430,24 @@ mod tests {
             CodeActionOrCommand::CodeAction(action)
                 if action.title == "Create matching area blocks"
         )));
+    }
+
+    #[test]
+    fn offers_native_replacements_for_common_advanced_css() {
+        let source = "button ChannelButton {\n  advanced {\n    css \"appearance\" none\n    css \"cursor\" pointer\n    css \"overflow-y\" auto\n    css \"border-right\" 1px solid var(--frame-color-terminal-border)\n  }\n}\n";
+        let uri = Url::parse("file:///demo.frame").unwrap();
+        let actions = code_actions_for_source(source, &uri);
+        let titles = actions
+            .iter()
+            .filter_map(|action| match action {
+                CodeActionOrCommand::CodeAction(action) => Some(action.title.as_str()),
+                CodeActionOrCommand::Command(_) => None,
+            })
+            .collect::<Vec<_>>();
+
+        assert!(titles.contains(&"Replace advanced CSS with `control reset`"));
+        assert!(titles.contains(&"Replace advanced CSS with `interactive`"));
+        assert!(titles.contains(&"Replace advanced CSS with `scroll y`"));
+        assert!(titles.contains(&"Replace advanced CSS with `border right terminal-border`"));
     }
 }

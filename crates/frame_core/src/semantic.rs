@@ -626,6 +626,22 @@ fn validate_statement(
         }
         Some("align") => validate_value(statement, tokens::ALIGN, diagnostics),
         Some("justify") => validate_value(statement, tokens::JUSTIFY, diagnostics),
+        Some("tracks") => validate_tracks(statement, diagnostics),
+        Some("areas") => validate_areas(statement, diagnostics),
+        Some("layout") => validate_value(statement, tokens::LAYOUTS, diagnostics),
+        Some("overflow") => validate_value(statement, tokens::OVERFLOWS, diagnostics),
+        Some("scroll") => validate_value(statement, tokens::SCROLL_AXES, diagnostics),
+        Some("scrollbar") => validate_value(statement, tokens::SCROLLBARS, diagnostics),
+        Some("box") => validate_value(statement, tokens::BOX_SIZING, diagnostics),
+        Some("square") => validate_value(statement, tokens::SQUARES, diagnostics),
+        Some("self") => validate_value(statement, tokens::SELF_ALIGN, diagnostics),
+        Some("nudge") => validate_value(statement, tokens::NUDGES, diagnostics),
+        Some("wrap") => validate_value(statement, tokens::TEXT_WRAPS, diagnostics),
+        Some("case") => validate_value(statement, tokens::TEXT_CASES, diagnostics),
+        Some("align-text") => validate_value(statement, tokens::TEXT_ALIGN, diagnostics),
+        Some("line") => validate_value(statement, tokens::LINES, diagnostics),
+        Some("letter") => validate_value(statement, tokens::LETTERS, diagnostics),
+        Some("control") => validate_value(statement, tokens::CONTROLS, diagnostics),
         Some("position") => validate_value(statement, tokens::POSITIONS, diagnostics),
         Some("anchor") => validate_value(statement, tokens::ANCHORS, diagnostics),
         Some("z") => validate_value(statement, tokens::Z_LAYERS, diagnostics),
@@ -638,6 +654,54 @@ fn validate_statement(
         Some("ease") => validate_value(statement, tokens::EASES, diagnostics),
         Some("animation" | "animate") => validate_value(statement, tokens::ANIMATIONS, diagnostics),
         _ => {}
+    }
+}
+
+fn validate_tracks(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
+    match statement.words.get(1).map(String::as_str) {
+        Some("columns" | "rows") => {}
+        Some(value) => {
+            diagnostics.push(Diagnostic::error(
+                format!("tracks expects `columns` or `rows`, not `{value}`."),
+                statement.span,
+            ));
+            return;
+        }
+        None => {
+            diagnostics.push(Diagnostic::error(
+                "tracks expects an axis, for example `tracks columns rail panel fill side`.",
+                statement.span,
+            ));
+            return;
+        }
+    }
+
+    if statement.words.len() <= 2 {
+        diagnostics.push(Diagnostic::error(
+            "tracks expects one or more track values.",
+            statement.span,
+        ));
+        return;
+    }
+
+    for value in statement.words.iter().skip(2) {
+        if !tokens::TRACKS.contains(&value.as_str()) && !is_valid_percentage(value) {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "Unknown track value `{value}`.\n\nUse app layout tracks like `rail`, `panel`, `side`, `header`, `composer`, `fill`, `auto`, or percentages."
+                ),
+                statement.span,
+            ));
+        }
+    }
+}
+
+fn validate_areas(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
+    if statement.words.len() <= 1 {
+        diagnostics.push(Diagnostic::error(
+            "areas expects named grid sections for one template row.",
+            statement.span,
+        ));
     }
 }
 
@@ -850,6 +914,29 @@ fn validate_border(
         diagnostics.push(Diagnostic::error(
             format!(
                 "Unknown border radius `{radius}`.{suggestion}\n\nUse radius values like `small`, `medium`, `large`, `pill`, `full`, or `none`."
+            ),
+            statement.span,
+        ));
+        return;
+    }
+
+    if matches!(value.as_str(), "top" | "right" | "bottom" | "left") {
+        let Some(edge_value) = statement.words.get(2) else {
+            diagnostics.push(Diagnostic::error(
+                format!("border {value} expects a border color or style."),
+                statement.span,
+            ));
+            return;
+        };
+        if tokens::BORDER_STYLES.contains(&edge_value.as_str())
+            || tokens::COLORS.contains(&edge_value.as_str())
+            || symbols.colors.contains_key(edge_value)
+        {
+            return;
+        }
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown border {value} value `{edge_value}`.\n\nUse a semantic color, custom color token, or border style."
             ),
             statement.span,
         ));
@@ -1309,6 +1396,62 @@ mod tests {
                 "Panel",
                 vec![statement(&["width", "50%"]), statement(&["height", "100%"])],
             )],
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn accepts_app_driven_native_styling_vocabulary() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Tokens,
+                    "Theme",
+                    vec![statement(&["color", "terminal-border", "#263241"])],
+                ),
+                declaration(
+                    DeclarationKind::Grid,
+                    "AppShell",
+                    vec![
+                        statement(&["columns", "header", "sidebar", "content", "users"]),
+                        statement(&["tracks", "columns", "rail", "panel", "fill", "side"]),
+                        statement(&["tracks", "rows", "header", "fill", "composer"]),
+                        statement(&["areas", "header", "header", "header", "header"]),
+                        statement(&["overflow", "hidden"]),
+                        statement(&["box", "border"]),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Button,
+                    "ChannelButton",
+                    vec![
+                        statement(&["layout", "icon-content-action"]),
+                        statement(&["control", "reset"]),
+                        statement(&["interactive"]),
+                        statement(&["align-text", "left"]),
+                        statement(&["border", "bottom", "terminal-border"]),
+                        statement(&["scroll", "y"]),
+                        statement(&["scrollbar", "dense"]),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Text,
+                    "MessageText",
+                    vec![
+                        statement(&["truncate"]),
+                        statement(&["wrap", "anywhere"]),
+                        statement(&["case", "uppercase"]),
+                        statement(&["line", "relaxed"]),
+                        statement(&["letter", "normal"]),
+                        statement(&["min-width", "zero"]),
+                        statement(&["square", "avatar"]),
+                        statement(&["self", "center"]),
+                        statement(&["nudge", "top-right"]),
+                    ],
+                ),
+            ],
         };
 
         assert!(validate(&document).is_empty());

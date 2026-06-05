@@ -216,13 +216,46 @@ const SNIPPETS: &[FrameSnippet] = &[
 ];
 
 const GRID_PROPERTIES: &[&str] = &[
-    "columns", "rows", "flow", "section", "gap", "height", "width", "padding", "surface", "align",
-    "justify", "anchor",
+    "columns",
+    "rows",
+    "tracks",
+    "areas",
+    "flow",
+    "section",
+    "gap",
+    "height",
+    "width",
+    "padding",
+    "surface",
+    "align",
+    "justify",
+    "anchor",
+    "overflow",
+    "scroll",
+    "scrollbar",
+    "box",
 ];
 
 const AREA_PROPERTIES: &[&str] = &[
-    "in", "place", "col", "row", "span", "surface", "padding", "margin", "width", "height",
-    "align", "justify", "border", "shadow", "anchor",
+    "in",
+    "place",
+    "col",
+    "row",
+    "span",
+    "surface",
+    "padding",
+    "margin",
+    "width",
+    "height",
+    "align",
+    "justify",
+    "border",
+    "shadow",
+    "anchor",
+    "overflow",
+    "scroll",
+    "scrollbar",
+    "box",
 ];
 
 const CARD_PROPERTIES: &[&str] = &[
@@ -237,9 +270,26 @@ const CARD_PROPERTIES: &[&str] = &[
     "color",
     "width",
     "height",
+    "min-width",
     "align",
     "justify",
+    "layout",
     "anchor",
+    "overflow",
+    "scroll",
+    "scrollbar",
+    "box",
+    "square",
+    "self",
+    "nudge",
+    "truncate",
+    "wrap",
+    "case",
+    "align-text",
+    "line",
+    "letter",
+    "control",
+    "interactive",
     "transition",
     "duration",
     "ease",
@@ -258,12 +308,27 @@ const COMMON_PROPERTIES: &[&str] = &[
     "gap",
     "width",
     "height",
+    "min-width",
     "align",
     "justify",
+    "layout",
     "text",
     "color",
     "background",
     "border",
+    "overflow",
+    "scroll",
+    "scrollbar",
+    "box",
+    "square",
+    "truncate",
+    "wrap",
+    "case",
+    "align-text",
+    "line",
+    "letter",
+    "control",
+    "interactive",
     "shadow",
     "transition",
     "animation",
@@ -311,6 +376,9 @@ const COLUMN_VALUES: &[&str] = &[
 ];
 
 const ROW_VALUES: &[&str] = &["auto", "fill", "header", "main", "content", "footer"];
+const TRACK_VALUES: &[&str] = &[
+    "rail", "panel", "side", "header", "composer", "fill", "auto", "content",
+];
 const GRADIENT_VALUES: &[&str] = &["dusk", "midnight", "aurora", "ember", "ocean", "forest"];
 const BORDER_WIDTH_VALUES: &[&str] = &["small", "medium", "large"];
 
@@ -333,7 +401,7 @@ const SURFACE_VALUES: &[&str] = &[
 
 const PERCENT_SIZE_VALUES: &[&str] = &[
     "fill", "content", "screen", "auto", "25%", "33%", "50%", "66%", "75%", "100%", "sidebar",
-    "narrow", "wide",
+    "narrow", "wide", "zero", "modal", "icon",
 ];
 
 const TYPOGRAPHY: &[&str] = &[
@@ -558,6 +626,31 @@ fn value_completions(
             "row value",
             "Named or automatic grid row value.",
         ),
+        "tracks" if line_words.get(1).map(String::as_str) == Some("columns") => suggestions(
+            TRACK_VALUES,
+            "column track",
+            "App layout track such as rail, panel, fill, or side.",
+        ),
+        "tracks" if line_words.get(1).map(String::as_str) == Some("rows") => suggestions(
+            TRACK_VALUES,
+            "row track",
+            "App layout track such as header, fill, composer, or auto.",
+        ),
+        "tracks" => suggestions(
+            &["columns", "rows"],
+            "track axis",
+            "Choose whether these tracks describe columns or rows.",
+        ),
+        "areas" => suggestions(
+            COLUMN_VALUES,
+            "grid area row",
+            "Named area in a grid template row.",
+        ),
+        "layout" => suggestions(
+            tokens::LAYOUTS,
+            "layout preset",
+            "Dense component layout preset.",
+        ),
         "flow" => suggestions(
             tokens::GRID_FLOWS,
             "grid flow",
@@ -643,6 +736,41 @@ fn value_completions(
             items
         }
         "shadow" => suggestions(tokens::SHADOWS, "shadow value", "Named shadow depth."),
+        "overflow" => suggestions(tokens::OVERFLOWS, "overflow value", "Overflow intent."),
+        "scroll" => suggestions(tokens::SCROLL_AXES, "scroll axis", "Scrollable axis."),
+        "scrollbar" => suggestions(
+            tokens::SCROLLBARS,
+            "scrollbar density",
+            "Scrollbar density for dense app panels.",
+        ),
+        "box" => suggestions(tokens::BOX_SIZING, "box sizing", "Sizing model intent."),
+        "square" => suggestions(
+            tokens::SQUARES,
+            "square size",
+            "Named square size for icons, avatars, and status dots.",
+        ),
+        "self" => suggestions(
+            tokens::SELF_ALIGN,
+            "self alignment",
+            "Align this item in both axes.",
+        ),
+        "nudge" => suggestions(
+            tokens::NUDGES,
+            "nudge",
+            "Small positional nudge for badges.",
+        ),
+        "wrap" => suggestions(tokens::TEXT_WRAPS, "text wrap", "Text wrapping behavior."),
+        "case" => suggestions(tokens::TEXT_CASES, "text case", "Text casing behavior."),
+        "align-text" => suggestions(
+            tokens::TEXT_ALIGN,
+            "text alignment",
+            "Text alignment intent.",
+        ),
+        "control" => suggestions(
+            tokens::CONTROLS,
+            "control affordance",
+            "Control reset behavior.",
+        ),
         "width" | "height" | "min-width" | "max-width" | "min-height" | "max-height" => {
             suggestions(
                 PERCENT_SIZE_VALUES,
@@ -774,9 +902,9 @@ fn value_completions(
             "Custom gradient token from the project graph.",
             CompletionCategory::ProjectSymbol,
         ),
-        "font" | "size" | "weight" | "line" | "letter" => {
-            suggestions(TYPOGRAPHY, "type value", "Typography token.")
-        }
+        "font" | "size" | "weight" => suggestions(TYPOGRAPHY, "type value", "Typography token."),
+        "line" => suggestions(tokens::LINES, "line height", "Line height intent."),
+        "letter" => suggestions(tokens::LETTERS, "letter spacing", "Letter spacing intent."),
         "lift" | "brighten" | "dim" | "blur" | "press" | "scale" | "fade" | "slide" => {
             suggestions(tokens::SPACING, "effect value", "Effect strength token.")
         }
@@ -989,14 +1117,17 @@ fn category_for_detail(detail: &str) -> CompletionCategory {
 
 fn property_category(label: &str) -> CompletionCategory {
     match label {
-        "columns" | "rows" | "flow" | "section" | "gap" | "height" | "width" | "min-height"
-        | "max-height" | "min-width" | "max-width" | "place" | "in" | "col" | "row" | "span"
-        | "position" | "offset" | "z" | "align" | "justify" | "anchor" | "padding" | "margin" => {
-            CompletionCategory::LayoutProperty
-        }
+        "columns" | "rows" | "tracks" | "areas" | "flow" | "section" | "layout" | "gap"
+        | "height" | "width" | "min-height" | "max-height" | "min-width" | "max-width"
+        | "place" | "in" | "col" | "row" | "span" | "position" | "offset" | "z" | "align"
+        | "justify" | "self" | "anchor" | "padding" | "margin" | "overflow" | "scroll"
+        | "scrollbar" | "box" | "square" | "nudge" => CompletionCategory::LayoutProperty,
         "surface" | "background" | "theme" | "text" | "color" | "palette" | "tone" | "opacity"
-        | "radius" | "border" | "shadow" | "outline" => CompletionCategory::VisualProperty,
-        "font" | "size" | "weight" | "line" | "letter" => CompletionCategory::TypographyProperty,
+        | "radius" | "border" | "shadow" | "outline" | "control" | "interactive" => {
+            CompletionCategory::VisualProperty
+        }
+        "font" | "size" | "weight" | "line" | "letter" | "truncate" | "wrap" | "case"
+        | "align-text" => CompletionCategory::TypographyProperty,
         "transition" | "duration" | "ease" | "animation" | "animate" | "delay" | "iteration"
         | "direction" | "fill" | "play-state" | "transform" | "filter" => {
             CompletionCategory::MotionProperty

@@ -1,0 +1,29 @@
+{
+  "name": "frame-chat-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "preinstall": "npm --prefix ../../packages/frame-svelte install && npm --prefix ../../packages/frame-svelte run build",
+    "predev": "npm --prefix ../../packages/frame-svelte run build",
+    "dev": "vite dev",
+    "prebuild": "npm --prefix ../../packages/frame-svelte run build",
+    "build": "vite build",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "lint": "npm run check",
+    "test": "npm run check"
+  },
+  "dependencies": {
+    "@frame/svelte": "file:../../packages/frame-svelte",
+    "@sveltejs/adapter-auto": "^3.3.1",
+    "@sveltejs/kit": "^2.21.1",
+    "@sveltejs/vite-plugin-svelte": "^5.1.0",
+    "svelte": "^5.33.1",
+    "vite": "^6.3.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "svelte-check": "^4.2.1",
+    "typescript": "^5.8.3"
+  }
+}

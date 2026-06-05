@@ -1,0 +1,54 @@
+#include theme
+#include app-shell
+area HeaderBar {
+  in AppShell
+  place header
+  background terminal-panel
+  border terminal-border
+  padding x medium
+  layout header
+  border bottom terminal-border
+  gap medium
+}
+
+row HeaderIdentity {
+  align center
+  gap medium
+  min-width zero
+}
+
+text AppMark {
+  font mono
+  size caption
+  weight bold
+  text terminal-accent
+  border terminal-accent
+  padding x small
+  radius small
+}
+
+text HeaderTitle {
+  font mono
+  weight semibold
+  text terminal-text
+  truncate
+}
+
+row HeaderChannel {
+  align center
+  gap small
+  text terminal-dim
+  min-width zero
+}
+
+text HeaderTopic {
+  font mono
+  size caption
+  text terminal-faint
+  truncate
+}
+
+row HeaderActions {
+  align center
+  gap small
+}

@@ -1,0 +1,63 @@
+#include theme
+stack PanelHeader {
+  padding medium
+  gap small
+  border terminal-border
+  border bottom terminal-border
+}
+
+stack ChannelList {
+  padding medium
+  gap small
+  scroll y
+  scrollbar dense
+}
+
+button ChannelButton {
+  background transparent
+  text terminal-dim
+  border none
+  radius small
+  padding small
+  transition fast
+  control reset
+  interactive
+  layout icon-content-action
+  gap small
+  align-text left
+  width fill
+
+  hover {
+    brighten subtle
+  }
+
+  focus {
+    ring accent
+  }
+}
+
+button ChannelButtonActive {
+  background terminal-raised
+  text terminal-text
+  border terminal-border
+}
+
+text ChannelHash {
+  font mono
+  text terminal-faint
+}
+
+text ChannelName {
+  font mono
+  text terminal-text
+  truncate
+}
+
+card ChannelBadge {
+  background terminal-accent
+  text black
+  radius pill
+  padding x small
+  size caption
+  weight bold
+}
