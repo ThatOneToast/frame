@@ -2,484 +2,159 @@
 
 ## Current Goal
 
-Finish editor intelligence, Svelte integration, and expand Frame into a practical design-intent styling language.
+Prepare Frame for the `Frame -> Frame IR -> DOM runtime` overhaul.
 
-Current pipeline:
+This file tracks the implementation path. This PR is documentation-only; unchecked implementation items should remain unchecked until code and tests exist.
 
-```txt
-.frame file
-  -> parse
-  -> validate
-  -> generate CSS + TS
-  -> use in Svelte
-  -> edit with Zed syntax highlighting and LSP support
-```
+## Phase 0 — Foundation Documentation
 
-## Phase 1 — Workspace Setup
+- [x] Rewrite `README.md` around Frame as an experimental UI language.
+- [x] Rewrite `AGENTS.md` with the new architecture and contributor rules.
+- [x] Rewrite `TODO.md` around the overhaul path.
+- [x] Rewrite `MILESTONES.md` around staged IR/runtime work.
+- [x] Add `TODO-CSS.md` for structured CSS coverage tracking.
+- [x] Add `TODO-DOM.md` for HTML, DOM, events, forms, accessibility, and runtime coverage tracking.
+- [x] Add `research/` documentation for architecture decisions.
 
-- [x] Run `cargo check --workspace`.
-- [x] Ensure all crates compile.
-- [x] Add shared crate documentation.
-- [ ] Add or verify CI workflow.
+## Phase 1 — Language Model Design
 
-## Phase 2 — AST
+- [ ] Define the split between style declarations and UI declarations.
+- [ ] Define `component`, `view`, `state`, `props`, and `slots` syntax.
+- [ ] Define element syntax such as `button Send` and `button Send:PrimaryButton`.
+- [ ] Define automatic style lookup rules.
+- [ ] Define explicit style binding rules.
+- [ ] Define style reactivity syntax.
+- [ ] Define data reference syntax using `$name`.
+- [ ] Define handler reference syntax using `@name`.
+- [ ] Define binding syntax such as `value bind $draft`.
+- [ ] Define condition syntax such as `show when $loggedIn`.
+- [ ] Define loop syntax for list rendering.
+- [ ] Define component composition syntax.
+- [ ] Define escape hatches and mark unsafe forms explicitly.
 
-Required structures:
+## Phase 2 — Parser Upgrade Plan
 
-- [x] `Document`
-- [x] `Include`
-- [x] `Declaration`
-- [x] `DeclarationKind`
-- [x] `Block`
-- [x] `Statement`
-- [x] `Span`
-- [x] `Identifier`
-
-Declaration kinds:
-
-- [x] `Grid`
-- [x] `Area`
-- [x] `Card`
-- [x] `Stack`
-- [x] `Row`
-- [x] `Button`
-- [x] `Text`
-- [x] `Tokens`
-- [x] `Center`
-- [x] `Split`
-- [x] `Overlay`
-- [x] `Dock`
-
-## Phase 3 — Parser
-
-- [x] Ignore comments.
-- [x] Parse top-level declarations.
-- [x] Parse declaration names.
-- [x] Parse `{ ... }` blocks.
-- [x] Parse bare statement lines.
-- [x] Parse root `#include` statements.
-- [x] Parse nested state blocks like `hover { ... }`.
-- [x] Return diagnostics instead of panicking.
+- [ ] Replace or extend the current line-oriented parser where needed.
+- [ ] Preserve existing styling syntax.
+- [ ] Parse UI declarations without breaking current CSS declarations.
+- [ ] Parse style binding names after `:`.
+- [ ] Parse `$state` and `$prop` references.
+- [ ] Parse `@handler` references.
+- [ ] Parse event filters like `keydown.enter` and `keydown.ctrl.enter`.
+- [ ] Parse conditions and reactive style rules.
+- [ ] Preserve source spans for all new syntax.
 - [ ] Preserve comments for formatting.
-- [ ] Parse or tolerate responsive blocks:
-  - [ ] `mobile`
-  - [ ] `tablet`
-  - [ ] `desktop`
-  - [ ] `wide`
-- [x] Add tests for expanded declarations:
-  - [x] `center`
-  - [x] `split`
-  - [x] `overlay`
-  - [x] `dock`
+- [ ] Add parser tests for every UI construct.
 
-## Phase 4 — Semantic Validation
+## Phase 3 — Semantic Model
 
-Completed diagnostics:
+- [ ] Resolve component names.
+- [ ] Resolve props and state symbols.
+- [ ] Resolve `$value` references.
+- [ ] Resolve `@handler` references.
+- [ ] Validate automatic style lookup.
+- [ ] Validate explicit style references.
+- [ ] Validate DOM element names.
+- [ ] Validate known attributes per element where practical.
+- [ ] Validate event names and event modifiers.
+- [ ] Validate accessibility requirements for common controls.
+- [ ] Validate unsafe raw HTML usage.
+- [ ] Validate URL-bearing attributes.
+- [ ] Generate teachable diagnostics with suggestions.
 
-- [x] Unknown declaration kind.
-- [x] Duplicate declaration names.
-- [x] `area` missing `in`.
-- [x] `area` references unknown grid.
-- [x] Invalid spacing value.
-- [x] Invalid surface value.
-- [x] Invalid hover effect.
+## Phase 4 — Frame IR
 
-Add diagnostics:
+- [ ] Add renderer-neutral IR types.
+- [ ] Add IR nodes for elements, text, components, fragments, slots, conditions, and loops.
+- [ ] Add IR structures for attributes, properties, events, bindings, style bindings, and reactive rules.
+- [ ] Add source mapping from IR nodes back to Frame source.
+- [ ] Add capability flags for renderer support.
+- [ ] Add JSON serialization for runtime consumption.
+- [ ] Add IR snapshot tests.
+- [ ] Document IR versioning.
 
-- [x] Invalid layout values.
-- [x] Invalid typography values.
-- [x] Invalid positioning values.
-- [x] Invalid custom color token hex values.
-- [x] Invalid gradient stop colors, percentages, angles, and stop counts.
-- [x] Invalid border, transition, duration, ease, animation, and z-layer values.
-- [ ] Invalid responsive values.
-- [ ] Invalid state block names.
-- [x] Invalid effect values inside state blocks.
-- [x] Better diagnostics with suggestions.
+## Phase 5 — TypeScript Contracts
 
-## Phase 5 — CSS Codegen
+- [ ] Generate component prop types.
+- [ ] Generate component state types.
+- [ ] Generate handler interfaces.
+- [ ] Generate event context types.
+- [ ] Generate DOM event-specific handler signatures.
+- [ ] Generate skeleton implementation files.
+- [ ] Avoid overwriting user implementations without explicit confirmation.
+- [ ] Add tests for generated contracts.
 
-Generated output currently supports:
+## Phase 6 — DOM Runtime
 
-- [x] `grid AppShell`
-- [x] named columns
-- [x] responsive card grids
-- [x] vertical named grid flow with section spacing controls
-- [x] `area Sidebar in AppShell`
-- [x] `place sidebar`
-- [x] `card`
-- [x] `stack`
-- [x] `row`
-- [x] `surface`
-- [x] `padding`
-- [x] `gap`
-- [x] `radius`
-- [x] `shadow`
-- [x] `hover lift`
-- [x] `hover glow`
-- [x] `hover brighten`
+- [ ] Create a DOM runtime package.
+- [ ] Mount Frame IR into a DOM container.
+- [ ] Create DOM elements from IR nodes.
+- [ ] Create text nodes from escaped values.
+- [ ] Apply attributes and properties safely.
+- [ ] Attach event listeners from handler references.
+- [ ] Support event filters and modifiers.
+- [ ] Support state updates and patch scheduling.
+- [ ] Support style class changes.
+- [ ] Support conditional rendering.
+- [ ] Support keyed list rendering.
+- [ ] Support form bindings.
+- [ ] Support cleanup on unmount.
+- [ ] Add runtime tests.
 
-Add support for:
+## Phase 7 — CSS Integration
 
-- [x] `center`
-- [x] `split`
-- [x] `overlay`
-- [x] `dock`
-- [x] `button`
-- [x] `text`
-- [x] `width`
-- [x] `height`
-- [x] `min-width`
-- [x] `max-width`
-- [x] `min-height`
-- [x] `max-height`
-- [x] `position`
-- [x] `offset`
-- [x] `z`
-- [x] `border`
-- [x] custom color tokens
-- [x] custom gradient tokens
-- [x] layered corner gradient tokens
-- [x] `background brand`
-- [x] `background hero-gradient`
-- [x] `advanced { css "property" value }`
-- [x] `padding top medium`, `padding x medium`, and `anchor top`.
-- [x] `grid flow vertical` and `section name { padding ... }`.
-- [x] `transition`
-- [x] `duration`
-- [x] `ease`
-- [x] `animation`
-- [x] `theme`
-- [x] `text bright`
-- [x] `text muted`
-- [x] `text accent`
-- [x] `font`
-- [x] `size`
-- [x] `weight`
-- [x] `focus`
-- [x] `active`
-- [x] `disabled`
-- [ ] responsive blocks
+- [ ] Keep existing CSS class generation working.
+- [ ] Connect UI node style bindings to generated classes.
+- [ ] Support automatic style inheritance by node name.
+- [ ] Support explicit style override with `Name:StyleName`.
+- [ ] Support reactive style patches.
+- [ ] Track remaining CSS coverage in `TODO-CSS.md`.
+- [ ] Add CSS output tests for new style binding behavior.
 
-## Phase 6 — TypeScript Codegen
+## Phase 8 — CLI
 
-- [x] Generate `ui` class export object.
-- [x] Generate `UiClass` type.
-- [ ] Add optional grouped exports if useful.
-- [ ] Ensure generated names remain stable as syntax expands.
+- [ ] Add `frame build` for full IR/runtime output.
+- [ ] Add `frame check` support for UI declarations.
+- [ ] Add `frame emit-ir` for debugging.
+- [ ] Add `frame emit-contracts` for TypeScript contracts.
+- [ ] Add `frame init web`.
+- [ ] Add `frame init tauri` later.
+- [ ] Keep existing styling commands compatible during migration.
 
-## Phase 7 — CLI
+## Phase 9 — LSP
 
-Commands:
+- [ ] Add completions for UI declarations.
+- [ ] Add completions for DOM elements.
+- [ ] Add completions for attributes by element.
+- [ ] Add completions for events and modifiers.
+- [ ] Add completions for `$state`, `$props`, and `@handlers`.
+- [ ] Add hover docs for DOM concepts.
+- [ ] Add diagnostics for unresolved style bindings.
+- [ ] Add diagnostics for unresolved handlers.
+- [ ] Add diagnostics for unsafe DOM sinks.
+- [ ] Add code actions to create missing handler skeletons.
+- [ ] Add code actions to create missing style declarations.
+- [ ] Add go-to-definition for styles, state, props, and handlers.
 
-- [x] `frame check <file>`
-- [x] `frame compile <file> --out <dir>`
-- [x] `frame compile-stdin --css-only`
-- [x] `frame format <file>`
-- [x] `frame format <file> --check`
-- [x] `frame watch <file> --out <dir>`
-- [x] `--include <dir>` for `check`, `compile`, and `watch`.
-- [x] `frame init svelte`
-- [x] `frame init svelte --dry-run`
+## Phase 10 — Web/Tauri Target
 
-## Phase 8 — Zed Extension
+- [ ] Build a minimal browser app with the DOM runtime.
+- [ ] Build a minimal Tauri/WebView app using the same runtime.
+- [ ] Document packaging expectations.
+- [ ] Keep desktop-specific APIs outside the core Frame language.
+- [ ] Add a small example app under `implementations/` when runtime exists.
 
-Syntax highlighting:
+## Phase 11 — Compatibility and Migration
 
-- [x] `editors/zed/extension.toml`
-- [x] `editors/zed/languages/frame/config.toml`
-- [x] Tree-sitter grammar package.
-- [x] Highlight queries.
+- [ ] Decide how current Svelte integration survives the transition.
+- [ ] Mark Svelte integration as legacy, bridge, or compatibility layer.
+- [ ] Provide migration docs from generated CSS/TS usage to UI/IR/runtime usage.
+- [ ] Keep existing examples compiling until intentionally replaced.
 
-LSP:
+## Phase 12 — Quality Bar
 
-- [x] Run `frame_lsp`.
-- [x] Diagnostics.
-- [x] Completion items for declaration keywords.
-- [x] Completion items for property keywords.
-- [x] Completion items for token values.
-- [x] Completion items for effect keywords.
-- [x] Hover docs for common concepts.
-- [x] Formatting.
-- [x] Zed docs for enabling the LSP.
-- [x] Scope-aware completions.
-- [x] Embedded Svelte `<style lang="frame">` routing.
-- [x] Completion snippets for dashboards, hover cards, toolbars, and empty states.
-- [x] Go-to-definition for grid and grid section references.
-- [x] References for grid declarations and grid sections.
-- [x] Document symbols.
-- [x] Document links to Frame docs.
-- [x] Code actions for typo fixes and common layout scaffolds.
-- [x] Semantic tokens.
-- [x] Folding ranges.
-- [x] Include highlighting, document links, missing include diagnostics, and include completions.
-- [x] Imported grid/color/gradient symbols in completions, hover, diagnostics, and go-to-definition.
-- [x] Categorized completion groups for snippets, declarations, project symbols, layout, visual, motion, typography, token, value, include, and advanced items.
-- [x] Scope-specific snippets for responsive grids, container queries, component states, animation controls, and keyframes.
-- [x] Contextual value hover docs for grid sections, breakpoints, spacing tokens, color intent, animation controls, and keyframe percentages.
-- [x] Teacher-style diagnostics for raw CSS property aliases and area declarations missing placement.
-
-## Reference Implementations
-
-- [x] Add `implementations/chat-app` SvelteKit reference application.
-- [x] Keep chat app styling in modular external `.frame` files.
-- [x] Add typed mock API, models, and stores for the chat app.
-- [x] Imported keyframes symbols in completions, hover, and go-to-definition.
-
-## Phase 9 — Svelte Integration
-
-- [x] Document current generated CSS/TS usage.
-- [x] Add `examples/svelte/README.md`.
-- [x] Implement `frame watch`.
-- [x] Add Vite plugin.
-- [x] Add Svelte preprocessor.
-- [x] Support `<style lang="frame">` CSS output.
-- [x] Add `frame init svelte` setup command.
-- [x] Recompile `.frame` on file changes.
-- [x] Pass Vite plugin `include` paths to the CLI.
-- [x] Print diagnostics during Svelte dev.
-- [x] Keep generated files importable from Svelte.
-- [x] Add example Svelte component using generated classes.
-- [x] Add example Svelte route using inline Frame styles.
-- [x] Add troubleshooting docs for missing generated files.
-
-## Phase 10 — Docs
-
-Create or expand:
-
-- [x] `docs/language.md`
-- [x] `docs/grid.md`
-- [x] `docs/layout.md`
-- [x] `docs/cards.md`
-- [x] `docs/surfaces.md`
-- [x] `docs/colors.md`
-- [x] `docs/effects.md`
-- [x] `docs/typography.md`
-- [x] `docs/svelte.md`
-- [x] `docs/vite.md`
-- [x] `docs/style-blocks.md`
-- [x] `docs/lsp.md`
-- [x] `docs/areas.md`
-- [x] `docs/spacing.md`
-- [x] `docs/sizing.md`
-- [x] `docs/interactions.md`
-- [x] `docs/diagnostics.md`
-- [x] `docs/code-actions.md`
-- [x] `docs/examples.md`
-- [x] `docs/setup.md`
-- [x] `docs/imports.md`
-- [x] `docs/tokens.md`
-- [x] `docs/borders.md`
-- [x] `docs/animations.md`
-- [x] `docs/agents/README.md`
-- [x] `docs/agents/language-cheatsheet.md`
-- [x] `docs/agents/svelte-patterns.md`
-- [x] `docs/agents/recipes.md`
-- [x] `docs/agents/troubleshooting.md`
-
-Docs should include plentiful examples and explain the design intent behind each keyword.
-
-## Phase 11 — Tests
-
-Completed:
-
-- [x] Parser declaration tests.
-- [x] Parser nested block tests.
-- [x] CSS codegen behavior tests.
-- [x] TS codegen behavior tests.
-- [x] CLI integration tests.
-- [x] CLI stdin compile tests.
-- [x] CLI init tests.
-- [x] Svelte preprocessor helper tests.
-- [x] Vite plugin option/helper tests.
-
-Add:
-
-- [x] Formatter tests.
-- [ ] Watch command tests where practical.
-- [x] LSP completion tests.
-- [x] LSP hover tests.
-- [x] LSP formatting tests.
-- [x] LSP code action tests.
-- [x] LSP definition and reference tests.
-- [x] LSP semantic token tests.
-- [x] LSP folding tests.
-- [ ] Full Svelte integration smoke test.
-- [x] Expanded CSS concept codegen tests.
-- [ ] Documentation example compile tests where practical.
-
-## Phase 12 — Expanded Frame Concepts
-
-Add native support for common design concepts without turning Frame into raw CSS.
-
-### Layout
-
-- [x] `center`
-- [x] `split`
-- [x] `overlay`
-- [x] `dock`
-- [x] `align`
-- [x] `justify`
-
-### Sizing
-
-- [x] `width fill`
-- [x] `width content`
-- [x] `width screen`
-- [x] `width sidebar`
-- [x] `width 25%`
-- [x] `height 50%`
-- [x] percentage grid columns
-- [x] `height screen`
-- [x] `height fill`
-- [x] `min-height screen`
-- [x] `max-width content`
-
-### Positioning
-
-- [x] `position relative`
-- [x] `position absolute top-right`
-- [x] `position sticky top`
-- [x] `offset small`
-- [x] `z above`
-- [x] `z modal`
-- [x] `z overlay`
-
-### Color / Surfaces
-
-- [x] `surface panel`
-- [x] `surface main`
-- [x] `surface glass`
-- [x] `surface raised`
-- [x] `surface flat`
-- [x] `surface gradient dusk`
-- [x] `surface gradient midnight`
-- [x] `surface gradient aurora`
-- [x] `text bright`
-- [x] `text muted`
-- [x] `text accent`
-- [x] `theme danger`
-- [x] `theme success`
-- [x] `theme warning`
-- [x] `background main`
-- [x] `background panel`
-- [x] `background danger`
-- [x] Expanded semantic palette tokens.
-
-### Borders
-
-- [x] `border none`
-- [x] `border soft`
-- [x] `border accent`
-- [x] `border danger`
-- [x] `border success`
-- [x] `border width small`
-
-### Effects
-
-- [x] `shadow none`
-- [x] `shadow soft`
-- [x] `shadow medium`
-- [x] `shadow deep`
-- [x] `glow none`
-- [x] `glow accent`
-- [x] `glow danger`
-- [x] `glow success`
-- [x] `blur none`
-- [x] `blur background`
-- [x] `blur heavy`
-
-### Interactions
-
-- [x] `hover { lift small }`
-- [x] `hover { glow accent }`
-- [x] `hover { brighten subtle }`
-- [x] `focus { ring accent }`
-- [x] `active { press }`
-- [x] `disabled { dim medium }`
-
-### Typography
-
-- [x] `size heading`
-- [x] `size body`
-- [x] `size caption`
-- [x] `weight bold`
-- [x] `weight semibold`
-- [x] `weight normal`
-- [x] `font mono`
-- [x] `color bright`
-- [x] `color muted`
-
-### Responsive
-
-- [ ] `mobile { stack }`
-- [ ] `mobile { hide Inspector }`
-- [x] `below tablet { columns content }`
-- [x] `above desktop { columns sidebar content inspector }`
-- [x] `between tablet desktop { ... }`
-- [x] `container narrow { columns content }`
-- [ ] `tablet { columns content }`
-- [ ] `desktop { columns sidebar content inspector }`
-
-## Phase 13 — LSP Teacher Experience
-
-- [x] Group completion results into identifiable categories with stable sort order.
-- [x] Suggest scoped snippets based on root, grid, component, state, keyframes, and animation-block context.
-- [x] Surface available project symbols, including grids, grid sections, colors, gradients, and keyframes, as distinct completion items.
-- [x] Teach values through hover docs that depend on the current statement.
-- [x] Explain raw CSS property mistakes with Frame equivalents and escape-hatch guidance.
-- [x] Explain missing area placement with concrete `place`, `col`, or `row` examples.
-
-## Phase 14 — Reduce Advanced Usage From Reference Apps
-
-Goal: turn repeated `advanced { css ... }` patterns from `implementations/chat-app` into Frame-native language concepts without recreating CSS property syntax.
-
-Current chat-app escape clusters:
-
-- [x] App shell grid templates:
-  - [x] Named multi-row grid areas without `css "grid-template-areas"`.
-  - [x] Explicit column and row tracks with readable intent, such as fixed rails, side panels, and fill regions.
-  - [x] Section sizing tied to named grid areas.
-- [x] Component-internal layout grids:
-  - [x] Icon/content/action row templates for channel rows, user rows, message rows, composer rows, and header rows.
-  - [x] Dense row alignment presets that combine grid/flex display, alignment, and gap without raw `display grid`.
-- [x] Overflow and scrolling:
-  - [x] `overflow hidden`.
-  - [x] `scroll y`.
-  - [x] `scroll x`.
-  - [x] Optional scrollbar intent for dense panels.
-- [x] Border edges:
-  - [x] `border top ...`.
-  - [x] `border right ...`.
-  - [x] `border bottom ...`.
-  - [x] `border left ...`.
-- [x] Text behavior:
-  - [x] `truncate` for nowrap/hidden/ellipsis.
-  - [x] `wrap anywhere` for chat message bodies.
-  - [x] `case uppercase`.
-  - [x] `line relaxed` or numeric line-height tokens.
-  - [x] `letter normal` to replace raw letter-spacing resets.
-  - [x] `align-text left` for dense controls.
-- [x] Control affordances:
-  - [x] `control reset` for button/input appearance cleanup.
-  - [x] `interactive` for pointer affordance.
-  - [x] `box border` for border-box sizing.
-  - [x] `outline none` only when paired with a Frame focus style.
-- [x] Practical sizing primitives:
-  - [x] Square/icon/avatar/presence-dot sizes without raw rem values.
-  - [x] `min-width zero` for grid/flex children that need truncation.
-  - [x] Bounded widths such as `width modal` without raw `min(...)`.
-  - [x] Offset nudges for badges/dots without raw negative lengths.
-- [x] Resets for semantic elements:
-  - [x] `margin none` for text elements like `p`.
-  - [x] Form input fill behavior without raw width declarations.
-
-Implementation requirements:
-
-- [x] Add parser, semantic, codegen, formatter, and LSP support for the chosen syntax.
-- [x] Add hover docs that explain the intent-first concept and show Frame examples.
-- [x] Add diagnostics/code actions that suggest native Frame replacements for common `advanced` CSS properties.
-- [x] Update docs for grid, layout, typography, borders, sizing, interactions, and advanced styling.
-- [x] Rewrite `implementations/chat-app` to use the new language features.
-- [x] Keep `advanced` available as an explicit escape hatch, but reduce chat-app `advanced` usage by at least 70%.
-- [x] Add regression tests proving the chat-app shell layout does not require raw grid-template CSS.
+- [ ] `cargo fmt`
+- [ ] `cargo clippy --workspace --all-targets -- -D warnings`
+- [ ] `cargo test --workspace`
+- [ ] Runtime package tests when package exists.
+- [ ] Documentation examples compile or are clearly marked conceptual.
