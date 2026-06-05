@@ -1,45 +1,66 @@
 # MILESTONES.md
 
-## Milestone 0 — Repository Scaffolding
+## Milestone 0 — Overhaul Foundation
 
-Goal: create a clean Rust workspace and documentation foundation.
+Goal: prepare the repository for the move from styling-only output to `Frame -> Frame IR -> DOM runtime`.
 
 Deliverables:
-- [x] `.gitignore`
-- [x] `README.md`
-- [x] `AGENTS.md`
-- [x] `MILESTONES.md`
-- [x] `TODO.md`
-- [x] Rust workspace crates
-- [x] Example `.frame` file
-- [x] Zed extension placeholder
+
+- [x] Rewrite project README.
+- [x] Rewrite agent guidance.
+- [x] Rewrite TODO tracker.
+- [x] Rewrite milestones.
+- [x] Add CSS coverage tracker.
+- [x] Add DOM coverage tracker.
+- [x] Add research notes for architecture and runtime design.
+
+Success criteria:
+
+- The repository clearly communicates that Frame is experimental.
+- The new direction is documented without implementing runtime code yet.
 
 ---
 
-## Milestone 1 — Parser MVP
+## Milestone 1 — Language Shape
 
-Goal: parse the first useful subset of Frame.
+Goal: define the first complete Frame UI syntax slice.
 
 Deliverables:
-- [x] AST for declarations:
-  - [x] `grid`
-  - [x] `area`
-  - [x] `card`
-  - [x] `stack`
-  - [x] `row`
-  - [x] `button`
-  - [x] `text`
-- [x] Nested blocks:
-  - [x] `hover`
-  - [x] `focus`
-  - [x] `active`
-- [x] Property-like statements:
-  - [x] `columns sidebar content inspector`
-  - [x] `gap medium`
-  - [x] `surface panel`
-  - [x] `padding large`
-- [x] Friendly parse errors.
-- [x] Parser unit tests.
+
+- [ ] `component` declarations.
+- [ ] `view` blocks.
+- [ ] `props` blocks.
+- [ ] `state` blocks.
+- [ ] DOM element declarations.
+- [ ] Component invocation syntax.
+- [ ] `$value` references.
+- [ ] `@handler` references.
+- [ ] `Name:StyleName` style binding syntax.
+- [ ] `style when` reactive style syntax.
+- [ ] `show when`, `disabled when`, and similar condition helpers.
+- [ ] Clear unsafe/raw escape hatch syntax.
+
+Success criteria:
+
+- The planned syntax can express a small chat UI without Svelte or React.
+- The syntax remains readable and teachable.
+
+---
+
+## Milestone 2 — Parser and AST
+
+Goal: parse the UI language slice while preserving existing styling syntax.
+
+Deliverables:
+
+- [ ] AST for components, views, props, state, elements, text, events, bindings, conditions, loops, and style bindings.
+- [ ] Parser support for `$` data references.
+- [ ] Parser support for `@` handler references.
+- [ ] Parser support for event filters and modifiers.
+- [ ] Parser support for explicit style bindings.
+- [ ] Parser support for reactive style rules.
+- [ ] Comment preservation for formatter work.
+- [ ] Parser tests.
 
 Success criteria:
 
@@ -49,315 +70,229 @@ cargo test -p frame_parser
 
 ---
 
-## Milestone 2 — Semantic Model
+## Milestone 3 — Semantic Model
 
-Goal: validate Frame files after parsing.
+Goal: resolve names and validate UI meaning.
 
 Deliverables:
-- [x] Unknown keyword diagnostics.
-- [x] Duplicate declaration diagnostics.
-- [x] `area ... in GridName` validation.
-- [x] `place name` validation against grid columns/areas.
-- [x] Allowed value tables for spacing, surfaces, effects, radii, and sizes.
-- [x] Diagnostic spans suitable for LSP.
+
+- [ ] Component symbol table.
+- [ ] State and prop symbol table.
+- [ ] Handler reference table.
+- [ ] Style reference resolution.
+- [ ] DOM element validation.
+- [ ] Attribute validation.
+- [ ] Event validation.
+- [ ] Accessibility diagnostics.
+- [ ] Unsafe sink diagnostics.
+- [ ] Source spans for every diagnostic.
 
 Success criteria:
-- Invalid files produce useful errors.
-- Valid example file passes `frame_cli check`.
+
+- Invalid UI declarations produce actionable diagnostics.
+- LSP can reuse semantic information.
 
 ---
 
-## Milestone 3 — CSS Codegen MVP
+## Milestone 4 — Frame IR
 
-Goal: compile useful Frame declarations into real CSS.
+Goal: introduce a renderer-neutral IR as the real compiler output.
 
 Deliverables:
-- [x] Stable class naming.
-- [x] Base design token CSS.
-- [x] `grid` codegen.
-- [x] `area` placement codegen.
-- [x] Responsive card grid codegen.
-- [x] `card` codegen.
-- [x] `stack` and `row` codegen.
-- [x] `hover` effects codegen.
-- [x] CSS behavior tests.
+
+- [ ] IR node model.
+- [ ] IR component model.
+- [ ] IR style binding model.
+- [ ] IR event binding model.
+- [ ] IR state/binding model.
+- [ ] IR control-flow model.
+- [ ] IR source maps.
+- [ ] IR version metadata.
+- [ ] JSON serialization.
+- [ ] Snapshot tests.
 
 Success criteria:
-- Example `.frame` compiles to readable CSS.
-- Svelte can import and use the generated classes.
+
+- A parsed Frame component can be lowered into stable IR.
+- Renderers do not need to parse Frame source.
 
 ---
 
-## Milestone 4 — TypeScript Codegen
+## Milestone 5 — TypeScript Contracts
 
-Goal: make generated classes ergonomic in Svelte.
+Goal: connect Frame UI declarations to external TypeScript logic without inline scripts.
 
 Deliverables:
-- [x] Generate `generated.ts`.
-- [x] Export `ui` object.
-- [x] Use stable generated class names.
-- [x] TypeScript behavior tests.
+
+- [ ] Generated prop types.
+- [ ] Generated state types.
+- [ ] Generated handler interfaces.
+- [ ] Generated event context types.
+- [ ] Generated skeleton files.
+- [ ] Non-destructive file update strategy.
+- [ ] Tests for generated contracts.
 
 Success criteria:
 
-```ts
-import { ui } from '$lib/frame/generated';
-```
-
-works in a Svelte project.
+- A developer can write Frame UI first, then fill in generated TypeScript skeletons.
 
 ---
 
-## Milestone 5 — CLI
+## Milestone 6 — DOM Runtime MVP
 
-Goal: provide a usable command-line workflow.
+Goal: render Frame IR directly to the browser DOM.
 
 Deliverables:
-- [x] `frame check <file>`
-- [x] `frame compile <file> --out <dir>`
-- [x] `frame format <file>`
-- [x] `frame watch <file> --out <dir>`
-- [x] Exit codes for CI.
-- [x] Human-readable diagnostics.
+
+- [ ] Runtime package scaffold.
+- [ ] Mount/unmount API.
+- [ ] Element creation.
+- [ ] Text node creation.
+- [ ] Attribute/property application.
+- [ ] Event listener binding.
+- [ ] Escaped text insertion.
+- [ ] Style class application.
+- [ ] Basic state updates.
+- [ ] Patch application.
+- [ ] Runtime tests.
 
 Success criteria:
 
-```bash
-cargo run -p frame_cli -- compile examples/svelte/src/lib/frame/app.frame --out examples/svelte/src/lib/frame
-```
+- A small Frame component renders in a browser without Svelte or React.
 
 ---
 
-## Milestone 6 — Zed Syntax Highlighting
+## Milestone 7 — Reactive Runtime
 
-Goal: make `.frame` files pleasant to edit in Zed.
+Goal: support practical UI updates.
 
 Deliverables:
-- [x] Tree-sitter grammar scaffold.
-- [x] Highlight queries.
-- [x] Zed extension metadata.
-- [x] File extension association for `.frame`.
-- [x] Syntax highlighting for:
-  - [x] declarations
-  - [x] block names
-  - [x] keywords
-  - [x] effects
-  - [x] strings/comments
+
+- [ ] State dependency tracking.
+- [ ] Conditional rendering.
+- [ ] Keyed list rendering.
+- [ ] Form bindings.
+- [ ] Reactive styles.
+- [ ] Batched updates.
+- [ ] Cleanup lifecycle.
+- [ ] Error boundaries or runtime error reporting plan.
 
 Success criteria:
-- Zed recognizes `.frame` files.
-- Basic highlighting works.
+
+- A chat input can update text, submit, disable while sending, and render messages.
 
 ---
 
-## Milestone 7 — LSP MVP
+## Milestone 8 — Full DOM Coverage Expansion
 
-Goal: provide editor intelligence.
+Goal: expand toward complete HTML and DOM capability.
 
 Deliverables:
-- [x] `frame_lsp` executable.
-- [x] Publish diagnostics from parser and semantic model.
-- [x] Completion items for known keywords.
-- [x] Completion items for known token values.
-- [x] Hover docs for common concepts.
-- [x] Format document support.
+
+- [ ] Element catalog implementation from `TODO-DOM.md`.
+- [ ] Attribute catalog implementation from `TODO-DOM.md`.
+- [ ] Event catalog implementation from `TODO-DOM.md`.
+- [ ] Form behavior coverage.
+- [ ] Media behavior coverage.
+- [ ] Accessibility coverage.
+- [ ] DOM escape hatches.
 
 Success criteria:
-- Zed can run the LSP.
-- Invalid Frame files show diagnostics.
+
+- Unsupported DOM features are rare, documented, and intentionally tracked.
 
 ---
 
-## Milestone 8 — Svelte Integration
+## Milestone 9 — CSS Coverage Expansion
 
-Goal: make Frame feel native in Svelte projects.
+Goal: continue evolving Frame styling toward complete CSS capability through structured syntax.
 
 Deliverables:
-- [x] Vite plugin.
-- [x] Svelte preprocessor.
-- [x] `<style lang="frame">` support.
-- [x] External `.frame` file support.
-- [x] Inline style block documentation.
-- [x] Generated CSS/TS path configuration.
-- [x] `frame watch` development workflow.
-- [x] Example Svelte usage documentation.
+
+- [ ] Remaining layout coverage.
+- [ ] Remaining typography coverage.
+- [ ] Remaining visual effects coverage.
+- [ ] Remaining transforms/transitions/animations coverage.
+- [ ] Remaining responsive/container query coverage.
+- [ ] Remaining advanced CSS coverage.
+- [ ] Continued advanced escape hatch support.
 
 Success criteria:
-- A Svelte component can use generated Frame classes without manual CSS.
-- A Svelte component can compile component-local Frame through `<style lang="frame">`.
+
+- `TODO-CSS.md` is mostly complete or each missing CSS area has a clear reason.
 
 ---
 
-## Milestone 9 — Svelte Setup And Practical Editor Guidance
+## Milestone 10 — LSP Teacher Experience for UI
 
-Goal: make Frame usable inside real Svelte projects with one setup command and clearer editor guidance.
+Goal: make Frame's editor support teach the full UI language.
 
 Deliverables:
-- [x] `frame init svelte`.
-- [x] `frame init svelte --dry-run`.
-- [x] Safe Svelte/Vite config updates with backups.
-- [x] Initial `src/lib/frame/app.frame` generation.
-- [x] Generated `generated.css` and `generated.ts` from init.
-- [x] Scope-aware LSP completions.
-- [x] Embedded Svelte `<style lang="frame">` LSP routing.
-- [x] Practical hover docs with Svelte examples.
-- [x] Percentage-based sizing.
-- [x] Expanded color and surface tokens.
-- [x] Grid, layout, color, surface, Svelte, and LSP docs.
+
+- [ ] UI syntax highlighting.
+- [ ] DOM element completions.
+- [ ] Attribute completions.
+- [ ] Event completions.
+- [ ] State/prop/handler completions.
+- [ ] Hover docs for UI syntax.
+- [ ] Go-to-definition for handlers and styles.
+- [ ] Code actions for missing handlers and styles.
+- [ ] Diagnostics for unsafe/invalid DOM usage.
 
 Success criteria:
-- A Svelte project can add Frame in one command.
-- Frame style blocks receive Frame completions and hover docs.
-- Users can build sidebar/content/inspector layouts with named or percentage columns.
+
+- The LSP can guide a new user through building a small UI.
 
 ---
 
-## Milestone 10 — Production-Grade LSP Guidance
+## Milestone 11 — Web App Target
 
-Goal: make the Frame LSP act like an expert editor guide, not just a keyword autocomplete server.
+Goal: make Frame usable as a standalone web UI language.
 
 Deliverables:
-- [x] Central Frame knowledge base for completion and hover documentation.
-- [x] Rich markdown completion docs with Frame and Svelte examples.
-- [x] Completion snippets for dashboards, percentage dashboards, hover cards, toolbars, and empty states.
-- [x] Stronger diagnostics with suggestions and concept guidance.
-- [x] Code actions for typos, missing grids, missing placements, generated areas, percentage columns, and hover effects.
-- [x] Go-to-definition for `area in GridName` and `place section`.
-- [x] References for grid declarations and grid sections.
-- [x] Document symbols with nested state blocks.
-- [x] Document links to markdown docs.
-- [x] Semantic tokens for declarations, properties, values, colors, and percentages.
-- [x] Folding ranges for declarations and state blocks.
-- [x] Embedded Svelte `<style lang="frame">` diagnostics, completion, hover, and formatting routing.
-- [x] Additional documentation for areas, spacing, sizing, interactions, diagnostics, and code actions.
+
+- [ ] `frame init web`.
+- [ ] Dev server or Vite-compatible runtime flow.
+- [ ] Browser example app.
+- [ ] Build output docs.
+- [ ] Debugging docs.
 
 Success criteria:
-- `cargo test --workspace` passes.
-- Frame files and inline Svelte Frame style blocks receive practical editor guidance.
+
+- A developer can create a small Frame web app without Svelte or React.
 
 ---
 
-## Milestone 11 — Styling Vocabulary, Imports, And Highlighting Hardening
+## Milestone 12 — Tauri/WebView Target
 
-Goal: make Frame feel like a complete styling language for real Svelte projects.
+Goal: use the DOM runtime inside desktop apps.
 
 Deliverables:
-- [x] Tree-sitter grammar support for `#include` and hex color literals.
-- [x] Highlight query coverage for declarations, layout properties, color/surface properties, borders, effects, animation, percentages, numbers, and includes.
-- [x] Zed highlighting samples for layout, colors, effects, imports, and broad keyword coverage.
-- [x] Custom color token syntax: `color brand #7c3aed`.
-- [x] CSS variables for custom colors and use in `background`, `color`, `border`, and state effects.
-- [x] Custom gradient token syntax with `type linear`, `angle`, and `stop` entries.
-- [x] CSS variables for custom gradients and use in `background` and `surface`.
-- [x] Layered corner gradients for multi-corner background washes.
-- [x] Targeted padding/margin and sticky `anchor` positioning.
-- [x] Vertical grid flow with per-section spacing, sizing, and alignment controls.
-- [x] Explicit advanced styling escape hatch with scoped `css "property" value` output.
-- [x] Expanded surface, color, border, shadow, glow, transition, animation, alignment, position, z-layer, and sizing vocabulary.
-- [x] Deterministic keyframes for named animations.
-- [x] `#include` support in parser, CLI, Vite plugin, LSP diagnostics, document links, go-to-definition, and completions.
-- [x] Include cycle and missing include diagnostics.
-- [x] Cross-file LSP completions, hover, diagnostics, and go-to-definition for imported grids and tokens.
-- [x] Practical docs for setup, imports, tokens, borders, animations, and examples.
+
+- [ ] `frame init tauri` plan or scaffold.
+- [ ] Tauri example app.
+- [ ] Desktop command/event boundary docs.
+- [ ] Security docs for desktop APIs.
+- [ ] Packaging notes.
 
 Success criteria:
-- `cargo fmt`
-- `cargo clippy --workspace --all-targets -- -D warnings`
-- `cargo test --workspace`
-- Tree-sitter parser and highlight checks pass for `highlighting.frame` and `imports.frame`.
-- `npm test` passes in `packages/frame-svelte`.
-- `npm run build` passes in `examples/svelte`.
+
+- The same Frame UI model can run in a browser and a Tauri WebView.
 
 ---
 
-## Milestone 12 — Structured CSS Teacher Slice
+## Milestone 13 — Native Renderer Research
 
-Goal: continue the language/LSP overhaul with first-class motion, responsive overrides, and broader centralized language metadata.
+Goal: evaluate future renderers after the IR has proven itself.
 
-Deliverables:
-- [x] `keyframes` top-level declaration in the AST and parser.
-- [x] Custom keyframes CSS generation with deterministic `frame-Name` names.
-- [x] Structured `animation Name { ... }` blocks with duration, delay, ease, iteration, direction, fill, and play-state.
-- [x] Responsive declaration blocks: `below`, `above`, and `between`.
-- [x] Container query declaration blocks with named container sizes.
-- [x] Symbol indexing for custom keyframes and custom animation completions.
-- [x] LSP completions for keyframe selectors, keyframe properties, animation options, and custom keyframe references.
-- [x] Hover docs for keyframes, responsive blocks, container queries, and animation controls.
-- [x] Semantic token coverage for keyframe selectors and responsive/container block keywords.
-- [x] Parser, codegen, LSP completion, and semantic validation tests for the new slice.
-- [x] README and docs updated to reflect structured full-CSS coverage rather than intentionally hiding CSS.
+Potential targets:
+
+- [ ] winit/wgpu custom renderer.
+- [ ] egui backend.
+- [ ] iced backend.
+- [ ] slint backend.
+- [ ] platform-native widgets.
 
 Success criteria:
-- `cargo fmt`
-- `cargo test --workspace`
-- `cargo clippy --workspace --all-targets -- -D warnings`
 
----
-
-## Milestone 13 — Organized LSP Teacher Experience
-
-Goal: make autocomplete, hovers, diagnostics, and navigation easier to scan and more explanatory in everyday editing.
-
-Deliverables:
-- [x] Completion suggestions carry categories and stable sort groups.
-- [x] Completion UI distinguishes snippets, declarations, layout, visual, motion, typography, token, value, include, advanced, project-symbol, grid-reference, grid-section, keyframe-selector, and animation-option items.
-- [x] Root, grid, component, state, keyframes, and animation-block scopes get targeted snippets.
-- [x] Grid sections, custom colors, gradients, grids, and keyframes from the project graph are exposed as project-aware completions.
-- [x] Hover docs explain values in context, including grid columns, placements, breakpoints, container sizes, spacing tokens, colors, animation options, transforms, opacity values, and keyframe percentages.
-- [x] Custom keyframes participate in imported symbol merging, hover docs, and go-to-definition.
-- [x] Diagnostics explain raw CSS property aliases with Frame equivalents and advanced escape-hatch guidance.
-- [x] Diagnostics explain missing area placement and suggest concrete placement examples.
-- [x] LSP docs and project trackers describe the new behavior.
-
-Success criteria:
-- `cargo fmt`
-- `cargo test --workspace`
-- `cargo clippy --workspace --all-targets -- -D warnings`
-
----
-
-## Milestone 14 — Reference Chat Application
-
-Goal: provide a real SvelteKit implementation that demonstrates Frame in a modular application.
-
-Deliverables:
-- [x] `implementations/chat-app` SvelteKit project.
-- [x] External `.frame` styling only.
-- [x] Modular layout, channel, message, user, and composer components.
-- [x] Typed models, mocked API services, and Svelte stores.
-- [x] Generated Frame CSS and TypeScript class exports.
-- [x] README documenting architecture and extension points.
-
-Success criteria:
-- The implementation can compile Frame sources into generated CSS/TS.
-- UI data flows from API services to stores to Svelte components.
-
----
-
-## Milestone 15 — App-Driven Styling Vocabulary
-
-Goal: use the chat app's `advanced` usage as product feedback and promote repeated escape-hatch patterns into Frame-native language features.
-
-Deliverables:
-- [x] Native multi-row grid area templates for app shells and dashboards.
-- [x] Native grid track syntax for fixed rails, fixed side panels, auto tracks, content tracks, and fill tracks.
-- [x] Component-internal row/grid patterns for icon/content/action layouts.
-- [x] Overflow and scrolling intent: hidden overflow, vertical scroll panels, horizontal scroll panels, and dense-panel scrollbar behavior.
-- [x] Border edge syntax for top, right, bottom, and left separators.
-- [x] Text behavior syntax for truncation, wrapping, casing, line height, letter spacing, and label alignment.
-- [x] Control affordance syntax for reset controls, pointer-like interaction, border-box sizing, and accessible outline removal.
-- [x] Practical sizing primitives for icons, avatars, presence dots, badges, bounded panels, and safe shrinking.
-- [x] Semantic element reset syntax for text margins and form fill behavior.
-- [x] Parser, semantic validation, formatter, CSS codegen, TypeScript stability, LSP completions, hover docs, diagnostics, and tests for the new concepts.
-- [x] Diagnostics/code actions that suggest native Frame equivalents for common `advanced { css ... }` declarations.
-- [x] Updated docs and examples showing when to use the new native concepts versus the advanced escape hatch.
-- [x] Chat app Frame files rewritten to use the new native language where practical.
-
-Success criteria:
-- `cargo fmt`
-- `cargo test --workspace`
-- `cargo clippy --workspace --all-targets -- -D warnings`
-- `npm run check`, `npm run test`, and `npm run build` pass in `implementations/chat-app`.
-- [x] The chat app keeps its intended app-shell layout without raw `grid-template-*` advanced CSS.
-- [x] The chat app reduces `advanced` usage by at least 70% while preserving the terminal-inspired design.
-- LSP hover/completion guidance teaches the new concepts with examples from real app layouts.
+- Native target decisions are based on the stable IR, not premature assumptions.
