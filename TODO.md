@@ -214,6 +214,11 @@ LSP:
 - [x] Folding ranges.
 - [x] Include highlighting, document links, missing include diagnostics, and include completions.
 - [x] Imported grid/color/gradient symbols in completions, hover, diagnostics, and go-to-definition.
+- [x] Categorized completion groups for snippets, declarations, project symbols, layout, visual, motion, typography, token, value, include, and advanced items.
+- [x] Scope-specific snippets for responsive grids, container queries, component states, animation controls, and keyframes.
+- [x] Contextual value hover docs for grid sections, breakpoints, spacing tokens, color intent, animation controls, and keyframe percentages.
+- [x] Teacher-style diagnostics for raw CSS property aliases and area declarations missing placement.
+- [x] Imported keyframes symbols in completions, hover, and go-to-definition.
 
 ## Phase 9 — Svelte Integration
 
@@ -409,3 +414,12 @@ Add native support for common design concepts without turning Frame into raw CSS
 - [x] `container narrow { columns content }`
 - [ ] `tablet { columns content }`
 - [ ] `desktop { columns sidebar content inspector }`
+
+## Phase 13 — LSP Teacher Experience
+
+- [x] Group completion results into identifiable categories with stable sort order.
+- [x] Suggest scoped snippets based on root, grid, component, state, keyframes, and animation-block context.
+- [x] Surface available project symbols, including grids, grid sections, colors, gradients, and keyframes, as distinct completion items.
+- [x] Teach values through hover docs that depend on the current statement.
+- [x] Explain raw CSS property mistakes with Frame equivalents and escape-hatch guidance.
+- [x] Explain missing area placement with concrete `place`, `col`, or `row` examples.

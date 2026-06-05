@@ -151,6 +151,29 @@ fn validate_area(
             ));
         }
     }
+
+    if find_statement_value(declaration, "place").is_none()
+        && find_statement_value(declaration, "col").is_none()
+        && find_statement_value(declaration, "row").is_none()
+    {
+        let mut known = symbols
+            .grid_sections
+            .get(grid_name)
+            .map(|sections| sections.keys().cloned().collect::<Vec<_>>())
+            .unwrap_or_default();
+        known.sort();
+        let example = known
+            .first()
+            .map(|section| format!("place {section}"))
+            .unwrap_or_else(|| "col 1".to_string());
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "area `{}` references grid `{grid_name}` but does not claim a position.\n\nAdd `{example}`, `col 1`, or `row 1` so the generated class has explicit grid placement.\n\nWhy: `in {grid_name}` tells Frame which grid owns the area; `place`, `col`, or `row` tells Frame where it belongs.",
+                declaration.name.text
+            ),
+            declaration.span,
+        ));
+    }
 }
 
 fn validate_statements(
@@ -568,6 +591,17 @@ fn validate_statement(
     };
 
     if !knowledge::property_keywords().contains(&keyword) {
+        if let Some(alias) = css_property_alias(keyword) {
+            let example_value = alias_example_value(alias);
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "`{keyword}` is a raw CSS property name. In Frame, write design intent instead.\n\nUse `{alias} ...` here.\n\nExample:\n\n```frame\n{alias} {example_value}\n```\n\nWhy: Frame keeps common CSS concepts discoverable as guided properties, while raw CSS belongs in an explicit `advanced {{ css \"{keyword}\" value }}` escape hatch."
+                ),
+                statement.span,
+            ));
+            return;
+        }
+
         let suggestion = closest(keyword, knowledge::property_keywords())
             .map(|value| format!("\n\nDid you mean `{value}`?"))
             .unwrap_or_default();
@@ -1094,6 +1128,44 @@ fn first_word(statement: &Statement) -> Option<&str> {
     statement.words.first().map(String::as_str)
 }
 
+fn css_property_alias(property: &str) -> Option<&'static str> {
+    match property {
+        "justify-content" | "justify-items" | "place-content" => Some("justify"),
+        "align-items" | "align-content" | "place-items" => Some("align"),
+        "grid-template-columns" => Some("columns"),
+        "grid-template-rows" => Some("rows"),
+        "grid-area" => Some("place"),
+        "grid-column" => Some("col"),
+        "grid-row" => Some("row"),
+        "background-color" => Some("background"),
+        "color" => Some("text"),
+        "border-radius" => Some("radius"),
+        "box-shadow" => Some("shadow"),
+        "font-size" => Some("size"),
+        "font-weight" => Some("weight"),
+        "z-index" => Some("z"),
+        _ => None,
+    }
+}
+
+fn alias_example_value(alias: &str) -> &'static str {
+    match alias {
+        "columns" => "sidebar content",
+        "rows" => "header content footer",
+        "place" => "content",
+        "col" | "row" => "1",
+        "background" => "panel",
+        "radius" => "large",
+        "shadow" => "medium",
+        "size" => "heading",
+        "weight" => "semibold",
+        "z" => "modal",
+        "align" | "justify" => "center",
+        "text" => "bright",
+        _ => "center",
+    }
+}
+
 fn closest<'a>(needle: &str, candidates: &'a [&str]) -> Option<&'a str> {
     candidates
         .iter()
@@ -1182,6 +1254,50 @@ mod tests {
         assert!(diagnostics[0]
             .message
             .contains("unknown grid slot `footer`"));
+    }
+
+    #[test]
+    fn explains_area_missing_placement() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Grid,
+                    "Dashboard",
+                    vec![statement(&["columns", "sidebar", "content"])],
+                ),
+                declaration(
+                    DeclarationKind::Area,
+                    "Sidebar",
+                    vec![statement(&["in", "Dashboard"])],
+                ),
+            ],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("does not claim a position"));
+        assert!(diagnostics[0].message.contains("place"));
+    }
+
+    #[test]
+    fn explains_raw_css_property_aliases() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Dock,
+                "Main",
+                vec![statement(&["justify-content", "center"])],
+            )],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("raw CSS property name"));
+        assert!(diagnostics[0].message.contains("justify center"));
+        assert!(diagnostics[0].message.contains("advanced"));
     }
 
     #[test]

@@ -291,3 +291,25 @@ Success criteria:
 - `cargo fmt`
 - `cargo test --workspace`
 - `cargo clippy --workspace --all-targets -- -D warnings`
+
+---
+
+## Milestone 13 — Organized LSP Teacher Experience
+
+Goal: make autocomplete, hovers, diagnostics, and navigation easier to scan and more explanatory in everyday editing.
+
+Deliverables:
+- [x] Completion suggestions carry categories and stable sort groups.
+- [x] Completion UI distinguishes snippets, declarations, layout, visual, motion, typography, token, value, include, advanced, project-symbol, grid-reference, grid-section, keyframe-selector, and animation-option items.
+- [x] Root, grid, component, state, keyframes, and animation-block scopes get targeted snippets.
+- [x] Grid sections, custom colors, gradients, grids, and keyframes from the project graph are exposed as project-aware completions.
+- [x] Hover docs explain values in context, including grid columns, placements, breakpoints, container sizes, spacing tokens, colors, animation options, transforms, opacity values, and keyframe percentages.
+- [x] Custom keyframes participate in imported symbol merging, hover docs, and go-to-definition.
+- [x] Diagnostics explain raw CSS property aliases with Frame equivalents and advanced escape-hatch guidance.
+- [x] Diagnostics explain missing area placement and suggest concrete placement examples.
+- [x] LSP docs and project trackers describe the new behavior.
+
+Success criteria:
+- `cargo fmt`
+- `cargo test --workspace`
+- `cargo clippy --workspace --all-targets -- -D warnings`

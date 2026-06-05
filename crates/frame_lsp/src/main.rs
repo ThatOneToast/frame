@@ -22,16 +22,16 @@ use tower_lsp::{
     jsonrpc::Result,
     lsp_types::{
         CodeActionOptions, CodeActionParams, CodeActionProviderCapability, CompletionItem,
-        CompletionOptions, CompletionParams, CompletionResponse, DidChangeTextDocumentParams,
-        DidOpenTextDocumentParams, DocumentFormattingParams, DocumentLinkOptions,
-        DocumentLinkParams, DocumentSymbolParams, DocumentSymbolResponse, FoldingRangeParams,
-        FoldingRangeProviderCapability, GotoDefinitionParams, GotoDefinitionResponse, Hover,
-        HoverContents, HoverParams, HoverProviderCapability, InitializeParams, InitializeResult,
-        InitializedParams, InsertTextFormat, Location, MarkupContent, MarkupKind, MessageType,
-        OneOf, Position, Range, ReferenceParams, SemanticTokenModifier, SemanticTokenType,
-        SemanticTokensFullOptions, SemanticTokensLegend, SemanticTokensOptions,
-        SemanticTokensParams, SemanticTokensResult, ServerCapabilities, TextDocumentSyncCapability,
-        TextDocumentSyncKind, TextEdit, Url, WorkDoneProgressOptions,
+        CompletionItemKind, CompletionOptions, CompletionParams, CompletionResponse,
+        DidChangeTextDocumentParams, DidOpenTextDocumentParams, DocumentFormattingParams,
+        DocumentLinkOptions, DocumentLinkParams, DocumentSymbolParams, DocumentSymbolResponse,
+        FoldingRangeParams, FoldingRangeProviderCapability, GotoDefinitionParams,
+        GotoDefinitionResponse, Hover, HoverContents, HoverParams, HoverProviderCapability,
+        InitializeParams, InitializeResult, InitializedParams, InsertTextFormat, Location,
+        MarkupContent, MarkupKind, MessageType, OneOf, Position, Range, ReferenceParams,
+        SemanticTokenModifier, SemanticTokenType, SemanticTokensFullOptions, SemanticTokensLegend,
+        SemanticTokensOptions, SemanticTokensParams, SemanticTokensResult, ServerCapabilities,
+        TextDocumentSyncCapability, TextDocumentSyncKind, TextEdit, Url, WorkDoneProgressOptions,
     },
     Client, LanguageServer, LspService, Server,
 };
@@ -157,8 +157,18 @@ impl LanguageServer for Backend {
         )
         .into_iter()
         .map(|suggestion| CompletionItem {
+            sort_text: Some(format!(
+                "{}_{}",
+                suggestion.category.sort_prefix(),
+                suggestion.label
+            )),
+            kind: Some(completion_kind(suggestion.category)),
+            detail: Some(format!(
+                "Frame {} • {}",
+                suggestion.category.label(),
+                suggestion.detail
+            )),
             label: suggestion.label,
-            detail: Some(suggestion.detail.to_string()),
             documentation: Some(tower_lsp::lsp_types::Documentation::MarkupContent(
                 MarkupContent {
                     kind: MarkupKind::Markdown,
@@ -336,6 +346,27 @@ impl LanguageServer for Backend {
     }
 }
 
+fn completion_kind(category: completions::CompletionCategory) -> CompletionItemKind {
+    match category {
+        completions::CompletionCategory::Snippet => CompletionItemKind::SNIPPET,
+        completions::CompletionCategory::Declaration
+        | completions::CompletionCategory::Include
+        | completions::CompletionCategory::KeyframeSelector
+        | completions::CompletionCategory::StateBlock => CompletionItemKind::KEYWORD,
+        completions::CompletionCategory::LayoutProperty
+        | completions::CompletionCategory::VisualProperty
+        | completions::CompletionCategory::MotionProperty
+        | completions::CompletionCategory::TypographyProperty
+        | completions::CompletionCategory::TokenProperty
+        | completions::CompletionCategory::AdvancedProperty
+        | completions::CompletionCategory::AnimationOption => CompletionItemKind::PROPERTY,
+        completions::CompletionCategory::ProjectSymbol
+        | completions::CompletionCategory::GridReference
+        | completions::CompletionCategory::GridSection => CompletionItemKind::CONSTANT,
+        completions::CompletionCategory::Value => CompletionItemKind::ENUM_MEMBER,
+    }
+}
+
 fn include_files_for_uri(uri: &Url) -> Vec<PathBuf> {
     let Ok(path) = uri.to_file_path() else {
         return Vec::new();
@@ -417,6 +448,7 @@ fn imported_symbol_definition_location(source: &str, offset: usize, uri: &Url) -
                 .colors
                 .get(word)
                 .or_else(|| symbols.gradients.get(word))
+                .or_else(|| symbols.keyframes.get(word))
                 .or_else(|| symbols.grids.get(word))
         };
         if let Some(symbol) = symbol {

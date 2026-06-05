@@ -11,6 +11,80 @@ pub struct CompletionSuggestion {
     pub documentation: String,
     pub insert_text: Option<String>,
     pub is_snippet: bool,
+    pub category: CompletionCategory,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CompletionCategory {
+    Snippet,
+    Declaration,
+    Include,
+    LayoutProperty,
+    VisualProperty,
+    MotionProperty,
+    TypographyProperty,
+    TokenProperty,
+    AdvancedProperty,
+    StateBlock,
+    Value,
+    ProjectSymbol,
+    GridReference,
+    GridSection,
+    KeyframeSelector,
+    AnimationOption,
+}
+
+impl CompletionCategory {
+    pub fn label(self) -> &'static str {
+        match self {
+            CompletionCategory::Snippet => "Snippet",
+            CompletionCategory::Declaration => "Declaration",
+            CompletionCategory::Include => "Include",
+            CompletionCategory::LayoutProperty => "Layout",
+            CompletionCategory::VisualProperty => "Visual",
+            CompletionCategory::MotionProperty => "Motion",
+            CompletionCategory::TypographyProperty => "Typography",
+            CompletionCategory::TokenProperty => "Token",
+            CompletionCategory::AdvancedProperty => "Advanced",
+            CompletionCategory::StateBlock => "State",
+            CompletionCategory::Value => "Value",
+            CompletionCategory::ProjectSymbol => "Project Symbol",
+            CompletionCategory::GridReference => "Grid Reference",
+            CompletionCategory::GridSection => "Grid Section",
+            CompletionCategory::KeyframeSelector => "Keyframe Selector",
+            CompletionCategory::AnimationOption => "Animation Option",
+        }
+    }
+
+    pub fn sort_prefix(self) -> &'static str {
+        match self {
+            CompletionCategory::Snippet => "00",
+            CompletionCategory::GridReference
+            | CompletionCategory::GridSection
+            | CompletionCategory::ProjectSymbol => "01",
+            CompletionCategory::KeyframeSelector => "02",
+            CompletionCategory::Declaration => "03",
+            CompletionCategory::LayoutProperty => "04",
+            CompletionCategory::VisualProperty => "05",
+            CompletionCategory::MotionProperty | CompletionCategory::AnimationOption => "06",
+            CompletionCategory::TypographyProperty => "07",
+            CompletionCategory::StateBlock => "08",
+            CompletionCategory::TokenProperty => "09",
+            CompletionCategory::Value => "10",
+            CompletionCategory::Include => "11",
+            CompletionCategory::AdvancedProperty => "12",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SnippetScope {
+    Root,
+    Grid,
+    Component,
+    State,
+    Keyframes,
+    Animation,
 }
 
 const DECLARATIONS: &[&str] = &[
@@ -33,6 +107,7 @@ struct FrameSnippet {
     label: &'static str,
     body: &'static str,
     documentation: &'static str,
+    scopes: &'static [SnippetScope],
 }
 
 const SNIPPETS: &[FrameSnippet] = &[
@@ -40,41 +115,103 @@ const SNIPPETS: &[FrameSnippet] = &[
         label: "dashboard",
         body: "grid Dashboard {\n  columns sidebar content inspector\n  gap medium\n  height screen\n}\n\narea Sidebar {\n  in Dashboard\n  place sidebar\n  surface panel\n  padding medium\n}\n\narea Content {\n  in Dashboard\n  place content\n  surface main\n  padding large\n}\n\narea Inspector {\n  in Dashboard\n  place inspector\n  surface panel\n  padding medium\n}",
         documentation: "Creates a named dashboard grid with sidebar, content, and inspector areas.\n\nSvelte:\n\n```svelte\n<div class=\"fr-Dashboard\">\n  <aside class=\"fr-Sidebar\">Channels</aside>\n  <main class=\"fr-Content\">Messages</main>\n  <section class=\"fr-Inspector\">Details</section>\n</div>\n```",
+        scopes: &[SnippetScope::Root],
     },
     FrameSnippet {
         label: "dashboard-percent",
         body: "grid Dashboard {\n  columns 25% 50% 25%\n  gap medium\n  height screen\n}\n\narea Sidebar {\n  in Dashboard\n  col 1\n  surface panel\n  padding medium\n}\n\narea Content {\n  in Dashboard\n  col 2\n  surface main\n  padding large\n}\n\narea Inspector {\n  in Dashboard\n  col 3\n  surface panel\n  padding medium\n}",
         documentation: "Creates a dashboard grid with explicit percentage columns.\n\nSvelte:\n\n```svelte\n<div class=\"fr-Dashboard\">\n  <aside class=\"fr-Sidebar\">Channels</aside>\n  <main class=\"fr-Content\">Messages</main>\n  <section class=\"fr-Inspector\">Details</section>\n</div>\n```",
+        scopes: &[SnippetScope::Root],
     },
     FrameSnippet {
         label: "hover-card",
         body: "card HoverCard {\n  surface gradient dusk\n  padding large\n  radius large\n  shadow medium\n  text bright\n\n  hover {\n    lift small\n    glow accent\n    brighten subtle\n  }\n}",
         documentation: "Creates an interactive card with a gradient surface and hover effects.\n\nSvelte:\n\n```svelte\n<a class=\"fr-HoverCard\">Docs</a>\n```",
+        scopes: &[SnippetScope::Root],
     },
     FrameSnippet {
         label: "toolbar",
         body: "row Toolbar {\n  align center\n  justify between\n  gap small\n  padding medium\n  surface panel\n}",
         documentation: "Creates a horizontal toolbar layout.\n\nSvelte:\n\n```svelte\n<div class=\"fr-Toolbar\">\n  <button>Back</button>\n  <button>Save</button>\n</div>\n```",
+        scopes: &[SnippetScope::Root],
     },
     FrameSnippet {
         label: "empty-state",
         body: "center EmptyState {\n  height screen\n  surface main\n  text muted\n}",
         documentation: "Creates a centered empty state.\n\nSvelte:\n\n```svelte\n<section class=\"fr-EmptyState\">\n  <h2>No messages yet</h2>\n  <p>Select a channel to begin.</p>\n</section>\n```",
+        scopes: &[SnippetScope::Root],
     },
     FrameSnippet {
         label: "keyframe-animation",
         body: "keyframes FloatIn {\n  from {\n    opacity 0\n    transform translateY(12px) scale(0.98)\n  }\n\n  to {\n    opacity 1\n    transform translateY(0) scale(1)\n  }\n}\n\ncard Panel {\n  animation FloatIn {\n    duration 240ms\n    ease smooth\n    fill both\n  }\n}",
         documentation: "Creates custom keyframes and applies them to a component with structured animation controls.\n\nCSS output includes `@keyframes frame-FloatIn` and an `animation` declaration on `.fr-Panel`.",
+        scopes: &[SnippetScope::Root],
     },
     FrameSnippet {
         label: "responsive-breakpoint",
         body: "grid AppShell {\n  columns sidebar content inspector\n\n  below tablet {\n    columns content\n    rows sidebar content inspector\n  }\n}",
         documentation: "Creates a responsive grid override. `below tablet` emits a media query for tablet-and-smaller viewports.",
+        scopes: &[SnippetScope::Root, SnippetScope::Grid],
     },
     FrameSnippet {
         label: "container-query",
         body: "grid Cards {\n  columns responsive cards\n\n  container narrow {\n    columns content\n  }\n}",
         documentation: "Creates a container-query override for a grid when its container becomes narrow.",
+        scopes: &[SnippetScope::Root, SnippetScope::Grid],
+    },
+    FrameSnippet {
+        label: "below tablet block",
+        body: "below tablet {\n  columns content\n}",
+        documentation: "Adds a viewport-responsive override for tablet-and-smaller layouts.\n\nCSS output: `@media (max-width: 1023px)`.",
+        scopes: &[SnippetScope::Grid],
+    },
+    FrameSnippet {
+        label: "container narrow block",
+        body: "container narrow {\n  columns content\n}",
+        documentation: "Adds a container query override for a narrow component container.\n\nCSS output: `@container (max-width: 42rem)`.",
+        scopes: &[SnippetScope::Grid],
+    },
+    FrameSnippet {
+        label: "hover state",
+        body: "hover {\n  lift small\n  glow accent\n  brighten subtle\n}",
+        documentation: "Adds common hover feedback for an interactive component.",
+        scopes: &[SnippetScope::Component],
+    },
+    FrameSnippet {
+        label: "focus state",
+        body: "focus {\n  ring accent\n}",
+        documentation: "Adds an accessible focus-visible ring for keyboard navigation.",
+        scopes: &[SnippetScope::Component],
+    },
+    FrameSnippet {
+        label: "animation block",
+        body: "animation FloatIn {\n  duration 240ms\n  ease smooth\n  fill both\n}",
+        documentation: "Applies custom keyframes with explicit timing and fill behavior.",
+        scopes: &[SnippetScope::Component],
+    },
+    FrameSnippet {
+        label: "hover effects",
+        body: "lift small\nglow accent\nbrighten subtle",
+        documentation: "Adds common state effects inside `hover`, `focus`, `active`, or `disabled` blocks.",
+        scopes: &[SnippetScope::State],
+    },
+    FrameSnippet {
+        label: "from/to keyframes",
+        body: "from {\n  opacity 0\n  transform translateY(12px) scale(0.98)\n}\n\nto {\n  opacity 1\n  transform translateY(0) scale(1)\n}",
+        documentation: "Adds starting and ending animation states inside a `keyframes` declaration.",
+        scopes: &[SnippetScope::Keyframes],
+    },
+    FrameSnippet {
+        label: "50% keyframe",
+        body: "50% {\n  opacity 0.72\n}",
+        documentation: "Adds an intermediate keyframe selector.",
+        scopes: &[SnippetScope::Keyframes],
+    },
+    FrameSnippet {
+        label: "full animation controls",
+        body: "duration 240ms\ndelay 0ms\nease smooth\niteration 1\ndirection normal\nfill both\nplay-state running",
+        documentation: "Adds every supported structured animation control.",
+        scopes: &[SnippetScope::Animation],
     },
 ];
 
@@ -229,10 +366,11 @@ pub fn completions_at_with_includes(
         if let Some(property) = line_words.first() {
             return value_completions(property, &line_words, &symbols);
         }
-        return suggestions(
+        return suggestions_with_category(
             GRADIENT_PROPERTIES,
             "gradient property",
             "Property inside a custom gradient token.",
+            CompletionCategory::TokenProperty,
         );
     }
 
@@ -240,29 +378,34 @@ pub fn completions_at_with_includes(
         if let Some(property) = line_words.first() {
             return value_completions(property, &line_words, &symbols);
         }
-        return suggestions(
+        let mut items = snippet_suggestions(SnippetScope::Animation);
+        items.extend(suggestions_with_category(
             ANIMATION_PROPERTIES,
             "animation option",
             "Timing, easing, iteration, and fill options for a custom animation.",
-        );
+            CompletionCategory::AnimationOption,
+        ));
+        return items;
     }
 
     if is_inside_keyframe_selector(source, offset) {
         if let Some(property) = line_words.first() {
             return value_completions(property, &line_words, &symbols);
         }
-        return suggestions(
+        return suggestions_with_category(
             tokens::KEYFRAME_PROPERTIES,
             "keyframe property",
             "Animatable property inside a keyframe selector.",
+            CompletionCategory::MotionProperty,
         );
     }
 
     if is_inside_block(source, offset, "advanced") {
-        return suggestions(
+        return suggestions_with_category(
             ADVANCED_PROPERTIES,
             "advanced css",
             "Explicit scoped CSS escape hatch.",
+            CompletionCategory::AdvancedProperty,
         );
     }
 
@@ -270,24 +413,31 @@ pub fn completions_at_with_includes(
         if let Some(property) = line_words.first() {
             return value_completions(property, &line_words, &symbols);
         }
-        return suggestions(
+        return suggestions_with_category(
             SECTION_PROPERTIES,
             "section property",
             "Spacing, sizing, and alignment for a named grid section.",
+            CompletionCategory::LayoutProperty,
         );
     }
 
     match context.scope {
         CompletionScope::Root => {
-            let mut items = suggestions(DECLARATIONS, "declaration", "Starts a Frame declaration.");
+            let mut items = snippet_suggestions(SnippetScope::Root);
+            items.extend(suggestions_with_category(
+                DECLARATIONS,
+                "declaration",
+                "Starts a Frame declaration.",
+                CompletionCategory::Declaration,
+            ));
             items.push(CompletionSuggestion {
                 label: "#include".to_string(),
                 detail: "include",
                 documentation: include_documentation(),
                 insert_text: Some("#include ".to_string()),
                 is_snippet: false,
+                category: CompletionCategory::Include,
             });
-            items.extend(snippet_suggestions());
             items
         }
         CompletionScope::State { property } => property
@@ -295,11 +445,14 @@ pub fn completions_at_with_includes(
             .map(|property| value_completions(property, &line_words, &symbols))
             .filter(|items| !items.is_empty())
             .unwrap_or_else(|| {
-                suggestions(
+                let mut items = snippet_suggestions(SnippetScope::State);
+                items.extend(suggestions_with_category(
                     tokens::EFFECTS,
                     "effect",
                     "Effect used inside an interaction state.",
-                )
+                    CompletionCategory::MotionProperty,
+                ));
+                items
             }),
         CompletionScope::Declaration {
             kind,
@@ -313,6 +466,7 @@ pub fn completions_at_with_includes(
                             context.symbols.grids.keys().cloned().collect(),
                             "grid",
                             "Grid declaration in the current document.",
+                            CompletionCategory::GridReference,
                         )
                     }
                     "place" => {
@@ -322,6 +476,7 @@ pub fn completions_at_with_includes(
                                     columns.clone(),
                                     "grid area",
                                     "Named column or area from the referenced grid.",
+                                    CompletionCategory::GridSection,
                                 );
                             }
                         }
@@ -333,32 +488,46 @@ pub fn completions_at_with_includes(
             }
 
             match kind.as_str() {
-                "tokens" => suggestions(
+                "tokens" => suggestions_with_category(
                     TOKEN_PROPERTIES,
                     "token property",
                     "Token definition for reusable colors and gradients.",
+                    CompletionCategory::TokenProperty,
                 ),
-                "grid" => suggestions(
-                    GRID_PROPERTIES,
-                    "grid property",
-                    "Property for grid layout and child placement.",
-                ),
-                "keyframes" => suggestions(
-                    KEYFRAME_SELECTORS,
-                    "keyframe selector",
-                    "Selector inside a keyframes declaration.",
-                ),
-                "area" => suggestions(
+                "grid" => {
+                    let mut items = snippet_suggestions(SnippetScope::Grid);
+                    items.extend(property_suggestions(
+                        GRID_PROPERTIES,
+                        "grid property",
+                        "Property for grid layout and child placement.",
+                    ));
+                    items
+                }
+                "keyframes" => {
+                    let mut items = snippet_suggestions(SnippetScope::Keyframes);
+                    items.extend(suggestions_with_category(
+                        KEYFRAME_SELECTORS,
+                        "keyframe selector",
+                        "Selector inside a keyframes declaration.",
+                        CompletionCategory::KeyframeSelector,
+                    ));
+                    items
+                }
+                "area" => property_suggestions(
                     AREA_PROPERTIES,
                     "area property",
                     "Property for a child region inside a grid.",
                 ),
-                "card" | "button" => suggestions(
-                    CARD_PROPERTIES,
-                    "component property",
-                    "Property for a reusable UI surface.",
-                ),
-                _ => suggestions(
+                "card" | "button" => {
+                    let mut items = snippet_suggestions(SnippetScope::Component);
+                    items.extend(property_suggestions(
+                        CARD_PROPERTIES,
+                        "component property",
+                        "Property for a reusable UI surface.",
+                    ));
+                    items
+                }
+                _ => property_suggestions(
                     COMMON_PROPERTIES,
                     "property",
                     "Adds design intent to this declaration.",
@@ -416,6 +585,7 @@ fn value_completions(
                 symbols.gradient_names(),
                 "custom gradient",
                 "Custom gradient token from the project graph.",
+                CompletionCategory::ProjectSymbol,
             ));
             items
         }
@@ -429,11 +599,13 @@ fn value_completions(
                 symbols.color_names(),
                 "custom color",
                 "Custom color token from the project graph.",
+                CompletionCategory::ProjectSymbol,
             ));
             items.extend(dynamic_suggestions(
                 symbols.gradient_names(),
                 "custom gradient",
                 "Custom gradient token from the project graph.",
+                CompletionCategory::ProjectSymbol,
             ));
             items
         }
@@ -449,11 +621,13 @@ fn value_completions(
                 symbols.color_names(),
                 "custom color",
                 "Custom color token from the project graph.",
+                CompletionCategory::ProjectSymbol,
             ));
             items.extend(dynamic_suggestions(
                 symbols.gradient_names(),
                 "custom gradient",
                 "Custom gradient token from the project graph.",
+                CompletionCategory::ProjectSymbol,
             ));
             items
         }
@@ -482,6 +656,7 @@ fn value_completions(
                 symbols.color_names(),
                 "custom color",
                 "Custom color token from the project graph.",
+                CompletionCategory::ProjectSymbol,
             ));
             items
         }
@@ -512,6 +687,7 @@ fn value_completions(
                 symbols.color_names(),
                 "custom color",
                 "Custom color token from the project graph.",
+                CompletionCategory::ProjectSymbol,
             ));
             items
         }
@@ -537,6 +713,7 @@ fn value_completions(
                 symbols.keyframe_names(),
                 "custom keyframes",
                 "Custom keyframes declaration from the project graph.",
+                CompletionCategory::ProjectSymbol,
             ))
             .collect(),
         "delay" => suggestions(
@@ -582,6 +759,7 @@ fn value_completions(
                 symbols.color_names(),
                 "custom color",
                 "Custom color token from the project graph.",
+                CompletionCategory::ProjectSymbol,
             ));
             items
         }
@@ -594,6 +772,7 @@ fn value_completions(
             symbols.gradient_names(),
             "custom gradient",
             "Custom gradient token from the project graph.",
+            CompletionCategory::ProjectSymbol,
         ),
         "font" | "size" | "weight" | "line" | "letter" => {
             suggestions(TYPOGRAPHY, "type value", "Typography token.")
@@ -687,6 +866,7 @@ fn include_suggestions(mut include_files: Vec<PathBuf>) -> Vec<CompletionSuggest
                     .and_then(|name| name.to_str())
                     .map(ToOwned::to_owned),
                 is_snippet: false,
+                category: CompletionCategory::Include,
             })
         })
         .collect()
@@ -701,6 +881,15 @@ fn suggestions(
     detail: &'static str,
     documentation: &'static str,
 ) -> Vec<CompletionSuggestion> {
+    suggestions_with_category(labels, detail, documentation, category_for_detail(detail))
+}
+
+fn suggestions_with_category(
+    labels: &[&str],
+    detail: &'static str,
+    documentation: &'static str,
+    category: CompletionCategory,
+) -> Vec<CompletionSuggestion> {
     labels
         .iter()
         .map(|label| CompletionSuggestion {
@@ -711,19 +900,45 @@ fn suggestions(
                 .unwrap_or_else(|| documentation.to_string()),
             insert_text: None,
             is_snippet: false,
+            category,
         })
         .collect()
 }
 
-fn snippet_suggestions() -> Vec<CompletionSuggestion> {
+fn property_suggestions(
+    labels: &[&str],
+    detail: &'static str,
+    documentation: &'static str,
+) -> Vec<CompletionSuggestion> {
+    labels
+        .iter()
+        .map(|label| {
+            let category = property_category(label);
+            CompletionSuggestion {
+                label: (*label).to_string(),
+                detail,
+                documentation: completion_documentation(label)
+                    .or_else(|| knowledge::completion_doc(label))
+                    .unwrap_or_else(|| documentation.to_string()),
+                insert_text: None,
+                is_snippet: false,
+                category,
+            }
+        })
+        .collect()
+}
+
+fn snippet_suggestions(scope: SnippetScope) -> Vec<CompletionSuggestion> {
     SNIPPETS
         .iter()
+        .filter(|snippet| snippet.scopes.contains(&scope))
         .map(|snippet| CompletionSuggestion {
             label: snippet.label.to_string(),
             detail: "Frame snippet",
             documentation: snippet.documentation.to_string(),
             insert_text: Some(snippet.body.to_string()),
             is_snippet: true,
+            category: CompletionCategory::Snippet,
         })
         .collect()
 }
@@ -732,6 +947,7 @@ fn dynamic_suggestions(
     mut labels: Vec<String>,
     detail: &'static str,
     documentation: &'static str,
+    category: CompletionCategory,
 ) -> Vec<CompletionSuggestion> {
     labels.sort();
     labels
@@ -742,8 +958,56 @@ fn dynamic_suggestions(
             documentation: documentation.to_string(),
             insert_text: None,
             is_snippet: false,
+            category,
         })
         .collect()
+}
+
+fn category_for_detail(detail: &str) -> CompletionCategory {
+    match detail {
+        "declaration" => CompletionCategory::Declaration,
+        "include" => CompletionCategory::Include,
+        "token property" | "gradient property" => CompletionCategory::TokenProperty,
+        "advanced css" => CompletionCategory::AdvancedProperty,
+        "animation option" => CompletionCategory::AnimationOption,
+        "keyframe selector" => CompletionCategory::KeyframeSelector,
+        detail
+            if detail.contains("grid") || detail.contains("layout") || detail.contains("area") =>
+        {
+            CompletionCategory::LayoutProperty
+        }
+        detail
+            if detail.contains("effect")
+                || detail.contains("transition")
+                || detail.contains("animation") =>
+        {
+            CompletionCategory::MotionProperty
+        }
+        _ => CompletionCategory::Value,
+    }
+}
+
+fn property_category(label: &str) -> CompletionCategory {
+    match label {
+        "columns" | "rows" | "flow" | "section" | "gap" | "height" | "width" | "min-height"
+        | "max-height" | "min-width" | "max-width" | "place" | "in" | "col" | "row" | "span"
+        | "position" | "offset" | "z" | "align" | "justify" | "anchor" | "padding" | "margin" => {
+            CompletionCategory::LayoutProperty
+        }
+        "surface" | "background" | "theme" | "text" | "color" | "palette" | "tone" | "opacity"
+        | "radius" | "border" | "shadow" | "outline" => CompletionCategory::VisualProperty,
+        "font" | "size" | "weight" | "line" | "letter" => CompletionCategory::TypographyProperty,
+        "transition" | "duration" | "ease" | "animation" | "animate" | "delay" | "iteration"
+        | "direction" | "fill" | "play-state" | "transform" | "filter" => {
+            CompletionCategory::MotionProperty
+        }
+        "hover" | "focus" | "active" | "disabled" => CompletionCategory::StateBlock,
+        "advanced" | "css" => CompletionCategory::AdvancedProperty,
+        "type" | "angle" | "stop" | "corner" | "at" | "shape" | "gradient" => {
+            CompletionCategory::TokenProperty
+        }
+        _ => CompletionCategory::Value,
+    }
 }
 
 fn line_words_at(source: &str, offset: usize) -> Vec<String> {
@@ -891,6 +1155,10 @@ mod tests {
             .collect()
     }
 
+    fn items_for(source: &str) -> Vec<CompletionSuggestion> {
+        completions_at(source, source.len())
+    }
+
     #[test]
     fn root_scope_only_suggests_declarations() {
         let labels = labels_for("");
@@ -904,11 +1172,30 @@ mod tests {
 
     #[test]
     fn grid_block_suggests_grid_properties() {
-        let labels = labels_for("grid Dashboard {\n  ");
+        let items = items_for("grid Dashboard {\n  ");
+        let labels = items
+            .iter()
+            .map(|item| item.label.clone())
+            .collect::<Vec<_>>();
 
         assert!(labels.contains(&"columns".to_string()));
         assert!(labels.contains(&"surface".to_string()));
+        assert!(labels.contains(&"below tablet block".to_string()));
         assert!(!labels.contains(&"card".to_string()));
+        assert_eq!(
+            items
+                .iter()
+                .find(|item| item.label == "columns")
+                .map(|item| item.category),
+            Some(CompletionCategory::LayoutProperty)
+        );
+        assert_eq!(
+            items
+                .iter()
+                .find(|item| item.label == "surface")
+                .map(|item| item.category),
+            Some(CompletionCategory::VisualProperty)
+        );
     }
 
     #[test]
@@ -989,6 +1276,8 @@ mod tests {
 
         assert!(labels.contains(&"surface".to_string()));
         assert!(labels.contains(&"hover".to_string()));
+        assert!(labels.contains(&"hover state".to_string()));
+        assert!(labels.contains(&"animation block".to_string()));
         assert!(!labels.contains(&"columns".to_string()));
     }
 
@@ -998,6 +1287,7 @@ mod tests {
 
         assert!(labels.contains(&"lift".to_string()));
         assert!(labels.contains(&"glow".to_string()));
+        assert!(labels.contains(&"hover effects".to_string()));
         assert!(!labels.contains(&"grid".to_string()));
     }
 
@@ -1023,13 +1313,25 @@ mod tests {
 
     #[test]
     fn animation_values_include_custom_keyframes() {
-        let labels = labels_at(
+        let items = completions_at(
             "keyframes FloatIn {\n  from {\n    opacity 0\n  }\n}\ncard Panel {\n  animation \n}\n",
-            "animation ",
+            "keyframes FloatIn {\n  from {\n    opacity 0\n  }\n}\ncard Panel {\n  animation "
+                .len(),
         );
+        let labels = items
+            .iter()
+            .map(|item| item.label.clone())
+            .collect::<Vec<_>>();
 
         assert!(labels.contains(&"fade-in".to_string()));
         assert!(labels.contains(&"FloatIn".to_string()));
+        assert_eq!(
+            items
+                .iter()
+                .find(|item| item.label == "FloatIn")
+                .map(|item| item.category),
+            Some(CompletionCategory::ProjectSymbol)
+        );
     }
 
     #[test]

@@ -34,6 +34,7 @@ impl SymbolIndex {
         self.declarations.extend(other.declarations);
         self.colors.extend(other.colors);
         self.gradients.extend(other.gradients);
+        self.keyframes.extend(other.keyframes);
         self.grids.extend(other.grids);
         for (grid, sections) in other.grid_sections {
             self.grid_sections.entry(grid).or_default().extend(sections);
