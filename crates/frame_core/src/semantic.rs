@@ -370,9 +370,20 @@ fn validate_section_block(block: &crate::Block, diagnostics: &mut Vec<Diagnostic
             Some("align") => validate_value(statement, tokens::ALIGN, diagnostics),
             Some("justify") => validate_value(statement, tokens::JUSTIFY, diagnostics),
             Some("gap") => validate_value(statement, tokens::SPACING, diagnostics),
-            Some("width" | "height" | "min-height" | "max-height" | "min-width" | "max-width") => {
-                validate_size_value(statement, diagnostics)
-            }
+            Some(
+                "width"
+                | "height"
+                | "min-height"
+                | "max-height"
+                | "min-width"
+                | "max-width"
+                | "inline-size"
+                | "block-size"
+                | "min-inline-size"
+                | "max-inline-size"
+                | "min-block-size"
+                | "max-block-size",
+            ) => validate_size_value(statement, diagnostics),
             Some(other) => diagnostics.push(Diagnostic::error(
                 format!(
                     "Unknown section property `{other}`.\n\nUse spacing and alignment properties like `padding top small`, `margin bottom medium`, `align center`, or `justify between`."
@@ -616,14 +627,19 @@ fn validate_statement(
 
     match first_word(statement) {
         Some("padding" | "margin") => validate_box_space(statement, diagnostics),
+        Some("display") => validate_value(statement, tokens::DISPLAY, diagnostics),
+        Some("visibility") => validate_value(statement, tokens::VISIBILITY, diagnostics),
+        Some("flex") => validate_flex(statement, diagnostics),
         Some("gap") => validate_value(statement, tokens::SPACING, diagnostics),
         Some("radius") => validate_value(statement, tokens::RADII, diagnostics),
         Some("surface") => validate_surface(statement, symbols, diagnostics),
         Some("shadow") => validate_value(statement, tokens::SHADOWS, diagnostics),
         Some("border") => validate_border(statement, symbols, diagnostics),
-        Some("height" | "width" | "min-height" | "max-height" | "min-width" | "max-width") => {
-            validate_size_value(statement, diagnostics)
-        }
+        Some(
+            "height" | "width" | "min-height" | "max-height" | "min-width" | "max-width"
+            | "inline-size" | "block-size" | "min-inline-size" | "max-inline-size"
+            | "min-block-size" | "max-block-size",
+        ) => validate_size_value(statement, diagnostics),
         Some("align") => validate_value(statement, tokens::ALIGN, diagnostics),
         Some("justify") => validate_value(statement, tokens::JUSTIFY, diagnostics),
         Some("tracks") => validate_tracks(statement, diagnostics),
@@ -693,6 +709,85 @@ fn validate_tracks(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
                 statement.span,
             ));
         }
+    }
+}
+
+fn validate_flex(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
+    let Some(subcommand) = statement.words.get(1).map(String::as_str) else {
+        diagnostics.push(Diagnostic::error(
+            "flex expects `direction`, `wrap`, `grow`, `shrink`, or `basis`.",
+            statement.span,
+        ));
+        return;
+    };
+
+    match subcommand {
+        "direction" => {
+            let Some(value) = statement.words.get(2) else {
+                diagnostics.push(Diagnostic::error(
+                    "flex direction expects `row`, `column`, `row-reverse`, or `column-reverse`.",
+                    statement.span,
+                ));
+                return;
+            };
+            if !tokens::FLEX_DIRECTIONS.contains(&value.as_str()) {
+                diagnostics.push(Diagnostic::error(
+                    format!("Unknown flex direction `{value}`.\n\nUse `row`, `column`, `row-reverse`, or `column-reverse`."),
+                    statement.span,
+                ));
+            }
+        }
+        "wrap" => {
+            let Some(value) = statement.words.get(2) else {
+                diagnostics.push(Diagnostic::error(
+                    "flex wrap expects `nowrap`, `wrap`, or `wrap-reverse`.",
+                    statement.span,
+                ));
+                return;
+            };
+            if !tokens::FLEX_WRAPS.contains(&value.as_str()) {
+                diagnostics.push(Diagnostic::error(
+                    format!("Unknown flex wrap `{value}`.\n\nUse `nowrap`, `wrap`, or `wrap-reverse`."),
+                    statement.span,
+                ));
+            }
+        }
+        "grow" | "shrink" => {
+            let Some(value) = statement.words.get(2) else {
+                diagnostics.push(Diagnostic::error(
+                    format!("flex {subcommand} expects a number such as `0`, `1`, or `2`."),
+                    statement.span,
+                ));
+                return;
+            };
+            if !value.chars().all(|character| character.is_ascii_digit()) {
+                diagnostics.push(Diagnostic::error(
+                    format!("flex {subcommand} expects a non-negative number, not `{value}`."),
+                    statement.span,
+                ));
+            }
+        }
+        "basis" => {
+            let Some(value) = statement.words.get(2) else {
+                diagnostics.push(Diagnostic::error(
+                    "flex basis expects a size value like `auto`, `fill`, `content`, `25%`, or `sidebar`.",
+                    statement.span,
+                ));
+                return;
+            };
+            if !is_valid_percentage(value) && !tokens::SIZES.contains(&value.as_str()) {
+                diagnostics.push(Diagnostic::error(
+                    format!("`{value}` is not a valid flex basis value.\n\nUse size values like `auto`, `fill`, `content`, `sidebar`, or percentages."),
+                    statement.span,
+                ));
+            }
+        }
+        value => diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown flex option `{value}`.\n\nUse `direction`, `wrap`, `grow`, `shrink`, or `basis`."
+            ),
+            statement.span,
+        )),
     }
 }
 
@@ -1224,6 +1319,24 @@ fn css_property_alias(property: &str) -> Option<&'static str> {
         "grid-area" => Some("place"),
         "grid-column" => Some("col"),
         "grid-row" => Some("row"),
+        "box-sizing" => Some("box"),
+        "inline-size" => Some("inline-size"),
+        "block-size" => Some("block-size"),
+        "min-inline-size" => Some("min-inline-size"),
+        "max-inline-size" => Some("max-inline-size"),
+        "min-block-size" => Some("min-block-size"),
+        "max-block-size" => Some("max-block-size"),
+        "display" | "visibility" | "flex-direction" | "flex-wrap" | "flex-grow" | "flex-shrink"
+        | "flex-basis" => Some(match property {
+            "display" => "display",
+            "visibility" => "visibility",
+            "flex-direction" => "flex direction",
+            "flex-wrap" => "flex wrap",
+            "flex-grow" => "flex grow",
+            "flex-shrink" => "flex shrink",
+            "flex-basis" => "flex basis",
+            _ => "display",
+        }),
         "background-color" => Some("background"),
         "color" => Some("text"),
         "border-radius" => Some("radius"),
@@ -1248,6 +1361,16 @@ fn alias_example_value(alias: &str) -> &'static str {
         "weight" => "semibold",
         "z" => "modal",
         "align" | "justify" => "center",
+        "display" => "block",
+        "visibility" => "visible",
+        "box" => "border",
+        "inline-size" | "block-size" => "fill",
+        "min-inline-size" | "min-block-size" => "zero",
+        "max-inline-size" | "max-block-size" => "fill",
+        "flex direction" => "row",
+        "flex wrap" => "wrap",
+        "flex grow" | "flex shrink" => "1",
+        "flex basis" => "fill",
         "text" => "bright",
         _ => "center",
     }
@@ -1455,6 +1578,59 @@ mod tests {
         };
 
         assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn accepts_display_flex_visibility_and_logical_sizing() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "Panel",
+                vec![
+                    statement(&["display", "flex"]),
+                    statement(&["visibility", "hidden"]),
+                    statement(&["flex", "direction", "column"]),
+                    statement(&["flex", "wrap", "wrap"]),
+                    statement(&["flex", "grow", "1"]),
+                    statement(&["flex", "shrink", "0"]),
+                    statement(&["flex", "basis", "fill"]),
+                    statement(&["inline-size", "fill"]),
+                    statement(&["block-size", "screen"]),
+                    statement(&["min-inline-size", "zero"]),
+                    statement(&["max-block-size", "100%"]),
+                ],
+            )],
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn rejects_invalid_display_flex_and_visibility_values() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "Panel",
+                vec![
+                    statement(&["display", "table"]),
+                    statement(&["visibility", "gone"]),
+                    statement(&["flex", "direction", "sideways"]),
+                    statement(&["flex", "grow", "-1"]),
+                    statement(&["flex", "basis", "huge"]),
+                ],
+            )],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 5);
+        assert!(diagnostics[0].message.contains("Unknown display value"));
+        assert!(diagnostics[1].message.contains("Unknown visibility value"));
+        assert!(diagnostics[2].message.contains("Unknown flex direction"));
+        assert!(diagnostics[3].message.contains("non-negative number"));
+        assert!(diagnostics[4].message.contains("valid flex basis value"));
     }
 
     #[test]

@@ -537,11 +537,19 @@
     "named": false
   },
   {
+    "type": "block-size",
+    "named": false
+  },
+  {
     "type": "blur",
     "named": false
   },
   {
     "type": "border",
+    "named": false
+  },
+  {
+    "type": "box",
     "named": false
   },
   {
@@ -610,6 +618,10 @@
     "named": false
   },
   {
+    "type": "display",
+    "named": false
+  },
+  {
     "type": "dock",
     "named": false
   },
@@ -631,6 +643,10 @@
   },
   {
     "type": "filter",
+    "named": false
+  },
+  {
+    "type": "flex",
     "named": false
   },
   {
@@ -690,6 +706,10 @@
     "named": true
   },
   {
+    "type": "inline-size",
+    "named": false
+  },
+  {
     "type": "iteration",
     "named": false
   },
@@ -718,7 +738,15 @@
     "named": false
   },
   {
+    "type": "max-block-size",
+    "named": false
+  },
+  {
     "type": "max-height",
+    "named": false
+  },
+  {
+    "type": "max-inline-size",
     "named": false
   },
   {
@@ -726,7 +754,15 @@
     "named": false
   },
   {
+    "type": "min-block-size",
+    "named": false
+  },
+  {
     "type": "min-height",
+    "named": false
+  },
+  {
+    "type": "min-inline-size",
     "named": false
   },
   {
@@ -842,6 +878,10 @@
     "named": false
   },
   {
+    "type": "square",
+    "named": false
+  },
+  {
     "type": "stack",
     "named": false
   },
@@ -891,6 +931,10 @@
   },
   {
     "type": "type",
+    "named": false
+  },
+  {
+    "type": "visibility",
     "named": false
   },
   {

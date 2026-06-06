@@ -73,6 +73,58 @@ justify around
 justify evenly
 ```
 
+## Display and Flex
+
+Use `display` when a declaration needs to override its default layout mode:
+
+```frame
+card InlineToolbar {
+  display inline-flex
+  align center
+  gap small
+}
+```
+
+Supported display values are:
+
+```frame
+display block
+display inline
+display inline-block
+display flex
+display inline-flex
+display grid
+display inline-grid
+display contents
+display none
+```
+
+Use `flex` subcommands for flexbox behavior:
+
+```frame
+row ActionBar {
+  flex wrap wrap
+}
+
+card SidebarItem {
+  display flex
+  flex direction column
+  flex grow 1
+  flex shrink 0
+  flex basis fill
+}
+```
+
+Generated CSS writes `display`, `flex-direction`, `flex-wrap`, `flex-grow`, `flex-shrink`, and `flex-basis`.
+
+Use `visibility` when an element should keep its layout slot:
+
+```frame
+card PendingPreview {
+  visibility hidden
+}
+```
+
 ## Dense App Rows
 
 Use `layout` presets when a component needs a repeated internal structure:

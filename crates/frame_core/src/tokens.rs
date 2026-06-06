@@ -55,6 +55,20 @@ pub const LINES: &[&str] = &["normal", "relaxed", "tight"];
 pub const LETTERS: &[&str] = &["normal"];
 pub const CONTROLS: &[&str] = &["reset"];
 pub const BOX_SIZING: &[&str] = &["border", "content"];
+pub const DISPLAY: &[&str] = &[
+    "block",
+    "inline",
+    "inline-block",
+    "flex",
+    "inline-flex",
+    "grid",
+    "inline-grid",
+    "contents",
+    "none",
+];
+pub const VISIBILITY: &[&str] = &["visible", "hidden", "collapse"];
+pub const FLEX_DIRECTIONS: &[&str] = &["row", "row-reverse", "column", "column-reverse"];
+pub const FLEX_WRAPS: &[&str] = &["nowrap", "wrap", "wrap-reverse"];
 pub const SQUARES: &[&str] = &["server", "avatar", "icon", "presence", "unread"];
 pub const SELF_ALIGN: &[&str] = &["center", "start", "end", "stretch"];
 pub const NUDGES: &[&str] = &["top-right"];

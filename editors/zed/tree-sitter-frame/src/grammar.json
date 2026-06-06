@@ -489,6 +489,10 @@
         },
         {
           "type": "STRING",
+          "value": "display"
+        },
+        {
+          "type": "STRING",
           "value": "height"
         },
         {
@@ -510,6 +514,30 @@
         {
           "type": "STRING",
           "value": "max-width"
+        },
+        {
+          "type": "STRING",
+          "value": "inline-size"
+        },
+        {
+          "type": "STRING",
+          "value": "block-size"
+        },
+        {
+          "type": "STRING",
+          "value": "min-inline-size"
+        },
+        {
+          "type": "STRING",
+          "value": "max-inline-size"
+        },
+        {
+          "type": "STRING",
+          "value": "min-block-size"
+        },
+        {
+          "type": "STRING",
+          "value": "max-block-size"
         },
         {
           "type": "STRING",
@@ -570,6 +598,22 @@
         {
           "type": "STRING",
           "value": "outline"
+        },
+        {
+          "type": "STRING",
+          "value": "box"
+        },
+        {
+          "type": "STRING",
+          "value": "visibility"
+        },
+        {
+          "type": "STRING",
+          "value": "flex"
+        },
+        {
+          "type": "STRING",
+          "value": "square"
         },
         {
           "type": "STRING",

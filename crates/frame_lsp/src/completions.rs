@@ -223,8 +223,15 @@ const GRID_PROPERTIES: &[&str] = &[
     "flow",
     "section",
     "gap",
+    "display",
     "height",
     "width",
+    "inline-size",
+    "block-size",
+    "min-inline-size",
+    "max-inline-size",
+    "min-block-size",
+    "max-block-size",
     "padding",
     "surface",
     "align",
@@ -234,6 +241,8 @@ const GRID_PROPERTIES: &[&str] = &[
     "scroll",
     "scrollbar",
     "box",
+    "visibility",
+    "flex",
 ];
 
 const AREA_PROPERTIES: &[&str] = &[
@@ -245,8 +254,15 @@ const AREA_PROPERTIES: &[&str] = &[
     "surface",
     "padding",
     "margin",
+    "display",
     "width",
     "height",
+    "inline-size",
+    "block-size",
+    "min-inline-size",
+    "max-inline-size",
+    "min-block-size",
+    "max-block-size",
     "align",
     "justify",
     "border",
@@ -256,6 +272,8 @@ const AREA_PROPERTIES: &[&str] = &[
     "scroll",
     "scrollbar",
     "box",
+    "visibility",
+    "flex",
 ];
 
 const CARD_PROPERTIES: &[&str] = &[
@@ -271,6 +289,15 @@ const CARD_PROPERTIES: &[&str] = &[
     "width",
     "height",
     "min-width",
+    "max-width",
+    "min-height",
+    "max-height",
+    "inline-size",
+    "block-size",
+    "min-inline-size",
+    "max-inline-size",
+    "min-block-size",
+    "max-block-size",
     "align",
     "justify",
     "layout",
@@ -279,6 +306,9 @@ const CARD_PROPERTIES: &[&str] = &[
     "scroll",
     "scrollbar",
     "box",
+    "display",
+    "visibility",
+    "flex",
     "square",
     "self",
     "nudge",
@@ -306,9 +336,19 @@ const COMMON_PROPERTIES: &[&str] = &[
     "padding",
     "margin",
     "gap",
+    "display",
     "width",
     "height",
     "min-width",
+    "max-width",
+    "min-height",
+    "max-height",
+    "inline-size",
+    "block-size",
+    "min-inline-size",
+    "max-inline-size",
+    "min-block-size",
+    "max-block-size",
     "align",
     "justify",
     "layout",
@@ -320,6 +360,8 @@ const COMMON_PROPERTIES: &[&str] = &[
     "scroll",
     "scrollbar",
     "box",
+    "visibility",
+    "flex",
     "square",
     "truncate",
     "wrap",
@@ -360,6 +402,12 @@ const SECTION_PROPERTIES: &[&str] = &[
     "max-width",
     "min-height",
     "max-height",
+    "inline-size",
+    "block-size",
+    "min-inline-size",
+    "max-inline-size",
+    "min-block-size",
+    "max-block-size",
 ];
 
 const COLUMN_VALUES: &[&str] = &[
@@ -651,6 +699,48 @@ fn value_completions(
             "layout preset",
             "Dense component layout preset.",
         ),
+        "display" => suggestions(
+            tokens::DISPLAY,
+            "display value",
+            "CSS display mode exposed through structured Frame syntax.",
+        ),
+        "visibility" => suggestions(
+            tokens::VISIBILITY,
+            "visibility value",
+            "Visibility behavior without changing the element's declaration.",
+        ),
+        "flex" if line_words.get(1).map(String::as_str) == Some("direction") => suggestions(
+            tokens::FLEX_DIRECTIONS,
+            "flex direction",
+            "Main-axis direction for a flex container.",
+        ),
+        "flex" if line_words.get(1).map(String::as_str) == Some("wrap") => suggestions(
+            tokens::FLEX_WRAPS,
+            "flex wrap",
+            "Whether flex items stay on one line or wrap.",
+        ),
+        "flex" if line_words.get(1).map(String::as_str) == Some("basis") => suggestions(
+            PERCENT_SIZE_VALUES,
+            "flex basis",
+            "Named or percentage flex-basis value.",
+        ),
+        "flex"
+            if matches!(
+                line_words.get(1).map(String::as_str),
+                Some("grow" | "shrink")
+            ) =>
+        {
+            suggestions(
+                &["0", "1", "2"],
+                "flex factor",
+                "Non-negative flex grow or shrink factor.",
+            )
+        }
+        "flex" => suggestions(
+            &["direction", "wrap", "grow", "shrink", "basis"],
+            "flex option",
+            "Structured flexbox option.",
+        ),
         "flow" => suggestions(
             tokens::GRID_FLOWS,
             "grid flow",
@@ -771,13 +861,13 @@ fn value_completions(
             "control affordance",
             "Control reset behavior.",
         ),
-        "width" | "height" | "min-width" | "max-width" | "min-height" | "max-height" => {
-            suggestions(
-                PERCENT_SIZE_VALUES,
-                "size value",
-                "Named or percentage sizing intent.",
-            )
-        }
+        "width" | "height" | "min-width" | "max-width" | "min-height" | "max-height"
+        | "inline-size" | "block-size" | "min-inline-size" | "max-inline-size"
+        | "min-block-size" | "max-block-size" => suggestions(
+            PERCENT_SIZE_VALUES,
+            "size value",
+            "Named or percentage sizing intent.",
+        ),
         "theme" | "text" | "color" | "glow" | "ring" => {
             let mut items = suggestions(tokens::COLORS, "color value", "Named color intent.");
             items.extend(dynamic_suggestions(
@@ -1117,13 +1207,16 @@ fn category_for_detail(detail: &str) -> CompletionCategory {
 
 fn property_category(label: &str) -> CompletionCategory {
     match label {
-        "columns" | "rows" | "tracks" | "areas" | "flow" | "section" | "layout" | "gap"
-        | "height" | "width" | "min-height" | "max-height" | "min-width" | "max-width"
-        | "place" | "in" | "col" | "row" | "span" | "position" | "offset" | "z" | "align"
-        | "justify" | "self" | "anchor" | "padding" | "margin" | "overflow" | "scroll"
-        | "scrollbar" | "box" | "square" | "nudge" => CompletionCategory::LayoutProperty,
+        "columns" | "rows" | "tracks" | "areas" | "flow" | "section" | "layout" | "display"
+        | "gap" | "height" | "width" | "min-height" | "max-height" | "min-width" | "max-width"
+        | "inline-size" | "block-size" | "min-inline-size" | "max-inline-size"
+        | "min-block-size" | "max-block-size" | "place" | "in" | "col" | "row" | "span"
+        | "position" | "offset" | "z" | "align" | "justify" | "self" | "anchor" | "padding"
+        | "margin" | "overflow" | "scroll" | "scrollbar" | "box" | "flex" | "square" | "nudge" => {
+            CompletionCategory::LayoutProperty
+        }
         "surface" | "background" | "theme" | "text" | "color" | "palette" | "tone" | "opacity"
-        | "radius" | "border" | "shadow" | "outline" | "control" | "interactive" => {
+        | "radius" | "border" | "shadow" | "outline" | "visibility" | "control" | "interactive" => {
             CompletionCategory::VisualProperty
         }
         "font" | "size" | "weight" | "line" | "letter" | "truncate" | "wrap" | "case"
@@ -1181,8 +1274,15 @@ fn completion_documentation(label: &str) -> Option<String> {
         "flow" => "Controls grid section direction. Use `flow vertical` to stack named `columns` as rows.",
         "section" => "Starts spacing and alignment controls for a named grid section.\n\nExample:\n\nsection title {\n  padding bottom small\n}",
         "gap" => "Sets spacing between children using `none`, `small`, `medium`, `large`, or `xlarge`.",
+        "display" => "Sets display behavior with structured values like `block`, `flex`, `grid`, `contents`, or `none`.",
         "height" => "Sets height intent. Use `screen`, `fill`, `content`, `auto`, or percentages like `50%`.",
         "width" => "Sets width intent. Use `fill`, `content`, `sidebar`, `narrow`, `wide`, or percentages like `25%`.",
+        "inline-size" => "Sets logical inline size. In horizontal writing modes this usually maps to width.",
+        "block-size" => "Sets logical block size. In horizontal writing modes this usually maps to height.",
+        "min-inline-size" => "Sets minimum logical inline size.",
+        "max-inline-size" => "Sets maximum logical inline size.",
+        "min-block-size" => "Sets minimum logical block size.",
+        "max-block-size" => "Sets maximum logical block size.",
         "padding" => "Sets inner spacing using Frame spacing tokens.",
         "margin" => "Sets outer spacing using Frame spacing tokens.",
         "surface" => "Sets background surface intent: `panel`, `main`, `glass`, `raised`, `flat`, or `gradient ...`.",
@@ -1194,6 +1294,8 @@ fn completion_documentation(label: &str) -> Option<String> {
         "span" => "Makes an area span multiple grid tracks.",
         "radius" => "Sets corner shape using radius tokens like `large`, `pill`, or `none`.",
         "border" => "Sets border intent such as `soft`, `accent`, `danger`, `success`, or `none`.",
+        "visibility" => "Sets visibility as `visible`, `hidden`, or `collapse`.",
+        "flex" => "Sets flexbox controls. Use `flex direction row`, `flex wrap wrap`, `flex grow 1`, `flex shrink 0`, or `flex basis fill`.",
         "shadow" => "Sets depth using shadow tokens like `soft`, `medium`, or `deep`.",
         "color" => "Sets text color using semantic color tokens.",
         "background" => "Sets background with surface or semantic color tokens.",
@@ -1469,6 +1571,13 @@ mod tests {
     fn property_values_are_contextual() {
         assert!(labels_for("card A {\n  surface ").contains(&"gradient dusk".to_string()));
         assert!(labels_for("card A {\n  width ").contains(&"50%".to_string()));
+        assert!(labels_for("card A {\n  inline-size ").contains(&"fill".to_string()));
+        assert!(labels_for("card A {\n  display ").contains(&"inline-flex".to_string()));
+        assert!(labels_for("card A {\n  visibility ").contains(&"hidden".to_string()));
+        assert!(labels_for("card A {\n  flex ").contains(&"direction".to_string()));
+        assert!(labels_for("card A {\n  flex direction ").contains(&"column".to_string()));
+        assert!(labels_for("card A {\n  flex wrap ").contains(&"wrap".to_string()));
+        assert!(labels_for("card A {\n  flex basis ").contains(&"50%".to_string()));
         assert!(labels_for("card A {\n  align ").contains(&"stretch".to_string()));
         assert!(labels_for("card A {\n  justify ").contains(&"between".to_string()));
         assert!(labels_for("card A {\n  color ").contains(&"purple".to_string()));

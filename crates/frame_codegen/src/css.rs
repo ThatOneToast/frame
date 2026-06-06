@@ -525,6 +525,9 @@ fn emit_common(css: &mut String, body: &[Node], symbols: &frame_core::symbols::S
             }
             Some("padding") => emit_box_space_property(css, "padding", statement),
             Some("margin") => emit_box_space_property(css, "margin", statement),
+            Some("display") => emit_display(css, statement),
+            Some("visibility") => emit_visibility(css, statement),
+            Some("flex") => emit_flex(css, statement),
             Some("gap") => emit_space_property(css, "gap", statement),
             Some("radius") => {
                 if let Some(value) = statement.words.get(1) {
@@ -552,6 +555,12 @@ fn emit_common(css: &mut String, body: &[Node], symbols: &frame_core::symbols::S
             Some("max-height") => emit_size_property(css, "max-height", statement),
             Some("min-width") => emit_size_property(css, "min-width", statement),
             Some("max-width") => emit_size_property(css, "max-width", statement),
+            Some("inline-size") => emit_size_property(css, "inline-size", statement),
+            Some("block-size") => emit_size_property(css, "block-size", statement),
+            Some("min-inline-size") => emit_size_property(css, "min-inline-size", statement),
+            Some("max-inline-size") => emit_size_property(css, "max-inline-size", statement),
+            Some("min-block-size") => emit_size_property(css, "min-block-size", statement),
+            Some("max-block-size") => emit_size_property(css, "max-block-size", statement),
             Some("align") => {
                 if let Some(value) = statement.words.get(1) {
                     css.push_str(&format!("  align-items: {};\n", css_alignment(value)));
@@ -905,22 +914,75 @@ fn emit_box_space_property(css: &mut String, property: &str, statement: &Stateme
 
 fn emit_size_property(css: &mut String, property: &str, statement: &Statement) {
     if let Some(value) = statement.words.get(1) {
-        let css_value = match value.as_str() {
-            "screen" if property.contains("height") => "100vh".to_string(),
-            "screen" if property.contains("width") => "100vw".to_string(),
-            "fill" => "100%".to_string(),
-            "content" => "max-content".to_string(),
-            "auto" => "auto".to_string(),
-            "sidebar" => "18rem".to_string(),
-            "narrow" => "12rem".to_string(),
-            "wide" => "32rem".to_string(),
-            "zero" if property.starts_with("min-") => "0".to_string(),
-            "modal" if property == "width" => "min(42rem, 100%)".to_string(),
-            "icon" => "2.5rem".to_string(),
-            value if is_percentage(value) => value.to_string(),
-            value => format!("var(--frame-space-{value})"),
-        };
+        let css_value = size_css_value(property, value);
         css.push_str(&format!("  {property}: {css_value};\n"));
+    }
+}
+
+fn size_css_value(property: &str, value: &str) -> String {
+    match value {
+        "screen" if is_block_axis_property(property) => "100vh".to_string(),
+        "screen" if is_inline_axis_property(property) => "100vw".to_string(),
+        "fill" => "100%".to_string(),
+        "content" => "max-content".to_string(),
+        "auto" => "auto".to_string(),
+        "sidebar" => "18rem".to_string(),
+        "narrow" => "12rem".to_string(),
+        "wide" => "32rem".to_string(),
+        "zero" if property.starts_with("min-") => "0".to_string(),
+        "modal" if property == "width" || property == "inline-size" => {
+            "min(42rem, 100%)".to_string()
+        }
+        "icon" => "2.5rem".to_string(),
+        value if is_percentage(value) => value.to_string(),
+        value => format!("var(--frame-space-{value})"),
+    }
+}
+
+fn is_inline_axis_property(property: &str) -> bool {
+    property.contains("width") || property.contains("inline-size")
+}
+
+fn is_block_axis_property(property: &str) -> bool {
+    property.contains("height") || property.contains("block-size")
+}
+
+fn emit_display(css: &mut String, statement: &Statement) {
+    if let Some(value) = statement.words.get(1) {
+        css.push_str(&format!("  display: {value};\n"));
+    }
+}
+
+fn emit_visibility(css: &mut String, statement: &Statement) {
+    if let Some(value) = statement.words.get(1) {
+        css.push_str(&format!("  visibility: {value};\n"));
+    }
+}
+
+fn emit_flex(css: &mut String, statement: &Statement) {
+    match (
+        statement.words.get(1).map(String::as_str),
+        statement.words.get(2).map(String::as_str),
+    ) {
+        (Some("direction"), Some(value)) => {
+            css.push_str(&format!("  flex-direction: {value};\n"));
+        }
+        (Some("wrap"), Some(value)) => {
+            css.push_str(&format!("  flex-wrap: {value};\n"));
+        }
+        (Some("grow"), Some(value)) => {
+            css.push_str(&format!("  flex-grow: {value};\n"));
+        }
+        (Some("shrink"), Some(value)) => {
+            css.push_str(&format!("  flex-shrink: {value};\n"));
+        }
+        (Some("basis"), Some(value)) => {
+            css.push_str(&format!(
+                "  flex-basis: {};\n",
+                size_css_value("width", value)
+            ));
+        }
+        _ => {}
     }
 }
 
@@ -1005,9 +1067,8 @@ fn emit_self(css: &mut String, statement: &Statement) {
 }
 
 fn emit_nudge(css: &mut String, statement: &Statement) {
-    match statement.words.get(1).map(String::as_str) {
-        Some("top-right") => css.push_str("  top: -0.1rem;\n  right: -0.1rem;\n"),
-        _ => {}
+    if statement.words.get(1).map(String::as_str) == Some("top-right") {
+        css.push_str("  top: -0.1rem;\n  right: -0.1rem;\n");
     }
 }
 
@@ -1529,6 +1590,44 @@ mod tests {
         assert!(css.contains("border-right: 1px solid var(--frame-color-accent);"));
         assert!(css.contains("overflow-y: auto;"));
         assert!(css.contains("scrollbar-width: thin;"));
+    }
+
+    #[test]
+    fn generates_display_flex_visibility_and_logical_sizing() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "Panel",
+                vec![
+                    statement(&["display", "inline-flex"]),
+                    statement(&["visibility", "hidden"]),
+                    statement(&["flex", "direction", "column"]),
+                    statement(&["flex", "wrap", "wrap"]),
+                    statement(&["flex", "grow", "1"]),
+                    statement(&["flex", "shrink", "0"]),
+                    statement(&["flex", "basis", "fill"]),
+                    statement(&["inline-size", "fill"]),
+                    statement(&["block-size", "screen"]),
+                    statement(&["min-inline-size", "zero"]),
+                    statement(&["max-block-size", "100%"]),
+                ],
+            )],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("display: inline-flex;"));
+        assert!(css.contains("visibility: hidden;"));
+        assert!(css.contains("flex-direction: column;"));
+        assert!(css.contains("flex-wrap: wrap;"));
+        assert!(css.contains("flex-grow: 1;"));
+        assert!(css.contains("flex-shrink: 0;"));
+        assert!(css.contains("flex-basis: 100%;"));
+        assert!(css.contains("inline-size: 100%;"));
+        assert!(css.contains("block-size: 100vh;"));
+        assert!(css.contains("min-inline-size: 0;"));
+        assert!(css.contains("max-block-size: 100%;"));
     }
 
     #[test]

@@ -64,6 +64,12 @@ card DemoCard {
   border width medium
   shadow medium
   color bright
+  display flex
+  flex direction column
+  flex wrap wrap
+  inline-size fill
+  block-size content
+  visibility visible
   animation fade-in
 
   animation FloatIn {

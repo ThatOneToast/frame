@@ -124,6 +124,14 @@ fn is_known_value(value: &str) -> bool {
         || tokens::ANIMATION_PLAY_STATES.contains(&value)
         || tokens::BORDER_STYLES.contains(&value)
         || tokens::Z_LAYERS.contains(&value)
+        || tokens::DISPLAY.contains(&value)
+        || tokens::VISIBILITY.contains(&value)
+        || tokens::FLEX_DIRECTIONS.contains(&value)
+        || tokens::FLEX_WRAPS.contains(&value)
+        || matches!(
+            value,
+            "direction" | "wrap" | "grow" | "shrink" | "basis" | "row-reverse" | "column-reverse"
+        )
 }
 
 fn push_word(
@@ -157,5 +165,15 @@ mod tests {
 
         assert!(!tokens.data.is_empty());
         assert!(tokens.data.iter().any(|token| token.token_type == 5));
+    }
+
+    #[test]
+    fn emits_tokens_for_display_flex_and_logical_sizing() {
+        let tokens = semantic_tokens(
+            "card Panel {\n  display flex\n  flex direction column\n  inline-size fill\n}\n",
+        );
+
+        assert!(tokens.data.iter().any(|token| token.token_type == 2));
+        assert!(tokens.data.iter().any(|token| token.token_type == 3));
     }
 }

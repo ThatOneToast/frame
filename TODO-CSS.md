@@ -30,20 +30,20 @@ Existing Frame styling already covers a useful subset:
 
 ## Display and Box Model
 
-- [ ] `display block`
-- [ ] `display inline`
-- [ ] `display inline-block`
-- [ ] `display flex`
-- [ ] `display inline-flex`
-- [ ] `display grid`
-- [ ] `display inline-grid`
-- [ ] `display contents`
-- [ ] `display none`
-- [ ] `box content`
-- [ ] `box border`
-- [ ] `visibility visible`
-- [ ] `visibility hidden`
-- [ ] `visibility collapse`
+- [x] `display block`
+- [x] `display inline`
+- [x] `display inline-block`
+- [x] `display flex`
+- [x] `display inline-flex`
+- [x] `display grid`
+- [x] `display inline-grid`
+- [x] `display contents`
+- [x] `display none`
+- [x] `box content`
+- [x] `box border`
+- [x] `visibility visible`
+- [x] `visibility hidden`
+- [x] `visibility collapse`
 
 ## Layout
 
@@ -55,9 +55,9 @@ Existing Frame styling already covers a useful subset:
 - [ ] full CSS grid line placement
 - [ ] `subgrid`
 - [ ] masonry-like layout strategy
-- [ ] flex grow/shrink/basis
-- [ ] flex wrap
-- [ ] flex direction
+- [x] flex grow/shrink/basis
+- [x] flex wrap
+- [x] flex direction
 - [ ] order
 - [ ] float and clear escape coverage
 - [ ] multi-column layout
@@ -82,7 +82,7 @@ Existing Frame styling already covers a useful subset:
 - [x] width/height presets
 - [x] min/max sizing
 - [x] percentage sizing
-- [ ] logical sizing: inline/block
+- [x] logical sizing: inline/block
 - [ ] viewport units: `svh`, `lvh`, `dvh`, `svw`, `lvw`, `dvw`
 - [ ] clamp/min/max helpers
 - [ ] aspect ratio helpers

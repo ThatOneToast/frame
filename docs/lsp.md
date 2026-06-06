@@ -61,6 +61,8 @@ grid Dashboard {
   surface main
   align stretch
   justify between
+  display grid
+  inline-size fill
 
   below tablet {
     columns content
@@ -84,6 +86,19 @@ area Sidebar {
   place sidebar
   surface panel
   padding medium
+}
+```
+
+Component and area completions include display, flex, visibility, and logical
+sizing controls:
+
+```frame
+card Toolbar {
+  display flex
+  flex direction row
+  flex wrap wrap
+  inline-size fill
+  visibility visible
 }
 ```
 
@@ -165,8 +180,8 @@ and links to `docs/surfaces.md`.
 
 Hover docs are available for declarations, grid placement, surfaces, colors,
 spacing, sizing, alignment, effects, transitions, animations, keyframes,
-responsive/container queries, includes, and custom color/gradient/keyframes
-tokens.
+responsive/container queries, display/flex controls, logical sizing, includes,
+and custom color/gradient/keyframes tokens.
 
 Value hovers are contextual. For example, `tablet` in `below tablet` explains
 responsive media queries, while `sidebar` in `columns sidebar content` explains

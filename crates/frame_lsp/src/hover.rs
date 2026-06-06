@@ -101,6 +101,7 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "tracks" => "Defines readable grid track sizes for app shells.\nUse `tracks columns rail panel fill side` or `tracks rows header fill composer` instead of raw grid-template CSS.",
         "areas" => "Defines one row of a named grid area template.\nRepeat `areas ...` lines to build multi-row app shells without raw `grid-template-areas`.",
         "gap" => "Sets spacing between children using Frame spacing tokens like small, medium, and large.",
+        "display" => DISPLAY_DOC,
         "layout" => "Applies a dense internal layout preset for repeated app patterns such as icon/content/action rows and avatar/content message rows.",
         "place" => PLACE_DOC,
         "in" => "References the parent grid for an area.\nExample: `in AppShell`.",
@@ -118,6 +119,8 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "scroll" => "Makes a region scroll on an axis. Use `scroll y` for channel panels, message lists, and member lists.",
         "scrollbar" => "Sets scrollbar density for app panels. Use `scrollbar dense` for compact terminal-inspired surfaces.",
         "box" => "Sets box sizing intent. Use `box border` for app surfaces where borders should be included in dimensions.",
+        "visibility" => "Sets CSS visibility through structured values.\n\nUse `visibility hidden` when the element should keep its layout slot but not render visibly.",
+        "flex" => FLEX_DOC,
         "square" => "Applies a named equal width and height for icons, avatars, server buttons, and presence dots.",
         "shadow" => "Sets depth using named shadow values like soft, medium, or deep.",
         "transition" => TRANSITION_DOC,
@@ -137,6 +140,12 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "transform" => "Animates transform functions in keyframes.\n\nGenerated CSS writes `transform: ...`.",
         "height" => "Sets height intent with values such as screen, fill, content, or percentages.\nGenerated CSS writes `height`, with `screen` becoming `100vh`.",
         "width" => "Sets width intent with values such as fill, content, screen, sidebar, or percentages.\nGenerated CSS writes `width`.",
+        "inline-size" => "Sets logical inline size. In horizontal writing modes this usually behaves like width.\nGenerated CSS writes `inline-size`.",
+        "block-size" => "Sets logical block size. In horizontal writing modes this usually behaves like height.\nGenerated CSS writes `block-size`.",
+        "min-inline-size" => "Sets minimum logical inline size.\nGenerated CSS writes `min-inline-size`.",
+        "max-inline-size" => "Sets maximum logical inline size.\nGenerated CSS writes `max-inline-size`.",
+        "min-block-size" => "Sets minimum logical block size.\nGenerated CSS writes `min-block-size`.",
+        "max-block-size" => "Sets maximum logical block size.\nGenerated CSS writes `max-block-size`.",
         "min-width" => "Sets minimum width intent using named sizes or percentages.",
         "max-width" => "Sets maximum width intent using named sizes or percentages.",
         "min-height" => "Sets minimum height intent using named sizes or percentages.",
@@ -218,6 +227,15 @@ fn contextual_value_doc(
         )),
         "padding" | "margin" | "gap" if tokens::SPACING.contains(&word) => Some(format!(
             "## `{word}`\n\nSpacing token.\n\nUsed by `{property}` to keep layout spacing consistent.\n\nGenerated CSS uses `var(--frame-space-{word})`."
+        )),
+        "display" if tokens::DISPLAY.contains(&word) => Some(format!(
+            "## `{word}`\n\nDisplay value.\n\nGenerated CSS writes `display: {word};`."
+        )),
+        "visibility" if tokens::VISIBILITY.contains(&word) => Some(format!(
+            "## `{word}`\n\nVisibility value.\n\nGenerated CSS writes `visibility: {word};`."
+        )),
+        "flex" => Some(format!(
+            "## `{word}`\n\nFlex option or value.\n\nFrame keeps flex controls structured as `flex direction ...`, `flex wrap ...`, `flex grow ...`, `flex shrink ...`, and `flex basis ...`."
         )),
         "radius" if tokens::RADII.contains(&word) => Some(format!(
             "## `{word}`\n\nRadius token.\n\nGenerated CSS uses `border-radius: var(--frame-radius-{word})`."
@@ -382,6 +400,45 @@ Svelte example:
 const SURFACE_GLASS_DOC: &str = "surface glass\n\nA translucent surface for overlays, floating panels, and command palettes.\nGenerated CSS uses `background: var(--frame-surface-glass);`.";
 const SURFACE_GRADIENT_DOC: &str = "surface gradient\n\nApplies a named Frame gradient such as `dusk`, `midnight`, or `aurora`.\nUse gradients for feature cards, callouts, and interactive surfaces that need extra emphasis.";
 const WIDTH_PERCENT_DOC: &str = "width 25%\n\nMakes this item take a percentage of the available width.\nUseful for sidebars and split layouts.\nGenerated CSS writes values like `width: 25%;` or `height: 50%;`.";
+
+const DISPLAY_DOC: &str = r#"display
+
+Sets the element display mode without using the raw CSS escape hatch.
+
+Common values:
+- `block`
+- `inline`
+- `inline-block`
+- `flex`
+- `inline-flex`
+- `grid`
+- `inline-grid`
+- `contents`
+- `none`
+
+Generated CSS writes `display: ...`.
+
+card Toolbar {
+  display flex
+}"#;
+
+const FLEX_DOC: &str = r#"flex
+
+Controls flexbox behavior through structured subcommands.
+
+Supported forms:
+- `flex direction row`
+- `flex direction column`
+- `flex wrap wrap`
+- `flex grow 1`
+- `flex shrink 0`
+- `flex basis fill`
+
+Generated CSS writes `flex-direction`, `flex-wrap`, `flex-grow`, `flex-shrink`, or `flex-basis`.
+
+row Toolbar {
+  flex wrap wrap
+}"#;
 
 const INCLUDE_DOC: &str = r#"#include
 
@@ -800,6 +857,9 @@ mod tests {
         assert!(hover_doc("columns").unwrap().contains("25% 50% 25%"));
         assert!(hover_doc("align").unwrap().contains("cross-axis"));
         assert!(hover_doc("justify").unwrap().contains("main-axis"));
+        assert!(hover_doc("display").unwrap().contains("display: ..."));
+        assert!(hover_doc("flex").unwrap().contains("flex direction"));
+        assert!(hover_doc("inline-size").unwrap().contains("logical inline"));
     }
 
     #[test]
