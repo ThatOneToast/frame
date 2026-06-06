@@ -102,6 +102,8 @@ const DECLARATIONS: &[&str] = &[
     "dock",
     "keyframes",
     "supports",
+    "style-group",
+    "style-order",
 ];
 
 struct FrameSnippet {
@@ -1472,6 +1474,8 @@ fn completion_documentation(label: &str) -> Option<String> {
         "between" => "Starts a responsive override between two breakpoints.\n\nExample:\n\nbetween tablet desktop {\n  columns sidebar content\n}",
         "container" => "Starts a container query override.\n\nExample:\n\ncontainer narrow {\n  columns content\n}",
         "supports" => "Starts a typed feature query block.\n\nExample:\n\nsupports display grid {\n  grid AppShell {\n    columns sidebar content\n  }\n}\n\nGenerated CSS emits `@supports (display: grid)`.",
+        "style-group" => "Starts a cascade layer group using Frame terminology.\n\nExample:\n\nstyle-group components {\n  button PrimaryButton {\n    surface accent\n  }\n}\n\nGenerated CSS emits `@layer components`.",
+        "style-order" => "Declares deterministic style group order.\n\nExample:\n\nstyle-order reset, base, components, utilities\n\nGenerated CSS emits `@layer reset, base, components, utilities;`.",
         "theme" => "Applies semantic color intent to text and border.",
         "hover" => "Starts hover effects. Only effect keywords are valid inside.",
         "focus" => "Starts keyboard focus effects, usually `ring accent`.",
@@ -1757,6 +1761,14 @@ mod tests {
         let labels = labels_for("supports selector ");
 
         assert_eq!(labels, vec!["has".to_string()]);
+    }
+
+    #[test]
+    fn root_suggests_style_groups() {
+        let labels = labels_for("");
+
+        assert!(labels.contains(&"style-group".to_string()));
+        assert!(labels.contains(&"style-order".to_string()));
     }
 
     #[test]

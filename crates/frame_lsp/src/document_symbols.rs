@@ -217,6 +217,8 @@ fn declaration_kind_label(kind: &DeclarationKind) -> &str {
         DeclarationKind::Dock => "dock",
         DeclarationKind::Keyframes => "keyframes",
         DeclarationKind::Supports => "supports",
+        DeclarationKind::StyleGroup => "style-group",
+        DeclarationKind::StyleOrder => "style-order",
         DeclarationKind::Unknown(value) => value.as_str(),
     }
 }
@@ -225,6 +227,8 @@ fn symbol_kind(kind: &DeclarationKind) -> SymbolKind {
     match kind {
         DeclarationKind::Grid => SymbolKind::NAMESPACE,
         DeclarationKind::Supports => SymbolKind::NAMESPACE,
+        DeclarationKind::StyleGroup => SymbolKind::NAMESPACE,
+        DeclarationKind::StyleOrder => SymbolKind::NAMESPACE,
         DeclarationKind::Area => SymbolKind::FIELD,
         DeclarationKind::Text => SymbolKind::STRING,
         DeclarationKind::Tokens => SymbolKind::CONSTANT,

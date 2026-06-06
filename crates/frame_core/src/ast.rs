@@ -37,6 +37,8 @@ pub enum DeclarationKind {
     Dock,
     Keyframes,
     Supports,
+    StyleGroup,
+    StyleOrder,
     Unknown(String),
 }
 

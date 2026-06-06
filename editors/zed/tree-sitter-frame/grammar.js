@@ -143,7 +143,7 @@ module.exports = grammar({
   ],
 
   rules: {
-    source_file: ($) => repeat(choice($.include, $.supports_block, $.declaration, $._newline)),
+    source_file: ($) => repeat(choice($.include, $.supports_block, $.style_group_block, $.style_order, $.declaration, $._newline)),
 
     include: ($) =>
       seq(
@@ -170,6 +170,22 @@ module.exports = grammar({
 
     supports_body: ($) =>
       seq("{", repeat(choice($._newline, $.declaration)), "}"),
+
+    style_group_block: ($) =>
+      seq(
+        "style-group",
+        field("name", $.identifier),
+        $.supports_body,
+      ),
+
+    style_order: ($) =>
+      seq(
+        "style-order",
+        field("groups", $.style_order_list),
+        $._newline,
+      ),
+
+    style_order_list: ($) => seq($.identifier, repeat(seq(",", $.identifier))),
 
     block: ($) =>
       seq(

@@ -8,6 +8,15 @@ tokens Brand {
   color page-bg #0f0f14
 }
 
+style-order reset, base, components, utilities
+
+style-group components {
+  button PrimaryButton {
+    surface panel
+    radius medium
+  }
+}
+
 grid Dashboard {
   columns 25% 50% 25%
   rows header content footer

@@ -113,6 +113,8 @@ pub fn declaration_keywords() -> &'static [&'static str] {
         "dock",
         "keyframes",
         "supports",
+        "style-group",
+        "style-order",
     ]
 }
 

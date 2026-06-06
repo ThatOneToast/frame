@@ -31,6 +31,22 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
             for value in words.iter().skip(1) {
                 push_word(line, line_index, value.trim_end_matches('{'), 3, &mut raw);
             }
+        } else if first == "style-group" {
+            push_word(line, line_index, first, 0, &mut raw);
+            if let Some(name) = words.get(1) {
+                push_word(line, line_index, name.trim_end_matches('{'), 1, &mut raw);
+            }
+        } else if first == "style-order" {
+            push_word(line, line_index, first, 0, &mut raw);
+            for value in words.iter().skip(1) {
+                push_word(
+                    line,
+                    line_index,
+                    value.trim_end_matches(',').trim_end_matches('{'),
+                    3,
+                    &mut raw,
+                );
+            }
         } else if knowledge::declaration_keywords().contains(&first) {
             push_word(line, line_index, first, 0, &mut raw);
             if let Some(name) = words.get(1) {
@@ -272,6 +288,17 @@ mod tests {
         let tokens = semantic_tokens("supports display grid {\n  grid AppShell {\n  }\n}\n");
 
         assert!(tokens.data.iter().any(|token| token.token_type == 0));
+        assert!(tokens.data.iter().any(|token| token.token_type == 3));
+    }
+
+    #[test]
+    fn emits_tokens_for_style_groups() {
+        let tokens = semantic_tokens(
+            "style-order reset, base, components\nstyle-group components {\n  button Primary {\n  }\n}\n",
+        );
+
+        assert!(tokens.data.iter().any(|token| token.token_type == 0));
+        assert!(tokens.data.iter().any(|token| token.token_type == 1));
         assert!(tokens.data.iter().any(|token| token.token_type == 3));
     }
 }

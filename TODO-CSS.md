@@ -211,11 +211,11 @@ Existing Frame styling already covers a useful subset:
 - [x] scoped `advanced { css "property" value }`
 - [ ] unsafe/global CSS escape hatch policy
 - [x] typed `supports` predicates
-- [ ] `@layer`
+- [x] style groups and `style-order` backed by `@layer`
 - [ ] `@scope`
 - [ ] custom property registration
 - [ ] custom media aliases
-- [ ] cascade layer strategy
+- [x] cascade layer strategy through `style-group` and `style-order`
 
 ## Documentation Requirements
 

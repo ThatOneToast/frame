@@ -7,6 +7,14 @@
   "supports" @keyword
   predicate: (support_predicate (identifier) @constant))
 
+(style_group_block
+  "style-group" @keyword
+  name: (identifier) @constant)
+
+(style_order
+  "style-order" @keyword
+  groups: (style_order_list (identifier) @constant))
+
 ; Imports.
 (include
   keyword: (include_keyword) @keyword

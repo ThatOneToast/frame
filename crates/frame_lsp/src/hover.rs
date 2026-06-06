@@ -137,6 +137,8 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "between" => RESPONSIVE_DOC,
         "container" => CONTAINER_DOC,
         "supports" => "Starts a typed feature query block.\n\nUse predicates like `supports display grid`, `supports backdrop blur`, `supports color oklch`, `supports selector has`, `supports container queries`, or `supports subgrid`.\n\nGenerated CSS emits an `@supports` rule.",
+        "style-group" => "Starts a named style group.\n\nStyle groups map to CSS cascade layers while keeping Frame syntax intent-focused.\n\nExample:\n\nstyle-group components {\n  button PrimaryButton {\n    surface accent\n  }\n}",
+        "style-order" => "Declares deterministic style group order.\n\nExample:\n\nstyle-order reset, base, components, utilities\n\nGenerated CSS emits a cascade layer order rule.",
         "from" | "to" => KEYFRAME_SELECTOR_DOC,
         "opacity" => "Animates opacity in keyframes.\n\nGenerated CSS writes `opacity: ...`.",
         "transform" => "Animates transform functions in keyframes.\n\nGenerated CSS writes `transform: ...`.",
@@ -913,6 +915,10 @@ mod tests {
         assert!(hover_doc("lift").unwrap().contains("small%44"));
         assert!(hover_doc("tilt").unwrap().contains("subtle%23"));
         assert!(hover_doc("supports").unwrap().contains("@supports"));
+        assert!(hover_doc("style-group").unwrap().contains("cascade layers"));
+        assert!(hover_doc("style-order")
+            .unwrap()
+            .contains("style group order"));
     }
 
     #[test]

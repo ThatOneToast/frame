@@ -177,8 +177,44 @@ fn emit_declaration_css(css: &mut String, declaration: &Declaration, symbols: &S
             emit_custom_keyframes(css, &declaration.name.text, &declaration.body);
         }
         DeclarationKind::Supports => emit_supports(css, declaration, symbols),
+        DeclarationKind::StyleOrder => emit_style_order(css, declaration),
+        DeclarationKind::StyleGroup => emit_style_group(css, declaration, symbols),
         _ => {}
     }
+}
+
+fn emit_style_order(css: &mut String, declaration: &Declaration) {
+    let names = style_order_names(&declaration.name.text);
+    if !names.is_empty() {
+        css.push_str(&format!("@layer {};\n\n", names.join(", ")));
+    }
+}
+
+fn emit_style_group(css: &mut String, declaration: &Declaration, symbols: &SymbolIndex) {
+    if declaration.name.text.is_empty() {
+        return;
+    }
+    css.push_str(&format!("@layer {} {{\n", declaration.name.text));
+    let mut nested_css = String::new();
+    for node in &declaration.body {
+        let Node::Block(block) = node else {
+            continue;
+        };
+        let Some(nested) = declaration_from_block(block) else {
+            continue;
+        };
+        emit_declaration_css(&mut nested_css, &nested, symbols);
+    }
+    for line in nested_css.lines() {
+        if line.is_empty() {
+            css.push('\n');
+        } else {
+            css.push_str("  ");
+            css.push_str(line);
+            css.push('\n');
+        }
+    }
+    css.push_str("}\n\n");
 }
 
 fn emit_supports(css: &mut String, declaration: &Declaration, symbols: &SymbolIndex) {
@@ -248,6 +284,15 @@ fn declaration_from_block(block: &frame_core::Block) -> Option<Declaration> {
         body: block.body.clone(),
         span: block.span,
     })
+}
+
+fn style_order_names(order: &str) -> Vec<String> {
+    order
+        .split(',')
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map(ToOwned::to_owned)
+        .collect()
 }
 
 fn emit_grid(css: &mut String, body: &[Node]) {
@@ -2471,6 +2516,40 @@ mod tests {
         assert!(css.contains(".fr-ParentAware"));
         assert!(css.contains("@supports (grid-template-columns: subgrid)"));
         assert!(css.contains("grid-template-columns: subgrid;"));
+    }
+
+    #[test]
+    fn generates_style_groups_and_style_order() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::StyleOrder,
+                    "reset, base, components, utilities",
+                    Vec::new(),
+                ),
+                declaration(
+                    DeclarationKind::StyleGroup,
+                    "components",
+                    vec![Node::Block(frame_core::Block {
+                        name: "button PrimaryButton".to_string(),
+                        body: vec![
+                            statement(&["surface", "panel"]),
+                            statement(&["radius", "medium"]),
+                        ],
+                        span: Span::default(),
+                    })],
+                ),
+            ],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("@layer reset, base, components, utilities;"));
+        assert!(css.contains("@layer components"));
+        assert!(css.contains(".fr-PrimaryButton"));
+        assert!(css.contains("background: var(--frame-surface-panel);"));
+        assert!(css.contains("border-radius: var(--frame-radius-medium);"));
     }
 
     #[test]

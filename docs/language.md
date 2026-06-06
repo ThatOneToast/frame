@@ -98,6 +98,23 @@ supports subgrid {
 Supported predicates are `display grid`, `display flex`, `backdrop blur`, `color oklch`, `selector has`, `container queries`, and `subgrid`.
 
 Generated CSS uses `@supports`, for example `supports display grid` emits `@supports (display: grid)`.
+
+## Style Groups
+
+Use style groups when generated CSS needs deterministic cascade layers:
+
+```frame
+style-order reset, base, components, utilities
+
+style-group components {
+  button PrimaryButton {
+    surface panel
+    radius medium
+  }
+}
+```
+
+Generated CSS uses `@layer`, but Frame keeps the source syntax focused on named style groups.
 # Frame Language
 
 Frame is a design-intent CSS DSL. It compiles declarations such as `grid`, `area`, `card`, `row`, `stack`, `dock`, and `text` into normal CSS classes and stable TypeScript exports.

@@ -82,6 +82,21 @@ impl<'a> Parser<'a> {
                 continue;
             }
 
+            if line.starts_with("style-group ") {
+                declarations.push(
+                    self.parse_wrapped_style_declaration(
+                        "style-group",
+                        DeclarationKind::StyleGroup,
+                    )?,
+                );
+                continue;
+            }
+
+            if line.starts_with("style-order ") {
+                declarations.push(self.parse_style_order()?);
+                continue;
+            }
+
             declarations.push(self.parse_declaration()?);
         }
 
@@ -208,14 +223,22 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_supports_declaration(&mut self) -> Result<Declaration, ParseError> {
+        self.parse_wrapped_style_declaration("supports", DeclarationKind::Supports)
+    }
+
+    fn parse_wrapped_style_declaration(
+        &mut self,
+        keyword: &str,
+        kind: DeclarationKind,
+    ) -> Result<Declaration, ParseError> {
         let line = self
             .current_line()
-            .expect("parse_supports_declaration needs a line");
+            .expect("parse_wrapped_style_declaration needs a line");
         let content = content_without_comment(line.text);
 
         if !content.ends_with('{') {
             return Err(ParseError::one(
-                format!("expected supports block ending with `{{`, found `{content}`"),
+                format!("expected {keyword} block ending with `{{`, found `{content}`"),
                 Span {
                     start: line.start,
                     end: line.end,
@@ -224,10 +247,13 @@ impl<'a> Parser<'a> {
         }
 
         let header = content.trim_end_matches('{').trim();
-        let predicate = header.strip_prefix("supports ").unwrap_or_default().trim();
-        if predicate.is_empty() {
+        let name_text = header
+            .strip_prefix(&format!("{keyword} "))
+            .unwrap_or_default()
+            .trim();
+        if name_text.is_empty() {
             return Err(ParseError::one(
-                "supports expects a typed predicate such as `supports display grid`",
+                format!("{keyword} expects a name or typed predicate"),
                 Span {
                     start: line.start,
                     end: line.end,
@@ -235,7 +261,7 @@ impl<'a> Parser<'a> {
             ));
         }
 
-        let predicate_start = line.start + line.text.find(predicate).unwrap_or(0);
+        let name_start = line.start + line.text.find(name_text).unwrap_or(0);
         self.advance();
         let body = self.parse_nodes_until_close_with_declaration_blocks(true)?;
         let end = self
@@ -244,18 +270,55 @@ impl<'a> Parser<'a> {
             .unwrap_or(line.end);
 
         Ok(Declaration {
-            kind: DeclarationKind::Supports,
+            kind,
             name: Identifier::new(
-                predicate,
+                name_text,
                 Span {
-                    start: predicate_start,
-                    end: predicate_start + predicate.len(),
+                    start: name_start,
+                    end: name_start + name_text.len(),
                 },
             ),
             body,
             span: Span {
                 start: line.start,
                 end,
+            },
+        })
+    }
+
+    fn parse_style_order(&mut self) -> Result<Declaration, ParseError> {
+        let line = self.current_line().expect("parse_style_order needs a line");
+        let content = content_without_comment(line.text);
+        let order = content
+            .strip_prefix("style-order ")
+            .unwrap_or_default()
+            .trim();
+        if order.is_empty() {
+            return Err(ParseError::one(
+                "style-order expects one or more style group names",
+                Span {
+                    start: line.start,
+                    end: line.end,
+                },
+            ));
+        }
+
+        let order_start = line.start + line.text.find(order).unwrap_or(0);
+        self.advance();
+
+        Ok(Declaration {
+            kind: DeclarationKind::StyleOrder,
+            name: Identifier::new(
+                order,
+                Span {
+                    start: order_start,
+                    end: order_start + order.len(),
+                },
+            ),
+            body: Vec::new(),
+            span: Span {
+                start: line.start,
+                end: line.end,
             },
         })
     }
@@ -378,6 +441,8 @@ fn declaration_kind(kind: &str) -> DeclarationKind {
         "dock" => DeclarationKind::Dock,
         "keyframes" => DeclarationKind::Keyframes,
         "supports" => DeclarationKind::Supports,
+        "style-group" => DeclarationKind::StyleGroup,
+        "style-order" => DeclarationKind::StyleOrder,
         other => DeclarationKind::Unknown(other.to_string()),
     }
 }
@@ -630,6 +695,33 @@ supports display grid {
         assert!(matches!(
             declaration.body[0],
             Node::Block(ref block) if block.name == "grid AppShell"
+        ));
+    }
+
+    #[test]
+    fn parses_style_groups_and_style_order() {
+        let source = r#"
+style-order reset, base, components, utilities
+
+style-group components {
+  button PrimaryButton {
+    surface accent
+  }
+}
+"#;
+
+        let document = parse(source).expect("style groups should parse");
+
+        assert_eq!(document.declarations[0].kind, DeclarationKind::StyleOrder);
+        assert_eq!(
+            document.declarations[0].name.text,
+            "reset, base, components, utilities"
+        );
+        assert_eq!(document.declarations[1].kind, DeclarationKind::StyleGroup);
+        assert_eq!(document.declarations[1].name.text, "components");
+        assert!(matches!(
+            document.declarations[1].body[0],
+            Node::Block(ref block) if block.name == "button PrimaryButton"
         ));
     }
 

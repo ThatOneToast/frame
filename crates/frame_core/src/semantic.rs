@@ -12,8 +12,10 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
     let symbols = index_document("", document);
 
     for declaration in &document.declarations {
-        if declaration.kind != DeclarationKind::Supports
-            && !names.insert(declaration.name.text.clone())
+        if !matches!(
+            declaration.kind,
+            DeclarationKind::Supports | DeclarationKind::StyleGroup | DeclarationKind::StyleOrder
+        ) && !names.insert(declaration.name.text.clone())
         {
             diagnostics.push(Diagnostic::error(
                 format!(
@@ -38,6 +40,16 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
 
         if declaration.kind == DeclarationKind::Supports {
             validate_supports_declaration(declaration, &symbols, &mut diagnostics);
+            continue;
+        }
+
+        if declaration.kind == DeclarationKind::StyleGroup {
+            validate_style_group_declaration(declaration, &symbols, &mut diagnostics);
+            continue;
+        }
+
+        if declaration.kind == DeclarationKind::StyleOrder {
+            validate_style_order_declaration(declaration, &mut diagnostics);
             continue;
         }
 
@@ -111,6 +123,83 @@ fn validate_supports_declaration(
     }
 }
 
+fn validate_style_group_declaration(
+    declaration: &Declaration,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if !is_valid_style_identifier(&declaration.name.text) {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Invalid style group `{}`.\n\nUse a simple identifier such as `base`, `components`, or `utilities`.",
+                declaration.name.text
+            ),
+            declaration.name.span,
+        ));
+    }
+
+    if declaration.body.is_empty() {
+        diagnostics.push(Diagnostic::error(
+            "style-group block is empty.\n\nAdd one or more style declarations inside, such as `card Panel { ... }`.",
+            declaration.span,
+        ));
+        return;
+    }
+
+    for node in &declaration.body {
+        match node {
+            Node::Statement(statement) => diagnostics.push(Diagnostic::error(
+                format!(
+                    "style-group blocks contain style declarations, not loose statements.\n\nWrap `{}` inside a declaration such as `card Feature {{ ... }}`.",
+                    statement.words.join(" ")
+                ),
+                statement.span,
+            )),
+            Node::Block(block) => {
+                let Some(nested) = declaration_from_block(block) else {
+                    diagnostics.push(Diagnostic::error(
+                        format!(
+                            "style-group contains invalid declaration `{}`.\n\nUse style declarations like `text Body`, `card Panel`, or `button PrimaryButton`.",
+                            block.name
+                        ),
+                        block.span,
+                    ));
+                    continue;
+                };
+
+                if !is_style_declaration_kind(&nested.kind) {
+                    diagnostics.push(Diagnostic::error(
+                        format!(
+                            "`{}` cannot be declared inside `style-group`.\n\nStyle groups are for generated style declarations, not tokens, keyframes, or feature gates.",
+                            block.name
+                        ),
+                        block.span,
+                    ));
+                    continue;
+                }
+
+                validate_statements(&nested, symbols, diagnostics);
+                if nested.kind == DeclarationKind::Area {
+                    validate_area(&nested, symbols, diagnostics);
+                }
+            }
+        }
+    }
+}
+
+fn validate_style_order_declaration(declaration: &Declaration, diagnostics: &mut Vec<Diagnostic>) {
+    for name in style_order_names(&declaration.name.text) {
+        if !is_valid_style_identifier(&name) {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "Invalid style-order group `{name}`.\n\nUse comma-separated identifiers such as `reset, base, components, utilities`."
+                ),
+                declaration.name.span,
+            ));
+        }
+    }
+}
+
 fn validate_supports_predicate(predicate: &str, span: Span, diagnostics: &mut Vec<Diagnostic>) {
     let words = predicate.split_whitespace().collect::<Vec<_>>();
     match words.as_slice() {
@@ -154,6 +243,8 @@ fn declaration_from_block(block: &crate::Block) -> Option<Declaration> {
         "tokens" => DeclarationKind::Tokens,
         "keyframes" => DeclarationKind::Keyframes,
         "supports" => DeclarationKind::Supports,
+        "style-group" => DeclarationKind::StyleGroup,
+        "style-order" => DeclarationKind::StyleOrder,
         other => DeclarationKind::Unknown(other.to_string()),
     };
 
@@ -180,6 +271,24 @@ fn is_style_declaration_kind(kind: &DeclarationKind) -> bool {
             | DeclarationKind::Overlay
             | DeclarationKind::Dock
     )
+}
+
+fn style_order_names(order: &str) -> Vec<String> {
+    order
+        .split(',')
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map(ToOwned::to_owned)
+        .collect()
+}
+
+fn is_valid_style_identifier(name: &str) -> bool {
+    name.chars()
+        .next()
+        .is_some_and(|first| first.is_ascii_alphabetic() || first == '_')
+        && name.chars().all(|character| {
+            character.is_ascii_alphanumeric() || character == '-' || character == '_'
+        })
 }
 
 #[allow(dead_code)]
@@ -2500,6 +2609,60 @@ mod tests {
         };
 
         assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn accepts_style_groups_and_style_order() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::StyleOrder,
+                    "reset, base, components, utilities",
+                    Vec::new(),
+                ),
+                declaration(
+                    DeclarationKind::StyleGroup,
+                    "components",
+                    vec![block(
+                        "button PrimaryButton",
+                        vec![statement(&["surface", "panel"])],
+                    )],
+                ),
+            ],
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn rejects_invalid_style_groups_and_style_order() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(DeclarationKind::StyleOrder, "base, 123bad", Vec::new()),
+                declaration(
+                    DeclarationKind::StyleGroup,
+                    "123bad",
+                    vec![
+                        statement(&["surface", "accent"]),
+                        block("tokens Brand", vec![statement(&["color", "brand", "#fff"])]),
+                    ],
+                ),
+            ],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 4);
+        assert!(diagnostics[0].message.contains("Invalid style-order group"));
+        assert!(diagnostics[1].message.contains("Invalid style group"));
+        assert!(diagnostics[2]
+            .message
+            .contains("style-group blocks contain style declarations"));
+        assert!(diagnostics[3]
+            .message
+            .contains("cannot be declared inside `style-group`"));
     }
 
     #[test]
