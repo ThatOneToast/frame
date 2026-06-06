@@ -165,7 +165,40 @@ on keydown.enter @submitMessage
 on keydown.ctrl.enter @submitMessage
 ```
 
-The compiler stores these declarations in the UI AST. Future work will lower them into Frame IR, generate TypeScript contracts, and render through the DOM runtime.
+The compiler stores these declarations in the UI AST, can lower them into Frame IR, and can generate TypeScript contracts. Runtime rendering through the DOM runtime is still future work.
+
+Component invocations are also supported inside `view` blocks:
+
+```frame
+component ChatApp {
+  state {
+    activeChannel text = "general"
+    draft text = ""
+  }
+
+  view {
+    ChannelSidebar()
+    ChatPanel(channel: $activeChannel)
+    MessageComposer(draft bind $draft)
+  }
+}
+```
+
+Invocations validate against components declared in the same file. Arguments currently support `name: $state`, `name: "literal"`, and `name bind $state`.
+
+Frame can lower this initial UI syntax into renderer-neutral Frame IR and serialize it as JSON with:
+
+```bash
+frame emit-ir app.frame
+```
+
+Frame can also generate TypeScript contracts for state and external handlers:
+
+```bash
+frame emit-contracts app.frame
+```
+
+Generated contracts define `ComponentState`, `ComponentHandlers`, and a shared `FrameEventContext<TState>`. They do not generate runtime code or overwrite user implementation files.
 
 # Frame Language
 

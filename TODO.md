@@ -29,7 +29,7 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Define binding syntax such as `value bind $draft`.
 - [ ] Define condition syntax such as `show when $loggedIn`.
 - [ ] Define loop syntax for list rendering.
-- [ ] Define component composition syntax.
+- [x] Define initial zero-arg and named-argument component invocation syntax.
 - [ ] Define escape hatches and mark unsafe forms explicitly.
 
 ## Phase 2 — Parser Upgrade Plan
@@ -66,21 +66,22 @@ This file tracks the implementation path. Unchecked implementation items should 
 
 ## Phase 4 — Frame IR
 
-- [ ] Add renderer-neutral IR types.
-- [ ] Add IR nodes for elements, text, components, fragments, slots, conditions, and loops.
-- [ ] Add IR structures for attributes, properties, events, bindings, style bindings, and reactive rules.
-- [ ] Add source mapping from IR nodes back to Frame source.
+- [x] Add initial renderer-neutral IR types.
+- [x] Add IR nodes for elements, text, component invocations, conditions, and style rules.
+- [ ] Add IR nodes for fragments, slots, full conditions, and loops.
+- [x] Add IR structures for attributes, properties, events, bindings, style bindings, and reactive rules.
+- [x] Add source mapping from initial IR nodes back to Frame source.
 - [ ] Add capability flags for renderer support.
-- [ ] Add JSON serialization for runtime consumption.
-- [ ] Add IR snapshot tests.
+- [x] Add JSON serialization for runtime consumption.
+- [x] Add initial stable IR serialization tests.
 - [ ] Document IR versioning.
 
 ## Phase 5 — TypeScript Contracts
 
 - [ ] Generate component prop types.
-- [ ] Generate component state types.
-- [ ] Generate handler interfaces.
-- [ ] Generate event context types.
+- [x] Generate component state types.
+- [x] Generate handler interfaces.
+- [x] Generate event context types.
 - [ ] Generate DOM event-specific handler signatures.
 - [ ] Generate skeleton implementation files.
 - [ ] Avoid overwriting user implementations without explicit confirmation.
@@ -117,8 +118,8 @@ This file tracks the implementation path. Unchecked implementation items should 
 
 - [ ] Add `frame build` for full IR/runtime output.
 - [ ] Add `frame check` support for UI declarations.
-- [ ] Add `frame emit-ir` for debugging.
-- [ ] Add `frame emit-contracts` for TypeScript contracts.
+- [x] Add `frame emit-ir` for debugging.
+- [x] Add `frame emit-contracts` for TypeScript contracts.
 - [ ] Add `frame init web`.
 - [ ] Add `frame init tauri` later.
 - [ ] Keep existing styling commands compatible during migration.
@@ -130,6 +131,7 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [ ] Add completions for attributes by element.
 - [x] Add completions for initial events and modifiers.
 - [ ] Add completions for `$state`, `$props`, and `@handlers`.
+- [x] Add completions for same-file component invocations.
 - [x] Add hover docs for initial UI concepts.
 - [ ] Add diagnostics for unresolved style bindings.
 - [ ] Add diagnostics for unresolved handlers.

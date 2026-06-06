@@ -67,7 +67,7 @@ implementations/
 
 The existing compiler still mainly outputs CSS and TypeScript class exports. The overhaul tracked in this repository changes the target architecture from `Frame -> CSS/Svelte helper output` toward `Frame -> Frame IR -> DOM runtime`.
 
-Initial UI declarations now parse, validate, highlight, and have LSP completions/hovers. Frame IR lowering, DOM runtime rendering, and generated handler contracts are not implemented yet.
+Initial UI declarations now parse, validate, highlight, lower into Frame IR, and generate TypeScript contracts. DOM runtime rendering and user handler implementation binding are not implemented yet.
 
 ## Direction
 

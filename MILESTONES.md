@@ -32,7 +32,7 @@ Deliverables:
 - [ ] `props` blocks.
 - [x] `state` blocks.
 - [x] Initial UI element declarations.
-- [ ] Component invocation syntax.
+- [x] Initial component invocation syntax.
 - [x] `$value` references.
 - [x] `@handler` references.
 - [x] `Name:StyleName` style binding syntax.
@@ -101,16 +101,16 @@ Goal: introduce a renderer-neutral IR as the real compiler output.
 
 Deliverables:
 
-- [ ] IR node model.
-- [ ] IR component model.
-- [ ] IR style binding model.
-- [ ] IR event binding model.
-- [ ] IR state/binding model.
+- [x] Initial IR node model.
+- [x] Initial IR component model.
+- [x] Initial IR style binding model.
+- [x] Initial IR event binding model.
+- [x] Initial IR state/binding model.
 - [ ] IR control-flow model.
-- [ ] IR source maps.
+- [x] Initial IR source spans.
 - [ ] IR version metadata.
-- [ ] JSON serialization.
-- [ ] Snapshot tests.
+- [x] JSON serialization.
+- [x] Initial stable string tests.
 
 Success criteria:
 
@@ -126,9 +126,9 @@ Goal: connect Frame UI declarations to external TypeScript logic without inline 
 Deliverables:
 
 - [ ] Generated prop types.
-- [ ] Generated state types.
-- [ ] Generated handler interfaces.
-- [ ] Generated event context types.
+- [x] Generated state types.
+- [x] Generated handler interfaces.
+- [x] Generated event context types.
 - [ ] Generated skeleton files.
 - [ ] Non-destructive file update strategy.
 - [ ] Tests for generated contracts.
