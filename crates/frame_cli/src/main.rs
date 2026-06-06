@@ -9,8 +9,8 @@ use std::{
 
 use anyhow::Context;
 use clap::{Parser, Subcommand};
-use frame_codegen::{generate_css, generate_typescript};
-use frame_core::{formatting::format_source, semantic::validate, Diagnostic};
+use frame_codegen::{generate_css, generate_ir_json, generate_typescript};
+use frame_core::{formatting::format_source, semantic::validate, Diagnostic, Severity};
 use frame_parser::parse;
 
 #[derive(Debug, Parser)]
@@ -40,6 +40,13 @@ enum Command {
         css_only: bool,
         #[arg(long)]
         filename: Option<PathBuf>,
+    },
+    EmitIr {
+        file: PathBuf,
+        #[arg(long)]
+        out: Option<PathBuf>,
+        #[arg(long = "include")]
+        includes: Vec<PathBuf>,
     },
     Format {
         file: PathBuf,
@@ -84,6 +91,11 @@ fn main() -> anyhow::Result<()> {
         Command::CompileStdin { css_only, filename } => {
             compile_stdin(css_only, filename.as_deref())
         }
+        Command::EmitIr {
+            file,
+            out,
+            includes,
+        } => emit_ir(&file, out.as_deref(), &includes),
         Command::Format { file, check } => format_file(&file, check),
         Command::Watch {
             file,
@@ -360,13 +372,16 @@ fn check_file(file: &Path, includes: &[PathBuf]) -> anyhow::Result<()> {
     let document = compile_file_document(file, includes)?;
     let diagnostics = validate(&document);
 
-    if diagnostics.is_empty() {
-        println!("ok");
-        Ok(())
-    } else {
+    if !diagnostics.is_empty() {
         print_diagnostics(&diagnostics);
+    }
+
+    if has_error_diagnostics(&diagnostics) {
         anyhow::bail!("Frame check failed");
     }
+
+    println!("ok");
+    Ok(())
 }
 
 fn compile_file(file: &Path, out: &Path, includes: &[PathBuf]) -> anyhow::Result<()> {
@@ -376,6 +391,20 @@ fn compile_file(file: &Path, out: &Path, includes: &[PathBuf]) -> anyhow::Result
     fs::write(out.join("generated.css"), generate_css(&document))?;
     fs::write(out.join("generated.ts"), generate_typescript(&document))?;
     println!("generated {}", out.display());
+    Ok(())
+}
+
+fn emit_ir(file: &Path, out: Option<&Path>, includes: &[PathBuf]) -> anyhow::Result<()> {
+    let document = compile_file_document(file, includes)?;
+    let json = generate_ir_json(&document).context("failed to serialize Frame IR")?;
+
+    if let Some(out) = out {
+        fs::write(out, json)?;
+        println!("generated {}", out.display());
+    } else {
+        print!("{json}");
+    }
+
     Ok(())
 }
 
@@ -410,6 +439,9 @@ fn compile_file_document(
 
     if !diagnostics.is_empty() {
         print_diagnostics(&diagnostics);
+    }
+
+    if has_error_diagnostics(&diagnostics) {
         anyhow::bail!("Frame compile failed");
     }
 
@@ -521,6 +553,9 @@ fn compile_source(source: &str) -> anyhow::Result<frame_core::Document> {
 
     if !diagnostics.is_empty() {
         print_diagnostics(&diagnostics);
+    }
+
+    if has_error_diagnostics(&diagnostics) {
         anyhow::bail!("Frame compile failed");
     }
 
@@ -588,4 +623,10 @@ fn print_diagnostics(diagnostics: &[Diagnostic]) {
             diagnostic.severity, diagnostic.span.start, diagnostic.span.end, diagnostic.message
         );
     }
+}
+
+fn has_error_diagnostics(diagnostics: &[Diagnostic]) -> bool {
+    diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.severity == Severity::Error)
 }

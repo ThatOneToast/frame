@@ -5,3 +5,4 @@ edition.workspace = true
 
 [dependencies]
 frame_core = { path = "../frame_core" }
+serde_json.workspace = true

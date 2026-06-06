@@ -199,6 +199,7 @@ name = "frame_codegen"
 version = "0.1.0"
 dependencies = [
  "frame_core",
+ "serde_json",
 ]
 
 [[package]]

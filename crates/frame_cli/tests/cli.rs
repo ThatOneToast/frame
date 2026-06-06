@@ -106,6 +106,36 @@ fn compile_resolves_includes() {
 }
 
 #[test]
+fn emits_initial_ui_ir_json() {
+    let root = temp_out_dir();
+    fs::create_dir_all(&root).expect("temporary input should be creatable");
+    let file = root.join("chat-input.frame");
+    fs::write(
+        &file,
+        "component ChatInput {\n  state {\n    draft text = \"\"\n  }\n\n  view {\n    input MessageBox {\n      value bind $draft\n      on keydown.enter @sendMessage\n    }\n  }\n}\n",
+    )
+    .expect("app should be writable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("emit-ir")
+        .arg(&file)
+        .output()
+        .expect("frame emit-ir should run");
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("\"version\": 1"));
+    assert!(stdout.contains("\"name\": \"ChatInput\""));
+    assert!(stdout.contains("\"handler\": \"sendMessage\""));
+
+    fs::remove_dir_all(root).expect("temporary output should be removable");
+}
+
+#[test]
 fn check_reports_missing_include() {
     let root = temp_out_dir();
     fs::create_dir_all(&root).expect("temporary input should be creatable");
