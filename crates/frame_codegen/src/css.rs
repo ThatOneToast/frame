@@ -495,6 +495,9 @@ fn emit_area_template(css: &mut String, body: &[Node]) {
 }
 
 fn emit_common(css: &mut String, body: &[Node], symbols: &frame_core::symbols::SymbolIndex) {
+    let mut transforms = Vec::new();
+    let mut filters = Vec::new();
+
     for statement in statements(body) {
         match statement.words.first().map(String::as_str) {
             Some("surface") => {
@@ -583,6 +586,9 @@ fn emit_common(css: &mut String, body: &[Node], symbols: &frame_core::symbols::S
             Some("duration") => emit_duration(css, statement),
             Some("ease") => emit_ease(css, statement),
             Some("animation" | "animate") => emit_animation(css, statement),
+            Some("lift" | "sink" | "shift" | "grow" | "shrink" | "tilt" | "press" | "pop") => {
+                collect_effect(css, statement, &mut transforms, &mut filters)
+            }
             Some("text" | "color") => {
                 if let Some(value) = statement.words.get(1) {
                     css.push_str(&format!("  color: var(--frame-color-{value});\n"));
@@ -623,6 +629,8 @@ fn emit_common(css: &mut String, body: &[Node], symbols: &frame_core::symbols::S
             _ => {}
         }
     }
+
+    emit_collected_effects(css, &transforms, &filters);
 
     for node in body {
         let Node::Block(block) = node else {
@@ -824,56 +832,114 @@ fn emit_effects(css: &mut String, body: &[Node]) {
     let mut filters = Vec::new();
 
     for statement in statements(body) {
-        match statement.words.first().map(String::as_str) {
-            Some("lift") => transforms.push(match statement.words.get(1).map(String::as_str) {
-                Some("small") => "translateY(-2px)",
-                Some("large") => "translateY(-8px)",
-                _ => "translateY(-4px)",
-            }),
-            Some("glow") => {
-                let value = statement
-                    .words
-                    .get(1)
-                    .map(String::as_str)
-                    .unwrap_or("accent");
-                if value == "none" {
-                    css.push_str("  box-shadow: none;\n");
-                } else {
-                    css.push_str(&format!("  box-shadow: var(--frame-glow-{value});\n"));
-                }
-            }
-            Some("brighten") => filters.push(match statement.words.get(1).map(String::as_str) {
-                Some("subtle") => "brightness(1.04)",
-                Some("large") => "brightness(1.12)",
-                _ => "brightness(1.08)",
-            }),
-            Some("dim") => filters.push("brightness(0.92)"),
-            Some("press") => transforms.push("translateY(1px)"),
-            Some("blur") => filters.push(match statement.words.get(1).map(String::as_str) {
-                Some("heavy") => "blur(8px)",
-                Some("none") => "blur(0)",
-                _ => "blur(2px)",
-            }),
-            Some("ring") => {
-                let value = statement
-                    .words
-                    .get(1)
-                    .map(String::as_str)
-                    .unwrap_or("accent");
-                css.push_str(&format!(
-                    "  outline: 2px solid var(--frame-color-{value});\n  outline-offset: 2px;\n"
-                ))
-            }
-            Some("fade") => css.push_str("  opacity: 0.72;\n"),
-            Some("scale") => transforms.push("scale(1.02)"),
-            Some("transition") => emit_transition(css, statement),
-            Some("duration") => emit_duration(css, statement),
-            Some("ease") => emit_ease(css, statement),
-            Some("animation" | "animate") => emit_animation(css, statement),
-            _ => {}
-        }
+        collect_effect(css, statement, &mut transforms, &mut filters);
     }
 
+    emit_collected_effects(css, &transforms, &filters);
+}
+
+fn collect_effect(
+    css: &mut String,
+    statement: &Statement,
+    transforms: &mut Vec<String>,
+    filters: &mut Vec<&'static str>,
+) {
+    match statement.words.first().map(String::as_str) {
+        Some("lift") => transforms.push(format!(
+            "translateY(-{})",
+            format_px(tuned_value(
+                statement.words.get(1).map(String::as_str),
+                &MOVEMENT_SCALE
+            ))
+        )),
+        Some("sink") => transforms.push(format!(
+            "translateY({})",
+            format_px(tuned_value(
+                statement.words.get(1).map(String::as_str),
+                &MOVEMENT_SCALE
+            ))
+        )),
+        Some("shift") => {
+            let amount = format_px(tuned_value(
+                statement.words.get(2).map(String::as_str),
+                &MOVEMENT_SCALE,
+            ));
+            match statement.words.get(1).map(String::as_str) {
+                Some("left") => transforms.push(format!("translateX(-{amount})")),
+                Some("right") => transforms.push(format!("translateX({amount})")),
+                Some("up") => transforms.push(format!("translateY(-{amount})")),
+                Some("down") => transforms.push(format!("translateY({amount})")),
+                _ => {}
+            }
+        }
+        Some("grow") => transforms.push(format!(
+            "scale({})",
+            format_number(tuned_value(
+                statement.words.get(1).map(String::as_str),
+                &GROW_SCALE
+            ))
+        )),
+        Some("shrink") => transforms.push(format!(
+            "scale({})",
+            format_number(tuned_value(
+                statement.words.get(1).map(String::as_str),
+                &SHRINK_SCALE
+            ))
+        )),
+        Some("tilt") => {
+            let degrees = tuned_value(statement.words.get(2).map(String::as_str), &TILT_SCALE);
+            match statement.words.get(1).map(String::as_str) {
+                Some("left") => transforms.push(format!("rotate(-{})", format_deg(degrees))),
+                Some("right") => transforms.push(format!("rotate({})", format_deg(degrees))),
+                _ => {}
+            }
+        }
+        Some("glow") => {
+            let value = statement
+                .words
+                .get(1)
+                .map(String::as_str)
+                .unwrap_or("accent");
+            if value == "none" {
+                css.push_str("  box-shadow: none;\n");
+            } else {
+                css.push_str(&format!("  box-shadow: var(--frame-glow-{value});\n"));
+            }
+        }
+        Some("brighten") => filters.push(match statement.words.get(1).map(String::as_str) {
+            Some("subtle") => "brightness(1.04)",
+            Some("large") => "brightness(1.12)",
+            _ => "brightness(1.08)",
+        }),
+        Some("dim") => filters.push("brightness(0.92)"),
+        Some("press") => transforms.push("translateY(1px)".to_string()),
+        Some("pop") => transforms.push("scale(1.04)".to_string()),
+        Some("blur") => filters.push(match statement.words.get(1).map(String::as_str) {
+            Some("heavy") => "blur(8px)",
+            Some("none") => "blur(0)",
+            _ => "blur(2px)",
+        }),
+        Some("ring") => {
+            let value = statement
+                .words
+                .get(1)
+                .map(String::as_str)
+                .unwrap_or("accent");
+            css.push_str(&format!(
+                "  outline: 2px solid var(--frame-color-{value});\n  outline-offset: 2px;\n"
+            ))
+        }
+        Some("fade") => css.push_str("  opacity: 0.72;\n"),
+        Some("scale") => transforms.push("scale(1.02)".to_string()),
+        Some("transition") => emit_transition(css, statement),
+        Some("duration") => emit_duration(css, statement),
+        Some("ease") => emit_ease(css, statement),
+        Some("animation" | "animate") => emit_animation(css, statement),
+        _ => {}
+    }
+}
+
+fn emit_collected_effects(css: &mut String, transforms: &[String], filters: &[&str]) {
     if !transforms.is_empty() {
         css.push_str(&format!("  transform: {};\n", transforms.join(" ")));
     }
@@ -881,6 +947,79 @@ fn emit_effects(css: &mut String, body: &[Node]) {
     if !filters.is_empty() {
         css.push_str(&format!("  filter: {};\n", filters.join(" ")));
     }
+}
+
+const MOVEMENT_SCALE: [(&str, f32); 5] = [
+    ("tiny", 1.0),
+    ("small", 4.0),
+    ("medium", 8.0),
+    ("large", 12.0),
+    ("huge", 16.0),
+];
+const GROW_SCALE: [(&str, f32); 5] = [
+    ("slight", 1.02),
+    ("subtle", 1.04),
+    ("normal", 1.06),
+    ("strong", 1.10),
+    ("dramatic", 1.16),
+];
+const SHRINK_SCALE: [(&str, f32); 5] = [
+    ("slight", 0.98),
+    ("subtle", 0.96),
+    ("normal", 0.94),
+    ("strong", 0.90),
+    ("dramatic", 0.84),
+];
+const TILT_SCALE: [(&str, f32); 5] = [
+    ("slight", 0.5),
+    ("subtle", 1.0),
+    ("normal", 2.0),
+    ("strong", 4.0),
+    ("dramatic", 8.0),
+];
+
+fn tuned_value(value: Option<&str>, scale: &[(&str, f32)]) -> f32 {
+    let value = value.unwrap_or(scale[1].0);
+    let (name, percent) = value
+        .split_once('%')
+        .map_or((value, 0.0), |(name, percent)| {
+            (
+                name,
+                percent.parse::<f32>().unwrap_or(0.0).clamp(0.0, 100.0) / 100.0,
+            )
+        });
+    let Some(index) = scale.iter().position(|(entry, _)| *entry == name) else {
+        return scale[1].1;
+    };
+    let base = scale[index].1;
+    let step = if let Some((_, next)) = scale.get(index + 1) {
+        next - base
+    } else if index > 0 {
+        base - scale[index - 1].1
+    } else {
+        0.0
+    };
+    base + (step * percent)
+}
+
+fn format_px(value: f32) -> String {
+    format!("{}px", format_number(value))
+}
+
+fn format_deg(value: f32) -> String {
+    format!("{}deg", format_number(value))
+}
+
+fn format_number(value: f32) -> String {
+    let rounded = (value * 1000.0).round() / 1000.0;
+    let mut formatted = format!("{rounded:.3}");
+    while formatted.contains('.') && formatted.ends_with('0') {
+        formatted.pop();
+    }
+    if formatted.ends_with('.') {
+        formatted.pop();
+    }
+    formatted
 }
 
 fn emit_space_property(css: &mut String, property: &str, statement: &Statement) {
@@ -1762,8 +1901,91 @@ mod tests {
 
         assert!(css.contains("repeat(auto-fit, minmax(220px, 1fr))"));
         assert!(css.contains(".fr-QuickLinkCard:hover"));
-        assert!(css.contains("transform: translateY(-2px);"));
+        assert!(css.contains("transform: translateY(-4px);"));
         assert!(css.contains("filter: brightness(1.04);"));
+    }
+
+    #[test]
+    fn generates_intent_motion_helpers_in_source_order() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "FloatingCard",
+                vec![
+                    statement(&["lift", "small"]),
+                    statement(&["tilt", "right", "subtle"]),
+                    statement(&["grow", "slight"]),
+                ],
+            )],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("transform: translateY(-4px) rotate(1deg) scale(1.02);"));
+    }
+
+    #[test]
+    fn generates_intent_motion_helpers_in_state_blocks() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Button,
+                "Send",
+                vec![
+                    Node::Block(frame_core::Block {
+                        name: "hover".to_string(),
+                        body: vec![
+                            statement(&["lift", "small"]),
+                            statement(&["grow", "slight"]),
+                        ],
+                        span: Span::default(),
+                    }),
+                    Node::Block(frame_core::Block {
+                        name: "active".to_string(),
+                        body: vec![statement(&["press"])],
+                        span: Span::default(),
+                    }),
+                ],
+            )],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains(".fr-Send:hover"));
+        assert!(css.contains("transform: translateY(-4px) scale(1.02);"));
+        assert!(css.contains(".fr-Send:active"));
+        assert!(css.contains("transform: translateY(1px);"));
+    }
+
+    #[test]
+    fn generates_tuned_motion_interpolation_and_extrapolation() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "TunedFloatingCard",
+                vec![
+                    statement(&["lift", "small%50"]),
+                    statement(&["sink", "huge%50"]),
+                    statement(&["shift", "left", "tiny%100"]),
+                    statement(&["tilt", "right", "subtle%25"]),
+                    statement(&["grow", "slight%50"]),
+                    statement(&["shrink", "dramatic%50"]),
+                    statement(&["pop"]),
+                ],
+            )],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("translateY(-6px)"));
+        assert!(css.contains("translateY(18px)"));
+        assert!(css.contains("translateX(-4px)"));
+        assert!(css.contains("rotate(1.25deg)"));
+        assert!(css.contains("scale(1.03)"));
+        assert!(css.contains("scale(0.81)"));
+        assert!(css.contains("scale(1.04)"));
     }
 
     #[test]

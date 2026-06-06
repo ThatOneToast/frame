@@ -115,6 +115,8 @@ fn is_known_value(value: &str) -> bool {
     tokens::COLORS.contains(&value)
         || tokens::SURFACES.contains(&value)
         || tokens::SPACING.contains(&value)
+        || tokens::MOVEMENT_AMOUNTS.contains(&value)
+        || tokens::VISUAL_AMOUNTS.contains(&value)
         || tokens::RADII.contains(&value)
         || tokens::SHADOWS.contains(&value)
         || tokens::ALIGN.contains(&value)
@@ -156,8 +158,20 @@ fn is_known_value(value: &str) -> bool {
                 | "column-reverse"
                 | "style"
                 | "offset"
+                | "up"
+                | "down"
         )
         || tokens::BORDER_LINE_STYLES.contains(&value)
+        || is_tuned_amount(value)
+}
+
+fn is_tuned_amount(value: &str) -> bool {
+    let Some((amount, percent)) = value.split_once('%') else {
+        return false;
+    };
+    (tokens::MOVEMENT_AMOUNTS.contains(&amount) || tokens::VISUAL_AMOUNTS.contains(&amount))
+        && !percent.is_empty()
+        && percent.chars().all(|character| character.is_ascii_digit())
 }
 
 fn push_word(
@@ -230,5 +244,15 @@ mod tests {
 
         assert!(tokens.data.iter().any(|token| token.token_type == 0));
         assert!(tokens.data.iter().any(|token| token.token_type == 2));
+    }
+
+    #[test]
+    fn emits_tokens_for_tuned_motion_amounts() {
+        let tokens = semantic_tokens(
+            "card Floating {\n  lift small%44\n  shift up medium\n  tilt right subtle%23\n}\n",
+        );
+
+        assert!(tokens.data.iter().any(|token| token.token_type == 2));
+        assert!(tokens.data.iter().any(|token| token.token_type == 3));
     }
 }

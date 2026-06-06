@@ -112,11 +112,17 @@ const PROPERTY_KEYWORDS = [
 
 const EFFECT_KEYWORDS = [
   "lift",
+  "sink",
+  "shift",
+  "grow",
+  "shrink",
+  "tilt",
   "glow",
   "brighten",
   "dim",
   "blur",
   "press",
+  "pop",
   "ring",
   "smooth",
   "fade",

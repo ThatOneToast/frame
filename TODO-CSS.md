@@ -157,9 +157,9 @@ Existing Frame styling already covers a useful subset:
 - [x] keyframes
 - [x] structured animation blocks
 - [ ] transform origin
-- [ ] translate helpers
-- [ ] rotate helpers
-- [ ] scale helpers
+- [x] translate helpers through intent verbs (`lift`, `sink`, `shift`)
+- [x] rotate helpers through intent verbs (`tilt left`, `tilt right`)
+- [x] scale helpers through intent verbs (`grow`, `shrink`, `pop`)
 - [ ] skew helpers
 - [ ] 3D transform helpers
 - [ ] scroll-driven animations

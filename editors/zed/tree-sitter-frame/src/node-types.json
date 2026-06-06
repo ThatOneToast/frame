@@ -706,6 +706,10 @@
     "named": false
   },
   {
+    "type": "grow",
+    "named": false
+  },
+  {
     "type": "height",
     "named": false
   },
@@ -838,6 +842,10 @@
     "named": false
   },
   {
+    "type": "pop",
+    "named": false
+  },
+  {
     "type": "position",
     "named": false
   },
@@ -887,6 +895,18 @@
   },
   {
     "type": "shape",
+    "named": false
+  },
+  {
+    "type": "shift",
+    "named": false
+  },
+  {
+    "type": "shrink",
+    "named": false
+  },
+  {
+    "type": "sink",
     "named": false
   },
   {
@@ -943,6 +963,10 @@
   },
   {
     "type": "theme",
+    "named": false
+  },
+  {
+    "type": "tilt",
     "named": false
   },
   {

@@ -1055,7 +1055,21 @@ fn value_completions(
         "font" | "size" | "weight" => suggestions(TYPOGRAPHY, "type value", "Typography token."),
         "line" => suggestions(tokens::LINES, "line height", "Line height intent."),
         "letter" => suggestions(tokens::LETTERS, "letter spacing", "Letter spacing intent."),
-        "lift" | "brighten" | "dim" | "blur" | "press" | "scale" | "fade" | "slide" => {
+        "lift" | "sink" => motion_amount_suggestions(tokens::MOVEMENT_AMOUNTS, "movement amount"),
+        "shift" if line_words.len() <= 1 => suggestions(
+            &["left", "right", "up", "down"],
+            "shift direction",
+            "Direction for movement intent.",
+        ),
+        "shift" => motion_amount_suggestions(tokens::MOVEMENT_AMOUNTS, "movement amount"),
+        "grow" | "shrink" => motion_amount_suggestions(tokens::VISUAL_AMOUNTS, "visual amount"),
+        "tilt" if line_words.len() <= 1 => suggestions(
+            &["left", "right"],
+            "tilt direction",
+            "Direction for rotation intent.",
+        ),
+        "tilt" => motion_amount_suggestions(tokens::VISUAL_AMOUNTS, "visual amount"),
+        "brighten" | "dim" | "blur" | "press" | "pop" | "scale" | "fade" | "slide" => {
             suggestions(tokens::SPACING, "effect value", "Effect strength token.")
         }
         "opacity" => suggestions(
@@ -1241,6 +1255,37 @@ fn dynamic_suggestions(
         .collect()
 }
 
+fn motion_amount_suggestions(amounts: &[&str], detail: &'static str) -> Vec<CompletionSuggestion> {
+    let mut items = suggestions(
+        amounts,
+        detail,
+        "Intent amount. Add `%0` through `%100` to tune toward the next stronger amount.",
+    );
+    if let Some(base) = amounts.get(1) {
+        items.push(CompletionSuggestion {
+            label: format!("{base}%44"),
+            detail,
+            documentation:
+                "Tuned amount: interpolates from this named amount toward the next stronger amount."
+                    .to_string(),
+            insert_text: None,
+            is_snippet: false,
+            category: CompletionCategory::MotionProperty,
+        });
+    }
+    if let Some(strongest) = amounts.last() {
+        items.push(CompletionSuggestion {
+            label: format!("{strongest}%50"),
+            detail,
+            documentation: "Tuned strongest amount: extrapolates beyond the strongest preset by the previous step distance.".to_string(),
+            insert_text: None,
+            is_snippet: false,
+            category: CompletionCategory::MotionProperty,
+        });
+    }
+    items
+}
+
 fn category_for_detail(detail: &str) -> CompletionCategory {
     match detail {
         "declaration" => CompletionCategory::Declaration,
@@ -1283,8 +1328,10 @@ fn property_category(label: &str) -> CompletionCategory {
         | "align-text" | "decoration" | "whitespace" | "word-break" | "hyphenate" => {
             CompletionCategory::TypographyProperty
         }
-        "transition" | "duration" | "ease" | "animation" | "animate" | "delay" | "iteration"
-        | "direction" | "fill" | "play-state" | "transform" | "filter" => {
+        "lift" | "sink" | "shift" | "grow" | "shrink" | "tilt" | "press" | "pop" | "glow"
+        | "brighten" | "dim" | "blur" | "ring" | "smooth" | "fade" | "scale" | "rotate"
+        | "slide" | "transition" | "duration" | "ease" | "animation" | "animate" | "delay"
+        | "iteration" | "direction" | "fill" | "play-state" | "transform" | "filter" => {
             CompletionCategory::MotionProperty
         }
         "hover" | "focus" | "focus-visible" | "focus-within" | "active" | "disabled"
@@ -1416,12 +1463,18 @@ fn completion_documentation(label: &str) -> Option<String> {
         "success" => "Positive or completed semantic color.",
         "warning" => "Caution semantic color.",
         "info" => "Informational semantic color.",
-        "lift" => "Moves a component upward for hover elevation.",
+        "lift" => "Moves a component upward. Use movement amounts `tiny`, `small`, `medium`, `large`, or `huge`; suffix with `%0` through `%100` to tune toward the next stronger amount.",
+        "sink" => "Moves a component downward. Use movement amounts such as `small` or tuned values like `small%44`.",
+        "shift" => "Moves a component sideways or vertically. Use `shift left small`, `shift right small`, `shift up small`, or `shift down small`.",
+        "grow" => "Slightly scales a component up. Use visual amounts `slight`, `subtle`, `normal`, `strong`, or `dramatic`; tuned values like `slight%5` are allowed.",
+        "shrink" => "Slightly scales a component down using visual amount tokens.",
+        "tilt" => "Rotates a component by intent. Use `tilt left subtle` or `tilt right subtle`; tuned values like `subtle%23` are allowed.",
         "glow" => "Adds semantic glow, commonly `glow accent`.",
         "brighten" => "Increases brightness for interactive feedback.",
         "dim" => "Reduces emphasis, commonly for disabled state.",
         "blur" => "Applies blur effect.",
         "press" => "Adds a pressed movement for active controls.",
+        "pop" => "Adds a small positive scale movement for appearing or selected states.",
         "ring" => "Adds an accessible focus ring.",
         "scale" => "Slightly scales an element.",
         "fade" => "Reduces opacity.",
@@ -1599,9 +1652,38 @@ mod tests {
         let labels = labels_for("card ProjectCard {\n  hover {\n    ");
 
         assert!(labels.contains(&"lift".to_string()));
+        assert!(labels.contains(&"shift".to_string()));
+        assert!(labels.contains(&"grow".to_string()));
         assert!(labels.contains(&"glow".to_string()));
         assert!(labels.contains(&"hover effects".to_string()));
         assert!(!labels.contains(&"grid".to_string()));
+    }
+
+    #[test]
+    fn motion_helpers_suggest_directions_and_tuned_amounts() {
+        let labels = labels_for("card ProjectCard {\n  lift ");
+
+        assert!(labels.contains(&"tiny".to_string()));
+        assert!(labels.contains(&"small%44".to_string()));
+        assert!(labels.contains(&"huge%50".to_string()));
+
+        let labels = labels_for("card ProjectCard {\n  shift ");
+
+        assert_eq!(
+            labels,
+            vec![
+                "left".to_string(),
+                "right".to_string(),
+                "up".to_string(),
+                "down".to_string(),
+            ]
+        );
+
+        let labels = labels_for("card ProjectCard {\n  tilt right ");
+
+        assert!(labels.contains(&"slight".to_string()));
+        assert!(labels.contains(&"subtle%44".to_string()));
+        assert!(labels.contains(&"dramatic%50".to_string()));
     }
 
     #[test]

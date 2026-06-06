@@ -79,6 +79,10 @@ card DemoCard {
   whitespace pre-wrap
   word-break break-word
   hyphenate auto
+  lift small%44
+  shift right medium
+  tilt right subtle%23
+  grow slight%5
   animation fade-in
 
   animation FloatIn {
@@ -93,8 +97,13 @@ card DemoCard {
 
   hover {
     lift small
+    grow slight
     glow accent
     transition smooth
+  }
+
+  active {
+    press
   }
 
   focus-within {

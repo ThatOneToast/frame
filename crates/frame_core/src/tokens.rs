@@ -8,10 +8,16 @@ pub const SURFACES: &[&str] = &[
 ];
 pub const EFFECTS: &[&str] = &[
     "lift",
+    "sink",
+    "shift",
+    "grow",
+    "shrink",
+    "tilt",
     "glow",
     "brighten",
     "dim",
     "press",
+    "pop",
     "ring",
     "blur",
     "smooth",
@@ -25,6 +31,8 @@ pub const EFFECTS: &[&str] = &[
     "animation",
     "animate",
 ];
+pub const MOVEMENT_AMOUNTS: &[&str] = &["tiny", "small", "medium", "large", "huge"];
+pub const VISUAL_AMOUNTS: &[&str] = &["slight", "subtle", "normal", "strong", "dramatic"];
 pub const SHADOWS: &[&str] = &[
     "none", "soft", "small", "medium", "large", "deep", "floating",
 ];

@@ -818,6 +818,26 @@
         },
         {
           "type": "STRING",
+          "value": "sink"
+        },
+        {
+          "type": "STRING",
+          "value": "shift"
+        },
+        {
+          "type": "STRING",
+          "value": "grow"
+        },
+        {
+          "type": "STRING",
+          "value": "shrink"
+        },
+        {
+          "type": "STRING",
+          "value": "tilt"
+        },
+        {
+          "type": "STRING",
           "value": "glow"
         },
         {
@@ -835,6 +855,10 @@
         {
           "type": "STRING",
           "value": "press"
+        },
+        {
+          "type": "STRING",
+          "value": "pop"
         },
         {
           "type": "STRING",

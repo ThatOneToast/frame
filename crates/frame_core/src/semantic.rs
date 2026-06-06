@@ -674,6 +674,9 @@ fn validate_statement(
         Some("duration") => validate_value(statement, tokens::DURATIONS, diagnostics),
         Some("ease") => validate_value(statement, tokens::EASES, diagnostics),
         Some("animation" | "animate") => validate_value(statement, tokens::ANIMATIONS, diagnostics),
+        Some("lift" | "sink" | "shift" | "grow" | "shrink" | "tilt" | "press" | "pop") => {
+            validate_motion_statement(statement, diagnostics)
+        }
         _ => {}
     }
 }
@@ -836,12 +839,142 @@ fn validate_effect_statement(
     }
 
     match effect {
+        "lift" | "sink" | "shift" | "grow" | "shrink" | "tilt" | "press" | "pop" => {
+            validate_motion_statement(statement, diagnostics)
+        }
         "glow" | "ring" => validate_glow(statement, symbols, diagnostics),
         "transition" => validate_value(statement, tokens::TRANSITIONS, diagnostics),
         "duration" => validate_value(statement, tokens::DURATIONS, diagnostics),
         "ease" => validate_value(statement, tokens::EASES, diagnostics),
         "animation" | "animate" => validate_value(statement, tokens::ANIMATIONS, diagnostics),
         _ => {}
+    }
+}
+
+fn validate_motion_statement(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
+    let Some(effect) = first_word(statement) else {
+        return;
+    };
+
+    match effect {
+        "lift" | "sink" => validate_tuned_amount_at(
+            statement,
+            1,
+            tokens::MOVEMENT_AMOUNTS,
+            "movement amount",
+            diagnostics,
+        ),
+        "shift" => {
+            match statement.words.get(1).map(String::as_str) {
+                Some("left" | "right" | "up" | "down") => {}
+                Some(direction) => {
+                    diagnostics.push(Diagnostic::error(
+                        format!(
+                            "Unknown shift direction `{direction}`.\n\nUse `left`, `right`, `up`, or `down`."
+                        ),
+                        statement.span,
+                    ));
+                    return;
+                }
+                None => {
+                    diagnostics.push(Diagnostic::error(
+                        "shift expects a direction and movement amount, for example `shift right small`.",
+                        statement.span,
+                    ));
+                    return;
+                }
+            }
+            validate_tuned_amount_at(
+                statement,
+                2,
+                tokens::MOVEMENT_AMOUNTS,
+                "movement amount",
+                diagnostics,
+            );
+        }
+        "grow" | "shrink" => validate_tuned_amount_at(
+            statement,
+            1,
+            tokens::VISUAL_AMOUNTS,
+            "visual amount",
+            diagnostics,
+        ),
+        "tilt" => {
+            match statement.words.get(1).map(String::as_str) {
+                Some("left" | "right") => {}
+                Some(direction) => {
+                    diagnostics.push(Diagnostic::error(
+                        format!("Unknown tilt direction `{direction}`.\n\nUse `left` or `right`."),
+                        statement.span,
+                    ));
+                    return;
+                }
+                None => {
+                    diagnostics.push(Diagnostic::error(
+                        "tilt expects a direction and visual amount, for example `tilt right subtle`.",
+                        statement.span,
+                    ));
+                    return;
+                }
+            }
+            validate_tuned_amount_at(
+                statement,
+                2,
+                tokens::VISUAL_AMOUNTS,
+                "visual amount",
+                diagnostics,
+            );
+        }
+        "press" | "pop" => {}
+        _ => {}
+    }
+}
+
+fn validate_tuned_amount_at(
+    statement: &Statement,
+    index: usize,
+    scale: &[&str],
+    label: &str,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let Some(value) = statement.words.get(index) else {
+        diagnostics.push(Diagnostic::error(
+            format!("{} expects a {label}.", statement.words[0]),
+            statement.span,
+        ));
+        return;
+    };
+
+    let (amount, percent) = value
+        .split_once('%')
+        .map_or((value.as_str(), None), |(amount, percent)| {
+            (amount, Some(percent))
+        });
+
+    if !scale.contains(&amount) {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown {label} `{value}`.\n\nUse `{}`. Add `%0` through `%100` for fine tuning, such as `{}%44`.",
+                scale.join("`, `"),
+                scale[0]
+            ),
+            statement.span,
+        ));
+        return;
+    }
+
+    if let Some(percent) = percent {
+        let valid = !percent.is_empty()
+            && percent.chars().all(|character| character.is_ascii_digit())
+            && percent.parse::<u8>().is_ok_and(|percent| percent <= 100);
+        if !valid {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "`{value}` has invalid percent tuning.\n\nUse an integer from 0 to 100, for example `{amount}%44`."
+                ),
+                statement.span,
+            ));
+        }
     }
 }
 
@@ -1813,6 +1946,65 @@ mod tests {
         assert!(diagnostics[0].message.contains("Unknown border style"));
         assert!(diagnostics[1].message.contains("Unknown outline value"));
         assert!(diagnostics[2].message.contains("Unknown outline offset"));
+    }
+
+    #[test]
+    fn accepts_intent_motion_helpers_and_tuned_amounts() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "FloatingCard",
+                vec![
+                    statement(&["lift", "small%44"]),
+                    statement(&["sink", "huge%50"]),
+                    statement(&["shift", "right", "medium"]),
+                    statement(&["grow", "slight%5"]),
+                    statement(&["shrink", "subtle"]),
+                    statement(&["tilt", "left", "dramatic%100"]),
+                    block(
+                        "hover",
+                        vec![
+                            statement(&["lift", "small"]),
+                            statement(&["grow", "slight"]),
+                        ],
+                    ),
+                    block("active", vec![statement(&["press"])]),
+                    block("checked", vec![statement(&["pop"])]),
+                ],
+            )],
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn rejects_invalid_intent_motion_amounts() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "FloatingCard",
+                vec![
+                    statement(&["lift", "giant"]),
+                    statement(&["lift", "small%101"]),
+                    statement(&["lift", "small%half"]),
+                    statement(&["shift", "diagonal", "small"]),
+                    statement(&["tilt", "up", "subtle"]),
+                    statement(&["grow", "medium"]),
+                ],
+            )],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 6);
+        assert!(diagnostics[0].message.contains("Unknown movement amount"));
+        assert!(diagnostics[1].message.contains("invalid percent tuning"));
+        assert!(diagnostics[2].message.contains("invalid percent tuning"));
+        assert!(diagnostics[3].message.contains("Unknown shift direction"));
+        assert!(diagnostics[4].message.contains("Unknown tilt direction"));
+        assert!(diagnostics[5].message.contains("Unknown visual amount"));
     }
 
     #[test]

@@ -175,12 +175,18 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "invalid" => "Defines effects applied to invalid form controls.\n\nGenerated CSS emits `:invalid`.",
         "required" => "Defines effects applied to required form controls.\n\nGenerated CSS emits `:required`.",
         "target" => "Defines effects applied when this element matches the URL fragment target.\n\nGenerated CSS emits `:target`.",
-        "lift" => "Moves a component upward to express hover elevation.",
+        "lift" => "Moves a component upward to express elevation.\n\nUse movement amounts `tiny`, `small`, `medium`, `large`, or `huge`. Add `%0` through `%100` to tune toward the next stronger amount, for example `lift small%44`.\n\nGenerated CSS composes this into `transform: translateY(...)`.",
+        "sink" => "Moves a component downward.\n\nUse movement amounts like `small` or tuned values like `small%44`. Generated CSS composes this into `transform: translateY(...)`.",
+        "shift" => "Moves a component in a direction.\n\nUse `shift left small`, `shift right small`, `shift up small`, or `shift down small`. Movement amounts can use percent tuning.",
+        "grow" => "Scales a component up by intent.\n\nUse visual amounts `slight`, `subtle`, `normal`, `strong`, or `dramatic`. Add `%0` through `%100` for fine tuning, for example `grow slight%5`.",
+        "shrink" => "Scales a component down by intent using visual amounts and optional percent tuning.",
+        "tilt" => "Rotates a component by intent.\n\nUse `tilt left subtle` or `tilt right subtle`. Visual amounts can be tuned with suffix percentages, for example `tilt right subtle%23`.",
         "glow" => "Adds a semantic glow, commonly using accent, danger, or success.",
         "brighten" => "Slightly increases visual brightness for interactive feedback.",
         "dim" => "Reduces visual emphasis for disabled or inactive states.",
         "blur" => "Applies blur intent, usually for overlays or state effects.",
         "press" => "Adds a pressed movement for active controls.",
+        "pop" => "Adds a small positive scale movement for appearing or selected states.",
         "ring" => "Adds an accessible focus ring using a semantic color.",
         "smooth" => "Expresses smooth transition intent for interaction effects.",
         "responsive" => "Requests viewport-aware behavior, such as responsive card grids.",
@@ -903,6 +909,8 @@ mod tests {
         assert!(hover_doc("invalid").unwrap().contains(":invalid"));
         assert!(hover_doc("required").unwrap().contains(":required"));
         assert!(hover_doc("target").unwrap().contains(":target"));
+        assert!(hover_doc("lift").unwrap().contains("small%44"));
+        assert!(hover_doc("tilt").unwrap().contains("subtle%23"));
     }
 
     #[test]
