@@ -136,6 +136,37 @@ fn emits_initial_ui_ir_json() {
 }
 
 #[test]
+fn emits_initial_ui_typescript_contracts() {
+    let root = temp_out_dir();
+    fs::create_dir_all(&root).expect("temporary input should be creatable");
+    let file = root.join("chat-input.frame");
+    fs::write(
+        &file,
+        "component ChatInput {\n  state {\n    draft text = \"\"\n    sending bool = false\n  }\n\n  view {\n    button Send {\n      on click @sendMessage\n      on keydown.enter @sendMessage\n    }\n  }\n}\n",
+    )
+    .expect("app should be writable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("emit-contracts")
+        .arg(&file)
+        .output()
+        .expect("frame emit-contracts should run");
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("export type ChatInputState"));
+    assert!(stdout.contains("draft: string"));
+    assert!(stdout.contains("sending: boolean"));
+    assert_eq!(stdout.matches("sendMessage(ctx").count(), 1);
+
+    fs::remove_dir_all(root).expect("temporary output should be removable");
+}
+
+#[test]
 fn check_reports_missing_include() {
     let root = temp_out_dir();
     fs::create_dir_all(&root).expect("temporary input should be creatable");

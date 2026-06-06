@@ -9,7 +9,7 @@ use std::{
 
 use anyhow::Context;
 use clap::{Parser, Subcommand};
-use frame_codegen::{generate_css, generate_ir_json, generate_typescript};
+use frame_codegen::{generate_contracts, generate_css, generate_ir_json, generate_typescript};
 use frame_core::{formatting::format_source, semantic::validate, Diagnostic, Severity};
 use frame_parser::parse;
 
@@ -42,6 +42,13 @@ enum Command {
         filename: Option<PathBuf>,
     },
     EmitIr {
+        file: PathBuf,
+        #[arg(long)]
+        out: Option<PathBuf>,
+        #[arg(long = "include")]
+        includes: Vec<PathBuf>,
+    },
+    EmitContracts {
         file: PathBuf,
         #[arg(long)]
         out: Option<PathBuf>,
@@ -96,6 +103,11 @@ fn main() -> anyhow::Result<()> {
             out,
             includes,
         } => emit_ir(&file, out.as_deref(), &includes),
+        Command::EmitContracts {
+            file,
+            out,
+            includes,
+        } => emit_contracts(&file, out.as_deref(), &includes),
         Command::Format { file, check } => format_file(&file, check),
         Command::Watch {
             file,
@@ -403,6 +415,20 @@ fn emit_ir(file: &Path, out: Option<&Path>, includes: &[PathBuf]) -> anyhow::Res
         println!("generated {}", out.display());
     } else {
         print!("{json}");
+    }
+
+    Ok(())
+}
+
+fn emit_contracts(file: &Path, out: Option<&Path>, includes: &[PathBuf]) -> anyhow::Result<()> {
+    let document = compile_file_document(file, includes)?;
+    let contracts = generate_contracts(&document);
+
+    if let Some(out) = out {
+        fs::write(out, contracts)?;
+        println!("generated {}", out.display());
+    } else {
+        print!("{contracts}");
     }
 
     Ok(())
