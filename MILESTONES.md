@@ -27,16 +27,16 @@ Goal: define the first complete Frame UI syntax slice.
 
 Deliverables:
 
-- [ ] `component` declarations.
-- [ ] `view` blocks.
+- [x] `component` declarations.
+- [x] `view` blocks.
 - [ ] `props` blocks.
-- [ ] `state` blocks.
-- [ ] DOM element declarations.
+- [x] `state` blocks.
+- [x] Initial UI element declarations.
 - [ ] Component invocation syntax.
-- [ ] `$value` references.
-- [ ] `@handler` references.
-- [ ] `Name:StyleName` style binding syntax.
-- [ ] `style when` reactive style syntax.
+- [x] `$value` references.
+- [x] `@handler` references.
+- [x] `Name:StyleName` style binding syntax.
+- [x] Initial `style when` reactive style syntax.
 - [ ] `show when`, `disabled when`, and similar condition helpers.
 - [ ] Clear unsafe/raw escape hatch syntax.
 
@@ -53,14 +53,15 @@ Goal: parse the UI language slice while preserving existing styling syntax.
 
 Deliverables:
 
-- [ ] AST for components, views, props, state, elements, text, events, bindings, conditions, loops, and style bindings.
-- [ ] Parser support for `$` data references.
-- [ ] Parser support for `@` handler references.
-- [ ] Parser support for event filters and modifiers.
-- [ ] Parser support for explicit style bindings.
-- [ ] Parser support for reactive style rules.
+- [x] AST for components, views, state, elements, text, events, bindings, conditions, and style bindings.
+- [ ] AST for props, slots, loops, and full control flow.
+- [x] Parser support for `$` data references.
+- [x] Parser support for `@` handler references.
+- [x] Parser support for event filters and modifiers.
+- [x] Parser support for explicit style bindings.
+- [x] Parser support for initial reactive style rules.
 - [ ] Comment preservation for formatter work.
-- [ ] Parser tests.
+- [x] Parser tests for the initial UI syntax.
 
 Success criteria:
 
@@ -76,13 +77,13 @@ Goal: resolve names and validate UI meaning.
 
 Deliverables:
 
-- [ ] Component symbol table.
+- [x] Initial component symbol validation.
 - [ ] State and prop symbol table.
-- [ ] Handler reference table.
-- [ ] Style reference resolution.
-- [ ] DOM element validation.
+- [x] Handler reference collection.
+- [x] Initial style reference validation.
+- [x] Initial UI element validation.
 - [ ] Attribute validation.
-- [ ] Event validation.
+- [x] Initial event validation.
 - [ ] Accessibility diagnostics.
 - [ ] Unsafe sink diagnostics.
 - [ ] Source spans for every diagnostic.

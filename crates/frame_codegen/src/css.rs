@@ -1781,6 +1781,7 @@ mod tests {
                     vec![statement(&["place", "sidebar"])],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -1813,6 +1814,7 @@ mod tests {
                     }),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -1882,6 +1884,7 @@ mod tests {
                     ],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -1926,6 +1929,7 @@ mod tests {
                     statement(&["max-block-size", "100%"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -1959,6 +1963,7 @@ mod tests {
                     statement(&["hyphenate", "auto"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -1985,6 +1990,7 @@ mod tests {
                     statement(&["outline", "offset", "small"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2019,6 +2025,7 @@ mod tests {
                     })],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2042,6 +2049,7 @@ mod tests {
                     statement(&["grow", "slight"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2072,6 +2080,7 @@ mod tests {
                     }),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2099,6 +2108,7 @@ mod tests {
                     statement(&["pop"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2152,6 +2162,7 @@ mod tests {
                     }),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2196,6 +2207,7 @@ mod tests {
                     ],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2225,6 +2237,7 @@ mod tests {
                     vec![statement(&["width", "25%"]), statement(&["height", "100%"])],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2258,6 +2271,7 @@ mod tests {
                     }),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2279,6 +2293,7 @@ mod tests {
                 "Sidebar",
                 vec![statement(&["col", "1"]), statement(&["row", "2"])],
             )],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2300,6 +2315,7 @@ mod tests {
                     statement(&["background", "danger"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2333,6 +2349,7 @@ mod tests {
                     ],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2382,6 +2399,7 @@ mod tests {
                     ],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2432,6 +2450,7 @@ mod tests {
                     })],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2464,6 +2483,7 @@ mod tests {
                     }),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2506,6 +2526,7 @@ mod tests {
                     })],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2541,6 +2562,7 @@ mod tests {
                     })],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);
@@ -2585,6 +2607,7 @@ mod tests {
                     ],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let css = generate_css(&document);

@@ -26,6 +26,86 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
             if let Some(target) = words.get(1) {
                 push_word(line, line_index, target, 4, &mut raw);
             }
+        } else if first == "component" {
+            push_word(line, line_index, first, 0, &mut raw);
+            if let Some(name) = words.get(1) {
+                push_word(line, line_index, name.trim_end_matches('{'), 1, &mut raw);
+            }
+        } else if first == "state" || first == "view" {
+            push_word(line, line_index, first, 0, &mut raw);
+        } else if matches!(
+            first,
+            "button"
+                | "input"
+                | "text"
+                | "card"
+                | "panel"
+                | "row"
+                | "stack"
+                | "grid"
+                | "area"
+                | "image"
+                | "link"
+                | "form"
+        ) && words.get(1).is_some_and(|word| word.ends_with('{'))
+        {
+            push_word(line, line_index, first, 0, &mut raw);
+            if let Some(name) = words.get(1) {
+                let name = name.trim_end_matches('{');
+                if let Some((node, style)) = name.split_once(':') {
+                    push_word(line, line_index, node, 1, &mut raw);
+                    push_word(line, line_index, style, 3, &mut raw);
+                } else {
+                    push_word(line, line_index, name, 1, &mut raw);
+                }
+            }
+        } else if words.get(2).copied() == Some("=")
+            && matches!(words.get(1).copied(), Some("text" | "bool" | "number"))
+        {
+            push_word(line, line_index, first, 1, &mut raw);
+            if let Some(state_type) = words.get(1) {
+                push_word(line, line_index, state_type, 3, &mut raw);
+            }
+            if let Some(value) = words.get(3) {
+                let token_type =
+                    if matches!(*value, "true" | "false") || value.parse::<f64>().is_ok() {
+                        5
+                    } else {
+                        4
+                    };
+                push_word(line, line_index, value, token_type, &mut raw);
+            }
+        } else if first == "on" {
+            push_word(line, line_index, first, 0, &mut raw);
+            if let Some(event) = words.get(1) {
+                for part in event.split('.') {
+                    push_word(line, line_index, part, 3, &mut raw);
+                }
+            }
+            if let Some(handler) = words.get(2) {
+                push_word(line, line_index, handler, 4, &mut raw);
+            }
+        } else if matches!(first, "value" | "placeholder" | "disabled" | "style") {
+            push_word(line, line_index, first, 2, &mut raw);
+            for value in words.iter().skip(1) {
+                let value = value.trim_end_matches('{');
+                let token_type = if matches!(value, "bind" | "when") {
+                    0
+                } else if value.starts_with('$') || value.starts_with('@') {
+                    4
+                } else if value.parse::<f64>().is_ok() {
+                    5
+                } else {
+                    3
+                };
+                push_word(
+                    line,
+                    line_index,
+                    value.trim_start_matches('='),
+                    token_type,
+                    &mut raw,
+                );
+            }
         } else if first == "supports" {
             push_word(line, line_index, first, 0, &mut raw);
             for value in words.iter().skip(1) {
@@ -232,6 +312,17 @@ mod tests {
 
         assert!(!tokens.data.is_empty());
         assert!(tokens.data.iter().any(|token| token.token_type == 5));
+    }
+
+    #[test]
+    fn emits_tokens_for_initial_ui_syntax() {
+        let tokens = semantic_tokens(
+            "component ChatInput {\n  state {\n    draft text = \"\"\n  }\n  view {\n    button Send:PrimaryButton {\n      value bind $draft\n      on keydown.ctrl.enter @sendMessage\n    }\n  }\n}\n",
+        );
+
+        assert!(!tokens.data.is_empty());
+        assert!(tokens.data.iter().any(|token| token.token_type == 1));
+        assert!(tokens.data.iter().any(|token| token.token_type == 4));
     }
 
     #[test]

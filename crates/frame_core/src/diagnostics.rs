@@ -22,4 +22,20 @@ impl Diagnostic {
             span,
         }
     }
+
+    pub fn warning(message: impl Into<String>, span: Span) -> Self {
+        Self {
+            severity: Severity::Warning,
+            message: message.into(),
+            span,
+        }
+    }
+
+    pub fn info(message: impl Into<String>, span: Span) -> Self {
+        Self {
+            severity: Severity::Info,
+            message: message.into(),
+            span,
+        }
+    }
 }

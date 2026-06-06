@@ -115,6 +115,58 @@ style-group components {
 ```
 
 Generated CSS uses `@layer`, but Frame keeps the source syntax focused on named style groups.
+
+## Experimental UI Syntax
+
+Frame now parses and validates an initial UI declaration slice. This is a compiler and tooling foundation only: there is no Frame IR lowering, DOM runtime, or generated handler contract output yet.
+
+```frame
+component ChatInput {
+  state {
+    draft text = ""
+    sending bool = false
+  }
+
+  view {
+    input MessageBox {
+      value bind $draft
+      placeholder "Message"
+      on keydown.ctrl.enter @sendMessage
+    }
+
+    button Send:PrimaryButton {
+      text "Send"
+      disabled when $sending
+      on click @sendMessage
+      style when $sending = LoadingButton
+    }
+  }
+}
+```
+
+Supported state types are `text`, `bool`, and `number`. Defaults must match the declared type.
+
+View blocks support the initial element names `button`, `input`, `text`, `card`, `panel`, `row`, `stack`, `grid`, `area`, `image`, `link`, and `form`. Element names such as `Send` record automatic style lookup intent. Explicit style binding uses `ElementName:StyleName`.
+
+Text nodes support literal text and state references:
+
+```frame
+text "Send"
+text $username
+```
+
+Data references use `$valueName` and are validated against component state. Handler references use `@handlerName`; Frame records them as external references and does not allow inline JavaScript or TypeScript bodies.
+
+Events currently validate the event name and modifiers:
+
+```frame
+on click @sendMessage
+on keydown.enter @submitMessage
+on keydown.ctrl.enter @submitMessage
+```
+
+The compiler stores these declarations in the UI AST. Future work will lower them into Frame IR, generate TypeScript contracts, and render through the DOM runtime.
+
 # Frame Language
 
 Frame is a design-intent CSS DSL. It compiles declarations such as `grid`, `area`, `card`, `row`, `stack`, `dock`, and `text` into normal CSS classes and stable TypeScript exports.

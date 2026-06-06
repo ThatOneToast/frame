@@ -16,6 +16,59 @@ const DECLARATION_KEYWORDS = [
   "keyframes",
 ];
 
+const UI_ELEMENT_KEYWORDS = [
+  "button",
+  "input",
+  "text",
+  "card",
+  "panel",
+  "row",
+  "stack",
+  "grid",
+  "area",
+  "image",
+  "link",
+  "form",
+];
+
+const UI_PROPERTY_KEYWORDS = [
+  "placeholder",
+  "disabled",
+  "value",
+  "style",
+];
+
+const UI_EVENT_NAMES = [
+  "click",
+  "input",
+  "change",
+  "submit",
+  "keydown",
+  "keyup",
+  "focus",
+  "blur",
+  "pointerdown",
+  "pointerup",
+  "pointermove",
+  "mouseenter",
+  "mouseleave",
+];
+
+const UI_EVENT_MODIFIERS = [
+  "enter",
+  "escape",
+  "tab",
+  "space",
+  "ctrl",
+  "shift",
+  "alt",
+  "meta",
+  "left",
+  "right",
+  "up",
+  "down",
+];
+
 const STATE_KEYWORDS = [
   "hover",
   "focus",
@@ -143,7 +196,7 @@ module.exports = grammar({
   ],
 
   rules: {
-    source_file: ($) => repeat(choice($.include, $.supports_block, $.style_group_block, $.style_order, $.declaration, $._newline)),
+    source_file: ($) => repeat(choice($.include, $.supports_block, $.style_group_block, $.style_order, $.component_declaration, $.declaration, $._newline)),
 
     include: ($) =>
       seq(
@@ -158,6 +211,86 @@ module.exports = grammar({
         field("name", $.declaration_name),
         $.block,
       ),
+
+    component_declaration: ($) =>
+      seq(
+        "component",
+        field("name", $.declaration_name),
+        $.component_body,
+      ),
+
+    component_body: ($) =>
+      seq(
+        "{",
+        repeat(choice($._newline, $.ui_state_block, $.view_block)),
+        "}",
+      ),
+
+    ui_state_block: ($) =>
+      seq("state", "{", repeat(choice($._newline, $.state_value)), "}"),
+
+    state_value: ($) =>
+      seq(
+        field("name", $.identifier),
+        field("type", $.state_type),
+        "=",
+        field("default", choice($.string, $.boolean, $.number)),
+        $._newline,
+      ),
+
+    state_type: (_) => choice("text", "bool", "number"),
+
+    boolean: (_) => choice("true", "false"),
+
+    view_block: ($) => seq("view", $.ui_block),
+
+    ui_block: ($) =>
+      seq(
+        "{",
+        repeat(choice(
+          $._newline,
+          $.ui_element,
+          $.ui_text,
+          $.event_binding,
+          $.value_binding,
+          $.conditional_flag,
+          $.conditional_style,
+          $.ui_property,
+        )),
+        "}",
+      ),
+
+    ui_element: ($) =>
+      seq(
+        field("kind", $.ui_element_keyword),
+        field("name", $.ui_node_name),
+        optional(seq(":", field("style", $.style_name))),
+        $.ui_block,
+      ),
+
+    ui_text: ($) =>
+      seq("text", field("value", choice($.string, $.data_ref)), $._newline),
+
+    event_binding: ($) =>
+      seq(
+        "on",
+        field("event", $.event_name),
+        repeat(seq(".", field("modifier", $.event_modifier))),
+        field("handler", $.handler_ref),
+        $._newline,
+      ),
+
+    value_binding: ($) =>
+      seq("value", "bind", field("value", $.data_ref), $._newline),
+
+    conditional_flag: ($) =>
+      seq(field("property", $.ui_property_keyword), "when", field("condition", $.data_ref), $._newline),
+
+    conditional_style: ($) =>
+      prec(1, seq("style", "when", field("condition", $.data_ref), "=", field("style", $.style_name), $._newline)),
+
+    ui_property: ($) =>
+      seq(field("property", $.ui_property_keyword), field("value", choice($.string, $.data_ref, $.number, $.boolean, $.identifier)), $._newline),
 
     supports_block: ($) =>
       seq(
@@ -246,7 +379,19 @@ module.exports = grammar({
 
     declaration_name: ($) => $.identifier,
 
+    ui_node_name: ($) => $.identifier,
+
+    style_name: ($) => $.identifier,
+
     declaration_keyword: (_) => choice(...DECLARATION_KEYWORDS),
+
+    ui_element_keyword: (_) => choice(...UI_ELEMENT_KEYWORDS),
+
+    ui_property_keyword: (_) => choice(...UI_PROPERTY_KEYWORDS),
+
+    event_name: (_) => choice(...UI_EVENT_NAMES),
+
+    event_modifier: (_) => choice(...UI_EVENT_MODIFIERS),
 
     state_keyword: (_) => choice(...STATE_KEYWORDS),
 
@@ -275,6 +420,10 @@ module.exports = grammar({
     raw_value: (_) => /[^ \t\r\n{}]+/,
 
     color_literal: (_) => /#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?([0-9a-fA-F]{2})?/,
+
+    data_ref: (_) => /\$[A-Za-z_][A-Za-z0-9_-]*/,
+
+    handler_ref: (_) => /@[A-Za-z_][A-Za-z0-9_-]*/,
 
     comment: (_) => token(seq("//", /.*/)),
 

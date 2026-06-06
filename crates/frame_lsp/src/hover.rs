@@ -83,6 +83,16 @@ pub fn hover_doc(word: &str) -> Option<String> {
     }
 
     Some(match word {
+        "component" => "Defines an experimental Frame UI component.\nComponents may contain typed `state` and a `view` tree. Rendering and handler contract generation are planned next steps.",
+        "state" => "Declares typed component state for experimental UI syntax.\nSupported types are `text`, `bool`, and `number` with matching literal defaults.",
+        "view" => "Declares the component UI tree.\nView nodes parse and validate today; DOM runtime lowering is intentionally not implemented yet.",
+        "on" => "Binds a UI event to an external handler reference.\nFrame stores `@handlerName`, not inline JavaScript or TypeScript bodies.",
+        "bind" => "`value bind $state` records a two-way state binding intent for a future renderer contract.",
+        "when" => "Introduces a state-driven condition such as `disabled when $sending` or `style when $sending = LoadingButton`.",
+        "value" => "`value bind $state` connects an input-like element to typed component state.",
+        "style" => "`style when $state = StyleName` records conditional style switching for a UI node.",
+        "$value" => "$value reads typed component state or props. Text insertion is escaped by default in future renderers.",
+        "@handler" => "@handler references an external handler. Frame does not store script bodies inside UI declarations.",
         "tokens" => "Defines reusable design tokens for a Frame file.\nUse tokens to name shared visual decisions before applying them to components.",
         "grid" => GRID_DOC,
         "area" => "Defines a child region inside a named grid.\nUse `in` to reference the parent grid and `place` to claim a named grid column or area.\n\nExample:\n\narea Sidebar {\n  in AppShell\n  place sidebar\n}",
@@ -210,6 +220,8 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "font" => "Selects a typography family intent such as mono.",
         "size" => "Selects a typography size intent such as heading, body, or caption.",
         "weight" => "Selects type emphasis such as normal, semibold, or bold.",
+        _ if word.starts_with('$') => "$value reads typed component state or props. Text insertion is escaped by default in future renderers.",
+        _ if word.starts_with('@') => "@handler references an external handler. Frame does not store script bodies inside UI declarations.",
         _ => return None,
     }.to_string())
 }
@@ -370,7 +382,10 @@ pub fn word_at(source: &str, offset: usize) -> Option<&str> {
 
 fn is_word_character(character: char) -> bool {
     character.is_ascii_alphanumeric()
-        || matches!(character, '-' | '_' | '%' | '#' | '.' | '(' | ')')
+        || matches!(
+            character,
+            '-' | '_' | '%' | '#' | '.' | '(' | ')' | '$' | '@' | ':'
+        )
 }
 
 fn line_at(source: &str, offset: usize) -> &str {
@@ -870,6 +885,16 @@ mod tests {
 
         assert!(doc.contains("layout container"));
         assert!(doc.contains("<style lang=\"frame\">"));
+
+        assert!(hover_doc("component")
+            .expect("component docs")
+            .contains("typed `state`"));
+        assert!(hover_doc("$draft")
+            .expect("data ref docs")
+            .contains("escaped by default"));
+        assert!(hover_doc("@sendMessage")
+            .expect("handler docs")
+            .contains("external handler"));
     }
 
     #[test]

@@ -104,7 +104,31 @@ const DECLARATIONS: &[&str] = &[
     "supports",
     "style-group",
     "style-order",
+    "component",
 ];
+
+const UI_ELEMENT_KINDS: &[&str] = &[
+    "button", "input", "text", "card", "panel", "row", "stack", "grid", "area", "image", "link",
+    "form",
+];
+
+const UI_KEYWORDS: &[&str] = &[
+    "state",
+    "view",
+    "on",
+    "bind",
+    "when",
+    "style",
+    "disabled",
+    "placeholder",
+    "value",
+];
+
+const UI_EVENTS: &[&str] = &[
+    "click", "keydown", "keyup", "input", "change", "submit", "focus", "blur",
+];
+
+const UI_MODIFIERS: &[&str] = &["enter", "escape", "ctrl", "shift", "alt", "meta"];
 
 struct FrameSnippet {
     label: &'static str,
@@ -499,6 +523,37 @@ pub fn completions_at_with_includes(
 
     if line_words.first().map(String::as_str) == Some("supports") {
         return supports_predicate_completions(&line_words);
+    }
+
+    if is_inside_ancestor_block(source, offset, "view") {
+        if line_words.first().map(String::as_str) == Some("on") {
+            let mut items = suggestions_with_category(
+                UI_EVENTS,
+                "event",
+                "Event name for an external handler binding.",
+                CompletionCategory::Value,
+            );
+            items.extend(suggestions_with_category(
+                UI_MODIFIERS,
+                "event modifier",
+                "Keyboard or platform modifier used after an event name.",
+                CompletionCategory::Value,
+            ));
+            return items;
+        }
+        let mut items = suggestions_with_category(
+            UI_ELEMENT_KINDS,
+            "ui element",
+            "Element node in an experimental Frame component view.",
+            CompletionCategory::Declaration,
+        );
+        items.extend(suggestions_with_category(
+            UI_KEYWORDS,
+            "ui keyword",
+            "Experimental Frame UI syntax keyword.",
+            CompletionCategory::Value,
+        ));
+        return items;
     }
 
     if is_inside_block(source, offset, "gradient") {
@@ -1122,6 +1177,30 @@ fn is_inside_block(source: &str, offset: usize, block: &str) -> bool {
         .is_some_and(|header| header == block || header.starts_with(&format!("{block} ")))
 }
 
+fn is_inside_ancestor_block(source: &str, offset: usize, block: &str) -> bool {
+    let safe_offset = offset.min(source.len());
+    let mut stack = Vec::new();
+    let mut line_start = 0usize;
+
+    for (index, character) in source[..safe_offset].char_indices() {
+        match character {
+            '\n' => line_start = index + 1,
+            '{' => {
+                let header = source[line_start..index].trim();
+                stack.push(header.to_string());
+            }
+            '}' => {
+                stack.pop();
+            }
+            _ => {}
+        }
+    }
+
+    stack
+        .iter()
+        .any(|header| header == block || header.starts_with(&format!("{block} ")))
+}
+
 fn is_inside_keyframe_selector(source: &str, offset: usize) -> bool {
     let safe_offset = offset.min(source.len());
     let mut stack = Vec::new();
@@ -1585,9 +1664,31 @@ mod tests {
 
         assert!(labels.contains(&"grid".to_string()));
         assert!(labels.contains(&"card".to_string()));
+        assert!(labels.contains(&"component".to_string()));
         assert!(labels.contains(&"keyframes".to_string()));
         assert!(!labels.contains(&"panel".to_string()));
         assert!(!labels.contains(&"medium".to_string()));
+    }
+
+    #[test]
+    fn view_scope_suggests_ui_syntax() {
+        let labels = labels_for("component ChatInput {\n  view {\n    ");
+
+        assert!(labels.contains(&"button".to_string()));
+        assert!(labels.contains(&"input".to_string()));
+        assert!(labels.contains(&"on".to_string()));
+        assert!(labels.contains(&"bind".to_string()));
+        assert!(labels.contains(&"when".to_string()));
+    }
+
+    #[test]
+    fn event_lines_suggest_events_and_modifiers() {
+        let labels = labels_for("component ChatInput {\n  view {\n    button Send {\n      on ");
+
+        assert!(labels.contains(&"click".to_string()));
+        assert!(labels.contains(&"keydown".to_string()));
+        assert!(labels.contains(&"enter".to_string()));
+        assert!(labels.contains(&"ctrl".to_string()));
     }
 
     #[test]

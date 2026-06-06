@@ -4,7 +4,7 @@
 
 Prepare Frame for the `Frame -> Frame IR -> DOM runtime` overhaul.
 
-This file tracks the implementation path. This PR is documentation-only; unchecked implementation items should remain unchecked until code and tests exist.
+This file tracks the implementation path. Unchecked implementation items should remain unchecked until code and tests exist.
 
 ## Phase 0 — Foundation Documentation
 
@@ -18,15 +18,15 @@ This file tracks the implementation path. This PR is documentation-only; uncheck
 
 ## Phase 1 — Language Model Design
 
-- [ ] Define the split between style declarations and UI declarations.
-- [ ] Define `component`, `view`, `state`, `props`, and `slots` syntax.
-- [ ] Define element syntax such as `button Send` and `button Send:PrimaryButton`.
-- [ ] Define automatic style lookup rules.
-- [ ] Define explicit style binding rules.
-- [ ] Define style reactivity syntax.
-- [ ] Define data reference syntax using `$name`.
-- [ ] Define handler reference syntax using `@name`.
-- [ ] Define binding syntax such as `value bind $draft`.
+- [x] Define the split between style declarations and UI declarations.
+- [ ] Define full `component`, `view`, `state`, `props`, and `slots` syntax.
+- [x] Define element syntax such as `button Send` and `button Send:PrimaryButton`.
+- [ ] Define full automatic style lookup rules.
+- [x] Define explicit style binding rules.
+- [x] Define initial style reactivity syntax.
+- [x] Define data reference syntax using `$name`.
+- [x] Define handler reference syntax using `@name`.
+- [x] Define binding syntax such as `value bind $draft`.
 - [ ] Define condition syntax such as `show when $loggedIn`.
 - [ ] Define loop syntax for list rendering.
 - [ ] Define component composition syntax.
@@ -36,27 +36,29 @@ This file tracks the implementation path. This PR is documentation-only; uncheck
 
 - [ ] Replace or extend the current line-oriented parser where needed.
 - [ ] Preserve existing styling syntax.
-- [ ] Parse UI declarations without breaking current CSS declarations.
-- [ ] Parse style binding names after `:`.
-- [ ] Parse `$state` and `$prop` references.
-- [ ] Parse `@handler` references.
-- [ ] Parse event filters like `keydown.enter` and `keydown.ctrl.enter`.
-- [ ] Parse conditions and reactive style rules.
-- [ ] Preserve source spans for all new syntax.
+- [x] Parse UI declarations without breaking current CSS declarations.
+- [x] Parse style binding names after `:`.
+- [x] Parse `$state` references.
+- [ ] Parse `$prop` references.
+- [x] Parse `@handler` references.
+- [x] Parse event filters like `keydown.enter` and `keydown.ctrl.enter`.
+- [x] Parse initial conditions and reactive style rules.
+- [x] Preserve source spans for initial UI syntax.
 - [ ] Preserve comments for formatting.
-- [ ] Add parser tests for every UI construct.
+- [x] Add parser tests for initial UI constructs.
 
 ## Phase 3 — Semantic Model
 
-- [ ] Resolve component names.
+- [x] Resolve component names.
 - [ ] Resolve props and state symbols.
-- [ ] Resolve `$value` references.
-- [ ] Resolve `@handler` references.
+- [x] Resolve initial state symbols.
+- [x] Resolve `$value` references against state.
+- [x] Collect `@handler` references.
 - [ ] Validate automatic style lookup.
-- [ ] Validate explicit style references.
-- [ ] Validate DOM element names.
+- [x] Validate explicit style references in-file with soft missing-style diagnostics.
+- [x] Validate initial UI element names.
 - [ ] Validate known attributes per element where practical.
-- [ ] Validate event names and event modifiers.
+- [x] Validate initial event names and event modifiers.
 - [ ] Validate accessibility requirements for common controls.
 - [ ] Validate unsafe raw HTML usage.
 - [ ] Validate URL-bearing attributes.
@@ -123,12 +125,12 @@ This file tracks the implementation path. This PR is documentation-only; uncheck
 
 ## Phase 9 — LSP
 
-- [ ] Add completions for UI declarations.
-- [ ] Add completions for DOM elements.
+- [x] Add completions for UI declarations.
+- [x] Add completions for initial UI elements.
 - [ ] Add completions for attributes by element.
-- [ ] Add completions for events and modifiers.
+- [x] Add completions for initial events and modifiers.
 - [ ] Add completions for `$state`, `$props`, and `@handlers`.
-- [ ] Add hover docs for DOM concepts.
+- [x] Add hover docs for initial UI concepts.
 - [ ] Add diagnostics for unresolved style bindings.
 - [ ] Add diagnostics for unresolved handlers.
 - [ ] Add diagnostics for unsafe DOM sinks.

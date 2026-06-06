@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct Document {
     pub includes: Vec<Include>,
     pub declarations: Vec<Declaration>,
+    pub components: Vec<ComponentDecl>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -18,6 +19,131 @@ pub struct Declaration {
     pub kind: DeclarationKind,
     pub name: Identifier,
     pub body: Vec<Node>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ComponentDecl {
+    pub name: Identifier,
+    pub state: Option<StateDecl>,
+    pub view: Option<ViewDecl>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct StateDecl {
+    pub values: Vec<StateValue>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct StateValue {
+    pub name: Identifier,
+    pub value_type: StateType,
+    pub default: StateDefault,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum StateType {
+    Text,
+    Bool,
+    Number,
+    Unknown(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum StateDefault {
+    Text(String),
+    Bool(bool),
+    Number(String),
+    Invalid(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ViewDecl {
+    pub nodes: Vec<UiNode>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum UiNode {
+    Element(UiElement),
+    Text(UiText),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UiElement {
+    pub kind: Identifier,
+    pub name: Identifier,
+    pub style: Option<StyleBinding>,
+    pub properties: Vec<UiProperty>,
+    pub events: Vec<EventBinding>,
+    pub children: Vec<UiNode>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UiText {
+    pub value: TextValue,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TextValue {
+    Literal(String),
+    Data(DataRef),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UiProperty {
+    pub name: Identifier,
+    pub value: UiPropertyValue,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum UiPropertyValue {
+    Literal(String),
+    Data(DataRef),
+    Bind(DataRef),
+    Conditional(ConditionalBinding),
+    StyleWhen {
+        condition: DataRef,
+        style: StyleBinding,
+    },
+    Unknown(Vec<String>),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EventBinding {
+    pub event: Identifier,
+    pub modifiers: Vec<Identifier>,
+    pub handler: HandlerRef,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DataRef {
+    pub name: Identifier,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct HandlerRef {
+    pub name: Identifier,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct StyleBinding {
+    pub name: Identifier,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ConditionalBinding {
+    pub condition: DataRef,
     pub span: Span,
 }
 

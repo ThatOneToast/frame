@@ -441,6 +441,7 @@ fn load_frame_document(
         return Ok(frame_core::Document {
             includes: Vec::new(),
             declarations: Vec::new(),
+            components: Vec::new(),
         });
     }
 
@@ -479,6 +480,7 @@ fn load_frame_document(
     Ok(frame_core::Document {
         includes: document.includes,
         declarations,
+        components: document.components,
     })
 }
 

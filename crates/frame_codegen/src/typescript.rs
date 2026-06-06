@@ -55,6 +55,7 @@ mod tests {
                 body: vec![],
                 span: Span::default(),
             }],
+            components: Vec::new(),
         };
 
         let ts = generate_typescript(&document);

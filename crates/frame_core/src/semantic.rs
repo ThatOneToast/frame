@@ -3,7 +3,8 @@ use std::collections::{HashMap, HashSet};
 use crate::{
     knowledge,
     symbols::{index_document, SymbolIndex},
-    tokens, Declaration, DeclarationKind, Diagnostic, Document, Identifier, Node, Span, Statement,
+    tokens, ComponentDecl, DataRef, Declaration, DeclarationKind, Diagnostic, Document, Identifier,
+    Node, Span, StateDefault, StateType, Statement, TextValue, UiNode, UiPropertyValue,
 };
 
 pub fn validate(document: &Document) -> Vec<Diagnostic> {
@@ -64,8 +65,280 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
         }
     }
 
+    validate_components(document, &symbols, &mut diagnostics);
+
     diagnostics
 }
+
+fn validate_components(
+    document: &Document,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let mut names = HashSet::new();
+    for component in &document.components {
+        if !is_valid_style_identifier(&component.name.text) {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "Invalid component name `{}`.\n\nUse a simple identifier such as `ChatInput` or `MessageList`.",
+                    component.name.text
+                ),
+                component.name.span,
+            ));
+        }
+        if !names.insert(component.name.text.clone()) {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "Duplicate component `{}`.\n\nEach Frame component name must be unique in a file.",
+                    component.name.text
+                ),
+                component.name.span,
+            ));
+        }
+        validate_component(component, symbols, diagnostics);
+    }
+}
+
+fn validate_component(
+    component: &ComponentDecl,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let mut state_names = HashSet::new();
+    if let Some(state) = &component.state {
+        for value in &state.values {
+            if !is_valid_style_identifier(&value.name.text) {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Invalid state value `{}`.\n\nUse a simple identifier such as `draft`, `sending`, or `count`.",
+                        value.name.text
+                    ),
+                    value.name.span,
+                ));
+            }
+            if !state_names.insert(value.name.text.clone()) {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Duplicate state value `{}`.\n\nState names must be unique within a component.",
+                        value.name.text
+                    ),
+                    value.name.span,
+                ));
+            }
+            validate_state_default(value, diagnostics);
+        }
+    }
+
+    if let Some(view) = &component.view {
+        for node in &view.nodes {
+            validate_ui_node(node, &state_names, symbols, diagnostics);
+        }
+    }
+}
+
+fn validate_state_default(value: &crate::StateValue, diagnostics: &mut Vec<Diagnostic>) {
+    match (&value.value_type, &value.default) {
+        (StateType::Text, StateDefault::Text(_))
+        | (StateType::Bool, StateDefault::Bool(_))
+        | (StateType::Number, StateDefault::Number(_)) => {}
+        (StateType::Unknown(kind), _) => diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown state type `{kind}`.\n\nSupported state types are `text`, `bool`, and `number`."
+            ),
+            value.span,
+        )),
+        (expected, actual) => diagnostics.push(Diagnostic::error(
+            format!(
+                "State default for `{}` does not match declared type `{}`.\n\nFound {}.",
+                value.name.text,
+                state_type_label(expected),
+                state_default_label(actual)
+            ),
+            value.span,
+        )),
+    }
+}
+
+fn validate_ui_node(
+    node: &UiNode,
+    state_names: &HashSet<String>,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    match node {
+        UiNode::Text(text) => {
+            if let TextValue::Data(reference) = &text.value {
+                validate_data_ref(reference, state_names, diagnostics);
+            }
+        }
+        UiNode::Element(element) => {
+            if !UI_ELEMENT_KINDS.contains(&element.kind.text.as_str()) {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Unknown UI element `{}`.\n\nSupported UI elements are: {}.",
+                        element.kind.text,
+                        UI_ELEMENT_KINDS.join(", ")
+                    ),
+                    element.kind.span,
+                ));
+            }
+
+            if let Some(style) = &element.style {
+                validate_style_ref(&style.name, symbols, diagnostics);
+            } else if !symbols.declarations.contains_key(&element.name.text) {
+                diagnostics.push(Diagnostic::info(
+                    format!(
+                        "`{}` will use automatic style lookup when a matching style exists.",
+                        element.name.text
+                    ),
+                    element.name.span,
+                ));
+            }
+
+            for property in &element.properties {
+                match &property.value {
+                    UiPropertyValue::Data(reference)
+                    | UiPropertyValue::Bind(reference) => {
+                        validate_data_ref(reference, state_names, diagnostics)
+                    }
+                    UiPropertyValue::Conditional(binding) => {
+                        validate_data_ref(&binding.condition, state_names, diagnostics)
+                    }
+                    UiPropertyValue::StyleWhen { condition, style } => {
+                        validate_data_ref(condition, state_names, diagnostics);
+                        validate_style_ref(&style.name, symbols, diagnostics);
+                    }
+                    UiPropertyValue::Unknown(_) => diagnostics.push(Diagnostic::error(
+                        format!(
+                            "Unknown UI property syntax for `{}`.\n\nSupported forms include `placeholder \"Text\"`, `value bind $state`, `disabled when $state`, and `style when $state = StyleName`.",
+                            property.name.text
+                        ),
+                        property.span,
+                    )),
+                    UiPropertyValue::Literal(_) => {}
+                }
+            }
+
+            for event in &element.events {
+                if !UI_EVENTS.contains(&event.event.text.as_str()) {
+                    diagnostics.push(Diagnostic::error(
+                        format!(
+                            "Unknown event `{}`.\n\nSupported events include: {}.",
+                            event.event.text,
+                            UI_EVENTS.join(", ")
+                        ),
+                        event.event.span,
+                    ));
+                }
+                for modifier in &event.modifiers {
+                    if !UI_EVENT_MODIFIERS.contains(&modifier.text.as_str()) {
+                        diagnostics.push(Diagnostic::error(
+                            format!(
+                                "Unknown event modifier `{}`.\n\nSupported modifiers include: {}.",
+                                modifier.text,
+                                UI_EVENT_MODIFIERS.join(", ")
+                            ),
+                            modifier.span,
+                        ));
+                    }
+                }
+                diagnostics.push(Diagnostic::info(
+                    format!(
+                        "@{} references an external handler. Frame does not store script bodies inside UI declarations.",
+                        event.handler.name.text
+                    ),
+                    event.handler.span,
+                ));
+            }
+
+            for child in &element.children {
+                validate_ui_node(child, state_names, symbols, diagnostics);
+            }
+        }
+    }
+}
+
+fn validate_data_ref(
+    reference: &DataRef,
+    state_names: &HashSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if state_names.contains(&reference.name.text) {
+        return;
+    }
+    let candidates = state_names.iter().map(String::as_str).collect::<Vec<_>>();
+    let suggestion = closest(&reference.name.text, &candidates)
+        .map(|name| format!("\n\nDid you mean `${name}`?"))
+        .unwrap_or_default();
+    diagnostics.push(Diagnostic::error(
+        format!(
+            "Unknown state value `${}`.{suggestion}\n\nDeclare it in the component `state` block before using it in `view`.",
+            reference.name.text
+        ),
+        reference.span,
+    ));
+}
+
+fn validate_style_ref(
+    style: &Identifier,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if symbols.declarations.contains_key(&style.text) {
+        return;
+    }
+    diagnostics.push(Diagnostic::warning(
+        format!(
+            "Style `{}` is not declared in this file.\n\nFrame records the style reference now; cross-file resolution can satisfy it later.",
+            style.text
+        ),
+        style.span,
+    ));
+}
+
+fn state_type_label(value_type: &StateType) -> &'static str {
+    match value_type {
+        StateType::Text => "text",
+        StateType::Bool => "bool",
+        StateType::Number => "number",
+        StateType::Unknown(_) => "unknown",
+    }
+}
+
+fn state_default_label(default: &StateDefault) -> &'static str {
+    match default {
+        StateDefault::Text(_) => "a text literal",
+        StateDefault::Bool(_) => "a bool literal",
+        StateDefault::Number(_) => "a number literal",
+        StateDefault::Invalid(_) => "an unsupported literal",
+    }
+}
+
+const UI_ELEMENT_KINDS: &[&str] = &[
+    "button", "input", "text", "card", "panel", "row", "stack", "grid", "area", "image", "link",
+    "form",
+];
+
+const UI_EVENTS: &[&str] = &[
+    "click",
+    "input",
+    "change",
+    "submit",
+    "keydown",
+    "keyup",
+    "focus",
+    "blur",
+    "pointerdown",
+    "pointerup",
+    "pointermove",
+    "mouseenter",
+    "mouseleave",
+];
+
+const UI_EVENT_MODIFIERS: &[&str] = &[
+    "enter", "escape", "tab", "space", "ctrl", "shift", "alt", "meta", "left", "right", "up",
+    "down",
+];
 
 fn validate_supports_declaration(
     declaration: &Declaration,
@@ -1915,6 +2188,7 @@ mod tests {
                     ],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -1941,6 +2215,7 @@ mod tests {
                     vec![statement(&["in", "Dashboard"])],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -1959,6 +2234,7 @@ mod tests {
                 "Main",
                 vec![statement(&["justify-content", "center"])],
             )],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -1978,6 +2254,7 @@ mod tests {
                 "Panel",
                 vec![statement(&["width", "50%"]), statement(&["height", "100%"])],
             )],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2034,6 +2311,7 @@ mod tests {
                     ],
                 ),
             ],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2060,6 +2338,7 @@ mod tests {
                     statement(&["max-block-size", "100%"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2081,6 +2360,7 @@ mod tests {
                     statement(&["hyphenate", "auto"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2107,6 +2387,7 @@ mod tests {
                     ],
                 ),
             ],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2127,6 +2408,7 @@ mod tests {
                     statement(&["flex", "basis", "huge"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2155,6 +2437,7 @@ mod tests {
                     statement(&["hyphenate", "always"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2181,6 +2464,7 @@ mod tests {
                     statement(&["outline", "offset", "huge"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2216,6 +2500,7 @@ mod tests {
                     block("checked", vec![statement(&["pop"])]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2237,6 +2522,7 @@ mod tests {
                     statement(&["grow", "medium"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2269,6 +2555,7 @@ mod tests {
                     vec![statement(&["columns", "25%", "abc%", "75%"])],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2303,6 +2590,7 @@ mod tests {
                     ],
                 ),
             ],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2336,6 +2624,7 @@ mod tests {
                     vec![statement(&["background", "hero-gradient"])],
                 ),
             ],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2373,6 +2662,7 @@ mod tests {
                     ],
                 ),
             ],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2398,6 +2688,7 @@ mod tests {
                     ),
                 ],
             )],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2415,6 +2706,7 @@ mod tests {
                     block("section title", vec![statement(&["surface", "panel"])]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2439,6 +2731,7 @@ mod tests {
                     statement(&["color", "primry"]),
                 ],
             )],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2459,6 +2752,7 @@ mod tests {
                 declaration(DeclarationKind::Card, "Panel", Vec::new()),
                 declaration(DeclarationKind::Card, "Panel", Vec::new()),
             ],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2482,6 +2776,7 @@ mod tests {
                     span: Span::default(),
                 })],
             )],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2510,6 +2805,7 @@ mod tests {
                     span: Span::default(),
                 })],
             )],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2571,6 +2867,7 @@ mod tests {
                     )],
                 ),
             ],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2606,6 +2903,7 @@ mod tests {
                     )],
                 ),
             ],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2630,6 +2928,7 @@ mod tests {
                     )],
                 ),
             ],
+            components: Vec::new(),
         };
 
         assert!(validate(&document).is_empty());
@@ -2650,6 +2949,7 @@ mod tests {
                     ],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2692,6 +2992,7 @@ mod tests {
                     )],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2736,6 +3037,7 @@ mod tests {
                     )],
                 ),
             ],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);
@@ -2752,6 +3054,115 @@ mod tests {
         assert!(diagnostics
             .iter()
             .any(|diagnostic| diagnostic.message.contains("Unknown fill value")));
+    }
+
+    #[test]
+    fn validates_initial_ui_component_semantics() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Button,
+                "PrimaryButton",
+                Vec::new(),
+            )],
+            components: vec![ComponentDecl {
+                name: Identifier::new("ChatInput", Span::default()),
+                state: Some(crate::StateDecl {
+                    values: vec![
+                        crate::StateValue {
+                            name: Identifier::new("draft", Span::default()),
+                            value_type: StateType::Text,
+                            default: StateDefault::Number("123".to_string()),
+                            span: Span::default(),
+                        },
+                        crate::StateValue {
+                            name: Identifier::new("sending", Span::default()),
+                            value_type: StateType::Bool,
+                            default: StateDefault::Bool(false),
+                            span: Span::default(),
+                        },
+                    ],
+                    span: Span::default(),
+                }),
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("button", Span::default()),
+                        name: Identifier::new("Send", Span::default()),
+                        style: Some(crate::StyleBinding {
+                            name: Identifier::new("MissingButton", Span::default()),
+                            span: Span::default(),
+                        }),
+                        properties: vec![
+                            crate::UiProperty {
+                                name: Identifier::new("disabled", Span::default()),
+                                value: UiPropertyValue::Conditional(crate::ConditionalBinding {
+                                    condition: DataRef {
+                                        name: Identifier::new("message", Span::default()),
+                                        span: Span::default(),
+                                    },
+                                    span: Span::default(),
+                                }),
+                                span: Span::default(),
+                            },
+                            crate::UiProperty {
+                                name: Identifier::new("style", Span::default()),
+                                value: UiPropertyValue::StyleWhen {
+                                    condition: DataRef {
+                                        name: Identifier::new("sending", Span::default()),
+                                        span: Span::default(),
+                                    },
+                                    style: crate::StyleBinding {
+                                        name: Identifier::new("PrimaryButton", Span::default()),
+                                        span: Span::default(),
+                                    },
+                                },
+                                span: Span::default(),
+                            },
+                        ],
+                        events: vec![crate::EventBinding {
+                            event: Identifier::new("press", Span::default()),
+                            modifiers: vec![Identifier::new("magic", Span::default())],
+                            handler: crate::HandlerRef {
+                                name: Identifier::new("sendMessage", Span::default()),
+                                span: Span::default(),
+                            },
+                            span: Span::default(),
+                        }],
+                        children: vec![UiNode::Text(crate::UiText {
+                            value: TextValue::Data(DataRef {
+                                name: Identifier::new("draft", Span::default()),
+                                span: Span::default(),
+                            }),
+                            span: Span::default(),
+                        })],
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("does not match declared type")));
+        assert!(diagnostics.iter().any(|diagnostic| diagnostic
+            .message
+            .contains("Unknown state value `$message`")));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("Unknown event `press`")));
+        assert!(diagnostics.iter().any(|diagnostic| diagnostic
+            .message
+            .contains("Unknown event modifier `magic`")));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("Style `MissingButton`")));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("@sendMessage references")));
     }
 
     #[test]
@@ -2774,6 +3185,7 @@ mod tests {
                 "Brand",
                 vec![statement(&["color", "brand", "#12"])],
             )],
+            components: Vec::new(),
         };
 
         let diagnostics = validate(&document);

@@ -141,3 +141,25 @@ card DemoCard {
     ring danger
   }
 }
+
+component ChatInput {
+  state {
+    draft text = ""
+    sending bool = false
+  }
+
+  view {
+    input MessageBox {
+      value bind $draft
+      placeholder "Message"
+      on keydown.ctrl.enter @sendMessage
+    }
+
+    button Send:PrimaryButton {
+      text "Send"
+      disabled when $sending
+      on click @sendMessage
+      style when $sending = LoadingButton
+    }
+  }
+}

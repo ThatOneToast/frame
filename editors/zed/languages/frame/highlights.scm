@@ -3,6 +3,70 @@
   kind: (declaration_keyword) @keyword
   name: (declaration_name) @type)
 
+(supports_block
+  "supports" @keyword
+  predicate: (support_predicate (identifier) @constant))
+
+(style_group_block
+  "style-group" @keyword
+  name: (identifier) @constant)
+
+(style_order
+  "style-order" @keyword
+  groups: (style_order_list (identifier) @constant))
+
+; Experimental UI declarations.
+(component_declaration
+  "component" @keyword
+  name: (declaration_name) @type)
+
+(ui_state_block
+  "state" @keyword)
+
+(state_value
+  name: (identifier) @variable
+  type: (state_type) @type)
+
+(view_block
+  "view" @keyword)
+
+(ui_element
+  kind: (ui_element_keyword) @keyword
+  name: (ui_node_name) @type)
+
+(ui_element
+  style: (style_name) @constant)
+
+(ui_text
+  "text" @keyword)
+
+(event_binding
+  "on" @keyword
+  event: (event_name) @function)
+
+(event_binding
+  modifier: (event_modifier) @constant)
+
+(value_binding
+  "value" @property
+  "bind" @keyword)
+
+(conditional_flag
+  property: (ui_property_keyword) @property
+  "when" @keyword)
+
+(conditional_style
+  "style" @property
+  "when" @keyword
+  style: (style_name) @constant)
+
+(ui_property
+  property: (ui_property_keyword) @property)
+
+(data_ref) @variable
+(handler_ref) @function
+(boolean) @constant.builtin
+
 ; Imports.
 (include
   keyword: (include_keyword) @keyword
