@@ -43,21 +43,18 @@ This is a planning document for moving the chat app from Svelte components plus 
 Already implemented:
 
 - Structured styling declarations and CSS/TypeScript class export generation.
-- UI `component`, `state`, and `view` parsing.
-- Initial UI elements, text nodes, data refs, handler refs, event bindings, value bindings, conditional flags, and conditional style syntax.
+- UI `component`, `props`, `state`, `view`, and `slot` parsing.
+- UI elements, text nodes, data refs, handler refs, event bindings, value bindings, conditional rendering, conditional properties, and conditional style syntax.
 - Same-file component invocation syntax, including `Child()`, `Child(prop: $state)`, and `Child(prop bind $state)`.
-- Semantic validation for initial UI syntax and same-file component invocation names.
-- Frame IR lowering for the initial UI syntax.
+- Semantic validation for UI syntax, same-file component invocation names, prop resolution, state resolution, accessibility, and URL-bearing attributes.
+- Frame IR lowering for UI syntax including props, state, slots, conditions, events, and bindings.
 - JSON IR serialization with `frame emit-ir`.
-- TypeScript state and handler contract generation with `frame emit-contracts`.
-- LSP completions, hovers, semantic tokens, and Zed highlighting for the initial UI syntax.
+- TypeScript prop, state, and handler contract generation with `frame emit-contracts`.
+- LSP completions, hovers, semantic tokens, and Zed highlighting for UI syntax.
 
-Still needed:
+Still needed (DOM runtime phase):
 
-- Props and prop type validation.
 - List rendering for channels, messages, users, reactions, and servers.
-- Conditional rendering beyond property/style conditions.
-- Slots or child-content composition.
 - DOM runtime mounting, patching, event dispatch, and cleanup.
 - Handler implementation binding from generated contracts to user TypeScript.
 - Form and input runtime behavior for `MessageComposer`.

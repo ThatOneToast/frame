@@ -113,8 +113,10 @@ const UI_ELEMENT_KINDS: &[&str] = &[
 ];
 
 const UI_KEYWORDS: &[&str] = &[
+    "props",
     "state",
     "view",
+    "slot",
     "on",
     "bind",
     "when",
@@ -122,6 +124,8 @@ const UI_KEYWORDS: &[&str] = &[
     "disabled",
     "placeholder",
     "value",
+    "show",
+    "hidden",
 ];
 
 const UI_EVENTS: &[&str] = &[

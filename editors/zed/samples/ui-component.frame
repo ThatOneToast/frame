@@ -1,0 +1,42 @@
+component ChatInput {
+  props {
+    placeholder text
+  }
+
+  state {
+    draft text = ""
+    sending bool = false
+  }
+
+  view {
+    input MessageBox {
+      value bind $draft
+      placeholder $placeholder
+      on keydown.enter @sendMessage
+    }
+
+    button Send:PrimaryButton {
+      text "Send"
+      disabled when $sending
+      on click @sendMessage
+      style when $sending = LoadingButton
+    }
+  }
+
+  slot Default {
+    text "No content"
+  }
+}
+
+component ChatApp {
+  state {
+    activeChannel text = "general"
+    draft text = ""
+  }
+
+  view {
+    ChannelSidebar()
+    ChatPanel(channel: $activeChannel)
+    MessageComposer(draft bind $draft)
+  }
+}

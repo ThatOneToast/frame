@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    ComponentDecl, DataRef, Document, EventBinding, Identifier, Span, StateDefault, StateType,
-    TextValue, UiComponentArgumentValue, UiComponentInvocation, UiElement, UiNode, UiProperty,
-    UiPropertyValue, UiText,
+    ComponentDecl, DataRef, Document, EventBinding, Identifier, PropType, Span, StateDefault,
+    StateType, TextValue, UiComponentArgumentValue, UiComponentInvocation, UiElement, UiNode,
+    UiProperty, UiPropertyValue, UiText,
 };
 
 pub const FRAME_IR_VERSION: u32 = 1;
@@ -17,9 +17,36 @@ pub struct FrameIrDocument {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FrameIrComponent {
     pub name: String,
+    pub props: Vec<FrameIrProp>,
     pub state: Vec<FrameIrState>,
     pub nodes: Vec<FrameIrNode>,
+    pub capabilities: Vec<FrameIrCapability>,
     pub source: FrameIrSourceSpan,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FrameIrProp {
+    pub name: String,
+    pub value_type: FrameIrPropType,
+    pub source: FrameIrSourceSpan,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FrameIrPropType {
+    Text,
+    Bool,
+    Number,
+    Unknown(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FrameIrCapability {
+    ConditionalRendering,
+    ConditionalStyles,
+    EventBinding,
+    TwoWayBinding,
+    ComponentComposition,
+    SlotContent,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -167,19 +194,95 @@ pub fn lower_document_to_ir(document: &Document) -> FrameIrDocument {
 }
 
 fn lower_component(component: &ComponentDecl) -> FrameIrComponent {
+    let mut capabilities = Vec::new();
+    let nodes: Vec<FrameIrNode> = component
+        .view
+        .as_ref()
+        .map(|view| view.nodes.iter().map(lower_node).collect())
+        .unwrap_or_default();
+    let props: Vec<FrameIrProp> = component
+        .props
+        .as_ref()
+        .map(|props| props.values.iter().map(lower_prop).collect())
+        .unwrap_or_default();
+    let state: Vec<FrameIrState> = component
+        .state
+        .as_ref()
+        .map(|state| state.values.iter().map(lower_state).collect())
+        .unwrap_or_default();
+
+    // Collect capabilities from nodes
+    collect_capabilities(&nodes, &mut capabilities);
+    if component.slots.iter().any(|slot| !slot.nodes.is_empty()) {
+        capabilities.push(FrameIrCapability::SlotContent);
+    }
+    if !props.is_empty() {
+        capabilities.push(FrameIrCapability::ComponentComposition);
+    }
+
     FrameIrComponent {
         name: component.name.text.clone(),
-        state: component
-            .state
-            .as_ref()
-            .map(|state| state.values.iter().map(lower_state).collect())
-            .unwrap_or_default(),
-        nodes: component
-            .view
-            .as_ref()
-            .map(|view| view.nodes.iter().map(lower_node).collect())
-            .unwrap_or_default(),
+        props,
+        state,
+        nodes,
+        capabilities,
         source: span(component.span),
+    }
+}
+
+fn lower_prop(prop: &crate::PropValue) -> FrameIrProp {
+    FrameIrProp {
+        name: prop.name.text.clone(),
+        value_type: match &prop.value_type {
+            PropType::Text => FrameIrPropType::Text,
+            PropType::Bool => FrameIrPropType::Bool,
+            PropType::Number => FrameIrPropType::Number,
+            PropType::Unknown(value) => FrameIrPropType::Unknown(value.clone()),
+        },
+        source: span(prop.span),
+    }
+}
+
+fn collect_capabilities(nodes: &[FrameIrNode], capabilities: &mut Vec<FrameIrCapability>) {
+    for node in nodes {
+        match node {
+            FrameIrNode::Element(element) => {
+                if !element.events.is_empty()
+                    && !capabilities.contains(&FrameIrCapability::EventBinding)
+                {
+                    capabilities.push(FrameIrCapability::EventBinding);
+                }
+                if !element.bindings.is_empty()
+                    && !capabilities.contains(&FrameIrCapability::TwoWayBinding)
+                {
+                    capabilities.push(FrameIrCapability::TwoWayBinding);
+                }
+                if !element.conditions.is_empty() {
+                    for condition in &element.conditions {
+                        match condition {
+                            FrameIrCondition::Flag { .. } => {
+                                if !capabilities.contains(&FrameIrCapability::ConditionalRendering)
+                                {
+                                    capabilities.push(FrameIrCapability::ConditionalRendering);
+                                }
+                            }
+                            FrameIrCondition::Style { .. } => {
+                                if !capabilities.contains(&FrameIrCapability::ConditionalStyles) {
+                                    capabilities.push(FrameIrCapability::ConditionalStyles);
+                                }
+                            }
+                        }
+                    }
+                }
+                collect_capabilities(&element.children, capabilities);
+            }
+            FrameIrNode::Component(_) => {
+                if !capabilities.contains(&FrameIrCapability::ComponentComposition) {
+                    capabilities.push(FrameIrCapability::ComponentComposition);
+                }
+            }
+            FrameIrNode::Text(_) => {}
+        }
     }
 }
 
@@ -439,6 +542,7 @@ mod tests {
             declarations: Vec::new(),
             components: vec![ComponentDecl {
                 name: ident("ChatInput"),
+                props: None,
                 state: Some(StateDecl {
                     values: vec![
                         StateValue {
@@ -541,6 +645,7 @@ mod tests {
                     ],
                     span: Span::default(),
                 }),
+                slots: Vec::new(),
                 span: Span::default(),
             }],
         }

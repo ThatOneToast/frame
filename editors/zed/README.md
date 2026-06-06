@@ -1,7 +1,7 @@
 # Frame Zed Extension
 
-This directory contains Zed language support for Frame, the CSS DSL for Svelte
-projects.
+This directory contains Zed language support for Frame, an experimental
+structured CSS and UI language.
 
 Repository: `https://github.com/ThatOneToast/frame`
 
@@ -10,13 +10,14 @@ Repository: `https://github.com/ThatOneToast/frame`
 - Associates `.frame` files with the Frame language.
 - Uses Tree-sitter for syntax parsing and highlighting.
 - Highlights declarations, declaration names, `#include`, state blocks,
-  properties, values, numeric values, percentages, hex colors, and `//`
-  comments.
+  properties, values, numeric values, percentages, hex colors, `//` comments,
+  UI component syntax, props, state, view, slots, event bindings, and data
+  references.
 - Registers `frame_lsp` for diagnostics, scope-aware completions, rich
   completion docs, hover docs, formatting, document symbols, document links,
   go-to-definition, references, code actions, semantic tokens, and folding.
-- Includes samples for layouts, colors, effects, gradients, imports, and broad
-  keyword highlighting.
+- Includes samples for layouts, colors, effects, gradients, imports, UI
+  components, and broad keyword highlighting.
 
 ## Local Installation
 
@@ -59,23 +60,6 @@ PATH="/path/to/frame/target/debug:$PATH" zed .
 
 ## Tree-Sitter Grammar
 
-For local dev installs, the grammar metadata points at this local checkout so
-Zed compiles the same unpushed grammar changes as the installed extension:
-
-```toml
-[grammars.frame]
-repository = "file:///Users/whitebread/projects/svelte/frame"
-rev = "main"
-path = "editors/zed/tree-sitter-frame"
-```
-
-The `path` entry is required because Frame is a monorepo and the generated
-Tree-sitter parser lives under `editors/zed/tree-sitter-frame`, not at the
-repository root.
-
-For publication, change `repository` back to `https://github.com/ThatOneToast/frame`
-after the grammar commits are pushed.
-
 For local parser work, generate the grammar from the grammar directory:
 
 ```bash
@@ -94,6 +78,7 @@ npx tree-sitter parse --grammar-path . ../samples/imports.frame
 npx tree-sitter parse --grammar-path . ../samples/grid.frame
 npx tree-sitter parse --grammar-path . ../samples/card.frame
 npx tree-sitter parse --grammar-path . ../samples/states.frame
+npx tree-sitter parse --grammar-path . ../samples/ui-component.frame
 ```
 
 Test highlighting:
@@ -102,12 +87,12 @@ Test highlighting:
 cd editors/zed/tree-sitter-frame
 npx tree-sitter highlight --grammar-path . --query-paths queries/highlights.scm --check ../samples/app.frame
 npx tree-sitter highlight --grammar-path . --query-paths queries/highlights.scm --check ../samples/highlighting.frame
-npx tree-sitter highlight --grammar-path . --query-paths queries/highlights.scm --check ../samples/imports.frame
+npx tree-sitter highlight --grammar-path . --query-paths queries/highlights.scm --check ../samples/ui-component.frame
 ```
 
 Check that `dock`, `min-height`, `align`, `text`, `justify`, `surface`,
 `background`, `border`, `transition`, `animation`, `#include`, percentages,
-numeric values, and hex colors are styled.
+numeric values, hex colors, UI component keywords, and data references are styled.
 
 ## Examples
 

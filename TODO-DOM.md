@@ -4,7 +4,7 @@ Frame's UI layer should be able to represent the full capability of HTML and the
 
 Do not mark an item complete until Frame syntax, AST/IR representation, semantic validation, runtime behavior, docs, and tests exist.
 
-Current status: the initial `component`, `state`, `view`, element, text, event, data reference, handler reference, binding, conditional style, and component invocation syntax parses, validates, lowers to Frame IR, and can generate TypeScript contracts. Items below remain unchecked until DOM runtime behavior exists.
+Current status: UI syntax including `component`, `props`, `state`, `view`, `slot`, element, text, event, data reference, handler reference, binding, conditional rendering, conditional style, and component invocation is parsed, validated, lowered to Frame IR, and can generate TypeScript contracts. Items below remain unchecked until DOM runtime behavior exists.
 
 ## Design Goals
 

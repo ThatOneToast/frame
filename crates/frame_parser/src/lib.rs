@@ -8,10 +8,10 @@ use std::{error::Error, fmt};
 
 use frame_core::{
     Block, ComponentDecl, ConditionalBinding, DataRef, Declaration, DeclarationKind, Diagnostic,
-    Document, EventBinding, HandlerRef, Identifier, Include, Node, Severity, Span, StateDecl,
-    StateDefault, StateType, StateValue, Statement, StyleBinding, TextValue, UiComponentArgument,
-    UiComponentArgumentValue, UiComponentInvocation, UiElement, UiNode, UiProperty,
-    UiPropertyValue, UiText, ViewDecl,
+    Document, EventBinding, HandlerRef, Identifier, Include, Node, PropType, PropValue, PropsDecl,
+    Severity, SlotDecl, Span, StateDecl, StateDefault, StateType, StateValue, Statement,
+    StyleBinding, TextValue, UiComponentArgument, UiComponentArgumentValue, UiComponentInvocation,
+    UiElement, UiNode, UiProperty, UiPropertyValue, UiText, ViewDecl,
 };
 
 pub fn parse(source: &str) -> Result<Document, ParseError> {
@@ -162,8 +162,10 @@ impl<'a> Parser<'a> {
 
         let name_start = line.start + line.text.find(name_text).unwrap_or(0);
         self.advance();
+        let mut props = None;
         let mut state = None;
         let mut view = None;
+        let mut slots = Vec::new();
         while let Some(child_line) = self.current_line() {
             let child = content_without_comment(child_line.text);
             if child.is_empty() {
@@ -184,8 +186,10 @@ impl<'a> Parser<'a> {
                             end: name_start + name_text.len(),
                         },
                     ),
+                    props,
                     state,
                     view,
+                    slots,
                     span: Span {
                         start: line.start,
                         end,
@@ -193,12 +197,16 @@ impl<'a> Parser<'a> {
                 });
             }
             match child {
+                "props {" => props = Some(self.parse_props_decl()?),
                 "state {" => state = Some(self.parse_state_decl()?),
                 "view {" => view = Some(self.parse_view_decl()?),
+                _ if child.starts_with("slot ") && child.ends_with('{') => {
+                    slots.push(self.parse_slot_decl()?)
+                }
                 _ => {
                     return Err(ParseError::one(
                         format!(
-                            "unknown component block `{child}`\n\nComponents currently support `state {{ ... }}` and `view {{ ... }}`."
+                            "unknown component block `{child}`\n\nComponents currently support `props {{ ... }}`, `state {{ ... }}`, `view {{ ... }}`, and `slot Name {{ ... }}`."
                         ),
                         Span {
                             start: child_line.start,
@@ -280,6 +288,115 @@ impl<'a> Parser<'a> {
             span: Span {
                 start: line.start,
                 end: line.end,
+            },
+        })
+    }
+
+    fn parse_props_decl(&mut self) -> Result<PropsDecl, ParseError> {
+        let start_line = self.current_line().expect("parse_props_decl needs a line");
+        self.advance();
+        let mut values = Vec::new();
+        while let Some(line) = self.current_line() {
+            let content = content_without_comment(line.text);
+            if content.is_empty() {
+                self.advance();
+                continue;
+            }
+            if content == "}" {
+                self.advance();
+                let end = self
+                    .previous_line()
+                    .map(|line| line.end)
+                    .unwrap_or(line.end);
+                return Ok(PropsDecl {
+                    values,
+                    span: Span {
+                        start: start_line.start,
+                        end,
+                    },
+                });
+            }
+            values.push(self.parse_prop_value(line, content)?);
+            self.advance();
+        }
+        Err(ParseError::one(
+            "missing closing `}`",
+            start_line_span(start_line),
+        ))
+    }
+
+    fn parse_prop_value(&self, line: Line<'a>, content: &str) -> Result<PropValue, ParseError> {
+        let tokens = split_frame_words(content);
+        if tokens.len() != 2 {
+            return Err(ParseError::one(
+                "props values use `name type`",
+                Span {
+                    start: line.start,
+                    end: line.end,
+                },
+            ));
+        }
+        let name_text = &tokens[0];
+        let type_text = &tokens[1];
+        let name_span = word_span_in_line(line, name_text);
+        Ok(PropValue {
+            name: Identifier::new(name_text, name_span),
+            value_type: match type_text.as_str() {
+                "text" => PropType::Text,
+                "bool" => PropType::Bool,
+                "number" => PropType::Number,
+                other => PropType::Unknown(other.to_string()),
+            },
+            span: Span {
+                start: line.start,
+                end: line.end,
+            },
+        })
+    }
+
+    fn parse_slot_decl(&mut self) -> Result<SlotDecl, ParseError> {
+        let start_line = self.current_line().expect("parse_slot_decl needs a line");
+        let content = content_without_comment(start_line.text);
+        let header = content.trim_end_matches('{').trim();
+        let mut parts = header.split_whitespace();
+        let _keyword = parts.next().unwrap_or_default();
+        let name_text = parts.next().ok_or_else(|| {
+            ParseError::one(
+                "slot expects a name",
+                Span {
+                    start: start_line.start,
+                    end: start_line.end,
+                },
+            )
+        })?;
+        if parts.next().is_some() {
+            return Err(ParseError::one(
+                "slot accepts exactly one name",
+                Span {
+                    start: start_line.start,
+                    end: start_line.end,
+                },
+            ));
+        }
+        let name_start = start_line.start + start_line.text.find(name_text).unwrap_or(0);
+        self.advance();
+        let nodes = self.parse_ui_nodes_until_close()?;
+        let end = self
+            .previous_line()
+            .map(|line| line.end)
+            .unwrap_or(start_line.end);
+        Ok(SlotDecl {
+            name: Identifier::new(
+                name_text,
+                Span {
+                    start: name_start,
+                    end: name_start + name_text.len(),
+                },
+            ),
+            nodes,
+            span: Span {
+                start: start_line.start,
+                end,
             },
         })
     }
@@ -1527,5 +1644,124 @@ component ChatApp {
                             if reference.name.text == "draft"
                     )
         ));
+    }
+
+    #[test]
+    fn parses_props_and_slots_in_component() {
+        let source = r#"
+component ChannelButton {
+  props {
+    channel text
+    active bool
+    unreadCount number
+  }
+
+  state {
+    hovered bool = false
+  }
+
+  view {
+    button Channel {
+      text $channel
+      disabled when $active
+      on click @selectChannel
+    }
+  }
+
+  slot Default {
+    text "No content"
+  }
+}
+"#;
+
+        let document = parse(source).expect("component should parse");
+        assert_eq!(document.components.len(), 1);
+        let component = &document.components[0];
+
+        let props = component.props.as_ref().unwrap();
+        assert_eq!(props.values.len(), 3);
+        assert_eq!(props.values[0].name.text, "channel");
+        assert!(matches!(props.values[0].value_type, PropType::Text));
+        assert_eq!(props.values[2].name.text, "unreadCount");
+        assert!(matches!(props.values[2].value_type, PropType::Number));
+
+        let view = component.view.as_ref().unwrap();
+        let button = match &view.nodes[0] {
+            UiNode::Element(element) => element,
+            _ => panic!("expected button element"),
+        };
+        // text $channel is parsed as a child text node, not a property
+        assert!(matches!(
+            button.children[0],
+            UiNode::Text(ref text)
+                if matches!(text.value, TextValue::Data(ref reference) if reference.name.text == "channel")
+        ));
+        assert!(matches!(
+            button.properties[0],
+            UiProperty {
+                name: ref property_name,
+                value: UiPropertyValue::Conditional(ref binding),
+                ..
+            }
+            if property_name.text == "disabled" && binding.condition.name.text == "active"
+        ));
+
+        assert_eq!(component.slots.len(), 1);
+        assert_eq!(component.slots[0].name.text, "Default");
+        assert!(matches!(
+            component.slots[0].nodes[0],
+            UiNode::Text(ref text)
+                if matches!(text.value, TextValue::Literal(ref value) if value == "No content")
+        ));
+    }
+
+    #[test]
+    fn parses_show_when_conditional() {
+        let source = r#"
+component ChatApp {
+  state {
+    loggedIn bool = false
+  }
+
+  view {
+    panel Main {
+      show when $loggedIn
+      text "Welcome"
+    }
+  }
+}
+"#;
+
+        let document = parse(source).expect("component should parse");
+        let view = document.components[0].view.as_ref().unwrap();
+        let element = match &view.nodes[0] {
+            UiNode::Element(element) => element,
+            _ => panic!("expected element"),
+        };
+        assert!(matches!(
+            element.properties[0],
+            UiProperty {
+                name: ref property_name,
+                value: UiPropertyValue::Conditional(ref binding),
+                ..
+            }
+            if property_name.text == "show" && binding.condition.name.text == "loggedIn"
+        ));
+    }
+
+    #[test]
+    fn rejects_unknown_component_block() {
+        let source = r#"
+component ChatApp {
+  unknown {
+    text "Hello"
+  }
+}
+"#;
+
+        let error = parse(source).expect_err("parse should fail");
+        assert!(error.diagnostics[0]
+            .message
+            .contains("Components currently support"));
     }
 }

@@ -116,12 +116,16 @@ style-group components {
 
 Generated CSS uses `@layer`, but Frame keeps the source syntax focused on named style groups.
 
-## Experimental UI Syntax
+## UI Syntax
 
-Frame now parses and validates an initial UI declaration slice. This is a compiler and tooling foundation only: there is no Frame IR lowering, DOM runtime, or generated handler contract output yet.
+Frame parses, validates, and lowers UI declarations into renderer-neutral Frame IR. TypeScript contracts and IR JSON are generated from the same AST. DOM runtime rendering is the next major phase.
 
 ```frame
 component ChatInput {
+  props {
+    placeholder text
+  }
+
   state {
     draft text = ""
     sending bool = false
@@ -130,7 +134,7 @@ component ChatInput {
   view {
     input MessageBox {
       value bind $draft
-      placeholder "Message"
+      placeholder $placeholder
       on keydown.ctrl.enter @sendMessage
     }
 
@@ -144,20 +148,48 @@ component ChatInput {
 }
 ```
 
-Supported state types are `text`, `bool`, and `number`. Defaults must match the declared type.
+### Props
 
-View blocks support the initial element names `button`, `input`, `text`, `card`, `panel`, `row`, `stack`, `grid`, `area`, `image`, `link`, and `form`. Element names such as `Send` record automatic style lookup intent. Explicit style binding uses `ElementName:StyleName`.
+Props are declared in a `props` block with type annotations:
 
-Text nodes support literal text and state references:
+```frame
+props {
+  title text
+  active bool
+  count number
+}
+```
+
+Props do not have defaults; they are provided by the parent component. Supported types are `text`, `bool`, and `number`.
+
+### State
+
+State is declared in a `state` block with type and default:
+
+```frame
+state {
+  draft text = ""
+  sending bool = false
+  count number = 1
+}
+```
+
+### View
+
+View blocks support element nodes, text nodes, component invocations, and slots.
+
+Element names such as `button`, `input`, `text`, `card`, `panel`, `row`, `stack`, `grid`, `area`, `image`, `link`, and `form` are supported. Element names such as `Send` record automatic style lookup intent. Explicit style binding uses `ElementName:StyleName`.
+
+Text nodes support literal text and data references:
 
 ```frame
 text "Send"
 text $username
 ```
 
-Data references use `$valueName` and are validated against component state. Handler references use `@handlerName`; Frame records them as external references and does not allow inline JavaScript or TypeScript bodies.
+Data references use `$valueName` and are validated against component props and state. Handler references use `@handlerName`; Frame records them as external references and does not allow inline JavaScript or TypeScript bodies.
 
-Events currently validate the event name and modifiers:
+Events validate the event name and modifiers:
 
 ```frame
 on click @sendMessage
@@ -165,9 +197,30 @@ on keydown.enter @submitMessage
 on keydown.ctrl.enter @submitMessage
 ```
 
-The compiler stores these declarations in the UI AST, can lower them into Frame IR, and can generate TypeScript contracts. Runtime rendering through the DOM runtime is still future work.
+Conditional rendering and conditional properties are supported:
 
-Component invocations are also supported inside `view` blocks:
+```frame
+panel Main {
+  show when $loggedIn
+  text "Welcome"
+}
+
+button Send {
+  disabled when $sending
+}
+```
+
+Conditional style switching:
+
+```frame
+button Send:PrimaryButton {
+  style when $sending = LoadingButton
+}
+```
+
+### Component invocations
+
+Component invocations are supported inside `view` blocks:
 
 ```frame
 component ChatApp {
@@ -184,21 +237,37 @@ component ChatApp {
 }
 ```
 
-Invocations validate against components declared in the same file. Arguments currently support `name: $state`, `name: "literal"`, and `name bind $state`.
+Invocations validate against components declared in the same file. Arguments support `name: $state`, `name: "literal"`, and `name bind $state`.
 
-Frame can lower this initial UI syntax into renderer-neutral Frame IR and serialize it as JSON with:
+### Slots
+
+Slots define composable content regions inside a component:
+
+```frame
+slot Default {
+  text "Fallback content"
+}
+```
+
+### IR and Contracts
+
+Frame can lower UI syntax into renderer-neutral Frame IR and serialize it as JSON:
 
 ```bash
 frame emit-ir app.frame
 ```
 
-Frame can also generate TypeScript contracts for state and external handlers:
+Frame can generate TypeScript contracts for props, state, and external handlers:
 
 ```bash
 frame emit-contracts app.frame
 ```
 
-Generated contracts define `ComponentState`, `ComponentHandlers`, and a shared `FrameEventContext<TState>`. They do not generate runtime code or overwrite user implementation files.
+Generated contracts define `ComponentProps`, `ComponentState`, `ComponentHandlers`, and a shared `FrameEventContext<TState, TProps>`. They do not generate runtime code or overwrite user implementation files.
+
+### Runtime status
+
+DOM runtime rendering is not implemented yet. The compiler produces IR and contracts; a future runtime will consume the IR to create and update DOM nodes.
 
 # Frame Language
 

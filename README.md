@@ -43,31 +43,33 @@ Frame should not become:
 
 ## Current status
 
-The current repository contains a working structured styling compiler and editor tooling foundation.
+The repository contains three distinct layers:
 
-Existing pieces include:
+1. **Styling compiler: usable** — generates CSS and TypeScript class exports from structured styling declarations.
+2. **UI compiler foundation: implemented** — parses, validates, and lowers UI components to Frame IR; generates TypeScript contracts.
+3. **DOM runtime: not implemented** — the next major phase.
+
+Existing pieces:
 
 ```txt
 crates/
-  frame_core/      AST, diagnostics, semantic model, formatting, knowledge tables
+  frame_core/      AST, diagnostics, semantic model, IR, formatting, knowledge tables
   frame_parser/    parser and parse errors
-  frame_codegen/   CSS and TypeScript class export generation
-  frame_cli/       check, compile, format, watch, init
+  frame_codegen/   CSS, TypeScript class exports, IR JSON, contracts
+  frame_cli/       check, compile, format, watch, init, emit-ir, emit-contracts
   frame_lsp/       LSP server
 
 packages/
   frame-svelte/    current Svelte/Vite integration
 
 editors/
-  zed/             Zed extension scaffold and syntax support
+  zed/             Zed extension with syntax support
 
 implementations/
   chat-app/        rough reference implementation experiments
 ```
 
-The existing compiler still mainly outputs CSS and TypeScript class exports. The overhaul tracked in this repository changes the target architecture from `Frame -> CSS/Svelte helper output` toward `Frame -> Frame IR -> DOM runtime`.
-
-Initial UI declarations now parse, validate, highlight, lower into Frame IR, and generate TypeScript contracts. DOM runtime rendering and user handler implementation binding are not implemented yet.
+The compiler outputs CSS and TypeScript class exports for styling declarations. For UI declarations, it produces Frame IR and TypeScript contracts. DOM runtime rendering and user handler implementation binding are not implemented yet.
 
 ## Direction
 

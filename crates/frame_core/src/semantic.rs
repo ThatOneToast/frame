@@ -3,9 +3,9 @@ use std::collections::{HashMap, HashSet};
 use crate::{
     knowledge,
     symbols::{index_document, SymbolIndex},
-    tokens, ComponentDecl, DataRef, Declaration, DeclarationKind, Diagnostic, Document, Identifier,
-    Node, Span, StateDefault, StateType, Statement, TextValue, UiComponentArgumentValue, UiNode,
-    UiPropertyValue,
+    tokens, ComponentDecl, DataRef, Declaration, DeclarationKind, Diagnostic, Document,
+    EventBinding, Identifier, Node, PropType, Span, StateDefault, StateType, Statement, TextValue,
+    UiComponentArgumentValue, UiNode, UiProperty, UiPropertyValue,
 };
 
 pub fn validate(document: &Document) -> Vec<Diagnostic> {
@@ -111,6 +111,38 @@ fn validate_component(
     symbols: &SymbolIndex,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
+    let mut prop_names = HashSet::new();
+    if let Some(props) = &component.props {
+        for value in &props.values {
+            if !is_valid_style_identifier(&value.name.text) {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Invalid prop name `{}`.\n\nUse a simple identifier such as `title`, `active`, or `count`.",
+                        value.name.text
+                    ),
+                    value.name.span,
+                ));
+            }
+            if !prop_names.insert(value.name.text.clone()) {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Duplicate prop `{}`.\n\nProp names must be unique within a component.",
+                        value.name.text
+                    ),
+                    value.name.span,
+                ));
+            }
+            if let PropType::Unknown(kind) = &value.value_type {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Unknown prop type `{kind}`.\n\nSupported prop types are `text`, `bool`, and `number`."
+                    ),
+                    value.span,
+                ));
+            }
+        }
+    }
+
     let mut state_names = HashSet::new();
     if let Some(state) = &component.state {
         for value in &state.values {
@@ -136,9 +168,43 @@ fn validate_component(
         }
     }
 
+    // Check for prop/state name collisions
+    for prop_name in &prop_names {
+        if state_names.contains(prop_name) {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "`{prop_name}` is declared as both a prop and state.\n\nUse distinct names for props and state within a component."
+                ),
+                component.span,
+            ));
+        }
+    }
+
+    let all_names: HashSet<String> = prop_names.union(&state_names).cloned().collect();
+
     if let Some(view) = &component.view {
         for node in &view.nodes {
-            validate_ui_node(node, &state_names, component_names, symbols, diagnostics);
+            validate_ui_node(
+                node,
+                &all_names,
+                component_names,
+                symbols,
+                diagnostics,
+                &prop_names,
+            );
+        }
+    }
+
+    for slot in &component.slots {
+        for node in &slot.nodes {
+            validate_ui_node(
+                node,
+                &all_names,
+                component_names,
+                symbols,
+                diagnostics,
+                &prop_names,
+            );
         }
     }
 }
@@ -168,15 +234,16 @@ fn validate_state_default(value: &crate::StateValue, diagnostics: &mut Vec<Diagn
 
 fn validate_ui_node(
     node: &UiNode,
-    state_names: &HashSet<String>,
+    all_names: &HashSet<String>,
     component_names: &HashSet<String>,
     symbols: &SymbolIndex,
     diagnostics: &mut Vec<Diagnostic>,
+    prop_names: &HashSet<String>,
 ) {
     match node {
         UiNode::Text(text) => {
             if let TextValue::Data(reference) = &text.value {
-                validate_data_ref(reference, state_names, diagnostics);
+                validate_data_ref(reference, all_names, prop_names, diagnostics);
             }
         }
         UiNode::Component(invocation) => {
@@ -201,7 +268,7 @@ fn validate_ui_node(
                 match &argument.value {
                     UiComponentArgumentValue::Data(reference)
                     | UiComponentArgumentValue::Bind(reference) => {
-                        validate_data_ref(reference, state_names, diagnostics);
+                        validate_data_ref(reference, all_names, prop_names, diagnostics);
                     }
                     UiComponentArgumentValue::Literal(_) => {}
                 }
@@ -219,6 +286,31 @@ fn validate_ui_node(
                 ));
             }
 
+            // Accessibility diagnostics
+            if let Some((_, required)) = ACCESSIBLE_REQUIRED_PROPERTIES
+                .iter()
+                .find(|(kind, _)| *kind == element.kind.text.as_str())
+            {
+                let has_accessible_text = element
+                    .children
+                    .iter()
+                    .any(|child| matches!(child, UiNode::Text(_)))
+                    || element
+                        .properties
+                        .iter()
+                        .any(|prop| required.contains(&prop.name.text.as_str()));
+                if !has_accessible_text {
+                    let required_list = required.join(", ");
+                    diagnostics.push(Diagnostic::warning(
+                        format!(
+                            "`{}` needs accessible text or a label.\n\nAdd a text child or one of: {required_list}.",
+                            element.kind.text
+                        ),
+                        element.kind.span,
+                    ));
+                }
+            }
+
             if let Some(style) = &element.style {
                 validate_style_ref(&style.name, symbols, diagnostics);
             } else if !symbols.declarations.contains_key(&element.name.text) {
@@ -232,83 +324,133 @@ fn validate_ui_node(
             }
 
             for property in &element.properties {
-                match &property.value {
-                    UiPropertyValue::Data(reference)
-                    | UiPropertyValue::Bind(reference) => {
-                        validate_data_ref(reference, state_names, diagnostics)
-                    }
-                    UiPropertyValue::Conditional(binding) => {
-                        validate_data_ref(&binding.condition, state_names, diagnostics)
-                    }
-                    UiPropertyValue::StyleWhen { condition, style } => {
-                        validate_data_ref(condition, state_names, diagnostics);
-                        validate_style_ref(&style.name, symbols, diagnostics);
-                    }
-                    UiPropertyValue::Unknown(_) => diagnostics.push(Diagnostic::error(
-                        format!(
-                            "Unknown UI property syntax for `{}`.\n\nSupported forms include `placeholder \"Text\"`, `value bind $state`, `disabled when $state`, and `style when $state = StyleName`.",
-                            property.name.text
-                        ),
-                        property.span,
-                    )),
-                    UiPropertyValue::Literal(_) => {}
-                }
+                validate_ui_property(property, all_names, prop_names, symbols, diagnostics);
             }
 
             for event in &element.events {
-                if !UI_EVENTS.contains(&event.event.text.as_str()) {
-                    diagnostics.push(Diagnostic::error(
-                        format!(
-                            "Unknown event `{}`.\n\nSupported events include: {}.",
-                            event.event.text,
-                            UI_EVENTS.join(", ")
-                        ),
-                        event.event.span,
-                    ));
-                }
-                for modifier in &event.modifiers {
-                    if !UI_EVENT_MODIFIERS.contains(&modifier.text.as_str()) {
-                        diagnostics.push(Diagnostic::error(
-                            format!(
-                                "Unknown event modifier `{}`.\n\nSupported modifiers include: {}.",
-                                modifier.text,
-                                UI_EVENT_MODIFIERS.join(", ")
-                            ),
-                            modifier.span,
-                        ));
-                    }
-                }
-                diagnostics.push(Diagnostic::info(
-                    format!(
-                        "@{} references an external handler. Frame does not store script bodies inside UI declarations.",
-                        event.handler.name.text
-                    ),
-                    event.handler.span,
-                ));
+                validate_event_binding(event, diagnostics);
             }
 
             for child in &element.children {
-                validate_ui_node(child, state_names, component_names, symbols, diagnostics);
+                validate_ui_node(
+                    child,
+                    all_names,
+                    component_names,
+                    symbols,
+                    diagnostics,
+                    prop_names,
+                );
             }
         }
     }
 }
 
-fn validate_data_ref(
-    reference: &DataRef,
-    state_names: &HashSet<String>,
+fn validate_ui_property(
+    property: &UiProperty,
+    all_names: &HashSet<String>,
+    prop_names: &HashSet<String>,
+    symbols: &SymbolIndex,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    if state_names.contains(&reference.name.text) {
+    match &property.value {
+        UiPropertyValue::Data(reference)
+        | UiPropertyValue::Bind(reference) => {
+            validate_data_ref(reference, all_names, prop_names, diagnostics)
+        }
+        UiPropertyValue::Conditional(binding) => {
+            validate_data_ref(&binding.condition, all_names, prop_names, diagnostics);
+            // Accessibility: flag common properties that should have conditions
+            if property.name.text == "show" {
+                diagnostics.push(Diagnostic::info(
+                    "`show when` records conditional rendering intent. The DOM runtime will mount/unmount this node based on the condition.".to_string(),
+                    property.span,
+                ));
+            }
+        }
+        UiPropertyValue::StyleWhen { condition, style } => {
+            validate_data_ref(condition, all_names, prop_names, diagnostics);
+            validate_style_ref(&style.name, symbols, diagnostics);
+        }
+        UiPropertyValue::Unknown(_) => diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown UI property syntax for `{}`.\n\nSupported forms include `placeholder \"Text\"`, `value bind $state`, `disabled when $state`, and `style when $state = StyleName`.",
+                property.name.text
+            ),
+            property.span,
+        )),
+        UiPropertyValue::Literal(_) => {}
+    }
+
+    // URL-bearing attribute detection
+    if URL_ATTRIBUTES.contains(&property.name.text.as_str()) {
+        diagnostics.push(Diagnostic::info(
+            format!(
+                "`{}` is a URL-bearing attribute. Frame will validate and classify URLs in a future security pass.",
+                property.name.text
+            ),
+            property.span,
+        ));
+    }
+}
+
+fn validate_event_binding(event: &EventBinding, diagnostics: &mut Vec<Diagnostic>) {
+    if !UI_EVENTS.contains(&event.event.text.as_str()) {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown event `{}`.\n\nSupported events include: {}.",
+                event.event.text,
+                UI_EVENTS.join(", ")
+            ),
+            event.event.span,
+        ));
+    }
+    for modifier in &event.modifiers {
+        if !UI_EVENT_MODIFIERS.contains(&modifier.text.as_str()) {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "Unknown event modifier `{}`.\n\nSupported modifiers include: {}.",
+                    modifier.text,
+                    UI_EVENT_MODIFIERS.join(", ")
+                ),
+                modifier.span,
+            ));
+        }
+    }
+    diagnostics.push(Diagnostic::info(
+        format!(
+            "@{} references an external handler. Frame does not store script bodies inside UI declarations.",
+            event.handler.name.text
+        ),
+        event.handler.span,
+    ));
+}
+
+fn validate_data_ref(
+    reference: &DataRef,
+    all_names: &HashSet<String>,
+    prop_names: &HashSet<String>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if all_names.contains(&reference.name.text) {
+        // If it's a prop, add a soft note for clarity
+        if prop_names.contains(&reference.name.text) {
+            diagnostics.push(Diagnostic::info(
+                format!(
+                    "`${}` references a prop. Props are passed from the parent component.",
+                    reference.name.text
+                ),
+                reference.span,
+            ));
+        }
         return;
     }
-    let candidates = state_names.iter().map(String::as_str).collect::<Vec<_>>();
+    let candidates = all_names.iter().map(String::as_str).collect::<Vec<_>>();
     let suggestion = closest(&reference.name.text, &candidates)
         .map(|name| format!("\n\nDid you mean `${name}`?"))
         .unwrap_or_default();
     diagnostics.push(Diagnostic::error(
         format!(
-            "Unknown state value `${}`.{suggestion}\n\nDeclare it in the component `state` block before using it in `view`.",
+            "Unknown reference `${}`.{suggestion}\n\nDeclare it in the component `props` or `state` block before using it in `view`.",
             reference.name.text
         ),
         reference.span,
@@ -374,6 +516,15 @@ const UI_EVENTS: &[&str] = &[
 const UI_EVENT_MODIFIERS: &[&str] = &[
     "enter", "escape", "tab", "space", "ctrl", "shift", "alt", "meta", "left", "right", "up",
     "down",
+];
+
+const URL_ATTRIBUTES: &[&str] = &["href", "src", "action", "formaction"];
+
+const ACCESSIBLE_REQUIRED_PROPERTIES: &[(&str, &[&str])] = &[
+    ("image", &["alt", "aria-label"]),
+    ("button", &["text", "aria-label"]),
+    ("input", &["placeholder", "aria-label", "label"]),
+    ("link", &["text", "aria-label"]),
 ];
 
 fn validate_supports_declaration(
@@ -3103,6 +3254,7 @@ mod tests {
             )],
             components: vec![ComponentDecl {
                 name: Identifier::new("ChatInput", Span::default()),
+                props: None,
                 state: Some(crate::StateDecl {
                     values: vec![
                         crate::StateValue {
@@ -3175,6 +3327,7 @@ mod tests {
                     })],
                     span: Span::default(),
                 }),
+                slots: Vec::new(),
                 span: Span::default(),
             }],
         };
@@ -3184,9 +3337,9 @@ mod tests {
         assert!(diagnostics
             .iter()
             .any(|diagnostic| diagnostic.message.contains("does not match declared type")));
-        assert!(diagnostics.iter().any(|diagnostic| diagnostic
-            .message
-            .contains("Unknown state value `$message`")));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("Unknown reference `$message`")));
         assert!(diagnostics
             .iter()
             .any(|diagnostic| diagnostic.message.contains("Unknown event `press`")));
@@ -3209,6 +3362,7 @@ mod tests {
             components: vec![
                 ComponentDecl {
                     name: Identifier::new("ChatApp", Span::default()),
+                    props: None,
                     state: Some(crate::StateDecl {
                         values: vec![crate::StateValue {
                             name: Identifier::new("activeChannel", Span::default()),
@@ -3240,12 +3394,15 @@ mod tests {
                         ],
                         span: Span::default(),
                     }),
+                    slots: Vec::new(),
                     span: Span::default(),
                 },
                 ComponentDecl {
                     name: Identifier::new("ChatPanel", Span::default()),
+                    props: None,
                     state: None,
                     view: None,
+                    slots: Vec::new(),
                     span: Span::default(),
                 },
             ],
@@ -3253,9 +3410,9 @@ mod tests {
 
         let diagnostics = validate(&document);
 
-        assert!(diagnostics.iter().any(|diagnostic| diagnostic
-            .message
-            .contains("Unknown state value `$missing`")));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("Unknown reference `$missing`")));
         assert!(diagnostics.iter().any(|diagnostic| diagnostic
             .message
             .contains("Unknown component `MissingPanel`")));

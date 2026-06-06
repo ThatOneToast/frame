@@ -3,11 +3,11 @@ name = "Frame"
 version = "0.0.1"
 schema_version = 1
 authors = ["ThatOneToast"]
-description = "Language support for the Frame CSS DSL."
+description = "Language support for Frame, an experimental structured CSS and UI language."
 repository = "https://github.com/ThatOneToast/frame"
 
 [grammars.frame]
-repository = "file:///Users/whitebread/projects/svelte/frame"
+repository = "https://github.com/ThatOneToast/frame"
 rev = "main"
 path = "editors/zed/tree-sitter-frame"
 

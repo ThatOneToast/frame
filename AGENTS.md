@@ -211,6 +211,14 @@ Every major feature should explain:
 
 ## Current Work Mode
 
-This branch is documentation-only. It prepares the overhaul by rewriting the project foundation and adding research trackers.
+The pre-DOM compiler foundation is complete. This includes the parser, semantic model, Frame IR, TypeScript contracts, CLI, and LSP support for UI syntax.
 
-Do not implement runtime or compiler changes in this PR.
+The next major phase is the DOM runtime (Milestone 6). Do not implement runtime rendering, mount/unmount, or DOM event dispatch until the DOM runtime phase begins.
+
+All changes should be tested with:
+
+```bash
+cargo fmt
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+```

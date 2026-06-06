@@ -83,9 +83,11 @@ pub fn hover_doc(word: &str) -> Option<String> {
     }
 
     Some(match word {
-        "component" => "Defines an experimental Frame UI component.\nComponents may contain typed `state` and a `view` tree. Rendering and handler contract generation are planned next steps.",
+        "component" => "Defines an experimental Frame UI component.\nComponents may contain typed `props`, `state`, `view`, and `slot` declarations.\n\nProps are passed from parent components. State is local and mutable. View describes the UI tree. Slots define composable content regions.",
+        "props" => "Declares typed component props.\nSupported types are `text`, `bool`, and `number`. Props do not have defaults; they are provided by the parent component.\n\nExample:\n\nprops {\n  title text\n  active bool\n}",
         "state" => "Declares typed component state for experimental UI syntax.\nSupported types are `text`, `bool`, and `number` with matching literal defaults.",
-        "view" => "Declares the component UI tree.\nView nodes parse and validate today; DOM runtime lowering is intentionally not implemented yet.",
+        "view" => "Declares the component UI tree.\nView nodes are validated, lowered to Frame IR, and can generate TypeScript contracts. DOM runtime rendering is the next major phase.",
+        "slot" => "Defines a named content region inside a component.\nSlots allow parent components to inject content. The default slot is named `Default`.\n\nExample:\n\nslot Default {\n  text \"Fallback content\"\n}",
         "on" => "Binds a UI event to an external handler reference.\nFrame stores `@handlerName`, not inline JavaScript or TypeScript bodies.",
         "bind" => "`value bind $state` records a two-way state binding intent for a future renderer contract.",
         "when" => "Introduces a state-driven condition such as `disabled when $sending` or `style when $sending = LoadingButton`.",
@@ -888,7 +890,7 @@ mod tests {
 
         assert!(hover_doc("component")
             .expect("component docs")
-            .contains("typed `state`"));
+            .contains("typed `props`"));
         assert!(hover_doc("$draft")
             .expect("data ref docs")
             .contains("escaped by default"));

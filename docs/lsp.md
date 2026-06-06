@@ -301,6 +301,19 @@ The extension resolves the LSP command in this order:
 2. `frame_lsp` on `PATH`
 3. `target/debug/frame_lsp` from this repository checkout when available
 
+## UI LSP Support
+
+The LSP now provides completions, hover docs, and diagnostics for UI syntax:
+
+- Completions for `component`, `props`, `state`, `view`, `slot`, and UI element kinds.
+- Completions for `$state` and `$prop` references.
+- Completions for `@handler` references.
+- Completions for same-file component invocations.
+- Completions for event names and modifiers.
+- Hover docs for `component`, `props`, `state`, `view`, `slot`, `$value`, `@handler`, and UI keywords.
+- Diagnostics for unresolved state/prop references, unknown events, unknown modifiers, and missing accessible text.
+- Diagnostics for URL-bearing attributes and unsafe DOM usage.
+
 ## Known Limitations
 
 - Workspace symbols, rename, inlay hints, and code lens are not implemented yet.

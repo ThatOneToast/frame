@@ -2,7 +2,8 @@ use std::collections::BTreeSet;
 
 use frame_core::{
     ir::{
-        lower_document_to_ir, FrameIrComponent, FrameIrNode, FrameIrStateDefault, FrameIrStateType,
+        lower_document_to_ir, FrameIrComponent, FrameIrNode, FrameIrPropType, FrameIrStateDefault,
+        FrameIrStateType,
     },
     Document,
 };
@@ -14,10 +15,22 @@ pub fn generate_contracts(document: &Document) -> String {
 
 fn generate_contracts_from_components(components: &[FrameIrComponent]) -> String {
     let mut output = String::from(
-        "export type FrameEventContext<TState> = {\n  state: TState;\n  event: Event;\n};\n\n",
+        "export type FrameEventContext<TState, TProps> = {\n  state: TState;\n  props: TProps;\n  event: Event;\n};\n\n",
     );
 
     for component in components {
+        if !component.props.is_empty() {
+            output.push_str(&format!("export type {}Props = {{\n", component.name));
+            for prop in &component.props {
+                output.push_str(&format!(
+                    "  {}: {};\n",
+                    property_name(&prop.name),
+                    ts_prop_type(&prop.value_type)
+                ));
+            }
+            output.push_str("};\n\n");
+        }
+
         output.push_str(&format!("export type {}State = {{\n", component.name));
         for state in &component.state {
             output.push_str(&format!(
@@ -31,10 +44,18 @@ fn generate_contracts_from_components(components: &[FrameIrComponent]) -> String
         let handlers = component_handlers(component);
         output.push_str(&format!("export type {}Handlers = {{\n", component.name));
         for handler in handlers {
+            let context_type = if component.props.is_empty() {
+                format!("FrameEventContext<{}State, {{}}>", component.name)
+            } else {
+                format!(
+                    "FrameEventContext<{}State, {}Props>",
+                    component.name, component.name
+                )
+            };
             output.push_str(&format!(
-                "  {}(ctx: FrameEventContext<{}State>): void | Promise<void>;\n",
+                "  {}(ctx: {}): void | Promise<void>;\n",
                 property_name(&handler),
-                component.name
+                context_type
             ));
         }
         output.push_str("};\n\n");
@@ -71,6 +92,15 @@ fn ts_state_type(value_type: &FrameIrStateType) -> &'static str {
         FrameIrStateType::Bool => "boolean",
         FrameIrStateType::Number => "number",
         FrameIrStateType::Unknown(_) => "unknown",
+    }
+}
+
+fn ts_prop_type(value_type: &FrameIrPropType) -> &'static str {
+    match value_type {
+        FrameIrPropType::Text => "string",
+        FrameIrPropType::Bool => "boolean",
+        FrameIrPropType::Number => "number",
+        FrameIrPropType::Unknown(_) => "unknown",
     }
 }
 
@@ -132,7 +162,7 @@ mod tests {
 
         let ts = generate_contracts(&document);
 
-        assert!(ts.contains("export type FrameEventContext<TState>"));
+        assert!(ts.contains("export type FrameEventContext<TState, TProps>"));
         assert!(ts.contains("export type ChatInputState = {"));
         assert!(ts.contains("  draft: string;"));
         assert!(ts.contains("  sending: boolean;"));
@@ -198,6 +228,7 @@ mod tests {
     fn component(name: &str, state_values: Vec<StateValue>, nodes: Vec<UiNode>) -> ComponentDecl {
         ComponentDecl {
             name: ident(name),
+            props: None,
             state: Some(StateDecl {
                 values: state_values,
                 span: Span::default(),
@@ -206,6 +237,7 @@ mod tests {
                 nodes,
                 span: Span::default(),
             }),
+            slots: Vec::new(),
             span: Span::default(),
         }
     }

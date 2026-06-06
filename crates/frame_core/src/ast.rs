@@ -25,8 +25,38 @@ pub struct Declaration {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ComponentDecl {
     pub name: Identifier,
+    pub props: Option<PropsDecl>,
     pub state: Option<StateDecl>,
     pub view: Option<ViewDecl>,
+    pub slots: Vec<SlotDecl>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PropsDecl {
+    pub values: Vec<PropValue>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PropValue {
+    pub name: Identifier,
+    pub value_type: PropType,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PropType {
+    Text,
+    Bool,
+    Number,
+    Unknown(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SlotDecl {
+    pub name: Identifier,
+    pub nodes: Vec<UiNode>,
     pub span: Span,
 }
 

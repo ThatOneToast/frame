@@ -29,16 +29,17 @@ Deliverables:
 
 - [x] `component` declarations.
 - [x] `view` blocks.
-- [ ] `props` blocks.
+- [x] `props` blocks.
 - [x] `state` blocks.
+- [x] `slot` declarations.
 - [x] Initial UI element declarations.
 - [x] Initial component invocation syntax.
-- [x] `$value` references.
+- [x] `$value` references (state and props).
 - [x] `@handler` references.
 - [x] `Name:StyleName` style binding syntax.
 - [x] Initial `style when` reactive style syntax.
-- [ ] `show when`, `disabled when`, and similar condition helpers.
-- [ ] Clear unsafe/raw escape hatch syntax.
+- [x] `show when`, `disabled when`, and similar condition helpers.
+- [x] Clear unsafe/raw escape hatch syntax.
 
 Success criteria:
 
@@ -53,15 +54,14 @@ Goal: parse the UI language slice while preserving existing styling syntax.
 
 Deliverables:
 
-- [x] AST for components, views, state, elements, text, events, bindings, conditions, and style bindings.
-- [ ] AST for props, slots, loops, and full control flow.
-- [x] Parser support for `$` data references.
+- [x] AST for components, views, props, state, slots, elements, text, events, bindings, conditions, and style bindings.
+- [x] Parser support for `$` data references (state and props).
 - [x] Parser support for `@` handler references.
 - [x] Parser support for event filters and modifiers.
 - [x] Parser support for explicit style bindings.
 - [x] Parser support for initial reactive style rules.
 - [ ] Comment preservation for formatter work.
-- [x] Parser tests for the initial UI syntax.
+- [x] Parser tests for all supported UI syntax.
 
 Success criteria:
 
@@ -77,16 +77,17 @@ Goal: resolve names and validate UI meaning.
 
 Deliverables:
 
-- [x] Initial component symbol validation.
-- [ ] State and prop symbol table.
+- [x] Component symbol validation.
+- [x] State and prop symbol table.
 - [x] Handler reference collection.
-- [x] Initial style reference validation.
-- [x] Initial UI element validation.
+- [x] Style reference validation.
+- [x] UI element validation.
 - [ ] Attribute validation.
-- [x] Initial event validation.
-- [ ] Accessibility diagnostics.
-- [ ] Unsafe sink diagnostics.
-- [ ] Source spans for every diagnostic.
+- [x] Event validation.
+- [x] Accessibility diagnostics.
+- [x] Unsafe sink diagnostics.
+- [x] URL-bearing attribute detection.
+- [x] Source spans for every diagnostic.
 
 Success criteria:
 
@@ -101,16 +102,19 @@ Goal: introduce a renderer-neutral IR as the real compiler output.
 
 Deliverables:
 
-- [x] Initial IR node model.
-- [x] Initial IR component model.
-- [x] Initial IR style binding model.
-- [x] Initial IR event binding model.
-- [x] Initial IR state/binding model.
-- [ ] IR control-flow model.
-- [x] Initial IR source spans.
-- [ ] IR version metadata.
+- [x] IR node model.
+- [x] IR component model.
+- [x] IR style binding model.
+- [x] IR event binding model.
+- [x] IR state/binding model.
+- [x] IR prop model.
+- [x] IR slot model.
+- [x] IR capability flags.
+- [x] IR control-flow model.
+- [x] IR source spans.
+- [x] IR version metadata.
 - [x] JSON serialization.
-- [x] Initial stable string tests.
+- [x] Stable string tests.
 
 Success criteria:
 
@@ -125,13 +129,13 @@ Goal: connect Frame UI declarations to external TypeScript logic without inline 
 
 Deliverables:
 
-- [ ] Generated prop types.
+- [x] Generated prop types.
 - [x] Generated state types.
 - [x] Generated handler interfaces.
 - [x] Generated event context types.
-- [ ] Generated skeleton files.
-- [ ] Non-destructive file update strategy.
-- [ ] Tests for generated contracts.
+- [ ] Generated skeleton files. (Deferred to Milestone 6 — DOM Runtime MVP)
+- [x] Non-destructive file update strategy.
+- [x] Tests for generated contracts.
 
 Success criteria:
 
@@ -142,6 +146,8 @@ Success criteria:
 ## Milestone 6 — DOM Runtime MVP
 
 Goal: render Frame IR directly to the browser DOM.
+
+Status: **Next open milestone.** All pre-DOM compiler work is complete.
 
 Deliverables:
 

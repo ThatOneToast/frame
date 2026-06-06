@@ -25,6 +25,7 @@ mod tests {
             declarations: Vec::new(),
             components: vec![ComponentDecl {
                 name: Identifier::new("Counter", Span { start: 0, end: 20 }),
+                props: None,
                 state: Some(StateDecl {
                     values: vec![StateValue {
                         name: Identifier::new("count", Span { start: 10, end: 15 }),
@@ -35,6 +36,7 @@ mod tests {
                     span: Span { start: 8, end: 28 },
                 }),
                 view: None,
+                slots: Vec::new(),
                 span: Span { start: 0, end: 30 },
             }],
         };

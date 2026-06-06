@@ -30,7 +30,6 @@ button ChannelButton {
   hover {
     brighten subtle
   }
-
   focus {
     ring accent
   }
