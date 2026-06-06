@@ -6,6 +6,7 @@
 pub mod ast;
 pub mod diagnostics;
 pub mod formatting;
+pub mod ir;
 pub mod knowledge;
 pub mod semantic;
 pub mod symbols;
