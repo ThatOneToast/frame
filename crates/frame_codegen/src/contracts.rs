@@ -18,10 +18,7 @@ fn generate_contracts_from_components(components: &[FrameIrComponent]) -> String
     );
 
     for component in components {
-        output.push_str(&format!(
-            "export type {}State = {{\n",
-            component.name
-        ));
+        output.push_str(&format!("export type {}State = {{\n", component.name));
         for state in &component.state {
             output.push_str(&format!(
                 "  {}: {};\n",
@@ -32,10 +29,7 @@ fn generate_contracts_from_components(components: &[FrameIrComponent]) -> String
         output.push_str("};\n\n");
 
         let handlers = component_handlers(component);
-        output.push_str(&format!(
-            "export type {}Handlers = {{\n",
-            component.name
-        ));
+        output.push_str(&format!("export type {}Handlers = {{\n", component.name));
         for handler in handlers {
             output.push_str(&format!(
                 "  {}(ctx: FrameEventContext<{}State>): void | Promise<void>;\n",
@@ -58,15 +52,16 @@ fn component_handlers(component: &FrameIrComponent) -> Vec<String> {
 }
 
 fn collect_handlers(node: &FrameIrNode, handlers: &mut BTreeSet<String>) {
-    let FrameIrNode::Element(element) = node else {
-        return;
-    };
-
-    for event in &element.events {
-        handlers.insert(event.handler.clone());
-    }
-    for child in &element.children {
-        collect_handlers(child, handlers);
+    match node {
+        FrameIrNode::Element(element) => {
+            for event in &element.events {
+                handlers.insert(event.handler.clone());
+            }
+            for child in &element.children {
+                collect_handlers(child, handlers);
+            }
+        }
+        FrameIrNode::Text(_) | FrameIrNode::Component(_) => {}
     }
 }
 
@@ -123,9 +118,16 @@ mod tests {
             vec![
                 state("draft", StateType::Text, StateDefault::Text(String::new())),
                 state("sending", StateType::Bool, StateDefault::Bool(false)),
-                state("attempts", StateType::Number, StateDefault::Number("0".to_string())),
+                state(
+                    "attempts",
+                    StateType::Number,
+                    StateDefault::Number("0".to_string()),
+                ),
             ],
-            vec![element_with_handlers("Send", &["sendMessage", "sendMessage"])],
+            vec![element_with_handlers(
+                "Send",
+                &["sendMessage", "sendMessage"],
+            )],
         )]);
 
         let ts = generate_contracts(&document);
@@ -176,9 +178,12 @@ mod tests {
 
         let ts = generate_contracts(&document);
 
-        assert!(ts.find("export type ComposerState").expect("composer state")
-            < ts.find("export type ChannelListState")
-                .expect("channel state"));
+        assert!(
+            ts.find("export type ComposerState")
+                .expect("composer state")
+                < ts.find("export type ChannelListState")
+                    .expect("channel state")
+        );
         assert!(ts.contains("selectChannel(ctx"));
     }
 
@@ -190,11 +195,7 @@ mod tests {
         }
     }
 
-    fn component(
-        name: &str,
-        state_values: Vec<StateValue>,
-        nodes: Vec<UiNode>,
-    ) -> ComponentDecl {
+    fn component(name: &str, state_values: Vec<StateValue>, nodes: Vec<UiNode>) -> ComponentDecl {
         ComponentDecl {
             name: ident(name),
             state: Some(StateDecl {

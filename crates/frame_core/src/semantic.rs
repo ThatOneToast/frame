@@ -4,7 +4,8 @@ use crate::{
     knowledge,
     symbols::{index_document, SymbolIndex},
     tokens, ComponentDecl, DataRef, Declaration, DeclarationKind, Diagnostic, Document, Identifier,
-    Node, Span, StateDefault, StateType, Statement, TextValue, UiNode, UiPropertyValue,
+    Node, Span, StateDefault, StateType, Statement, TextValue, UiComponentArgumentValue, UiNode,
+    UiPropertyValue,
 };
 
 pub fn validate(document: &Document) -> Vec<Diagnostic> {
@@ -76,6 +77,11 @@ fn validate_components(
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let mut names = HashSet::new();
+    let component_names = document
+        .components
+        .iter()
+        .map(|component| component.name.text.clone())
+        .collect::<HashSet<_>>();
     for component in &document.components {
         if !is_valid_style_identifier(&component.name.text) {
             diagnostics.push(Diagnostic::error(
@@ -95,12 +101,13 @@ fn validate_components(
                 component.name.span,
             ));
         }
-        validate_component(component, symbols, diagnostics);
+        validate_component(component, &component_names, symbols, diagnostics);
     }
 }
 
 fn validate_component(
     component: &ComponentDecl,
+    component_names: &HashSet<String>,
     symbols: &SymbolIndex,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
@@ -131,7 +138,7 @@ fn validate_component(
 
     if let Some(view) = &component.view {
         for node in &view.nodes {
-            validate_ui_node(node, &state_names, symbols, diagnostics);
+            validate_ui_node(node, &state_names, component_names, symbols, diagnostics);
         }
     }
 }
@@ -162,6 +169,7 @@ fn validate_state_default(value: &crate::StateValue, diagnostics: &mut Vec<Diagn
 fn validate_ui_node(
     node: &UiNode,
     state_names: &HashSet<String>,
+    component_names: &HashSet<String>,
     symbols: &SymbolIndex,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
@@ -169,6 +177,34 @@ fn validate_ui_node(
         UiNode::Text(text) => {
             if let TextValue::Data(reference) = &text.value {
                 validate_data_ref(reference, state_names, diagnostics);
+            }
+        }
+        UiNode::Component(invocation) => {
+            if !component_names.contains(&invocation.name.text) {
+                let candidates = component_names
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<Vec<_>>();
+                let suggestion = closest(&invocation.name.text, &candidates)
+                    .map(|name| format!("\n\nDid you mean `{name}()`?"))
+                    .unwrap_or_default();
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Unknown component `{}`.{suggestion}\n\nDeclare `component {} {{ ... }}` in this file before invoking it.",
+                        invocation.name.text, invocation.name.text
+                    ),
+                    invocation.name.span,
+                ));
+            }
+
+            for argument in &invocation.arguments {
+                match &argument.value {
+                    UiComponentArgumentValue::Data(reference)
+                    | UiComponentArgumentValue::Bind(reference) => {
+                        validate_data_ref(reference, state_names, diagnostics);
+                    }
+                    UiComponentArgumentValue::Literal(_) => {}
+                }
             }
         }
         UiNode::Element(element) => {
@@ -252,7 +288,7 @@ fn validate_ui_node(
             }
 
             for child in &element.children {
-                validate_ui_node(child, state_names, symbols, diagnostics);
+                validate_ui_node(child, state_names, component_names, symbols, diagnostics);
             }
         }
     }
@@ -3163,6 +3199,66 @@ mod tests {
         assert!(diagnostics
             .iter()
             .any(|diagnostic| diagnostic.message.contains("@sendMessage references")));
+    }
+
+    #[test]
+    fn validates_component_invocation_semantics() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![
+                ComponentDecl {
+                    name: Identifier::new("ChatApp", Span::default()),
+                    state: Some(crate::StateDecl {
+                        values: vec![crate::StateValue {
+                            name: Identifier::new("activeChannel", Span::default()),
+                            value_type: StateType::Text,
+                            default: StateDefault::Text("general".to_string()),
+                            span: Span::default(),
+                        }],
+                        span: Span::default(),
+                    }),
+                    view: Some(crate::ViewDecl {
+                        nodes: vec![
+                            UiNode::Component(crate::UiComponentInvocation {
+                                name: Identifier::new("ChatPanel", Span::default()),
+                                arguments: vec![crate::UiComponentArgument {
+                                    name: Identifier::new("channel", Span::default()),
+                                    value: UiComponentArgumentValue::Data(DataRef {
+                                        name: Identifier::new("missing", Span::default()),
+                                        span: Span::default(),
+                                    }),
+                                    span: Span::default(),
+                                }],
+                                span: Span::default(),
+                            }),
+                            UiNode::Component(crate::UiComponentInvocation {
+                                name: Identifier::new("MissingPanel", Span::default()),
+                                arguments: Vec::new(),
+                                span: Span::default(),
+                            }),
+                        ],
+                        span: Span::default(),
+                    }),
+                    span: Span::default(),
+                },
+                ComponentDecl {
+                    name: Identifier::new("ChatPanel", Span::default()),
+                    state: None,
+                    view: None,
+                    span: Span::default(),
+                },
+            ],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert!(diagnostics.iter().any(|diagnostic| diagnostic
+            .message
+            .contains("Unknown state value `$missing`")));
+        assert!(diagnostics.iter().any(|diagnostic| diagnostic
+            .message
+            .contains("Unknown component `MissingPanel`")));
     }
 
     #[test]

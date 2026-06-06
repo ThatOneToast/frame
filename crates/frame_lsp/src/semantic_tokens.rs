@@ -85,6 +85,25 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
             if let Some(handler) = words.get(2) {
                 push_word(line, line_index, handler, 4, &mut raw);
             }
+        } else if looks_like_component_invocation(line.trim()) {
+            let trimmed = line.trim();
+            if let Some(open_paren) = trimmed.find('(') {
+                let name = &trimmed[..open_paren];
+                push_word(line, line_index, name, 1, &mut raw);
+                for word in words.iter().skip(1) {
+                    let value = word
+                        .trim_end_matches(',')
+                        .trim_end_matches(')')
+                        .trim_end_matches(':');
+                    if value == "bind" {
+                        push_word(line, line_index, value, 0, &mut raw);
+                    } else if value.starts_with('$') {
+                        push_word(line, line_index, value, 4, &mut raw);
+                    } else if !value.is_empty() {
+                        push_word(line, line_index, value, 3, &mut raw);
+                    }
+                }
+            }
         } else if matches!(first, "value" | "placeholder" | "disabled" | "style") {
             push_word(line, line_index, first, 2, &mut raw);
             for value in words.iter().skip(1) {
@@ -212,6 +231,17 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
     }
 }
 
+fn looks_like_component_invocation(content: &str) -> bool {
+    let Some(open_paren) = content.find('(') else {
+        return false;
+    };
+    content.ends_with(')')
+        && content[..open_paren]
+            .chars()
+            .next()
+            .is_some_and(|character| character.is_ascii_uppercase())
+}
+
 fn is_known_value(value: &str) -> bool {
     tokens::COLORS.contains(&value)
         || tokens::SURFACES.contains(&value)
@@ -317,7 +347,7 @@ mod tests {
     #[test]
     fn emits_tokens_for_initial_ui_syntax() {
         let tokens = semantic_tokens(
-            "component ChatInput {\n  state {\n    draft text = \"\"\n  }\n  view {\n    button Send:PrimaryButton {\n      value bind $draft\n      on keydown.ctrl.enter @sendMessage\n    }\n  }\n}\n",
+            "component ChatInput {\n  state {\n    draft text = \"\"\n  }\n  view {\n    MessageComposer(draft bind $draft)\n    button Send:PrimaryButton {\n      value bind $draft\n      on keydown.ctrl.enter @sendMessage\n    }\n  }\n}\n",
         );
 
         assert!(!tokens.data.is_empty());

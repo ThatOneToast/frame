@@ -70,6 +70,7 @@ pub struct ViewDecl {
 pub enum UiNode {
     Element(UiElement),
     Text(UiText),
+    Component(UiComponentInvocation),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -87,6 +88,27 @@ pub struct UiElement {
 pub struct UiText {
     pub value: TextValue,
     pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UiComponentInvocation {
+    pub name: Identifier,
+    pub arguments: Vec<UiComponentArgument>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UiComponentArgument {
+    pub name: Identifier,
+    pub value: UiComponentArgumentValue,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum UiComponentArgumentValue {
+    Data(DataRef),
+    Bind(DataRef),
+    Literal(String),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

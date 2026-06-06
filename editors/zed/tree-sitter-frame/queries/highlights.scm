@@ -37,6 +37,15 @@
 (ui_element
   style: (style_name) @constant)
 
+(component_invocation
+  name: (component_invocation_name) @type)
+
+(component_argument
+  name: (identifier) @property)
+
+(component_argument
+  "bind" @keyword)
+
 (ui_text
   "text" @keyword)
 

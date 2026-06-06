@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     ComponentDecl, DataRef, Document, EventBinding, Identifier, Span, StateDefault, StateType,
-    TextValue, UiElement, UiNode, UiProperty, UiPropertyValue, UiText,
+    TextValue, UiComponentArgumentValue, UiComponentInvocation, UiElement, UiNode, UiProperty,
+    UiPropertyValue, UiText,
 };
 
 pub const FRAME_IR_VERSION: u32 = 1;
@@ -49,6 +50,28 @@ pub enum FrameIrStateDefault {
 pub enum FrameIrNode {
     Element(FrameIrElement),
     Text(FrameIrText),
+    Component(FrameIrComponentInvocation),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FrameIrComponentInvocation {
+    pub name: String,
+    pub arguments: Vec<FrameIrComponentArgument>,
+    pub source: FrameIrSourceSpan,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FrameIrComponentArgument {
+    pub name: String,
+    pub value: FrameIrComponentArgumentValue,
+    pub source: FrameIrSourceSpan,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FrameIrComponentArgumentValue {
+    DataRef(String),
+    Bind(String),
+    Literal(String),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -183,6 +206,35 @@ fn lower_node(node: &UiNode) -> FrameIrNode {
     match node {
         UiNode::Element(element) => FrameIrNode::Element(lower_element(element)),
         UiNode::Text(text) => FrameIrNode::Text(lower_text(text)),
+        UiNode::Component(invocation) => {
+            FrameIrNode::Component(lower_component_invocation(invocation))
+        }
+    }
+}
+
+fn lower_component_invocation(invocation: &UiComponentInvocation) -> FrameIrComponentInvocation {
+    FrameIrComponentInvocation {
+        name: invocation.name.text.clone(),
+        arguments: invocation
+            .arguments
+            .iter()
+            .map(|argument| FrameIrComponentArgument {
+                name: argument.name.text.clone(),
+                value: match &argument.value {
+                    UiComponentArgumentValue::Data(reference) => {
+                        FrameIrComponentArgumentValue::DataRef(reference_name(reference))
+                    }
+                    UiComponentArgumentValue::Bind(reference) => {
+                        FrameIrComponentArgumentValue::Bind(reference_name(reference))
+                    }
+                    UiComponentArgumentValue::Literal(value) => {
+                        FrameIrComponentArgumentValue::Literal(value.clone())
+                    }
+                },
+                source: span(argument.span),
+            })
+            .collect(),
+        source: span(invocation.span),
     }
 }
 
@@ -192,12 +244,7 @@ fn lower_element(element: &UiElement) -> FrameIrElement {
     let mut conditions = Vec::new();
 
     for property in &element.properties {
-        lower_property(
-            property,
-            &mut attributes,
-            &mut bindings,
-            &mut conditions,
-        );
+        lower_property(property, &mut attributes, &mut bindings, &mut conditions);
     }
 
     FrameIrElement {
@@ -249,11 +296,13 @@ fn lower_property(
             state: reference_name(&binding.condition),
             source: span(binding.span),
         }),
-        UiPropertyValue::StyleWhen { condition, style } => conditions.push(FrameIrCondition::Style {
-            state: reference_name(condition),
-            style: style.name.text.clone(),
-            source: span(style.span),
-        }),
+        UiPropertyValue::StyleWhen { condition, style } => {
+            conditions.push(FrameIrCondition::Style {
+                state: reference_name(condition),
+                style: style.name.text.clone(),
+                source: span(style.span),
+            })
+        }
         UiPropertyValue::Unknown(_) => {}
     }
 }
@@ -371,6 +420,17 @@ mod tests {
                 ..
             } if state == "sending" && style == "LoadingButton"
         ));
+
+        let invocation = match &component.nodes[2] {
+            FrameIrNode::Component(invocation) => invocation,
+            _ => panic!("expected component invocation"),
+        };
+        assert_eq!(invocation.name, "MessageComposer");
+        assert_eq!(invocation.arguments[0].name, "draft");
+        assert_eq!(
+            invocation.arguments[0].value,
+            FrameIrComponentArgumentValue::Bind("draft".to_string())
+        );
     }
 
     fn document_fixture() -> Document {
@@ -467,6 +527,15 @@ mod tests {
                                 value: TextValue::Literal("Send".to_string()),
                                 span: Span::default(),
                             })],
+                            span: Span::default(),
+                        }),
+                        UiNode::Component(crate::UiComponentInvocation {
+                            name: ident("MessageComposer"),
+                            arguments: vec![crate::UiComponentArgument {
+                                name: ident("draft"),
+                                value: crate::UiComponentArgumentValue::Bind(data_ref("draft")),
+                                span: Span::default(),
+                            }],
                             span: Span::default(),
                         }),
                     ],

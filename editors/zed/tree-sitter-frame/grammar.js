@@ -250,6 +250,7 @@ module.exports = grammar({
         repeat(choice(
           $._newline,
           $.ui_element,
+          $.component_invocation,
           $.ui_text,
           $.event_binding,
           $.value_binding,
@@ -266,6 +267,21 @@ module.exports = grammar({
         field("name", $.ui_node_name),
         optional(seq(":", field("style", $.style_name))),
         $.ui_block,
+      ),
+
+    component_invocation: ($) =>
+      seq(
+        field("name", $.component_invocation_name),
+        "(",
+        optional(seq($.component_argument, repeat(seq(",", $.component_argument)))),
+        ")",
+        $._newline,
+      ),
+
+    component_argument: ($) =>
+      choice(
+        seq(field("name", $.identifier), ":", field("value", choice($.data_ref, $.string, $.number, $.boolean, $.identifier))),
+        seq(field("name", $.identifier), "bind", field("value", $.data_ref)),
       ),
 
     ui_text: ($) =>
@@ -382,6 +398,8 @@ module.exports = grammar({
     ui_node_name: ($) => $.identifier,
 
     style_name: ($) => $.identifier,
+
+    component_invocation_name: (_) => /[A-Z][A-Za-z0-9_]*/,
 
     declaration_keyword: (_) => choice(...DECLARATION_KEYWORDS),
 

@@ -149,6 +149,10 @@ component ChatInput {
   }
 
   view {
+    ChannelSidebar()
+    ChatPanel(channel: $draft)
+    MessageComposer(draft bind $draft)
+
     input MessageBox {
       value bind $draft
       placeholder "Message"

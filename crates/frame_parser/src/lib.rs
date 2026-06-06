@@ -9,8 +9,9 @@ use std::{error::Error, fmt};
 use frame_core::{
     Block, ComponentDecl, ConditionalBinding, DataRef, Declaration, DeclarationKind, Diagnostic,
     Document, EventBinding, HandlerRef, Identifier, Include, Node, Severity, Span, StateDecl,
-    StateDefault, StateType, StateValue, Statement, StyleBinding, TextValue, UiElement, UiNode,
-    UiProperty, UiPropertyValue, UiText, ViewDecl,
+    StateDefault, StateType, StateValue, Statement, StyleBinding, TextValue, UiComponentArgument,
+    UiComponentArgumentValue, UiComponentInvocation, UiElement, UiNode, UiProperty,
+    UiPropertyValue, UiText, ViewDecl,
 };
 
 pub fn parse(source: &str) -> Result<Document, ParseError> {
@@ -316,6 +317,13 @@ impl<'a> Parser<'a> {
                 nodes.push(UiNode::Element(self.parse_ui_element()?));
                 continue;
             }
+            if looks_like_component_invocation(content) {
+                nodes.push(UiNode::Component(parse_component_invocation(
+                    line, content,
+                )?));
+                self.advance();
+                continue;
+            }
             let words = split_frame_words(content);
             if words.first().map(String::as_str) == Some("text") {
                 nodes.push(UiNode::Text(parse_ui_text(line, &words)?));
@@ -402,6 +410,13 @@ impl<'a> Parser<'a> {
             }
             if child.ends_with('{') {
                 children.push(UiNode::Element(self.parse_ui_element()?));
+                continue;
+            }
+            if looks_like_component_invocation(child) {
+                children.push(UiNode::Component(parse_component_invocation(
+                    child_line, child,
+                )?));
+                self.advance();
                 continue;
             }
             let words = split_frame_words(child);
@@ -825,6 +840,99 @@ fn parse_ui_text(line: Line<'_>, words: &[String]) -> Result<UiText, ParseError>
             end: line.end,
         },
     })
+}
+
+fn parse_component_invocation(
+    line: Line<'_>,
+    content: &str,
+) -> Result<UiComponentInvocation, ParseError> {
+    let Some(open_paren) = content.find('(') else {
+        return Err(ParseError::one(
+            "component invocation uses `ComponentName()`",
+            start_line_span(line),
+        ));
+    };
+    let Some(args_text) = content.strip_suffix(')') else {
+        return Err(ParseError::one(
+            "component invocation must end with `)`",
+            start_line_span(line),
+        ));
+    };
+    let name = content[..open_paren].trim();
+    if name.is_empty() {
+        return Err(ParseError::one(
+            "component invocation expects a component name",
+            start_line_span(line),
+        ));
+    }
+    let args_text = &args_text[open_paren + 1..];
+    let arguments = if args_text.trim().is_empty() {
+        Vec::new()
+    } else {
+        args_text
+            .split(',')
+            .map(str::trim)
+            .map(|argument| parse_component_argument(line, argument))
+            .collect::<Result<Vec<_>, _>>()?
+    };
+
+    Ok(UiComponentInvocation {
+        name: Identifier::new(name, word_span_in_line(line, name)),
+        arguments,
+        span: Span {
+            start: line.start,
+            end: line.end,
+        },
+    })
+}
+
+fn parse_component_argument(
+    line: Line<'_>,
+    argument: &str,
+) -> Result<UiComponentArgument, ParseError> {
+    let words = split_frame_words(argument);
+    match words.as_slice() {
+        [name, bind, value] if bind == "bind" && value.starts_with('$') => {
+            let state = value.trim_start_matches('$');
+            Ok(UiComponentArgument {
+                name: Identifier::new(name, word_span_in_line(line, name)),
+                value: UiComponentArgumentValue::Bind(data_ref(line, value, state)),
+                span: word_span_in_line(line, argument),
+            })
+        }
+        [name_colon, value] if name_colon.ends_with(':') && value.starts_with('$') => {
+            let name = name_colon.trim_end_matches(':');
+            let state = value.trim_start_matches('$');
+            Ok(UiComponentArgument {
+                name: Identifier::new(name, word_span_in_line(line, name)),
+                value: UiComponentArgumentValue::Data(data_ref(line, value, state)),
+                span: word_span_in_line(line, argument),
+            })
+        }
+        [name_colon, value] if name_colon.ends_with(':') => {
+            let name = name_colon.trim_end_matches(':');
+            Ok(UiComponentArgument {
+                name: Identifier::new(name, word_span_in_line(line, name)),
+                value: UiComponentArgumentValue::Literal(unquote(value)),
+                span: word_span_in_line(line, argument),
+            })
+        }
+        _ => Err(ParseError::one(
+            "component arguments use `name: $value`, `name: \"literal\"`, or `name bind $value`",
+            start_line_span(line),
+        )),
+    }
+}
+
+fn looks_like_component_invocation(content: &str) -> bool {
+    let Some(open_paren) = content.find('(') else {
+        return false;
+    };
+    content.ends_with(')')
+        && content[..open_paren]
+            .chars()
+            .next()
+            .is_some_and(|character| character.is_ascii_uppercase())
 }
 
 fn parse_event_binding(line: Line<'_>, words: &[String]) -> Result<EventBinding, ParseError> {
@@ -1369,5 +1477,55 @@ component ChatInput {
         assert!(error.diagnostics[0]
             .message
             .contains("events use `on event[.modifier...] @handler`"));
+    }
+
+    #[test]
+    fn parses_component_invocations_in_view() {
+        let source = r#"
+component ChatApp {
+  state {
+    activeChannel text = "general"
+    draft text = ""
+  }
+
+  view {
+    ChannelSidebar()
+    ChatPanel(channel: $activeChannel)
+    MessageComposer(draft bind $draft)
+  }
+}
+"#;
+
+        let document = parse(source).expect("component invocations should parse");
+        let view = document.components[0].view.as_ref().unwrap();
+
+        assert!(matches!(
+            view.nodes[0],
+            UiNode::Component(ref invocation)
+                if invocation.name.text == "ChannelSidebar"
+                    && invocation.arguments.is_empty()
+        ));
+        assert!(matches!(
+            view.nodes[1],
+            UiNode::Component(ref invocation)
+                if invocation.name.text == "ChatPanel"
+                    && invocation.arguments[0].name.text == "channel"
+                    && matches!(
+                        invocation.arguments[0].value,
+                        UiComponentArgumentValue::Data(ref reference)
+                            if reference.name.text == "activeChannel"
+                    )
+        ));
+        assert!(matches!(
+            view.nodes[2],
+            UiNode::Component(ref invocation)
+                if invocation.name.text == "MessageComposer"
+                    && invocation.arguments[0].name.text == "draft"
+                    && matches!(
+                        invocation.arguments[0].value,
+                        UiComponentArgumentValue::Bind(ref reference)
+                            if reference.name.text == "draft"
+                    )
+        ));
     }
 }

@@ -512,9 +512,20 @@ pub fn completions_at_with_includes(
     let context = completion_context(source, offset);
     let line_words = line_words_at(source, offset);
     let line = line_at(source, offset);
-    let symbols = parse(source)
-        .ok()
-        .map(|document| index_document(source, &document))
+    let parsed_document = parse(source).ok();
+    let component_names = parsed_document
+        .as_ref()
+        .map(|document| {
+            document
+                .components
+                .iter()
+                .map(|component| component.name.text.clone())
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    let symbols = parsed_document
+        .as_ref()
+        .map(|document| index_document(source, document))
         .unwrap_or_default();
 
     if line.trim_start().starts_with("#include") {
@@ -552,6 +563,12 @@ pub fn completions_at_with_includes(
             "ui keyword",
             "Experimental Frame UI syntax keyword.",
             CompletionCategory::Value,
+        ));
+        items.extend(dynamic_suggestions(
+            component_names,
+            "component",
+            "Component declared in this Frame file.",
+            CompletionCategory::ProjectSymbol,
         ));
         return items;
     }
@@ -1679,6 +1696,18 @@ mod tests {
         assert!(labels.contains(&"on".to_string()));
         assert!(labels.contains(&"bind".to_string()));
         assert!(labels.contains(&"when".to_string()));
+    }
+
+    #[test]
+    fn view_scope_suggests_known_components() {
+        let source = "component ChatPanel {\n}\n\ncomponent ChatApp {\n  view {\n    \n  }\n}\n";
+        let offset = source.find("    \n").expect("cursor line") + 4;
+        let labels = completions_at(source, offset)
+            .into_iter()
+            .map(|item| item.label)
+            .collect::<Vec<_>>();
+
+        assert!(labels.contains(&"ChatPanel".to_string()));
     }
 
     #[test]
