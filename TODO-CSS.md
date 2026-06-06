@@ -206,6 +206,8 @@ Existing Frame styling already covers a useful subset:
 - [ ] `selection`
 - [x] `target`
 
+`placeholder` and `selection` are deferred until Frame supports pseudo-element blocks with normal styling declarations, not only effect-style state blocks.
+
 ## Advanced CSS and Escape Hatches
 
 - [x] scoped `advanced { css "property" value }`
