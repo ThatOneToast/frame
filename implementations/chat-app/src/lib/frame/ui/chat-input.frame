@@ -1,0 +1,34 @@
+button PrimaryButton {
+  surface panel
+  padding medium
+  radius medium
+}
+
+button LoadingButton {
+  surface panel
+  padding medium
+  radius medium
+  opacity 0.72
+}
+
+component ChatInput {
+  state {
+    draft text = ""
+    sending bool = false
+  }
+
+  view {
+    input MessageBox {
+      value bind $draft
+      placeholder "Message"
+      on keydown.enter @sendMessage
+    }
+
+    button Send:PrimaryButton {
+      text "Send"
+      disabled when $sending
+      on click @sendMessage
+      style when $sending = LoadingButton
+    }
+  }
+}
