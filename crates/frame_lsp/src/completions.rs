@@ -316,6 +316,10 @@ const CARD_PROPERTIES: &[&str] = &[
     "wrap",
     "case",
     "align-text",
+    "decoration",
+    "whitespace",
+    "word-break",
+    "hyphenate",
     "line",
     "letter",
     "control",
@@ -367,6 +371,10 @@ const COMMON_PROPERTIES: &[&str] = &[
     "wrap",
     "case",
     "align-text",
+    "decoration",
+    "whitespace",
+    "word-break",
+    "hyphenate",
     "line",
     "letter",
     "control",
@@ -856,6 +864,26 @@ fn value_completions(
             "text alignment",
             "Text alignment intent.",
         ),
+        "decoration" => suggestions(
+            tokens::TEXT_DECORATIONS,
+            "text decoration",
+            "Text decoration line intent.",
+        ),
+        "whitespace" => suggestions(
+            tokens::WHITE_SPACE,
+            "white-space value",
+            "White-space preservation and wrapping behavior.",
+        ),
+        "word-break" => suggestions(
+            tokens::WORD_BREAKS,
+            "word-break value",
+            "Word breaking behavior for narrow text.",
+        ),
+        "hyphenate" => suggestions(
+            tokens::HYPHENS,
+            "hyphenation value",
+            "Hyphenation behavior.",
+        ),
         "control" => suggestions(
             tokens::CONTROLS,
             "control affordance",
@@ -1220,7 +1248,9 @@ fn property_category(label: &str) -> CompletionCategory {
             CompletionCategory::VisualProperty
         }
         "font" | "size" | "weight" | "line" | "letter" | "truncate" | "wrap" | "case"
-        | "align-text" => CompletionCategory::TypographyProperty,
+        | "align-text" | "decoration" | "whitespace" | "word-break" | "hyphenate" => {
+            CompletionCategory::TypographyProperty
+        }
         "transition" | "duration" | "ease" | "animation" | "animate" | "delay" | "iteration"
         | "direction" | "fill" | "play-state" | "transform" | "filter" => {
             CompletionCategory::MotionProperty
@@ -1365,6 +1395,10 @@ fn completion_documentation(label: &str) -> Option<String> {
         "play-state" => "Controls whether an animation is running or paused.",
         "opacity" => "Animates opacity in keyframes. Generates `opacity: ...`.",
         "transform" => "Animates transform functions in keyframes. Generates `transform: ...`.",
+        "decoration" => "Sets text decoration line intent: `underline`, `overline`, `line-through`, or `none`.",
+        "whitespace" => "Controls white-space preservation and wrapping, including `pre-wrap` and `break-spaces`.",
+        "word-break" => "Controls how long words break in narrow layouts.",
+        "hyphenate" => "Controls CSS hyphenation using `none`, `manual`, or `auto`.",
         _ => return None,
     }.to_string())
 }
@@ -1578,6 +1612,12 @@ mod tests {
         assert!(labels_for("card A {\n  flex direction ").contains(&"column".to_string()));
         assert!(labels_for("card A {\n  flex wrap ").contains(&"wrap".to_string()));
         assert!(labels_for("card A {\n  flex basis ").contains(&"50%".to_string()));
+        assert!(labels_for("text A {\n  align-text ").contains(&"justify".to_string()));
+        assert!(labels_for("text A {\n  case ").contains(&"capitalize".to_string()));
+        assert!(labels_for("text A {\n  decoration ").contains(&"underline".to_string()));
+        assert!(labels_for("text A {\n  whitespace ").contains(&"pre-wrap".to_string()));
+        assert!(labels_for("text A {\n  word-break ").contains(&"break-word".to_string()));
+        assert!(labels_for("text A {\n  hyphenate ").contains(&"auto".to_string()));
         assert!(labels_for("card A {\n  align ").contains(&"stretch".to_string()));
         assert!(labels_for("card A {\n  justify ").contains(&"between".to_string()));
         assert!(labels_for("card A {\n  color ").contains(&"purple".to_string()));

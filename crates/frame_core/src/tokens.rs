@@ -49,8 +49,27 @@ pub const OVERFLOWS: &[&str] = &["hidden", "visible", "auto", "clip"];
 pub const SCROLL_AXES: &[&str] = &["x", "y", "both"];
 pub const SCROLLBARS: &[&str] = &["dense", "normal"];
 pub const TEXT_WRAPS: &[&str] = &["anywhere", "normal"];
-pub const TEXT_CASES: &[&str] = &["uppercase", "normal"];
-pub const TEXT_ALIGN: &[&str] = &["left", "center", "right", "start", "end"];
+pub const TEXT_CASES: &[&str] = &["uppercase", "lowercase", "capitalize", "normal"];
+pub const TEXT_ALIGN: &[&str] = &[
+    "left",
+    "center",
+    "right",
+    "start",
+    "end",
+    "justify",
+    "match-parent",
+];
+pub const TEXT_DECORATIONS: &[&str] = &["none", "underline", "overline", "line-through"];
+pub const WHITE_SPACE: &[&str] = &[
+    "normal",
+    "nowrap",
+    "pre",
+    "pre-wrap",
+    "pre-line",
+    "break-spaces",
+];
+pub const WORD_BREAKS: &[&str] = &["normal", "break-all", "keep-all", "break-word"];
+pub const HYPHENS: &[&str] = &["none", "manual", "auto"];
 pub const LINES: &[&str] = &["normal", "relaxed", "tight"];
 pub const LETTERS: &[&str] = &["normal"];
 pub const CONTROLS: &[&str] = &["reset"];

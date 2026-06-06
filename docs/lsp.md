@@ -102,6 +102,20 @@ card Toolbar {
 }
 ```
 
+Typography completions include alignment, casing, decoration, whitespace,
+word-break, and hyphenation values:
+
+```frame
+text MessageBody {
+  align-text justify
+  case normal
+  decoration none
+  whitespace pre-wrap
+  word-break break-word
+  hyphenate auto
+}
+```
+
 Inside `hover`, `focus`, `active`, and `disabled`, Frame suggests effects only:
 
 ```frame

@@ -669,6 +669,30 @@
         },
         {
           "type": "STRING",
+          "value": "case"
+        },
+        {
+          "type": "STRING",
+          "value": "align-text"
+        },
+        {
+          "type": "STRING",
+          "value": "decoration"
+        },
+        {
+          "type": "STRING",
+          "value": "whitespace"
+        },
+        {
+          "type": "STRING",
+          "value": "word-break"
+        },
+        {
+          "type": "STRING",
+          "value": "hyphenate"
+        },
+        {
+          "type": "STRING",
           "value": "line"
         },
         {

@@ -609,6 +609,10 @@ fn emit_common(css: &mut String, body: &[Node], symbols: &frame_core::symbols::S
             Some("wrap") => emit_wrap(css, statement),
             Some("case") => emit_text_case(css, statement),
             Some("align-text") => emit_text_align(css, statement),
+            Some("decoration") => emit_text_decoration(css, statement),
+            Some("whitespace") => emit_white_space(css, statement),
+            Some("word-break") => emit_word_break(css, statement),
+            Some("hyphenate") => emit_hyphenate(css, statement),
             Some("size") => emit_type_size(css, statement),
             Some("weight") => emit_weight(css, statement),
             Some("line") => emit_line(css, statement),
@@ -1083,6 +1087,8 @@ fn emit_wrap(css: &mut String, statement: &Statement) {
 fn emit_text_case(css: &mut String, statement: &Statement) {
     match statement.words.get(1).map(String::as_str) {
         Some("uppercase") => css.push_str("  text-transform: uppercase;\n"),
+        Some("lowercase") => css.push_str("  text-transform: lowercase;\n"),
+        Some("capitalize") => css.push_str("  text-transform: capitalize;\n"),
         Some("normal") => css.push_str("  text-transform: none;\n"),
         _ => {}
     }
@@ -1091,6 +1097,30 @@ fn emit_text_case(css: &mut String, statement: &Statement) {
 fn emit_text_align(css: &mut String, statement: &Statement) {
     if let Some(value) = statement.words.get(1) {
         css.push_str(&format!("  text-align: {value};\n"));
+    }
+}
+
+fn emit_text_decoration(css: &mut String, statement: &Statement) {
+    if let Some(value) = statement.words.get(1) {
+        css.push_str(&format!("  text-decoration-line: {value};\n"));
+    }
+}
+
+fn emit_white_space(css: &mut String, statement: &Statement) {
+    if let Some(value) = statement.words.get(1) {
+        css.push_str(&format!("  white-space: {value};\n"));
+    }
+}
+
+fn emit_word_break(css: &mut String, statement: &Statement) {
+    if let Some(value) = statement.words.get(1) {
+        css.push_str(&format!("  word-break: {value};\n"));
+    }
+}
+
+fn emit_hyphenate(css: &mut String, statement: &Statement) {
+    if let Some(value) = statement.words.get(1) {
+        css.push_str(&format!("  hyphens: {value};\n"));
     }
 }
 
@@ -1628,6 +1658,34 @@ mod tests {
         assert!(css.contains("block-size: 100vh;"));
         assert!(css.contains("min-inline-size: 0;"));
         assert!(css.contains("max-block-size: 100%;"));
+    }
+
+    #[test]
+    fn generates_expanded_typography_controls() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Text,
+                "MessageBody",
+                vec![
+                    statement(&["align-text", "justify"]),
+                    statement(&["case", "capitalize"]),
+                    statement(&["decoration", "line-through"]),
+                    statement(&["whitespace", "pre-wrap"]),
+                    statement(&["word-break", "break-word"]),
+                    statement(&["hyphenate", "auto"]),
+                ],
+            )],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("text-align: justify;"));
+        assert!(css.contains("text-transform: capitalize;"));
+        assert!(css.contains("text-decoration-line: line-through;"));
+        assert!(css.contains("white-space: pre-wrap;"));
+        assert!(css.contains("word-break: break-word;"));
+        assert!(css.contains("hyphens: auto;"));
     }
 
     #[test]

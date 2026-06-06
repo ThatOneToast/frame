@@ -655,6 +655,10 @@ fn validate_statement(
         Some("wrap") => validate_value(statement, tokens::TEXT_WRAPS, diagnostics),
         Some("case") => validate_value(statement, tokens::TEXT_CASES, diagnostics),
         Some("align-text") => validate_value(statement, tokens::TEXT_ALIGN, diagnostics),
+        Some("decoration") => validate_value(statement, tokens::TEXT_DECORATIONS, diagnostics),
+        Some("whitespace") => validate_value(statement, tokens::WHITE_SPACE, diagnostics),
+        Some("word-break") => validate_value(statement, tokens::WORD_BREAKS, diagnostics),
+        Some("hyphenate") => validate_value(statement, tokens::HYPHENS, diagnostics),
         Some("line") => validate_value(statement, tokens::LINES, diagnostics),
         Some("letter") => validate_value(statement, tokens::LETTERS, diagnostics),
         Some("control") => validate_value(statement, tokens::CONTROLS, diagnostics),
@@ -1343,6 +1347,10 @@ fn css_property_alias(property: &str) -> Option<&'static str> {
         "box-shadow" => Some("shadow"),
         "font-size" => Some("size"),
         "font-weight" => Some("weight"),
+        "text-decoration" | "text-decoration-line" => Some("decoration"),
+        "white-space" => Some("whitespace"),
+        "word-break" => Some("word-break"),
+        "hyphens" => Some("hyphenate"),
         "z-index" => Some("z"),
         _ => None,
     }
@@ -1359,6 +1367,10 @@ fn alias_example_value(alias: &str) -> &'static str {
         "shadow" => "medium",
         "size" => "heading",
         "weight" => "semibold",
+        "decoration" => "underline",
+        "whitespace" => "pre-wrap",
+        "word-break" => "break-word",
+        "hyphenate" => "auto",
         "z" => "modal",
         "align" | "justify" => "center",
         "display" => "block",
@@ -1607,6 +1619,27 @@ mod tests {
     }
 
     #[test]
+    fn accepts_expanded_typography_controls() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Text,
+                "MessageBody",
+                vec![
+                    statement(&["align-text", "justify"]),
+                    statement(&["case", "capitalize"]),
+                    statement(&["decoration", "underline"]),
+                    statement(&["whitespace", "pre-wrap"]),
+                    statement(&["word-break", "break-word"]),
+                    statement(&["hyphenate", "auto"]),
+                ],
+            )],
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
     fn rejects_invalid_display_flex_and_visibility_values() {
         let document = Document {
             includes: Vec::new(),
@@ -1631,6 +1664,35 @@ mod tests {
         assert!(diagnostics[2].message.contains("Unknown flex direction"));
         assert!(diagnostics[3].message.contains("non-negative number"));
         assert!(diagnostics[4].message.contains("valid flex basis value"));
+    }
+
+    #[test]
+    fn rejects_invalid_expanded_typography_values() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Text,
+                "MessageBody",
+                vec![
+                    statement(&["align-text", "middle"]),
+                    statement(&["case", "title"]),
+                    statement(&["decoration", "blink"]),
+                    statement(&["whitespace", "squish"]),
+                    statement(&["word-break", "shatter"]),
+                    statement(&["hyphenate", "always"]),
+                ],
+            )],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 6);
+        assert!(diagnostics[0].message.contains("Unknown align-text value"));
+        assert!(diagnostics[1].message.contains("Unknown case value"));
+        assert!(diagnostics[2].message.contains("Unknown decoration value"));
+        assert!(diagnostics[3].message.contains("Unknown whitespace value"));
+        assert!(diagnostics[4].message.contains("Unknown word-break value"));
+        assert!(diagnostics[5].message.contains("Unknown hyphenate value"));
     }
 
     #[test]

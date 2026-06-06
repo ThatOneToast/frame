@@ -501,6 +501,10 @@
     "named": false
   },
   {
+    "type": "align-text",
+    "named": false
+  },
+  {
     "type": "anchor",
     "named": false
   },
@@ -565,6 +569,10 @@
     "named": false
   },
   {
+    "type": "case",
+    "named": false
+  },
+  {
     "type": "center",
     "named": false
   },
@@ -599,6 +607,10 @@
   },
   {
     "type": "css",
+    "named": false
+  },
+  {
+    "type": "decoration",
     "named": false
   },
   {
@@ -687,6 +699,10 @@
   },
   {
     "type": "hover",
+    "named": false
+  },
+  {
+    "type": "hyphenate",
     "named": false
   },
   {
@@ -942,7 +958,15 @@
     "named": false
   },
   {
+    "type": "whitespace",
+    "named": false
+  },
+  {
     "type": "width",
+    "named": false
+  },
+  {
+    "type": "word-break",
     "named": false
   },
   {

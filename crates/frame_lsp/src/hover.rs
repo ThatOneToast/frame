@@ -158,6 +158,10 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "wrap" => "Controls text wrapping. Use `wrap anywhere` for chat message bodies and narrow content.",
         "case" => "Controls text casing intent. Use `case uppercase` for compact section labels.",
         "align-text" => "Aligns text inside controls and rows. Use `align-text left` for dense navigation buttons.",
+        "decoration" => "Sets text decoration line intent.\n\nUse `decoration underline`, `decoration overline`, `decoration line-through`, or `decoration none`.\n\nGenerated CSS writes `text-decoration-line`.",
+        "whitespace" => "Controls white-space preservation and wrapping.\n\nUse `whitespace pre-wrap` for user-entered multiline text or `whitespace break-spaces` when spaces should be preserved.\n\nGenerated CSS writes `white-space`.",
+        "word-break" => "Controls how words break in narrow layouts.\n\nUse `word-break break-word` for long unspaced content.\n\nGenerated CSS writes `word-break`.",
+        "hyphenate" => "Controls hyphenation behavior.\n\nUse `hyphenate auto` for prose where browser hyphenation is acceptable.\n\nGenerated CSS writes `hyphens`.",
         "control" => "Applies control affordance intent. Use `control reset` to remove browser-specific button or input appearance.",
         "interactive" => "Marks a surface as pointer-interactive and emits cursor affordance.",
         "hover" => "Defines effects applied when the user hovers this component.\n\nExample:\n\nhover {\n  lift small\n  glow accent\n}",
@@ -257,6 +261,24 @@ fn contextual_value_doc(
         )),
         "justify" if tokens::JUSTIFY.contains(&word) => Some(format!(
             "## `{word}`\n\nJustification value.\n\nGenerated CSS maps Frame justification intent to `justify-content`."
+        )),
+        "case" if tokens::TEXT_CASES.contains(&word) => Some(format!(
+            "## `{word}`\n\nText transform value.\n\nGenerated CSS maps this to `text-transform`."
+        )),
+        "align-text" if tokens::TEXT_ALIGN.contains(&word) => Some(format!(
+            "## `{word}`\n\nText alignment value.\n\nGenerated CSS writes `text-align: {word};`."
+        )),
+        "decoration" if tokens::TEXT_DECORATIONS.contains(&word) => Some(format!(
+            "## `{word}`\n\nText decoration value.\n\nGenerated CSS writes `text-decoration-line: {word};`."
+        )),
+        "whitespace" if tokens::WHITE_SPACE.contains(&word) => Some(format!(
+            "## `{word}`\n\nWhite-space value.\n\nGenerated CSS writes `white-space: {word};`."
+        )),
+        "word-break" if tokens::WORD_BREAKS.contains(&word) => Some(format!(
+            "## `{word}`\n\nWord-break value.\n\nGenerated CSS writes `word-break: {word};`."
+        )),
+        "hyphenate" if tokens::HYPHENS.contains(&word) => Some(format!(
+            "## `{word}`\n\nHyphenation value.\n\nGenerated CSS writes `hyphens: {word};`."
         )),
         "below" | "above" if tokens::BREAKPOINTS.contains(&word) => Some(format!(
             "## `{word}`\n\nResponsive breakpoint.\n\nUsed by `{property}` to generate a media query for viewport-aware layout changes."
@@ -860,6 +882,12 @@ mod tests {
         assert!(hover_doc("display").unwrap().contains("display: ..."));
         assert!(hover_doc("flex").unwrap().contains("flex direction"));
         assert!(hover_doc("inline-size").unwrap().contains("logical inline"));
+        assert!(hover_doc("decoration")
+            .unwrap()
+            .contains("text-decoration-line"));
+        assert!(hover_doc("whitespace").unwrap().contains("white-space"));
+        assert!(hover_doc("word-break").unwrap().contains("word-break"));
+        assert!(hover_doc("hyphenate").unwrap().contains("hyphens"));
     }
 
     #[test]

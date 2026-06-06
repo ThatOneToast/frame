@@ -70,6 +70,12 @@ card DemoCard {
   inline-size fill
   block-size content
   visibility visible
+  align-text justify
+  case capitalize
+  decoration underline
+  whitespace pre-wrap
+  word-break break-word
+  hyphenate auto
   animation fade-in
 
   animation FloatIn {

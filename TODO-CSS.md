@@ -99,12 +99,12 @@ Existing Frame styling already covers a useful subset:
 - [x] truncation
 - [x] wrapping
 - [x] casing
-- [ ] text align full coverage
-- [ ] text decoration
-- [ ] text transform full coverage
-- [ ] white-space controls
-- [ ] word-break controls
-- [ ] hyphenation
+- [x] text align full coverage
+- [x] text decoration
+- [x] text transform full coverage
+- [x] white-space controls
+- [x] word-break controls
+- [x] hyphenation
 - [ ] font feature settings
 - [ ] font variation settings
 - [ ] web font declarations

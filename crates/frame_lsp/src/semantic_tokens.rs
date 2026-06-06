@@ -128,6 +128,12 @@ fn is_known_value(value: &str) -> bool {
         || tokens::VISIBILITY.contains(&value)
         || tokens::FLEX_DIRECTIONS.contains(&value)
         || tokens::FLEX_WRAPS.contains(&value)
+        || tokens::TEXT_CASES.contains(&value)
+        || tokens::TEXT_ALIGN.contains(&value)
+        || tokens::TEXT_DECORATIONS.contains(&value)
+        || tokens::WHITE_SPACE.contains(&value)
+        || tokens::WORD_BREAKS.contains(&value)
+        || tokens::HYPHENS.contains(&value)
         || matches!(
             value,
             "direction" | "wrap" | "grow" | "shrink" | "basis" | "row-reverse" | "column-reverse"
@@ -171,6 +177,16 @@ mod tests {
     fn emits_tokens_for_display_flex_and_logical_sizing() {
         let tokens = semantic_tokens(
             "card Panel {\n  display flex\n  flex direction column\n  inline-size fill\n}\n",
+        );
+
+        assert!(tokens.data.iter().any(|token| token.token_type == 2));
+        assert!(tokens.data.iter().any(|token| token.token_type == 3));
+    }
+
+    #[test]
+    fn emits_tokens_for_expanded_typography_values() {
+        let tokens = semantic_tokens(
+            "text Body {\n  decoration underline\n  whitespace pre-wrap\n  word-break break-word\n  hyphenate auto\n}\n",
         );
 
         assert!(tokens.data.iter().any(|token| token.token_type == 2));
