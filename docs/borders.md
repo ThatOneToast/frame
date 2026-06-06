@@ -7,6 +7,7 @@ card WarningCard {
   surface panel
   border warning
   border width medium
+  border style dashed
   radius large
 }
 ```
@@ -24,6 +25,10 @@ Common values:
 - `border width small`
 - `border width medium`
 - `border width large`
+- `border style solid`
+- `border style dashed`
+- `border style dotted`
+- `border style double`
 - `border radius large`
 
 Border colors can use custom color tokens:
@@ -36,4 +41,27 @@ tokens Brand {
 card BrandCard {
   border brand-muted
 }
+```
+
+## Outline
+
+```frame
+button PrimaryAction {
+  outline accent
+  outline offset small
+}
+
+button FlatAction {
+  outline none
+}
+```
+
+`outline offset` uses Frame spacing tokens:
+
+```frame
+outline offset none
+outline offset small
+outline offset medium
+outline offset large
+outline offset xlarge
 ```

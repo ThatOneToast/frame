@@ -136,8 +136,17 @@ fn is_known_value(value: &str) -> bool {
         || tokens::HYPHENS.contains(&value)
         || matches!(
             value,
-            "direction" | "wrap" | "grow" | "shrink" | "basis" | "row-reverse" | "column-reverse"
+            "direction"
+                | "wrap"
+                | "grow"
+                | "shrink"
+                | "basis"
+                | "row-reverse"
+                | "column-reverse"
+                | "style"
+                | "offset"
         )
+        || tokens::BORDER_LINE_STYLES.contains(&value)
 }
 
 fn push_word(
@@ -188,6 +197,15 @@ mod tests {
         let tokens = semantic_tokens(
             "text Body {\n  decoration underline\n  whitespace pre-wrap\n  word-break break-word\n  hyphenate auto\n}\n",
         );
+
+        assert!(tokens.data.iter().any(|token| token.token_type == 2));
+        assert!(tokens.data.iter().any(|token| token.token_type == 3));
+    }
+
+    #[test]
+    fn emits_tokens_for_border_styles_and_outline_offsets() {
+        let tokens =
+            semantic_tokens("card Panel {\n  border style dashed\n  outline offset small\n}\n");
 
         assert!(tokens.data.iter().any(|token| token.token_type == 2));
         assert!(tokens.data.iter().any(|token| token.token_type == 3));

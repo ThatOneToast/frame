@@ -437,6 +437,9 @@ const TRACK_VALUES: &[&str] = &[
 ];
 const GRADIENT_VALUES: &[&str] = &["dusk", "midnight", "aurora", "ember", "ocean", "forest"];
 const BORDER_WIDTH_VALUES: &[&str] = &["small", "medium", "large"];
+const BORDER_STYLE_VALUES: &[&str] = &[
+    "none", "solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset",
+];
 
 const SURFACE_VALUES: &[&str] = &[
     "panel",
@@ -920,14 +923,38 @@ fn value_completions(
         "border" if line_words.get(1).map(String::as_str) == Some("width") => {
             suggestions(BORDER_WIDTH_VALUES, "border width", "Named border width.")
         }
+        "border" if line_words.get(1).map(String::as_str) == Some("style") => suggestions(
+            BORDER_STYLE_VALUES,
+            "border style",
+            "CSS border line style through structured Frame syntax.",
+        ),
         "border" => {
             let mut items = suggestions(
                 &[
                     "none", "soft", "strong", "accent", "muted", "danger", "success", "warning",
-                    "width", "radius",
+                    "width", "radius", "style",
                 ],
                 "border value",
                 "Named border style.",
+            );
+            items.extend(dynamic_suggestions(
+                symbols.color_names(),
+                "custom color",
+                "Custom color token from the project graph.",
+                CompletionCategory::ProjectSymbol,
+            ));
+            items
+        }
+        "outline" if line_words.get(1).map(String::as_str) == Some("offset") => suggestions(
+            tokens::SPACING,
+            "outline offset",
+            "Spacing token used for outline offset.",
+        ),
+        "outline" => {
+            let mut items = suggestions(
+                &["none", "offset", "accent", "danger", "success", "warning"],
+                "outline value",
+                "Outline color or offset control.",
             );
             items.extend(dynamic_suggestions(
                 symbols.color_names(),
@@ -1323,7 +1350,8 @@ fn completion_documentation(label: &str) -> Option<String> {
         "col" => "Places an area in a numeric grid column. Use with percentage grids.",
         "span" => "Makes an area span multiple grid tracks.",
         "radius" => "Sets corner shape using radius tokens like `large`, `pill`, or `none`.",
-        "border" => "Sets border intent such as `soft`, `accent`, `danger`, `success`, or `none`.",
+        "border" => "Sets border intent. Use `border accent`, `border width medium`, `border style dashed`, `border radius large`, or `border none`.",
+        "outline" => "Sets outline intent. Use `outline accent`, `outline none`, or `outline offset small`.",
         "visibility" => "Sets visibility as `visible`, `hidden`, or `collapse`.",
         "flex" => "Sets flexbox controls. Use `flex direction row`, `flex wrap wrap`, `flex grow 1`, `flex shrink 0`, or `flex basis fill`.",
         "shadow" => "Sets depth using shadow tokens like `soft`, `medium`, or `deep`.",
@@ -1658,6 +1686,10 @@ mod tests {
                 "large".to_string()
             ]
         );
+        assert!(labels_for("card A {\n  border ").contains(&"style".to_string()));
+        assert!(labels_for("card A {\n  border style ").contains(&"dashed".to_string()));
+        assert!(labels_for("card A {\n  outline ").contains(&"offset".to_string()));
+        assert!(labels_for("card A {\n  outline offset ").contains(&"small".to_string()));
     }
 
     #[test]

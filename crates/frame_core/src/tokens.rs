@@ -179,6 +179,10 @@ pub const KEYFRAME_PROPERTIES: &[&str] = &[
 ];
 pub const BORDER_STYLES: &[&str] = &[
     "none", "soft", "strong", "accent", "muted", "danger", "success", "warning", "width", "radius",
+    "style",
+];
+pub const BORDER_LINE_STYLES: &[&str] = &[
+    "none", "solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset",
 ];
 pub const Z_LAYERS: &[&str] = &[
     "base", "above", "dropdown", "sticky", "overlay", "modal", "toast",

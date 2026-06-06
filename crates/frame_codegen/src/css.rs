@@ -1241,6 +1241,14 @@ fn emit_border(css: &mut String, statement: &Statement) {
                 "  border-width: {value};\n  border-style: solid;\n"
             ));
         }
+        Some("style") => {
+            let style = statement
+                .words
+                .get(2)
+                .map(String::as_str)
+                .unwrap_or("solid");
+            css.push_str(&format!("  border-style: {style};\n"));
+        }
         Some("accent" | "muted" | "danger" | "success" | "warning") => {
             let value = statement.words[1].as_str();
             css.push_str(&format!(
@@ -1257,14 +1265,20 @@ fn emit_border(css: &mut String, statement: &Statement) {
 }
 
 fn emit_outline(css: &mut String, statement: &Statement) {
-    if let Some(value) = statement.words.get(1) {
-        if value == "none" {
-            css.push_str("  outline: 0;\n");
-        } else {
-            css.push_str(&format!(
-                "  outline: 2px solid var(--frame-color-{value});\n"
-            ));
+    match statement.words.get(1).map(String::as_str) {
+        Some("none") => css.push_str("  outline: 0;\n"),
+        Some("offset") => {
+            let value = statement
+                .words
+                .get(2)
+                .map(String::as_str)
+                .unwrap_or("small");
+            css.push_str(&format!("  outline-offset: var(--frame-space-{value});\n"));
         }
+        Some(value) => css.push_str(&format!(
+            "  outline: 2px solid var(--frame-color-{value});\n"
+        )),
+        _ => {}
     }
 }
 
@@ -1686,6 +1700,30 @@ mod tests {
         assert!(css.contains("white-space: pre-wrap;"));
         assert!(css.contains("word-break: break-word;"));
         assert!(css.contains("hyphens: auto;"));
+    }
+
+    #[test]
+    fn generates_border_styles_and_outline_offsets() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "Panel",
+                vec![
+                    statement(&["border", "style", "dotted"]),
+                    statement(&["border", "width", "large"]),
+                    statement(&["outline", "accent"]),
+                    statement(&["outline", "offset", "small"]),
+                ],
+            )],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("border-style: dotted;"));
+        assert!(css.contains("border-width: 3px;"));
+        assert!(css.contains("outline: 2px solid var(--frame-color-accent);"));
+        assert!(css.contains("outline-offset: var(--frame-space-small);"));
     }
 
     #[test]

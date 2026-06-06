@@ -62,6 +62,9 @@ card DemoCard {
   surface gradient dusk
   border accent
   border width medium
+  border style dashed
+  outline accent
+  outline offset small
   shadow medium
   color bright
   display flex

@@ -635,6 +635,7 @@ fn validate_statement(
         Some("surface") => validate_surface(statement, symbols, diagnostics),
         Some("shadow") => validate_value(statement, tokens::SHADOWS, diagnostics),
         Some("border") => validate_border(statement, symbols, diagnostics),
+        Some("outline") => validate_outline(statement, symbols, diagnostics),
         Some(
             "height" | "width" | "min-height" | "max-height" | "min-width" | "max-width"
             | "inline-size" | "block-size" | "min-inline-size" | "max-inline-size"
@@ -996,6 +997,27 @@ fn validate_border(
         return;
     }
 
+    if value == "style" {
+        let Some(style) = statement.words.get(2) else {
+            diagnostics.push(Diagnostic::error(
+                "border style expects `solid`, `dashed`, `dotted`, `double`, `none`, or another CSS border line style.",
+                statement.span,
+            ));
+            return;
+        };
+        if tokens::BORDER_LINE_STYLES.contains(&style.as_str()) {
+            return;
+        }
+        let suggestion = closest(style, tokens::BORDER_LINE_STYLES)
+            .map(|value| format!("\n\nDid you mean `{value}`?"))
+            .unwrap_or_default();
+        diagnostics.push(Diagnostic::error(
+            format!("Unknown border style `{style}`.{suggestion}\n\nUse `solid`, `dashed`, `dotted`, `double`, `groove`, `ridge`, `inset`, `outset`, or `none`."),
+            statement.span,
+        ));
+        return;
+    }
+
     if value == "radius" {
         let Some(radius) = statement.words.get(2) else {
             diagnostics.push(Diagnostic::error(
@@ -1056,6 +1078,55 @@ fn validate_border(
     diagnostics.push(Diagnostic::error(
         format!(
             "Unknown border value `{value}`.{suggestion}\n\nUse border intent like `soft`, `strong`, `accent`, `muted`, `danger`, or `none`. Use `border width medium` when changing thickness."
+        ),
+        statement.span,
+    ));
+}
+
+fn validate_outline(
+    statement: &Statement,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let Some(value) = statement.words.get(1).map(String::as_str) else {
+        diagnostics.push(Diagnostic::error(
+            "outline expects `none`, `offset`, or a color intent such as `accent`.",
+            statement.span,
+        ));
+        return;
+    };
+
+    if value == "none" || tokens::COLORS.contains(&value) || symbols.colors.contains_key(value) {
+        return;
+    }
+
+    if value == "offset" {
+        let Some(offset) = statement.words.get(2) else {
+            diagnostics.push(Diagnostic::error(
+                "outline offset expects a spacing value like `small`, `medium`, or `large`.",
+                statement.span,
+            ));
+            return;
+        };
+        if tokens::SPACING.contains(&offset.as_str()) {
+            return;
+        }
+        let suggestion = closest(offset, tokens::SPACING)
+            .map(|value| format!("\n\nDid you mean `{value}`?"))
+            .unwrap_or_default();
+        diagnostics.push(Diagnostic::error(
+            format!("Unknown outline offset `{offset}`.{suggestion}\n\nUse spacing tokens like `none`, `small`, `medium`, `large`, or `xlarge`."),
+            statement.span,
+        ));
+        return;
+    }
+
+    let suggestion = closest(value, tokens::COLORS)
+        .map(|value| format!("\n\nDid you mean `{value}`?"))
+        .unwrap_or_default();
+    diagnostics.push(Diagnostic::error(
+        format!(
+            "Unknown outline value `{value}`.{suggestion}\n\nUse `outline none`, `outline offset small`, a semantic color like `accent`, or a custom color token."
         ),
         statement.span,
     ));
@@ -1640,6 +1711,32 @@ mod tests {
     }
 
     #[test]
+    fn accepts_border_styles_and_outline_offsets() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Tokens,
+                    "Theme",
+                    vec![statement(&["color", "focus-ring", "#93c5fd"])],
+                ),
+                declaration(
+                    DeclarationKind::Card,
+                    "Panel",
+                    vec![
+                        statement(&["border", "style", "dashed"]),
+                        statement(&["border", "width", "large"]),
+                        statement(&["outline", "focus-ring"]),
+                        statement(&["outline", "offset", "small"]),
+                    ],
+                ),
+            ],
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
     fn rejects_invalid_display_flex_and_visibility_values() {
         let document = Document {
             includes: Vec::new(),
@@ -1693,6 +1790,29 @@ mod tests {
         assert!(diagnostics[3].message.contains("Unknown whitespace value"));
         assert!(diagnostics[4].message.contains("Unknown word-break value"));
         assert!(diagnostics[5].message.contains("Unknown hyphenate value"));
+    }
+
+    #[test]
+    fn rejects_invalid_border_styles_and_outline_offsets() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "Panel",
+                vec![
+                    statement(&["border", "style", "wiggly"]),
+                    statement(&["outline", "missing"]),
+                    statement(&["outline", "offset", "huge"]),
+                ],
+            )],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 3);
+        assert!(diagnostics[0].message.contains("Unknown border style"));
+        assert!(diagnostics[1].message.contains("Unknown outline value"));
+        assert!(diagnostics[2].message.contains("Unknown outline offset"));
     }
 
     #[test]

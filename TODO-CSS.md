@@ -130,9 +130,9 @@ Existing Frame styling already covers a useful subset:
 - [x] radius presets
 - [x] outline none
 - [x] focus rings
-- [ ] border style full coverage
-- [ ] border width scale
-- [ ] outline offset
+- [x] border style full coverage
+- [x] border width scale
+- [x] outline offset
 - [ ] image borders
 
 ## Effects
