@@ -143,7 +143,7 @@ module.exports = grammar({
   ],
 
   rules: {
-    source_file: ($) => repeat(choice($.include, $.declaration, $._newline)),
+    source_file: ($) => repeat(choice($.include, $.supports_block, $.declaration, $._newline)),
 
     include: ($) =>
       seq(
@@ -158,6 +158,18 @@ module.exports = grammar({
         field("name", $.declaration_name),
         $.block,
       ),
+
+    supports_block: ($) =>
+      seq(
+        "supports",
+        field("predicate", $.support_predicate),
+        $.supports_body,
+      ),
+
+    support_predicate: ($) => seq($.identifier, repeat($.identifier)),
+
+    supports_body: ($) =>
+      seq("{", repeat(choice($._newline, $.declaration)), "}"),
 
     block: ($) =>
       seq(

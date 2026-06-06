@@ -3,6 +3,10 @@
   kind: (declaration_keyword) @keyword
   name: (declaration_name) @type)
 
+(supports_block
+  "supports" @keyword
+  predicate: (support_predicate (identifier) @constant))
+
 ; Imports.
 (include
   keyword: (include_keyword) @keyword

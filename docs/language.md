@@ -76,6 +76,28 @@ button PrimaryButton {
 ```
 
 The compiler emits readable CSS and a `generated.ts` file for Svelte imports.
+
+## Feature Queries
+
+Use typed `supports` blocks when styles should only emit behind a browser feature query:
+
+```frame
+supports display grid {
+  grid AppShell {
+    columns sidebar content
+  }
+}
+
+supports subgrid {
+  grid NestedGrid {
+    columns subgrid
+  }
+}
+```
+
+Supported predicates are `display grid`, `display flex`, `backdrop blur`, `color oklch`, `selector has`, `container queries`, and `subgrid`.
+
+Generated CSS uses `@supports`, for example `supports display grid` emits `@supports (display: grid)`.
 # Frame Language
 
 Frame is a design-intent CSS DSL. It compiles declarations such as `grid`, `area`, `card`, `row`, `stack`, `dock`, and `text` into normal CSS classes and stable TypeScript exports.

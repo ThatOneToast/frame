@@ -7,185 +7,192 @@
 #endif
 
 #define LANGUAGE_VERSION 15
-#define STATE_COUNT 59
+#define STATE_COUNT 70
 #define LARGE_STATE_COUNT 20
-#define SYMBOL_COUNT 162
+#define SYMBOL_COUNT 168
 #define ALIAS_COUNT 0
-#define TOKEN_COUNT 138
+#define TOKEN_COUNT 139
 #define EXTERNAL_TOKEN_COUNT 0
-#define FIELD_COUNT 10
+#define FIELD_COUNT 11
 #define MAX_ALIAS_SEQUENCE_LENGTH 4
 #define MAX_RESERVED_WORD_SET_SIZE 0
-#define PRODUCTION_ID_COUNT 12
+#define PRODUCTION_ID_COUNT 13
 #define SUPERTYPE_COUNT 0
 
 enum ts_symbol_identifiers {
   sym_identifier = 1,
-  anon_sym_LBRACE = 2,
-  anon_sym_RBRACE = 3,
-  anon_sym_gradient = 4,
-  anon_sym_section = 5,
-  anon_sym_animation = 6,
-  anon_sym_below = 7,
-  anon_sym_above = 8,
-  anon_sym_between = 9,
-  anon_sym_container = 10,
-  anon_sym_tokens = 11,
-  anon_sym_grid = 12,
-  anon_sym_area = 13,
-  anon_sym_card = 14,
-  anon_sym_stack = 15,
-  anon_sym_row = 16,
-  anon_sym_button = 17,
-  anon_sym_text = 18,
-  anon_sym_center = 19,
-  anon_sym_split = 20,
-  anon_sym_overlay = 21,
-  anon_sym_dock = 22,
-  anon_sym_keyframes = 23,
-  anon_sym_hover = 24,
-  anon_sym_focus = 25,
-  anon_sym_focus_DASHvisible = 26,
-  anon_sym_focus_DASHwithin = 27,
-  anon_sym_active = 28,
-  anon_sym_disabled = 29,
-  anon_sym_checked = 30,
-  anon_sym_invalid = 31,
-  anon_sym_required = 32,
-  anon_sym_target = 33,
-  sym_special_block_keyword = 34,
-  anon_sym_columns = 35,
-  anon_sym_rows = 36,
-  anon_sym_flow = 37,
-  anon_sym_gap = 38,
-  anon_sym_display = 39,
-  anon_sym_height = 40,
-  anon_sym_width = 41,
-  anon_sym_min_DASHheight = 42,
-  anon_sym_max_DASHheight = 43,
-  anon_sym_min_DASHwidth = 44,
-  anon_sym_max_DASHwidth = 45,
-  anon_sym_inline_DASHsize = 46,
-  anon_sym_block_DASHsize = 47,
-  anon_sym_min_DASHinline_DASHsize = 48,
-  anon_sym_max_DASHinline_DASHsize = 49,
-  anon_sym_min_DASHblock_DASHsize = 50,
-  anon_sym_max_DASHblock_DASHsize = 51,
-  anon_sym_surface = 52,
-  anon_sym_background = 53,
-  anon_sym_theme = 54,
-  anon_sym_color = 55,
-  anon_sym_palette = 56,
-  anon_sym_tone = 57,
-  anon_sym_opacity = 58,
-  anon_sym_padding = 59,
-  anon_sym_anchor = 60,
-  anon_sym_margin = 61,
-  anon_sym_radius = 62,
-  anon_sym_border = 63,
-  anon_sym_shadow = 64,
-  anon_sym_outline = 65,
-  anon_sym_box = 66,
-  anon_sym_visibility = 67,
-  anon_sym_flex = 68,
-  anon_sym_square = 69,
-  anon_sym_place = 70,
-  anon_sym_in = 71,
-  anon_sym_col = 72,
-  anon_sym_span = 73,
-  anon_sym_position = 74,
-  anon_sym_offset = 75,
-  anon_sym_z = 76,
-  anon_sym_align = 77,
-  anon_sym_justify = 78,
-  anon_sym_font = 79,
-  anon_sym_size = 80,
-  anon_sym_weight = 81,
-  anon_sym_case = 82,
-  anon_sym_align_DASHtext = 83,
-  anon_sym_decoration = 84,
-  anon_sym_whitespace = 85,
-  anon_sym_word_DASHbreak = 86,
-  anon_sym_hyphenate = 87,
-  anon_sym_line = 88,
-  anon_sym_letter = 89,
-  anon_sym_transition = 90,
-  anon_sym_duration = 91,
-  anon_sym_ease = 92,
-  anon_sym_animate = 93,
-  anon_sym_delay = 94,
-  anon_sym_iteration = 95,
-  anon_sym_direction = 96,
-  anon_sym_fill = 97,
-  anon_sym_play_DASHstate = 98,
-  anon_sym_transform = 99,
-  anon_sym_filter = 100,
-  anon_sym_translate = 101,
-  anon_sym_type = 102,
-  anon_sym_angle = 103,
-  anon_sym_stop = 104,
-  anon_sym_corner = 105,
-  anon_sym_at = 106,
-  anon_sym_shape = 107,
-  anon_sym_css = 108,
-  anon_sym_lift = 109,
-  anon_sym_sink = 110,
-  anon_sym_shift = 111,
-  anon_sym_grow = 112,
-  anon_sym_shrink = 113,
-  anon_sym_tilt = 114,
-  anon_sym_glow = 115,
-  anon_sym_brighten = 116,
-  anon_sym_dim = 117,
-  anon_sym_blur = 118,
-  anon_sym_press = 119,
-  anon_sym_pop = 120,
-  anon_sym_ring = 121,
-  anon_sym_smooth = 122,
-  anon_sym_fade = 123,
-  anon_sym_scale = 124,
-  anon_sym_rotate = 125,
-  anon_sym_slide = 126,
-  sym_include_keyword = 127,
-  sym_include_target = 128,
-  sym_string = 129,
-  aux_sym_percentage_token1 = 130,
-  anon_sym_from = 131,
-  anon_sym_to = 132,
-  sym_number = 133,
-  sym_raw_value = 134,
-  sym_color_literal = 135,
-  sym_comment = 136,
-  sym__newline = 137,
-  sym_source_file = 138,
-  sym_include = 139,
-  sym_declaration = 140,
-  sym_block = 141,
-  sym_state_block = 142,
-  sym_gradient_block = 143,
-  sym_section_block = 144,
-  sym_advanced_block = 145,
-  sym_animation_block = 146,
-  sym_responsive_block = 147,
-  sym_container_block = 148,
-  sym_keyframe_block = 149,
-  sym_statement = 150,
-  sym_declaration_name = 151,
-  sym_declaration_keyword = 152,
-  sym_state_keyword = 153,
-  sym_property_keyword = 154,
-  sym_effect_keyword = 155,
-  sym_value = 156,
-  sym_percentage = 157,
-  sym_keyframe_selector = 158,
-  aux_sym_source_file_repeat1 = 159,
-  aux_sym_block_repeat1 = 160,
-  aux_sym_statement_repeat1 = 161,
+  anon_sym_supports = 2,
+  anon_sym_LBRACE = 3,
+  anon_sym_RBRACE = 4,
+  anon_sym_gradient = 5,
+  anon_sym_section = 6,
+  anon_sym_animation = 7,
+  anon_sym_below = 8,
+  anon_sym_above = 9,
+  anon_sym_between = 10,
+  anon_sym_container = 11,
+  anon_sym_tokens = 12,
+  anon_sym_grid = 13,
+  anon_sym_area = 14,
+  anon_sym_card = 15,
+  anon_sym_stack = 16,
+  anon_sym_row = 17,
+  anon_sym_button = 18,
+  anon_sym_text = 19,
+  anon_sym_center = 20,
+  anon_sym_split = 21,
+  anon_sym_overlay = 22,
+  anon_sym_dock = 23,
+  anon_sym_keyframes = 24,
+  anon_sym_hover = 25,
+  anon_sym_focus = 26,
+  anon_sym_focus_DASHvisible = 27,
+  anon_sym_focus_DASHwithin = 28,
+  anon_sym_active = 29,
+  anon_sym_disabled = 30,
+  anon_sym_checked = 31,
+  anon_sym_invalid = 32,
+  anon_sym_required = 33,
+  anon_sym_target = 34,
+  sym_special_block_keyword = 35,
+  anon_sym_columns = 36,
+  anon_sym_rows = 37,
+  anon_sym_flow = 38,
+  anon_sym_gap = 39,
+  anon_sym_display = 40,
+  anon_sym_height = 41,
+  anon_sym_width = 42,
+  anon_sym_min_DASHheight = 43,
+  anon_sym_max_DASHheight = 44,
+  anon_sym_min_DASHwidth = 45,
+  anon_sym_max_DASHwidth = 46,
+  anon_sym_inline_DASHsize = 47,
+  anon_sym_block_DASHsize = 48,
+  anon_sym_min_DASHinline_DASHsize = 49,
+  anon_sym_max_DASHinline_DASHsize = 50,
+  anon_sym_min_DASHblock_DASHsize = 51,
+  anon_sym_max_DASHblock_DASHsize = 52,
+  anon_sym_surface = 53,
+  anon_sym_background = 54,
+  anon_sym_theme = 55,
+  anon_sym_color = 56,
+  anon_sym_palette = 57,
+  anon_sym_tone = 58,
+  anon_sym_opacity = 59,
+  anon_sym_padding = 60,
+  anon_sym_anchor = 61,
+  anon_sym_margin = 62,
+  anon_sym_radius = 63,
+  anon_sym_border = 64,
+  anon_sym_shadow = 65,
+  anon_sym_outline = 66,
+  anon_sym_box = 67,
+  anon_sym_visibility = 68,
+  anon_sym_flex = 69,
+  anon_sym_square = 70,
+  anon_sym_place = 71,
+  anon_sym_in = 72,
+  anon_sym_col = 73,
+  anon_sym_span = 74,
+  anon_sym_position = 75,
+  anon_sym_offset = 76,
+  anon_sym_z = 77,
+  anon_sym_align = 78,
+  anon_sym_justify = 79,
+  anon_sym_font = 80,
+  anon_sym_size = 81,
+  anon_sym_weight = 82,
+  anon_sym_case = 83,
+  anon_sym_align_DASHtext = 84,
+  anon_sym_decoration = 85,
+  anon_sym_whitespace = 86,
+  anon_sym_word_DASHbreak = 87,
+  anon_sym_hyphenate = 88,
+  anon_sym_line = 89,
+  anon_sym_letter = 90,
+  anon_sym_transition = 91,
+  anon_sym_duration = 92,
+  anon_sym_ease = 93,
+  anon_sym_animate = 94,
+  anon_sym_delay = 95,
+  anon_sym_iteration = 96,
+  anon_sym_direction = 97,
+  anon_sym_fill = 98,
+  anon_sym_play_DASHstate = 99,
+  anon_sym_transform = 100,
+  anon_sym_filter = 101,
+  anon_sym_translate = 102,
+  anon_sym_type = 103,
+  anon_sym_angle = 104,
+  anon_sym_stop = 105,
+  anon_sym_corner = 106,
+  anon_sym_at = 107,
+  anon_sym_shape = 108,
+  anon_sym_css = 109,
+  anon_sym_lift = 110,
+  anon_sym_sink = 111,
+  anon_sym_shift = 112,
+  anon_sym_grow = 113,
+  anon_sym_shrink = 114,
+  anon_sym_tilt = 115,
+  anon_sym_glow = 116,
+  anon_sym_brighten = 117,
+  anon_sym_dim = 118,
+  anon_sym_blur = 119,
+  anon_sym_press = 120,
+  anon_sym_pop = 121,
+  anon_sym_ring = 122,
+  anon_sym_smooth = 123,
+  anon_sym_fade = 124,
+  anon_sym_scale = 125,
+  anon_sym_rotate = 126,
+  anon_sym_slide = 127,
+  sym_include_keyword = 128,
+  sym_include_target = 129,
+  sym_string = 130,
+  aux_sym_percentage_token1 = 131,
+  anon_sym_from = 132,
+  anon_sym_to = 133,
+  sym_number = 134,
+  sym_raw_value = 135,
+  sym_color_literal = 136,
+  sym_comment = 137,
+  sym__newline = 138,
+  sym_source_file = 139,
+  sym_include = 140,
+  sym_declaration = 141,
+  sym_supports_block = 142,
+  sym_support_predicate = 143,
+  sym_supports_body = 144,
+  sym_block = 145,
+  sym_state_block = 146,
+  sym_gradient_block = 147,
+  sym_section_block = 148,
+  sym_advanced_block = 149,
+  sym_animation_block = 150,
+  sym_responsive_block = 151,
+  sym_container_block = 152,
+  sym_keyframe_block = 153,
+  sym_statement = 154,
+  sym_declaration_name = 155,
+  sym_declaration_keyword = 156,
+  sym_state_keyword = 157,
+  sym_property_keyword = 158,
+  sym_effect_keyword = 159,
+  sym_value = 160,
+  sym_percentage = 161,
+  sym_keyframe_selector = 162,
+  aux_sym_source_file_repeat1 = 163,
+  aux_sym_support_predicate_repeat1 = 164,
+  aux_sym_supports_body_repeat1 = 165,
+  aux_sym_block_repeat1 = 166,
+  aux_sym_statement_repeat1 = 167,
 };
 
 static const char * const ts_symbol_names[] = {
   [ts_builtin_sym_end] = "end",
   [sym_identifier] = "identifier",
+  [anon_sym_supports] = "supports",
   [anon_sym_LBRACE] = "{",
   [anon_sym_RBRACE] = "}",
   [anon_sym_gradient] = "gradient",
@@ -325,6 +332,9 @@ static const char * const ts_symbol_names[] = {
   [sym_source_file] = "source_file",
   [sym_include] = "include",
   [sym_declaration] = "declaration",
+  [sym_supports_block] = "supports_block",
+  [sym_support_predicate] = "support_predicate",
+  [sym_supports_body] = "supports_body",
   [sym_block] = "block",
   [sym_state_block] = "state_block",
   [sym_gradient_block] = "gradient_block",
@@ -344,6 +354,8 @@ static const char * const ts_symbol_names[] = {
   [sym_percentage] = "percentage",
   [sym_keyframe_selector] = "keyframe_selector",
   [aux_sym_source_file_repeat1] = "source_file_repeat1",
+  [aux_sym_support_predicate_repeat1] = "support_predicate_repeat1",
+  [aux_sym_supports_body_repeat1] = "supports_body_repeat1",
   [aux_sym_block_repeat1] = "block_repeat1",
   [aux_sym_statement_repeat1] = "statement_repeat1",
 };
@@ -351,6 +363,7 @@ static const char * const ts_symbol_names[] = {
 static const TSSymbol ts_symbol_map[] = {
   [ts_builtin_sym_end] = ts_builtin_sym_end,
   [sym_identifier] = sym_identifier,
+  [anon_sym_supports] = anon_sym_supports,
   [anon_sym_LBRACE] = anon_sym_LBRACE,
   [anon_sym_RBRACE] = anon_sym_RBRACE,
   [anon_sym_gradient] = anon_sym_gradient,
@@ -490,6 +503,9 @@ static const TSSymbol ts_symbol_map[] = {
   [sym_source_file] = sym_source_file,
   [sym_include] = sym_include,
   [sym_declaration] = sym_declaration,
+  [sym_supports_block] = sym_supports_block,
+  [sym_support_predicate] = sym_support_predicate,
+  [sym_supports_body] = sym_supports_body,
   [sym_block] = sym_block,
   [sym_state_block] = sym_state_block,
   [sym_gradient_block] = sym_gradient_block,
@@ -509,6 +525,8 @@ static const TSSymbol ts_symbol_map[] = {
   [sym_percentage] = sym_percentage,
   [sym_keyframe_selector] = sym_keyframe_selector,
   [aux_sym_source_file_repeat1] = aux_sym_source_file_repeat1,
+  [aux_sym_support_predicate_repeat1] = aux_sym_support_predicate_repeat1,
+  [aux_sym_supports_body_repeat1] = aux_sym_supports_body_repeat1,
   [aux_sym_block_repeat1] = aux_sym_block_repeat1,
   [aux_sym_statement_repeat1] = aux_sym_statement_repeat1,
 };
@@ -521,6 +539,10 @@ static const TSSymbolMetadata ts_symbol_metadata[] = {
   [sym_identifier] = {
     .visible = true,
     .named = true,
+  },
+  [anon_sym_supports] = {
+    .visible = true,
+    .named = false,
   },
   [anon_sym_LBRACE] = {
     .visible = true,
@@ -1078,6 +1100,18 @@ static const TSSymbolMetadata ts_symbol_metadata[] = {
     .visible = true,
     .named = true,
   },
+  [sym_supports_block] = {
+    .visible = true,
+    .named = true,
+  },
+  [sym_support_predicate] = {
+    .visible = true,
+    .named = true,
+  },
+  [sym_supports_body] = {
+    .visible = true,
+    .named = true,
+  },
   [sym_block] = {
     .visible = true,
     .named = true,
@@ -1154,6 +1188,14 @@ static const TSSymbolMetadata ts_symbol_metadata[] = {
     .visible = false,
     .named = false,
   },
+  [aux_sym_support_predicate_repeat1] = {
+    .visible = false,
+    .named = false,
+  },
+  [aux_sym_supports_body_repeat1] = {
+    .visible = false,
+    .named = false,
+  },
   [aux_sym_block_repeat1] = {
     .visible = false,
     .named = false,
@@ -1170,11 +1212,12 @@ enum ts_field_identifiers {
   field_keyword = 3,
   field_kind = 4,
   field_name = 5,
-  field_property = 6,
-  field_selector = 7,
-  field_start = 8,
-  field_target = 9,
-  field_value = 10,
+  field_predicate = 6,
+  field_property = 7,
+  field_selector = 8,
+  field_start = 9,
+  field_target = 10,
+  field_value = 11,
 };
 
 static const char * const ts_field_names[] = {
@@ -1184,6 +1227,7 @@ static const char * const ts_field_names[] = {
   [field_keyword] = "keyword",
   [field_kind] = "kind",
   [field_name] = "name",
+  [field_predicate] = "predicate",
   [field_property] = "property",
   [field_selector] = "selector",
   [field_start] = "start",
@@ -1192,46 +1236,49 @@ static const char * const ts_field_names[] = {
 };
 
 static const TSMapSlice ts_field_map_slices[PRODUCTION_ID_COUNT] = {
-  [1] = {.index = 0, .length = 2},
-  [2] = {.index = 2, .length = 2},
-  [3] = {.index = 4, .length = 1},
+  [1] = {.index = 0, .length = 1},
+  [2] = {.index = 1, .length = 2},
+  [3] = {.index = 3, .length = 2},
   [4] = {.index = 5, .length = 1},
   [5] = {.index = 6, .length = 1},
   [6] = {.index = 7, .length = 1},
   [7] = {.index = 8, .length = 1},
-  [8] = {.index = 9, .length = 2},
-  [9] = {.index = 11, .length = 2},
-  [10] = {.index = 13, .length = 2},
-  [11] = {.index = 15, .length = 3},
+  [8] = {.index = 9, .length = 1},
+  [9] = {.index = 10, .length = 2},
+  [10] = {.index = 12, .length = 2},
+  [11] = {.index = 14, .length = 2},
+  [12] = {.index = 16, .length = 3},
 };
 
 static const TSFieldMapEntry ts_field_map_entries[] = {
   [0] =
+    {field_predicate, 1},
+  [1] =
     {field_keyword, 0},
     {field_target, 1},
-  [2] =
+  [3] =
     {field_kind, 0},
     {field_name, 1},
-  [4] =
-    {field_name, 0},
   [5] =
-    {field_property, 0},
+    {field_name, 0},
   [6] =
-    {field_value, 0},
+    {field_property, 0},
   [7] =
-    {field_selector, 0},
+    {field_value, 0},
   [8] =
-    {field_name, 1},
+    {field_selector, 0},
   [9] =
+    {field_name, 1},
+  [10] =
     {field_breakpoint, 1},
     {field_kind, 0},
-  [11] =
+  [12] =
     {field_property, 0},
     {field_value, 1, .inherited = true},
-  [13] =
+  [14] =
     {field_value, 0, .inherited = true},
     {field_value, 1, .inherited = true},
-  [15] =
+  [16] =
     {field_end, 2},
     {field_kind, 0},
     {field_start, 1},
@@ -1268,10 +1315,10 @@ static const TSStateId ts_primary_state_ids[STATE_COUNT] = {
   [19] = 19,
   [20] = 20,
   [21] = 21,
-  [22] = 10,
-  [23] = 23,
+  [22] = 22,
+  [23] = 17,
   [24] = 24,
-  [25] = 19,
+  [25] = 18,
   [26] = 26,
   [27] = 27,
   [28] = 28,
@@ -1305,6 +1352,17 @@ static const TSStateId ts_primary_state_ids[STATE_COUNT] = {
   [56] = 56,
   [57] = 57,
   [58] = 58,
+  [59] = 59,
+  [60] = 60,
+  [61] = 61,
+  [62] = 62,
+  [63] = 63,
+  [64] = 64,
+  [65] = 65,
+  [66] = 66,
+  [67] = 67,
+  [68] = 68,
+  [69] = 69,
 };
 
 static bool ts_lex(TSLexer *lexer, TSStateId state) {
@@ -2063,1581 +2121,1600 @@ static bool ts_lex_keywords(TSLexer *lexer, TSStateId state) {
       if (lookahead == 'o') ADVANCE(185);
       END_STATE();
     case 85:
-      if (lookahead == 'r') ADVANCE(186);
-      END_STATE();
-    case 86:
+      if (lookahead == 'p') ADVANCE(186);
       if (lookahead == 'r') ADVANCE(187);
       END_STATE();
+    case 86:
+      if (lookahead == 'r') ADVANCE(188);
+      END_STATE();
     case 87:
-      if (lookahead == 'x') ADVANCE(188);
+      if (lookahead == 'x') ADVANCE(189);
       END_STATE();
     case 88:
-      if (lookahead == 'e') ADVANCE(189);
+      if (lookahead == 'e') ADVANCE(190);
       END_STATE();
     case 89:
-      if (lookahead == 'l') ADVANCE(190);
+      if (lookahead == 'l') ADVANCE(191);
       END_STATE();
     case 90:
       ACCEPT_TOKEN(anon_sym_to);
-      if (lookahead == 'k') ADVANCE(191);
-      if (lookahead == 'n') ADVANCE(192);
+      if (lookahead == 'k') ADVANCE(192);
+      if (lookahead == 'n') ADVANCE(193);
       END_STATE();
     case 91:
-      if (lookahead == 'a') ADVANCE(193);
+      if (lookahead == 'a') ADVANCE(194);
       END_STATE();
     case 92:
-      if (lookahead == 'p') ADVANCE(194);
+      if (lookahead == 'p') ADVANCE(195);
       END_STATE();
     case 93:
-      if (lookahead == 's') ADVANCE(195);
+      if (lookahead == 's') ADVANCE(196);
       END_STATE();
     case 94:
-      if (lookahead == 'i') ADVANCE(196);
-      END_STATE();
-    case 95:
       if (lookahead == 'i') ADVANCE(197);
       END_STATE();
+    case 95:
+      if (lookahead == 'i') ADVANCE(198);
+      END_STATE();
     case 96:
-      if (lookahead == 'd') ADVANCE(198);
+      if (lookahead == 'd') ADVANCE(199);
       END_STATE();
     case 97:
-      if (lookahead == 'r') ADVANCE(199);
+      if (lookahead == 'r') ADVANCE(200);
       END_STATE();
     case 98:
-      if (lookahead == 'v') ADVANCE(200);
+      if (lookahead == 'v') ADVANCE(201);
       END_STATE();
     case 99:
-      if (lookahead == 'i') ADVANCE(201);
+      if (lookahead == 'i') ADVANCE(202);
       END_STATE();
     case 100:
-      if (lookahead == 'a') ADVANCE(202);
+      if (lookahead == 'a') ADVANCE(203);
       END_STATE();
     case 101:
-      if (lookahead == 'g') ADVANCE(203);
+      if (lookahead == 'g') ADVANCE(204);
       END_STATE();
     case 102:
-      if (lookahead == 'h') ADVANCE(204);
+      if (lookahead == 'h') ADVANCE(205);
       END_STATE();
     case 103:
-      if (lookahead == 'l') ADVANCE(205);
+      if (lookahead == 'l') ADVANCE(206);
       END_STATE();
     case 104:
-      if (lookahead == 'm') ADVANCE(206);
+      if (lookahead == 'm') ADVANCE(207);
       END_STATE();
     case 105:
-      if (lookahead == 'a') ADVANCE(207);
+      if (lookahead == 'a') ADVANCE(208);
       END_STATE();
     case 106:
-      if (lookahead == 'k') ADVANCE(208);
+      if (lookahead == 'k') ADVANCE(209);
       END_STATE();
     case 107:
-      if (lookahead == 'o') ADVANCE(209);
+      if (lookahead == 'o') ADVANCE(210);
       END_STATE();
     case 108:
-      if (lookahead == 'w') ADVANCE(210);
+      if (lookahead == 'w') ADVANCE(211);
       END_STATE();
     case 109:
-      if (lookahead == 'c') ADVANCE(211);
+      if (lookahead == 'c') ADVANCE(212);
       END_STATE();
     case 110:
-      if (lookahead == 'r') ADVANCE(212);
+      if (lookahead == 'r') ADVANCE(213);
       END_STATE();
     case 111:
-      if (lookahead == 'd') ADVANCE(213);
+      if (lookahead == 'd') ADVANCE(214);
       END_STATE();
     case 112:
       ACCEPT_TOKEN(anon_sym_box);
       END_STATE();
     case 113:
-      if (lookahead == 'g') ADVANCE(214);
+      if (lookahead == 'g') ADVANCE(215);
       END_STATE();
     case 114:
-      if (lookahead == 't') ADVANCE(215);
+      if (lookahead == 't') ADVANCE(216);
       END_STATE();
     case 115:
-      if (lookahead == 'd') ADVANCE(216);
+      if (lookahead == 'd') ADVANCE(217);
       END_STATE();
     case 116:
-      if (lookahead == 'e') ADVANCE(217);
+      if (lookahead == 'e') ADVANCE(218);
       END_STATE();
     case 117:
-      if (lookahead == 't') ADVANCE(218);
+      if (lookahead == 't') ADVANCE(219);
       END_STATE();
     case 118:
-      if (lookahead == 'c') ADVANCE(219);
+      if (lookahead == 'c') ADVANCE(220);
       END_STATE();
     case 119:
       ACCEPT_TOKEN(anon_sym_col);
-      if (lookahead == 'o') ADVANCE(220);
-      if (lookahead == 'u') ADVANCE(221);
+      if (lookahead == 'o') ADVANCE(221);
+      if (lookahead == 'u') ADVANCE(222);
       END_STATE();
     case 120:
-      if (lookahead == 't') ADVANCE(222);
+      if (lookahead == 't') ADVANCE(223);
       END_STATE();
     case 121:
-      if (lookahead == 'n') ADVANCE(223);
+      if (lookahead == 'n') ADVANCE(224);
       END_STATE();
     case 122:
       ACCEPT_TOKEN(anon_sym_css);
       END_STATE();
     case 123:
-      if (lookahead == 'o') ADVANCE(224);
+      if (lookahead == 'o') ADVANCE(225);
       END_STATE();
     case 124:
-      if (lookahead == 'a') ADVANCE(225);
+      if (lookahead == 'a') ADVANCE(226);
       END_STATE();
     case 125:
       ACCEPT_TOKEN(anon_sym_dim);
       END_STATE();
     case 126:
-      if (lookahead == 'e') ADVANCE(226);
+      if (lookahead == 'e') ADVANCE(227);
       END_STATE();
     case 127:
-      if (lookahead == 'a') ADVANCE(227);
-      if (lookahead == 'p') ADVANCE(228);
+      if (lookahead == 'a') ADVANCE(228);
+      if (lookahead == 'p') ADVANCE(229);
       END_STATE();
     case 128:
-      if (lookahead == 'k') ADVANCE(229);
+      if (lookahead == 'k') ADVANCE(230);
       END_STATE();
     case 129:
-      if (lookahead == 'a') ADVANCE(230);
+      if (lookahead == 'a') ADVANCE(231);
       END_STATE();
     case 130:
-      if (lookahead == 'e') ADVANCE(231);
-      END_STATE();
-    case 131:
       if (lookahead == 'e') ADVANCE(232);
       END_STATE();
+    case 131:
+      if (lookahead == 'e') ADVANCE(233);
+      END_STATE();
     case 132:
-      if (lookahead == 'l') ADVANCE(233);
-      if (lookahead == 't') ADVANCE(234);
+      if (lookahead == 'l') ADVANCE(234);
+      if (lookahead == 't') ADVANCE(235);
       END_STATE();
     case 133:
-      if (lookahead == 'x') ADVANCE(235);
+      if (lookahead == 'x') ADVANCE(236);
       END_STATE();
     case 134:
-      if (lookahead == 'w') ADVANCE(236);
+      if (lookahead == 'w') ADVANCE(237);
       END_STATE();
     case 135:
-      if (lookahead == 'u') ADVANCE(237);
+      if (lookahead == 'u') ADVANCE(238);
       END_STATE();
     case 136:
-      if (lookahead == 't') ADVANCE(238);
+      if (lookahead == 't') ADVANCE(239);
       END_STATE();
     case 137:
-      if (lookahead == 'm') ADVANCE(239);
+      if (lookahead == 'm') ADVANCE(240);
       END_STATE();
     case 138:
       ACCEPT_TOKEN(anon_sym_gap);
       END_STATE();
     case 139:
-      if (lookahead == 'w') ADVANCE(240);
+      if (lookahead == 'w') ADVANCE(241);
       END_STATE();
     case 140:
-      if (lookahead == 'd') ADVANCE(241);
-      END_STATE();
-    case 141:
       if (lookahead == 'd') ADVANCE(242);
       END_STATE();
+    case 141:
+      if (lookahead == 'd') ADVANCE(243);
+      END_STATE();
     case 142:
-      if (lookahead == 'w') ADVANCE(243);
+      if (lookahead == 'w') ADVANCE(244);
       END_STATE();
     case 143:
-      if (lookahead == 'g') ADVANCE(244);
+      if (lookahead == 'g') ADVANCE(245);
       END_STATE();
     case 144:
-      if (lookahead == 'e') ADVANCE(245);
+      if (lookahead == 'e') ADVANCE(246);
       END_STATE();
     case 145:
-      if (lookahead == 'h') ADVANCE(246);
+      if (lookahead == 'h') ADVANCE(247);
       END_STATE();
     case 146:
-      if (lookahead == 'i') ADVANCE(247);
+      if (lookahead == 'i') ADVANCE(248);
       END_STATE();
     case 147:
-      if (lookahead == 'a') ADVANCE(248);
+      if (lookahead == 'a') ADVANCE(249);
       END_STATE();
     case 148:
-      if (lookahead == 'r') ADVANCE(249);
+      if (lookahead == 'r') ADVANCE(250);
       END_STATE();
     case 149:
-      if (lookahead == 't') ADVANCE(250);
+      if (lookahead == 't') ADVANCE(251);
       END_STATE();
     case 150:
-      if (lookahead == 'f') ADVANCE(251);
+      if (lookahead == 'f') ADVANCE(252);
       END_STATE();
     case 151:
-      if (lookahead == 't') ADVANCE(252);
-      END_STATE();
-    case 152:
       if (lookahead == 't') ADVANCE(253);
       END_STATE();
+    case 152:
+      if (lookahead == 't') ADVANCE(254);
+      END_STATE();
     case 153:
-      if (lookahead == 'e') ADVANCE(254);
+      if (lookahead == 'e') ADVANCE(255);
       END_STATE();
     case 154:
-      if (lookahead == 'g') ADVANCE(255);
+      if (lookahead == 'g') ADVANCE(256);
       END_STATE();
     case 155:
-      if (lookahead == '-') ADVANCE(256);
-      END_STATE();
-    case 156:
       if (lookahead == '-') ADVANCE(257);
       END_STATE();
+    case 156:
+      if (lookahead == '-') ADVANCE(258);
+      END_STATE();
     case 157:
-      if (lookahead == 's') ADVANCE(258);
+      if (lookahead == 's') ADVANCE(259);
       END_STATE();
     case 158:
-      if (lookahead == 'c') ADVANCE(259);
+      if (lookahead == 'c') ADVANCE(260);
       END_STATE();
     case 159:
-      if (lookahead == 'l') ADVANCE(260);
+      if (lookahead == 'l') ADVANCE(261);
       END_STATE();
     case 160:
-      if (lookahead == 'r') ADVANCE(261);
+      if (lookahead == 'r') ADVANCE(262);
       END_STATE();
     case 161:
-      if (lookahead == 'd') ADVANCE(262);
+      if (lookahead == 'd') ADVANCE(263);
       END_STATE();
     case 162:
-      if (lookahead == 'e') ADVANCE(263);
+      if (lookahead == 'e') ADVANCE(264);
       END_STATE();
     case 163:
-      if (lookahead == 'c') ADVANCE(264);
-      if (lookahead == 'y') ADVANCE(265);
+      if (lookahead == 'c') ADVANCE(265);
+      if (lookahead == 'y') ADVANCE(266);
       END_STATE();
     case 164:
       ACCEPT_TOKEN(anon_sym_pop);
       END_STATE();
     case 165:
-      if (lookahead == 'i') ADVANCE(266);
+      if (lookahead == 'i') ADVANCE(267);
       END_STATE();
     case 166:
-      if (lookahead == 's') ADVANCE(267);
+      if (lookahead == 's') ADVANCE(268);
       END_STATE();
     case 167:
-      if (lookahead == 'i') ADVANCE(268);
+      if (lookahead == 'i') ADVANCE(269);
       END_STATE();
     case 168:
-      if (lookahead == 'u') ADVANCE(269);
+      if (lookahead == 'u') ADVANCE(270);
       END_STATE();
     case 169:
-      if (lookahead == 'g') ADVANCE(270);
+      if (lookahead == 'g') ADVANCE(271);
       END_STATE();
     case 170:
-      if (lookahead == 'a') ADVANCE(271);
+      if (lookahead == 'a') ADVANCE(272);
       END_STATE();
     case 171:
       ACCEPT_TOKEN(anon_sym_row);
-      if (lookahead == 's') ADVANCE(272);
+      if (lookahead == 's') ADVANCE(273);
       END_STATE();
     case 172:
-      if (lookahead == 'l') ADVANCE(273);
+      if (lookahead == 'l') ADVANCE(274);
       END_STATE();
     case 173:
-      if (lookahead == 't') ADVANCE(274);
+      if (lookahead == 't') ADVANCE(275);
       END_STATE();
     case 174:
-      if (lookahead == 'd') ADVANCE(275);
-      if (lookahead == 'p') ADVANCE(276);
+      if (lookahead == 'd') ADVANCE(276);
+      if (lookahead == 'p') ADVANCE(277);
       END_STATE();
     case 175:
-      if (lookahead == 'f') ADVANCE(277);
+      if (lookahead == 'f') ADVANCE(278);
       END_STATE();
     case 176:
-      if (lookahead == 'i') ADVANCE(278);
+      if (lookahead == 'i') ADVANCE(279);
       END_STATE();
     case 177:
-      if (lookahead == 'k') ADVANCE(279);
+      if (lookahead == 'k') ADVANCE(280);
       END_STATE();
     case 178:
-      if (lookahead == 'e') ADVANCE(280);
+      if (lookahead == 'e') ADVANCE(281);
       END_STATE();
     case 179:
-      if (lookahead == 'd') ADVANCE(281);
+      if (lookahead == 'd') ADVANCE(282);
       END_STATE();
     case 180:
-      if (lookahead == 'o') ADVANCE(282);
+      if (lookahead == 'o') ADVANCE(283);
       END_STATE();
     case 181:
-      if (lookahead == 'n') ADVANCE(283);
+      if (lookahead == 'n') ADVANCE(284);
       END_STATE();
     case 182:
-      if (lookahead == 'i') ADVANCE(284);
+      if (lookahead == 'i') ADVANCE(285);
       END_STATE();
     case 183:
-      if (lookahead == 'a') ADVANCE(285);
+      if (lookahead == 'a') ADVANCE(286);
       END_STATE();
     case 184:
-      if (lookahead == 'c') ADVANCE(286);
+      if (lookahead == 'c') ADVANCE(287);
       END_STATE();
     case 185:
-      if (lookahead == 'p') ADVANCE(287);
+      if (lookahead == 'p') ADVANCE(288);
       END_STATE();
     case 186:
-      if (lookahead == 'f') ADVANCE(288);
+      if (lookahead == 'p') ADVANCE(289);
       END_STATE();
     case 187:
-      if (lookahead == 'g') ADVANCE(289);
+      if (lookahead == 'f') ADVANCE(290);
       END_STATE();
     case 188:
-      if (lookahead == 't') ADVANCE(290);
+      if (lookahead == 'g') ADVANCE(291);
       END_STATE();
     case 189:
-      if (lookahead == 'm') ADVANCE(291);
-      END_STATE();
-    case 190:
       if (lookahead == 't') ADVANCE(292);
       END_STATE();
+    case 190:
+      if (lookahead == 'm') ADVANCE(293);
+      END_STATE();
     case 191:
-      if (lookahead == 'e') ADVANCE(293);
+      if (lookahead == 't') ADVANCE(294);
       END_STATE();
     case 192:
-      if (lookahead == 'e') ADVANCE(294);
+      if (lookahead == 'e') ADVANCE(295);
       END_STATE();
     case 193:
-      if (lookahead == 'n') ADVANCE(295);
-      END_STATE();
-    case 194:
       if (lookahead == 'e') ADVANCE(296);
       END_STATE();
+    case 194:
+      if (lookahead == 'n') ADVANCE(297);
+      END_STATE();
     case 195:
-      if (lookahead == 'i') ADVANCE(297);
+      if (lookahead == 'e') ADVANCE(298);
       END_STATE();
     case 196:
-      if (lookahead == 'g') ADVANCE(298);
+      if (lookahead == 'i') ADVANCE(299);
       END_STATE();
     case 197:
-      if (lookahead == 't') ADVANCE(299);
+      if (lookahead == 'g') ADVANCE(300);
       END_STATE();
     case 198:
-      if (lookahead == 't') ADVANCE(300);
+      if (lookahead == 't') ADVANCE(301);
       END_STATE();
     case 199:
-      if (lookahead == 'd') ADVANCE(301);
+      if (lookahead == 't') ADVANCE(302);
       END_STATE();
     case 200:
-      if (lookahead == 'e') ADVANCE(302);
+      if (lookahead == 'd') ADVANCE(303);
       END_STATE();
     case 201:
-      if (lookahead == 'v') ADVANCE(303);
+      if (lookahead == 'e') ADVANCE(304);
       END_STATE();
     case 202:
-      if (lookahead == 'n') ADVANCE(304);
+      if (lookahead == 'v') ADVANCE(305);
       END_STATE();
     case 203:
-      if (lookahead == 'n') ADVANCE(305);
+      if (lookahead == 'n') ADVANCE(306);
       END_STATE();
     case 204:
-      if (lookahead == 'o') ADVANCE(306);
+      if (lookahead == 'n') ADVANCE(307);
       END_STATE();
     case 205:
-      if (lookahead == 'e') ADVANCE(307);
+      if (lookahead == 'o') ADVANCE(308);
       END_STATE();
     case 206:
-      if (lookahead == 'a') ADVANCE(308);
+      if (lookahead == 'e') ADVANCE(309);
       END_STATE();
     case 207:
-      ACCEPT_TOKEN(anon_sym_area);
+      if (lookahead == 'a') ADVANCE(310);
       END_STATE();
     case 208:
-      if (lookahead == 'g') ADVANCE(309);
+      ACCEPT_TOKEN(anon_sym_area);
       END_STATE();
     case 209:
-      if (lookahead == 'w') ADVANCE(310);
+      if (lookahead == 'g') ADVANCE(311);
       END_STATE();
     case 210:
-      if (lookahead == 'e') ADVANCE(311);
+      if (lookahead == 'w') ADVANCE(312);
       END_STATE();
     case 211:
-      if (lookahead == 'k') ADVANCE(312);
-      END_STATE();
-    case 212:
-      ACCEPT_TOKEN(anon_sym_blur);
-      END_STATE();
-    case 213:
       if (lookahead == 'e') ADVANCE(313);
       END_STATE();
+    case 212:
+      if (lookahead == 'k') ADVANCE(314);
+      END_STATE();
+    case 213:
+      ACCEPT_TOKEN(anon_sym_blur);
+      END_STATE();
     case 214:
-      if (lookahead == 'h') ADVANCE(314);
+      if (lookahead == 'e') ADVANCE(315);
       END_STATE();
     case 215:
-      if (lookahead == 'o') ADVANCE(315);
+      if (lookahead == 'h') ADVANCE(316);
       END_STATE();
     case 216:
-      ACCEPT_TOKEN(anon_sym_card);
+      if (lookahead == 'o') ADVANCE(317);
       END_STATE();
     case 217:
-      ACCEPT_TOKEN(anon_sym_case);
+      ACCEPT_TOKEN(anon_sym_card);
       END_STATE();
     case 218:
-      if (lookahead == 'e') ADVANCE(316);
+      ACCEPT_TOKEN(anon_sym_case);
       END_STATE();
     case 219:
-      if (lookahead == 'k') ADVANCE(317);
+      if (lookahead == 'e') ADVANCE(318);
       END_STATE();
     case 220:
-      if (lookahead == 'r') ADVANCE(318);
+      if (lookahead == 'k') ADVANCE(319);
       END_STATE();
     case 221:
-      if (lookahead == 'm') ADVANCE(319);
+      if (lookahead == 'r') ADVANCE(320);
       END_STATE();
     case 222:
-      if (lookahead == 'a') ADVANCE(320);
+      if (lookahead == 'm') ADVANCE(321);
       END_STATE();
     case 223:
-      if (lookahead == 'e') ADVANCE(321);
+      if (lookahead == 'a') ADVANCE(322);
       END_STATE();
     case 224:
-      if (lookahead == 'r') ADVANCE(322);
+      if (lookahead == 'e') ADVANCE(323);
       END_STATE();
     case 225:
-      if (lookahead == 'y') ADVANCE(323);
+      if (lookahead == 'r') ADVANCE(324);
       END_STATE();
     case 226:
-      if (lookahead == 'c') ADVANCE(324);
+      if (lookahead == 'y') ADVANCE(325);
       END_STATE();
     case 227:
-      if (lookahead == 'b') ADVANCE(325);
+      if (lookahead == 'c') ADVANCE(326);
       END_STATE();
     case 228:
-      if (lookahead == 'l') ADVANCE(326);
+      if (lookahead == 'b') ADVANCE(327);
       END_STATE();
     case 229:
-      ACCEPT_TOKEN(anon_sym_dock);
+      if (lookahead == 'l') ADVANCE(328);
       END_STATE();
     case 230:
-      if (lookahead == 't') ADVANCE(327);
+      ACCEPT_TOKEN(anon_sym_dock);
       END_STATE();
     case 231:
-      ACCEPT_TOKEN(anon_sym_ease);
+      if (lookahead == 't') ADVANCE(329);
       END_STATE();
     case 232:
-      ACCEPT_TOKEN(anon_sym_fade);
+      ACCEPT_TOKEN(anon_sym_ease);
       END_STATE();
     case 233:
-      ACCEPT_TOKEN(anon_sym_fill);
+      ACCEPT_TOKEN(anon_sym_fade);
       END_STATE();
     case 234:
-      if (lookahead == 'e') ADVANCE(328);
+      ACCEPT_TOKEN(anon_sym_fill);
       END_STATE();
     case 235:
-      ACCEPT_TOKEN(anon_sym_flex);
+      if (lookahead == 'e') ADVANCE(330);
       END_STATE();
     case 236:
-      ACCEPT_TOKEN(anon_sym_flow);
+      ACCEPT_TOKEN(anon_sym_flex);
       END_STATE();
     case 237:
-      if (lookahead == 's') ADVANCE(329);
+      ACCEPT_TOKEN(anon_sym_flow);
       END_STATE();
     case 238:
-      ACCEPT_TOKEN(anon_sym_font);
+      if (lookahead == 's') ADVANCE(331);
       END_STATE();
     case 239:
-      ACCEPT_TOKEN(anon_sym_from);
+      ACCEPT_TOKEN(anon_sym_font);
       END_STATE();
     case 240:
-      ACCEPT_TOKEN(anon_sym_glow);
+      ACCEPT_TOKEN(anon_sym_from);
       END_STATE();
     case 241:
-      if (lookahead == 'i') ADVANCE(330);
+      ACCEPT_TOKEN(anon_sym_glow);
       END_STATE();
     case 242:
-      ACCEPT_TOKEN(anon_sym_grid);
+      if (lookahead == 'i') ADVANCE(332);
       END_STATE();
     case 243:
-      ACCEPT_TOKEN(anon_sym_grow);
+      ACCEPT_TOKEN(anon_sym_grid);
       END_STATE();
     case 244:
-      if (lookahead == 'h') ADVANCE(331);
+      ACCEPT_TOKEN(anon_sym_grow);
       END_STATE();
     case 245:
-      if (lookahead == 'r') ADVANCE(332);
+      if (lookahead == 'h') ADVANCE(333);
       END_STATE();
     case 246:
-      if (lookahead == 'e') ADVANCE(333);
+      if (lookahead == 'r') ADVANCE(334);
       END_STATE();
     case 247:
-      if (lookahead == 'n') ADVANCE(334);
+      if (lookahead == 'e') ADVANCE(335);
       END_STATE();
     case 248:
-      if (lookahead == 'l') ADVANCE(335);
+      if (lookahead == 'n') ADVANCE(336);
       END_STATE();
     case 249:
-      if (lookahead == 'a') ADVANCE(336);
+      if (lookahead == 'l') ADVANCE(337);
       END_STATE();
     case 250:
-      if (lookahead == 'i') ADVANCE(337);
+      if (lookahead == 'a') ADVANCE(338);
       END_STATE();
     case 251:
-      if (lookahead == 'r') ADVANCE(338);
+      if (lookahead == 'i') ADVANCE(339);
       END_STATE();
     case 252:
-      if (lookahead == 'e') ADVANCE(339);
+      if (lookahead == 'r') ADVANCE(340);
       END_STATE();
     case 253:
-      ACCEPT_TOKEN(anon_sym_lift);
+      if (lookahead == 'e') ADVANCE(341);
       END_STATE();
     case 254:
-      ACCEPT_TOKEN(anon_sym_line);
+      ACCEPT_TOKEN(anon_sym_lift);
       END_STATE();
     case 255:
-      if (lookahead == 'i') ADVANCE(340);
+      ACCEPT_TOKEN(anon_sym_line);
       END_STATE();
     case 256:
-      if (lookahead == 'b') ADVANCE(341);
-      if (lookahead == 'h') ADVANCE(342);
-      if (lookahead == 'i') ADVANCE(343);
-      if (lookahead == 'w') ADVANCE(344);
+      if (lookahead == 'i') ADVANCE(342);
       END_STATE();
     case 257:
-      if (lookahead == 'b') ADVANCE(345);
-      if (lookahead == 'h') ADVANCE(346);
-      if (lookahead == 'i') ADVANCE(347);
-      if (lookahead == 'w') ADVANCE(348);
+      if (lookahead == 'b') ADVANCE(343);
+      if (lookahead == 'h') ADVANCE(344);
+      if (lookahead == 'i') ADVANCE(345);
+      if (lookahead == 'w') ADVANCE(346);
       END_STATE();
     case 258:
-      if (lookahead == 'e') ADVANCE(349);
+      if (lookahead == 'b') ADVANCE(347);
+      if (lookahead == 'h') ADVANCE(348);
+      if (lookahead == 'i') ADVANCE(349);
+      if (lookahead == 'w') ADVANCE(350);
       END_STATE();
     case 259:
-      if (lookahead == 'i') ADVANCE(350);
+      if (lookahead == 'e') ADVANCE(351);
       END_STATE();
     case 260:
-      if (lookahead == 'i') ADVANCE(351);
+      if (lookahead == 'i') ADVANCE(352);
       END_STATE();
     case 261:
-      if (lookahead == 'l') ADVANCE(352);
-      END_STATE();
-    case 262:
       if (lookahead == 'i') ADVANCE(353);
       END_STATE();
+    case 262:
+      if (lookahead == 'l') ADVANCE(354);
+      END_STATE();
     case 263:
-      if (lookahead == 't') ADVANCE(354);
+      if (lookahead == 'i') ADVANCE(355);
       END_STATE();
     case 264:
-      if (lookahead == 'e') ADVANCE(355);
+      if (lookahead == 't') ADVANCE(356);
       END_STATE();
     case 265:
-      if (lookahead == '-') ADVANCE(356);
+      if (lookahead == 'e') ADVANCE(357);
       END_STATE();
     case 266:
-      if (lookahead == 't') ADVANCE(357);
+      if (lookahead == '-') ADVANCE(358);
       END_STATE();
     case 267:
-      if (lookahead == 's') ADVANCE(358);
+      if (lookahead == 't') ADVANCE(359);
       END_STATE();
     case 268:
-      if (lookahead == 'u') ADVANCE(359);
+      if (lookahead == 's') ADVANCE(360);
       END_STATE();
     case 269:
-      if (lookahead == 'i') ADVANCE(360);
+      if (lookahead == 'u') ADVANCE(361);
       END_STATE();
     case 270:
-      ACCEPT_TOKEN(anon_sym_ring);
+      if (lookahead == 'i') ADVANCE(362);
       END_STATE();
     case 271:
-      if (lookahead == 't') ADVANCE(361);
+      ACCEPT_TOKEN(anon_sym_ring);
       END_STATE();
     case 272:
-      ACCEPT_TOKEN(anon_sym_rows);
+      if (lookahead == 't') ADVANCE(363);
       END_STATE();
     case 273:
-      if (lookahead == 'e') ADVANCE(362);
+      ACCEPT_TOKEN(anon_sym_rows);
       END_STATE();
     case 274:
-      if (lookahead == 'i') ADVANCE(363);
+      if (lookahead == 'e') ADVANCE(364);
       END_STATE();
     case 275:
-      if (lookahead == 'o') ADVANCE(364);
+      if (lookahead == 'i') ADVANCE(365);
       END_STATE();
     case 276:
-      if (lookahead == 'e') ADVANCE(365);
+      if (lookahead == 'o') ADVANCE(366);
       END_STATE();
     case 277:
-      if (lookahead == 't') ADVANCE(366);
+      if (lookahead == 'e') ADVANCE(367);
       END_STATE();
     case 278:
-      if (lookahead == 'n') ADVANCE(367);
+      if (lookahead == 't') ADVANCE(368);
       END_STATE();
     case 279:
-      ACCEPT_TOKEN(anon_sym_sink);
+      if (lookahead == 'n') ADVANCE(369);
       END_STATE();
     case 280:
-      ACCEPT_TOKEN(anon_sym_size);
+      ACCEPT_TOKEN(anon_sym_sink);
       END_STATE();
     case 281:
-      if (lookahead == 'e') ADVANCE(368);
+      ACCEPT_TOKEN(anon_sym_size);
       END_STATE();
     case 282:
-      if (lookahead == 't') ADVANCE(369);
+      if (lookahead == 'e') ADVANCE(370);
       END_STATE();
     case 283:
-      ACCEPT_TOKEN(anon_sym_span);
+      if (lookahead == 't') ADVANCE(371);
       END_STATE();
     case 284:
-      if (lookahead == 't') ADVANCE(370);
+      ACCEPT_TOKEN(anon_sym_span);
       END_STATE();
     case 285:
-      if (lookahead == 'r') ADVANCE(371);
+      if (lookahead == 't') ADVANCE(372);
       END_STATE();
     case 286:
-      if (lookahead == 'k') ADVANCE(372);
+      if (lookahead == 'r') ADVANCE(373);
       END_STATE();
     case 287:
-      ACCEPT_TOKEN(anon_sym_stop);
+      if (lookahead == 'k') ADVANCE(374);
       END_STATE();
     case 288:
-      if (lookahead == 'a') ADVANCE(373);
+      ACCEPT_TOKEN(anon_sym_stop);
       END_STATE();
     case 289:
-      if (lookahead == 'e') ADVANCE(374);
+      if (lookahead == 'o') ADVANCE(375);
       END_STATE();
     case 290:
-      ACCEPT_TOKEN(anon_sym_text);
+      if (lookahead == 'a') ADVANCE(376);
       END_STATE();
     case 291:
-      if (lookahead == 'e') ADVANCE(375);
+      if (lookahead == 'e') ADVANCE(377);
       END_STATE();
     case 292:
-      ACCEPT_TOKEN(anon_sym_tilt);
+      ACCEPT_TOKEN(anon_sym_text);
       END_STATE();
     case 293:
-      if (lookahead == 'n') ADVANCE(376);
+      if (lookahead == 'e') ADVANCE(378);
       END_STATE();
     case 294:
-      ACCEPT_TOKEN(anon_sym_tone);
+      ACCEPT_TOKEN(anon_sym_tilt);
       END_STATE();
     case 295:
-      if (lookahead == 's') ADVANCE(377);
+      if (lookahead == 'n') ADVANCE(379);
       END_STATE();
     case 296:
-      ACCEPT_TOKEN(anon_sym_type);
+      ACCEPT_TOKEN(anon_sym_tone);
       END_STATE();
     case 297:
-      if (lookahead == 'b') ADVANCE(378);
+      if (lookahead == 's') ADVANCE(380);
       END_STATE();
     case 298:
-      if (lookahead == 'h') ADVANCE(379);
+      ACCEPT_TOKEN(anon_sym_type);
       END_STATE();
     case 299:
-      if (lookahead == 'e') ADVANCE(380);
+      if (lookahead == 'b') ADVANCE(381);
       END_STATE();
     case 300:
-      if (lookahead == 'h') ADVANCE(381);
+      if (lookahead == 'h') ADVANCE(382);
       END_STATE();
     case 301:
-      if (lookahead == '-') ADVANCE(382);
-      END_STATE();
-    case 302:
-      ACCEPT_TOKEN(anon_sym_above);
-      END_STATE();
-    case 303:
       if (lookahead == 'e') ADVANCE(383);
       END_STATE();
-    case 304:
-      if (lookahead == 'c') ADVANCE(384);
+    case 302:
+      if (lookahead == 'h') ADVANCE(384);
       END_STATE();
-    case 305:
-      ACCEPT_TOKEN(anon_sym_align);
+    case 303:
       if (lookahead == '-') ADVANCE(385);
       END_STATE();
+    case 304:
+      ACCEPT_TOKEN(anon_sym_above);
+      END_STATE();
+    case 305:
+      if (lookahead == 'e') ADVANCE(386);
+      END_STATE();
     case 306:
-      if (lookahead == 'r') ADVANCE(386);
+      if (lookahead == 'c') ADVANCE(387);
       END_STATE();
     case 307:
-      ACCEPT_TOKEN(anon_sym_angle);
+      ACCEPT_TOKEN(anon_sym_align);
+      if (lookahead == '-') ADVANCE(388);
       END_STATE();
     case 308:
-      if (lookahead == 't') ADVANCE(387);
+      if (lookahead == 'r') ADVANCE(389);
       END_STATE();
     case 309:
-      if (lookahead == 'r') ADVANCE(388);
+      ACCEPT_TOKEN(anon_sym_angle);
       END_STATE();
     case 310:
-      ACCEPT_TOKEN(anon_sym_below);
+      if (lookahead == 't') ADVANCE(390);
       END_STATE();
     case 311:
-      if (lookahead == 'e') ADVANCE(389);
-      END_STATE();
-    case 312:
-      if (lookahead == '-') ADVANCE(390);
-      END_STATE();
-    case 313:
       if (lookahead == 'r') ADVANCE(391);
       END_STATE();
+    case 312:
+      ACCEPT_TOKEN(anon_sym_below);
+      END_STATE();
+    case 313:
+      if (lookahead == 'e') ADVANCE(392);
+      END_STATE();
     case 314:
-      if (lookahead == 't') ADVANCE(392);
+      if (lookahead == '-') ADVANCE(393);
       END_STATE();
     case 315:
-      if (lookahead == 'n') ADVANCE(393);
-      END_STATE();
-    case 316:
       if (lookahead == 'r') ADVANCE(394);
       END_STATE();
+    case 316:
+      if (lookahead == 't') ADVANCE(395);
+      END_STATE();
     case 317:
-      if (lookahead == 'e') ADVANCE(395);
-      END_STATE();
-    case 318:
-      ACCEPT_TOKEN(anon_sym_color);
-      END_STATE();
-    case 319:
       if (lookahead == 'n') ADVANCE(396);
       END_STATE();
+    case 318:
+      if (lookahead == 'r') ADVANCE(397);
+      END_STATE();
+    case 319:
+      if (lookahead == 'e') ADVANCE(398);
+      END_STATE();
     case 320:
-      if (lookahead == 'i') ADVANCE(397);
+      ACCEPT_TOKEN(anon_sym_color);
       END_STATE();
     case 321:
-      if (lookahead == 'r') ADVANCE(398);
+      if (lookahead == 'n') ADVANCE(399);
       END_STATE();
     case 322:
-      if (lookahead == 'a') ADVANCE(399);
+      if (lookahead == 'i') ADVANCE(400);
       END_STATE();
     case 323:
-      ACCEPT_TOKEN(anon_sym_delay);
+      if (lookahead == 'r') ADVANCE(401);
       END_STATE();
     case 324:
-      if (lookahead == 't') ADVANCE(400);
-      END_STATE();
-    case 325:
-      if (lookahead == 'l') ADVANCE(401);
-      END_STATE();
-    case 326:
       if (lookahead == 'a') ADVANCE(402);
       END_STATE();
+    case 325:
+      ACCEPT_TOKEN(anon_sym_delay);
+      END_STATE();
+    case 326:
+      if (lookahead == 't') ADVANCE(403);
+      END_STATE();
     case 327:
-      if (lookahead == 'i') ADVANCE(403);
+      if (lookahead == 'l') ADVANCE(404);
       END_STATE();
     case 328:
-      if (lookahead == 'r') ADVANCE(404);
+      if (lookahead == 'a') ADVANCE(405);
       END_STATE();
     case 329:
-      ACCEPT_TOKEN(anon_sym_focus);
-      if (lookahead == '-') ADVANCE(405);
+      if (lookahead == 'i') ADVANCE(406);
       END_STATE();
     case 330:
-      if (lookahead == 'e') ADVANCE(406);
+      if (lookahead == 'r') ADVANCE(407);
       END_STATE();
     case 331:
-      if (lookahead == 't') ADVANCE(407);
+      ACCEPT_TOKEN(anon_sym_focus);
+      if (lookahead == '-') ADVANCE(408);
       END_STATE();
     case 332:
-      ACCEPT_TOKEN(anon_sym_hover);
-      END_STATE();
-    case 333:
-      if (lookahead == 'n') ADVANCE(408);
-      END_STATE();
-    case 334:
       if (lookahead == 'e') ADVANCE(409);
       END_STATE();
+    case 333:
+      if (lookahead == 't') ADVANCE(410);
+      END_STATE();
+    case 334:
+      ACCEPT_TOKEN(anon_sym_hover);
+      END_STATE();
     case 335:
-      if (lookahead == 'i') ADVANCE(410);
+      if (lookahead == 'n') ADVANCE(411);
       END_STATE();
     case 336:
-      if (lookahead == 't') ADVANCE(411);
+      if (lookahead == 'e') ADVANCE(412);
       END_STATE();
     case 337:
-      if (lookahead == 'f') ADVANCE(412);
+      if (lookahead == 'i') ADVANCE(413);
       END_STATE();
     case 338:
-      if (lookahead == 'a') ADVANCE(413);
+      if (lookahead == 't') ADVANCE(414);
       END_STATE();
     case 339:
-      if (lookahead == 'r') ADVANCE(414);
+      if (lookahead == 'f') ADVANCE(415);
       END_STATE();
     case 340:
-      if (lookahead == 'n') ADVANCE(415);
+      if (lookahead == 'a') ADVANCE(416);
       END_STATE();
     case 341:
-      if (lookahead == 'l') ADVANCE(416);
+      if (lookahead == 'r') ADVANCE(417);
       END_STATE();
     case 342:
-      if (lookahead == 'e') ADVANCE(417);
-      END_STATE();
-    case 343:
       if (lookahead == 'n') ADVANCE(418);
       END_STATE();
+    case 343:
+      if (lookahead == 'l') ADVANCE(419);
+      END_STATE();
     case 344:
-      if (lookahead == 'i') ADVANCE(419);
+      if (lookahead == 'e') ADVANCE(420);
       END_STATE();
     case 345:
-      if (lookahead == 'l') ADVANCE(420);
+      if (lookahead == 'n') ADVANCE(421);
       END_STATE();
     case 346:
-      if (lookahead == 'e') ADVANCE(421);
+      if (lookahead == 'i') ADVANCE(422);
       END_STATE();
     case 347:
-      if (lookahead == 'n') ADVANCE(422);
+      if (lookahead == 'l') ADVANCE(423);
       END_STATE();
     case 348:
-      if (lookahead == 'i') ADVANCE(423);
+      if (lookahead == 'e') ADVANCE(424);
       END_STATE();
     case 349:
-      if (lookahead == 't') ADVANCE(424);
+      if (lookahead == 'n') ADVANCE(425);
       END_STATE();
     case 350:
-      if (lookahead == 't') ADVANCE(425);
+      if (lookahead == 'i') ADVANCE(426);
       END_STATE();
     case 351:
-      if (lookahead == 'n') ADVANCE(426);
+      if (lookahead == 't') ADVANCE(427);
       END_STATE();
     case 352:
-      if (lookahead == 'a') ADVANCE(427);
+      if (lookahead == 't') ADVANCE(428);
       END_STATE();
     case 353:
-      if (lookahead == 'n') ADVANCE(428);
+      if (lookahead == 'n') ADVANCE(429);
       END_STATE();
     case 354:
-      if (lookahead == 't') ADVANCE(429);
+      if (lookahead == 'a') ADVANCE(430);
       END_STATE();
     case 355:
-      ACCEPT_TOKEN(anon_sym_place);
+      if (lookahead == 'n') ADVANCE(431);
       END_STATE();
     case 356:
-      if (lookahead == 's') ADVANCE(430);
+      if (lookahead == 't') ADVANCE(432);
       END_STATE();
     case 357:
-      if (lookahead == 'i') ADVANCE(431);
+      ACCEPT_TOKEN(anon_sym_place);
       END_STATE();
     case 358:
-      ACCEPT_TOKEN(anon_sym_press);
+      if (lookahead == 's') ADVANCE(433);
       END_STATE();
     case 359:
-      if (lookahead == 's') ADVANCE(432);
+      if (lookahead == 'i') ADVANCE(434);
       END_STATE();
     case 360:
-      if (lookahead == 'r') ADVANCE(433);
+      ACCEPT_TOKEN(anon_sym_press);
       END_STATE();
     case 361:
-      if (lookahead == 'e') ADVANCE(434);
+      if (lookahead == 's') ADVANCE(435);
       END_STATE();
     case 362:
-      ACCEPT_TOKEN(anon_sym_scale);
+      if (lookahead == 'r') ADVANCE(436);
       END_STATE();
     case 363:
-      if (lookahead == 'o') ADVANCE(435);
+      if (lookahead == 'e') ADVANCE(437);
       END_STATE();
     case 364:
-      if (lookahead == 'w') ADVANCE(436);
+      ACCEPT_TOKEN(anon_sym_scale);
       END_STATE();
     case 365:
-      ACCEPT_TOKEN(anon_sym_shape);
+      if (lookahead == 'o') ADVANCE(438);
       END_STATE();
     case 366:
-      ACCEPT_TOKEN(anon_sym_shift);
+      if (lookahead == 'w') ADVANCE(439);
       END_STATE();
     case 367:
-      if (lookahead == 'k') ADVANCE(437);
+      ACCEPT_TOKEN(anon_sym_shape);
       END_STATE();
     case 368:
-      ACCEPT_TOKEN(anon_sym_slide);
+      ACCEPT_TOKEN(anon_sym_shift);
       END_STATE();
     case 369:
-      if (lookahead == 'h') ADVANCE(438);
+      if (lookahead == 'k') ADVANCE(440);
       END_STATE();
     case 370:
-      ACCEPT_TOKEN(anon_sym_split);
+      ACCEPT_TOKEN(anon_sym_slide);
       END_STATE();
     case 371:
-      if (lookahead == 'e') ADVANCE(439);
+      if (lookahead == 'h') ADVANCE(441);
       END_STATE();
     case 372:
-      ACCEPT_TOKEN(anon_sym_stack);
+      ACCEPT_TOKEN(anon_sym_split);
       END_STATE();
     case 373:
-      if (lookahead == 'c') ADVANCE(440);
+      if (lookahead == 'e') ADVANCE(442);
       END_STATE();
     case 374:
-      if (lookahead == 't') ADVANCE(441);
+      ACCEPT_TOKEN(anon_sym_stack);
       END_STATE();
     case 375:
-      ACCEPT_TOKEN(anon_sym_theme);
+      if (lookahead == 'r') ADVANCE(443);
       END_STATE();
     case 376:
-      if (lookahead == 's') ADVANCE(442);
+      if (lookahead == 'c') ADVANCE(444);
       END_STATE();
     case 377:
-      if (lookahead == 'f') ADVANCE(443);
-      if (lookahead == 'i') ADVANCE(444);
-      if (lookahead == 'l') ADVANCE(445);
+      if (lookahead == 't') ADVANCE(445);
       END_STATE();
     case 378:
-      if (lookahead == 'i') ADVANCE(446);
+      ACCEPT_TOKEN(anon_sym_theme);
       END_STATE();
     case 379:
-      if (lookahead == 't') ADVANCE(447);
+      if (lookahead == 's') ADVANCE(446);
       END_STATE();
     case 380:
-      if (lookahead == 's') ADVANCE(448);
+      if (lookahead == 'f') ADVANCE(447);
+      if (lookahead == 'i') ADVANCE(448);
+      if (lookahead == 'l') ADVANCE(449);
       END_STATE();
     case 381:
-      ACCEPT_TOKEN(anon_sym_width);
+      if (lookahead == 'i') ADVANCE(450);
       END_STATE();
     case 382:
-      if (lookahead == 'b') ADVANCE(449);
-      END_STATE();
-    case 383:
-      ACCEPT_TOKEN(anon_sym_active);
-      END_STATE();
-    case 384:
-      if (lookahead == 'e') ADVANCE(450);
-      END_STATE();
-    case 385:
       if (lookahead == 't') ADVANCE(451);
       END_STATE();
+    case 383:
+      if (lookahead == 's') ADVANCE(452);
+      END_STATE();
+    case 384:
+      ACCEPT_TOKEN(anon_sym_width);
+      END_STATE();
+    case 385:
+      if (lookahead == 'b') ADVANCE(453);
+      END_STATE();
     case 386:
-      ACCEPT_TOKEN(anon_sym_anchor);
+      ACCEPT_TOKEN(anon_sym_active);
       END_STATE();
     case 387:
-      if (lookahead == 'e') ADVANCE(452);
-      if (lookahead == 'i') ADVANCE(453);
+      if (lookahead == 'e') ADVANCE(454);
       END_STATE();
     case 388:
-      if (lookahead == 'o') ADVANCE(454);
+      if (lookahead == 't') ADVANCE(455);
       END_STATE();
     case 389:
-      if (lookahead == 'n') ADVANCE(455);
+      ACCEPT_TOKEN(anon_sym_anchor);
       END_STATE();
     case 390:
-      if (lookahead == 's') ADVANCE(456);
+      if (lookahead == 'e') ADVANCE(456);
+      if (lookahead == 'i') ADVANCE(457);
       END_STATE();
     case 391:
-      ACCEPT_TOKEN(anon_sym_border);
+      if (lookahead == 'o') ADVANCE(458);
       END_STATE();
     case 392:
-      if (lookahead == 'e') ADVANCE(457);
+      if (lookahead == 'n') ADVANCE(459);
       END_STATE();
     case 393:
-      ACCEPT_TOKEN(anon_sym_button);
+      if (lookahead == 's') ADVANCE(460);
       END_STATE();
     case 394:
-      ACCEPT_TOKEN(anon_sym_center);
+      ACCEPT_TOKEN(anon_sym_border);
       END_STATE();
     case 395:
-      if (lookahead == 'd') ADVANCE(458);
+      if (lookahead == 'e') ADVANCE(461);
       END_STATE();
     case 396:
-      if (lookahead == 's') ADVANCE(459);
+      ACCEPT_TOKEN(anon_sym_button);
       END_STATE();
     case 397:
-      if (lookahead == 'n') ADVANCE(460);
+      ACCEPT_TOKEN(anon_sym_center);
       END_STATE();
     case 398:
-      ACCEPT_TOKEN(anon_sym_corner);
+      if (lookahead == 'd') ADVANCE(462);
       END_STATE();
     case 399:
-      if (lookahead == 't') ADVANCE(461);
+      if (lookahead == 's') ADVANCE(463);
       END_STATE();
     case 400:
-      if (lookahead == 'i') ADVANCE(462);
+      if (lookahead == 'n') ADVANCE(464);
       END_STATE();
     case 401:
-      if (lookahead == 'e') ADVANCE(463);
+      ACCEPT_TOKEN(anon_sym_corner);
       END_STATE();
     case 402:
-      if (lookahead == 'y') ADVANCE(464);
+      if (lookahead == 't') ADVANCE(465);
       END_STATE();
     case 403:
-      if (lookahead == 'o') ADVANCE(465);
+      if (lookahead == 'i') ADVANCE(466);
       END_STATE();
     case 404:
-      ACCEPT_TOKEN(anon_sym_filter);
+      if (lookahead == 'e') ADVANCE(467);
       END_STATE();
     case 405:
-      if (lookahead == 'v') ADVANCE(466);
-      if (lookahead == 'w') ADVANCE(467);
+      if (lookahead == 'y') ADVANCE(468);
       END_STATE();
     case 406:
-      if (lookahead == 'n') ADVANCE(468);
+      if (lookahead == 'o') ADVANCE(469);
       END_STATE();
     case 407:
-      ACCEPT_TOKEN(anon_sym_height);
+      ACCEPT_TOKEN(anon_sym_filter);
       END_STATE();
     case 408:
-      if (lookahead == 'a') ADVANCE(469);
+      if (lookahead == 'v') ADVANCE(470);
+      if (lookahead == 'w') ADVANCE(471);
       END_STATE();
     case 409:
-      if (lookahead == '-') ADVANCE(470);
+      if (lookahead == 'n') ADVANCE(472);
       END_STATE();
     case 410:
-      if (lookahead == 'd') ADVANCE(471);
+      ACCEPT_TOKEN(anon_sym_height);
       END_STATE();
     case 411:
-      if (lookahead == 'i') ADVANCE(472);
+      if (lookahead == 'a') ADVANCE(473);
       END_STATE();
     case 412:
-      if (lookahead == 'y') ADVANCE(473);
+      if (lookahead == '-') ADVANCE(474);
       END_STATE();
     case 413:
-      if (lookahead == 'm') ADVANCE(474);
+      if (lookahead == 'd') ADVANCE(475);
       END_STATE();
     case 414:
-      ACCEPT_TOKEN(anon_sym_letter);
-      END_STATE();
-    case 415:
-      ACCEPT_TOKEN(anon_sym_margin);
-      END_STATE();
-    case 416:
-      if (lookahead == 'o') ADVANCE(475);
-      END_STATE();
-    case 417:
       if (lookahead == 'i') ADVANCE(476);
       END_STATE();
+    case 415:
+      if (lookahead == 'y') ADVANCE(477);
+      END_STATE();
+    case 416:
+      if (lookahead == 'm') ADVANCE(478);
+      END_STATE();
+    case 417:
+      ACCEPT_TOKEN(anon_sym_letter);
+      END_STATE();
     case 418:
-      if (lookahead == 'l') ADVANCE(477);
+      ACCEPT_TOKEN(anon_sym_margin);
       END_STATE();
     case 419:
-      if (lookahead == 'd') ADVANCE(478);
-      END_STATE();
-    case 420:
       if (lookahead == 'o') ADVANCE(479);
       END_STATE();
-    case 421:
+    case 420:
       if (lookahead == 'i') ADVANCE(480);
       END_STATE();
-    case 422:
+    case 421:
       if (lookahead == 'l') ADVANCE(481);
       END_STATE();
-    case 423:
+    case 422:
       if (lookahead == 'd') ADVANCE(482);
       END_STATE();
+    case 423:
+      if (lookahead == 'o') ADVANCE(483);
+      END_STATE();
     case 424:
-      ACCEPT_TOKEN(anon_sym_offset);
+      if (lookahead == 'i') ADVANCE(484);
       END_STATE();
     case 425:
-      if (lookahead == 'y') ADVANCE(483);
+      if (lookahead == 'l') ADVANCE(485);
       END_STATE();
     case 426:
-      if (lookahead == 'e') ADVANCE(484);
+      if (lookahead == 'd') ADVANCE(486);
       END_STATE();
     case 427:
-      if (lookahead == 'y') ADVANCE(485);
+      ACCEPT_TOKEN(anon_sym_offset);
       END_STATE();
     case 428:
-      if (lookahead == 'g') ADVANCE(486);
+      if (lookahead == 'y') ADVANCE(487);
       END_STATE();
     case 429:
-      if (lookahead == 'e') ADVANCE(487);
+      if (lookahead == 'e') ADVANCE(488);
       END_STATE();
     case 430:
-      if (lookahead == 't') ADVANCE(488);
+      if (lookahead == 'y') ADVANCE(489);
       END_STATE();
     case 431:
-      if (lookahead == 'o') ADVANCE(489);
+      if (lookahead == 'g') ADVANCE(490);
       END_STATE();
     case 432:
-      ACCEPT_TOKEN(anon_sym_radius);
+      if (lookahead == 'e') ADVANCE(491);
       END_STATE();
     case 433:
-      if (lookahead == 'e') ADVANCE(490);
+      if (lookahead == 't') ADVANCE(492);
       END_STATE();
     case 434:
-      ACCEPT_TOKEN(anon_sym_rotate);
-      END_STATE();
-    case 435:
-      if (lookahead == 'n') ADVANCE(491);
-      END_STATE();
-    case 436:
-      ACCEPT_TOKEN(anon_sym_shadow);
-      END_STATE();
-    case 437:
-      ACCEPT_TOKEN(anon_sym_shrink);
-      END_STATE();
-    case 438:
-      ACCEPT_TOKEN(anon_sym_smooth);
-      END_STATE();
-    case 439:
-      ACCEPT_TOKEN(anon_sym_square);
-      END_STATE();
-    case 440:
-      if (lookahead == 'e') ADVANCE(492);
-      END_STATE();
-    case 441:
-      ACCEPT_TOKEN(anon_sym_target);
-      END_STATE();
-    case 442:
-      ACCEPT_TOKEN(anon_sym_tokens);
-      END_STATE();
-    case 443:
       if (lookahead == 'o') ADVANCE(493);
       END_STATE();
+    case 435:
+      ACCEPT_TOKEN(anon_sym_radius);
+      END_STATE();
+    case 436:
+      if (lookahead == 'e') ADVANCE(494);
+      END_STATE();
+    case 437:
+      ACCEPT_TOKEN(anon_sym_rotate);
+      END_STATE();
+    case 438:
+      if (lookahead == 'n') ADVANCE(495);
+      END_STATE();
+    case 439:
+      ACCEPT_TOKEN(anon_sym_shadow);
+      END_STATE();
+    case 440:
+      ACCEPT_TOKEN(anon_sym_shrink);
+      END_STATE();
+    case 441:
+      ACCEPT_TOKEN(anon_sym_smooth);
+      END_STATE();
+    case 442:
+      ACCEPT_TOKEN(anon_sym_square);
+      END_STATE();
+    case 443:
+      if (lookahead == 't') ADVANCE(496);
+      END_STATE();
     case 444:
-      if (lookahead == 't') ADVANCE(494);
+      if (lookahead == 'e') ADVANCE(497);
       END_STATE();
     case 445:
-      if (lookahead == 'a') ADVANCE(495);
+      ACCEPT_TOKEN(anon_sym_target);
       END_STATE();
     case 446:
-      if (lookahead == 'l') ADVANCE(496);
+      ACCEPT_TOKEN(anon_sym_tokens);
       END_STATE();
     case 447:
-      ACCEPT_TOKEN(anon_sym_weight);
+      if (lookahead == 'o') ADVANCE(498);
       END_STATE();
     case 448:
-      if (lookahead == 'p') ADVANCE(497);
+      if (lookahead == 't') ADVANCE(499);
       END_STATE();
     case 449:
-      if (lookahead == 'r') ADVANCE(498);
+      if (lookahead == 'a') ADVANCE(500);
       END_STATE();
     case 450:
-      if (lookahead == 'd') ADVANCE(499);
+      if (lookahead == 'l') ADVANCE(501);
       END_STATE();
     case 451:
-      if (lookahead == 'e') ADVANCE(500);
+      ACCEPT_TOKEN(anon_sym_weight);
       END_STATE();
     case 452:
-      ACCEPT_TOKEN(anon_sym_animate);
+      if (lookahead == 'p') ADVANCE(502);
       END_STATE();
     case 453:
-      if (lookahead == 'o') ADVANCE(501);
+      if (lookahead == 'r') ADVANCE(503);
       END_STATE();
     case 454:
-      if (lookahead == 'u') ADVANCE(502);
+      if (lookahead == 'd') ADVANCE(504);
       END_STATE();
     case 455:
-      ACCEPT_TOKEN(anon_sym_between);
-      END_STATE();
-    case 456:
-      if (lookahead == 'i') ADVANCE(503);
-      END_STATE();
-    case 457:
-      if (lookahead == 'n') ADVANCE(504);
-      END_STATE();
-    case 458:
-      ACCEPT_TOKEN(anon_sym_checked);
-      END_STATE();
-    case 459:
-      ACCEPT_TOKEN(anon_sym_columns);
-      END_STATE();
-    case 460:
       if (lookahead == 'e') ADVANCE(505);
       END_STATE();
+    case 456:
+      ACCEPT_TOKEN(anon_sym_animate);
+      END_STATE();
+    case 457:
+      if (lookahead == 'o') ADVANCE(506);
+      END_STATE();
+    case 458:
+      if (lookahead == 'u') ADVANCE(507);
+      END_STATE();
+    case 459:
+      ACCEPT_TOKEN(anon_sym_between);
+      END_STATE();
+    case 460:
+      if (lookahead == 'i') ADVANCE(508);
+      END_STATE();
     case 461:
-      if (lookahead == 'i') ADVANCE(506);
-      END_STATE();
-    case 462:
-      if (lookahead == 'o') ADVANCE(507);
-      END_STATE();
-    case 463:
-      if (lookahead == 'd') ADVANCE(508);
-      END_STATE();
-    case 464:
-      ACCEPT_TOKEN(anon_sym_display);
-      END_STATE();
-    case 465:
       if (lookahead == 'n') ADVANCE(509);
       END_STATE();
-    case 466:
-      if (lookahead == 'i') ADVANCE(510);
+    case 462:
+      ACCEPT_TOKEN(anon_sym_checked);
       END_STATE();
-    case 467:
+    case 463:
+      ACCEPT_TOKEN(anon_sym_columns);
+      END_STATE();
+    case 464:
+      if (lookahead == 'e') ADVANCE(510);
+      END_STATE();
+    case 465:
       if (lookahead == 'i') ADVANCE(511);
       END_STATE();
+    case 466:
+      if (lookahead == 'o') ADVANCE(512);
+      END_STATE();
+    case 467:
+      if (lookahead == 'd') ADVANCE(513);
+      END_STATE();
     case 468:
-      if (lookahead == 't') ADVANCE(512);
+      ACCEPT_TOKEN(anon_sym_display);
       END_STATE();
     case 469:
-      if (lookahead == 't') ADVANCE(513);
+      if (lookahead == 'n') ADVANCE(514);
       END_STATE();
     case 470:
-      if (lookahead == 's') ADVANCE(514);
+      if (lookahead == 'i') ADVANCE(515);
       END_STATE();
     case 471:
-      ACCEPT_TOKEN(anon_sym_invalid);
+      if (lookahead == 'i') ADVANCE(516);
       END_STATE();
     case 472:
-      if (lookahead == 'o') ADVANCE(515);
+      if (lookahead == 't') ADVANCE(517);
       END_STATE();
     case 473:
-      ACCEPT_TOKEN(anon_sym_justify);
+      if (lookahead == 't') ADVANCE(518);
       END_STATE();
     case 474:
-      if (lookahead == 'e') ADVANCE(516);
+      if (lookahead == 's') ADVANCE(519);
       END_STATE();
     case 475:
-      if (lookahead == 'c') ADVANCE(517);
+      ACCEPT_TOKEN(anon_sym_invalid);
       END_STATE();
     case 476:
-      if (lookahead == 'g') ADVANCE(518);
+      if (lookahead == 'o') ADVANCE(520);
       END_STATE();
     case 477:
-      if (lookahead == 'i') ADVANCE(519);
+      ACCEPT_TOKEN(anon_sym_justify);
       END_STATE();
     case 478:
-      if (lookahead == 't') ADVANCE(520);
+      if (lookahead == 'e') ADVANCE(521);
       END_STATE();
     case 479:
-      if (lookahead == 'c') ADVANCE(521);
+      if (lookahead == 'c') ADVANCE(522);
       END_STATE();
     case 480:
-      if (lookahead == 'g') ADVANCE(522);
+      if (lookahead == 'g') ADVANCE(523);
       END_STATE();
     case 481:
-      if (lookahead == 'i') ADVANCE(523);
+      if (lookahead == 'i') ADVANCE(524);
       END_STATE();
     case 482:
-      if (lookahead == 't') ADVANCE(524);
+      if (lookahead == 't') ADVANCE(525);
       END_STATE();
     case 483:
-      ACCEPT_TOKEN(anon_sym_opacity);
+      if (lookahead == 'c') ADVANCE(526);
       END_STATE();
     case 484:
-      ACCEPT_TOKEN(anon_sym_outline);
+      if (lookahead == 'g') ADVANCE(527);
       END_STATE();
     case 485:
-      ACCEPT_TOKEN(anon_sym_overlay);
+      if (lookahead == 'i') ADVANCE(528);
       END_STATE();
     case 486:
-      ACCEPT_TOKEN(anon_sym_padding);
+      if (lookahead == 't') ADVANCE(529);
       END_STATE();
     case 487:
-      ACCEPT_TOKEN(anon_sym_palette);
+      ACCEPT_TOKEN(anon_sym_opacity);
       END_STATE();
     case 488:
-      if (lookahead == 'a') ADVANCE(525);
+      ACCEPT_TOKEN(anon_sym_outline);
       END_STATE();
     case 489:
-      if (lookahead == 'n') ADVANCE(526);
+      ACCEPT_TOKEN(anon_sym_overlay);
       END_STATE();
     case 490:
-      if (lookahead == 'd') ADVANCE(527);
+      ACCEPT_TOKEN(anon_sym_padding);
       END_STATE();
     case 491:
-      ACCEPT_TOKEN(anon_sym_section);
+      ACCEPT_TOKEN(anon_sym_palette);
       END_STATE();
     case 492:
-      ACCEPT_TOKEN(anon_sym_surface);
+      if (lookahead == 'a') ADVANCE(530);
       END_STATE();
     case 493:
-      if (lookahead == 'r') ADVANCE(528);
+      if (lookahead == 'n') ADVANCE(531);
       END_STATE();
     case 494:
-      if (lookahead == 'i') ADVANCE(529);
+      if (lookahead == 'd') ADVANCE(532);
       END_STATE();
     case 495:
-      if (lookahead == 't') ADVANCE(530);
+      ACCEPT_TOKEN(anon_sym_section);
       END_STATE();
     case 496:
-      if (lookahead == 'i') ADVANCE(531);
+      if (lookahead == 's') ADVANCE(533);
       END_STATE();
     case 497:
-      if (lookahead == 'a') ADVANCE(532);
+      ACCEPT_TOKEN(anon_sym_surface);
       END_STATE();
     case 498:
-      if (lookahead == 'e') ADVANCE(533);
+      if (lookahead == 'r') ADVANCE(534);
       END_STATE();
     case 499:
-      ACCEPT_TOKEN(sym_special_block_keyword);
+      if (lookahead == 'i') ADVANCE(535);
       END_STATE();
     case 500:
-      if (lookahead == 'x') ADVANCE(534);
+      if (lookahead == 't') ADVANCE(536);
       END_STATE();
     case 501:
-      if (lookahead == 'n') ADVANCE(535);
+      if (lookahead == 'i') ADVANCE(537);
       END_STATE();
     case 502:
-      if (lookahead == 'n') ADVANCE(536);
+      if (lookahead == 'a') ADVANCE(538);
       END_STATE();
     case 503:
-      if (lookahead == 'z') ADVANCE(537);
+      if (lookahead == 'e') ADVANCE(539);
       END_STATE();
     case 504:
-      ACCEPT_TOKEN(anon_sym_brighten);
+      ACCEPT_TOKEN(sym_special_block_keyword);
       END_STATE();
     case 505:
-      if (lookahead == 'r') ADVANCE(538);
+      if (lookahead == 'x') ADVANCE(540);
       END_STATE();
     case 506:
-      if (lookahead == 'o') ADVANCE(539);
+      if (lookahead == 'n') ADVANCE(541);
       END_STATE();
     case 507:
-      if (lookahead == 'n') ADVANCE(540);
+      if (lookahead == 'n') ADVANCE(542);
       END_STATE();
     case 508:
-      ACCEPT_TOKEN(anon_sym_disabled);
+      if (lookahead == 'z') ADVANCE(543);
       END_STATE();
     case 509:
-      ACCEPT_TOKEN(anon_sym_duration);
+      ACCEPT_TOKEN(anon_sym_brighten);
       END_STATE();
     case 510:
-      if (lookahead == 's') ADVANCE(541);
+      if (lookahead == 'r') ADVANCE(544);
       END_STATE();
     case 511:
-      if (lookahead == 't') ADVANCE(542);
+      if (lookahead == 'o') ADVANCE(545);
       END_STATE();
     case 512:
-      ACCEPT_TOKEN(anon_sym_gradient);
+      if (lookahead == 'n') ADVANCE(546);
       END_STATE();
     case 513:
-      if (lookahead == 'e') ADVANCE(543);
+      ACCEPT_TOKEN(anon_sym_disabled);
       END_STATE();
     case 514:
-      if (lookahead == 'i') ADVANCE(544);
+      ACCEPT_TOKEN(anon_sym_duration);
       END_STATE();
     case 515:
-      if (lookahead == 'n') ADVANCE(545);
+      if (lookahead == 's') ADVANCE(547);
       END_STATE();
     case 516:
-      if (lookahead == 's') ADVANCE(546);
+      if (lookahead == 't') ADVANCE(548);
       END_STATE();
     case 517:
-      if (lookahead == 'k') ADVANCE(547);
+      ACCEPT_TOKEN(anon_sym_gradient);
       END_STATE();
     case 518:
-      if (lookahead == 'h') ADVANCE(548);
+      if (lookahead == 'e') ADVANCE(549);
       END_STATE();
     case 519:
-      if (lookahead == 'n') ADVANCE(549);
+      if (lookahead == 'i') ADVANCE(550);
       END_STATE();
     case 520:
-      if (lookahead == 'h') ADVANCE(550);
+      if (lookahead == 'n') ADVANCE(551);
       END_STATE();
     case 521:
-      if (lookahead == 'k') ADVANCE(551);
+      if (lookahead == 's') ADVANCE(552);
       END_STATE();
     case 522:
-      if (lookahead == 'h') ADVANCE(552);
+      if (lookahead == 'k') ADVANCE(553);
       END_STATE();
     case 523:
-      if (lookahead == 'n') ADVANCE(553);
-      END_STATE();
-    case 524:
       if (lookahead == 'h') ADVANCE(554);
       END_STATE();
+    case 524:
+      if (lookahead == 'n') ADVANCE(555);
+      END_STATE();
     case 525:
-      if (lookahead == 't') ADVANCE(555);
+      if (lookahead == 'h') ADVANCE(556);
       END_STATE();
     case 526:
-      ACCEPT_TOKEN(anon_sym_position);
+      if (lookahead == 'k') ADVANCE(557);
       END_STATE();
     case 527:
-      ACCEPT_TOKEN(anon_sym_required);
+      if (lookahead == 'h') ADVANCE(558);
       END_STATE();
     case 528:
-      if (lookahead == 'm') ADVANCE(556);
+      if (lookahead == 'n') ADVANCE(559);
       END_STATE();
     case 529:
-      if (lookahead == 'o') ADVANCE(557);
+      if (lookahead == 'h') ADVANCE(560);
       END_STATE();
     case 530:
-      if (lookahead == 'e') ADVANCE(558);
+      if (lookahead == 't') ADVANCE(561);
       END_STATE();
     case 531:
-      if (lookahead == 't') ADVANCE(559);
+      ACCEPT_TOKEN(anon_sym_position);
       END_STATE();
     case 532:
-      if (lookahead == 'c') ADVANCE(560);
+      ACCEPT_TOKEN(anon_sym_required);
       END_STATE();
     case 533:
-      if (lookahead == 'a') ADVANCE(561);
+      ACCEPT_TOKEN(anon_sym_supports);
       END_STATE();
     case 534:
-      if (lookahead == 't') ADVANCE(562);
+      if (lookahead == 'm') ADVANCE(562);
       END_STATE();
     case 535:
-      ACCEPT_TOKEN(anon_sym_animation);
+      if (lookahead == 'o') ADVANCE(563);
       END_STATE();
     case 536:
-      if (lookahead == 'd') ADVANCE(563);
-      END_STATE();
-    case 537:
       if (lookahead == 'e') ADVANCE(564);
       END_STATE();
+    case 537:
+      if (lookahead == 't') ADVANCE(565);
+      END_STATE();
     case 538:
-      ACCEPT_TOKEN(anon_sym_container);
+      if (lookahead == 'c') ADVANCE(566);
       END_STATE();
     case 539:
-      if (lookahead == 'n') ADVANCE(565);
+      if (lookahead == 'a') ADVANCE(567);
       END_STATE();
     case 540:
-      ACCEPT_TOKEN(anon_sym_direction);
+      if (lookahead == 't') ADVANCE(568);
       END_STATE();
     case 541:
-      if (lookahead == 'i') ADVANCE(566);
+      ACCEPT_TOKEN(anon_sym_animation);
       END_STATE();
     case 542:
-      if (lookahead == 'h') ADVANCE(567);
+      if (lookahead == 'd') ADVANCE(569);
       END_STATE();
     case 543:
-      ACCEPT_TOKEN(anon_sym_hyphenate);
+      if (lookahead == 'e') ADVANCE(570);
       END_STATE();
     case 544:
-      if (lookahead == 'z') ADVANCE(568);
+      ACCEPT_TOKEN(anon_sym_container);
       END_STATE();
     case 545:
-      ACCEPT_TOKEN(anon_sym_iteration);
+      if (lookahead == 'n') ADVANCE(571);
       END_STATE();
     case 546:
-      ACCEPT_TOKEN(anon_sym_keyframes);
+      ACCEPT_TOKEN(anon_sym_direction);
       END_STATE();
     case 547:
-      if (lookahead == '-') ADVANCE(569);
+      if (lookahead == 'i') ADVANCE(572);
       END_STATE();
     case 548:
-      if (lookahead == 't') ADVANCE(570);
+      if (lookahead == 'h') ADVANCE(573);
       END_STATE();
     case 549:
-      if (lookahead == 'e') ADVANCE(571);
+      ACCEPT_TOKEN(anon_sym_hyphenate);
       END_STATE();
     case 550:
-      ACCEPT_TOKEN(anon_sym_max_DASHwidth);
+      if (lookahead == 'z') ADVANCE(574);
       END_STATE();
     case 551:
-      if (lookahead == '-') ADVANCE(572);
+      ACCEPT_TOKEN(anon_sym_iteration);
       END_STATE();
     case 552:
-      if (lookahead == 't') ADVANCE(573);
+      ACCEPT_TOKEN(anon_sym_keyframes);
       END_STATE();
     case 553:
-      if (lookahead == 'e') ADVANCE(574);
+      if (lookahead == '-') ADVANCE(575);
       END_STATE();
     case 554:
-      ACCEPT_TOKEN(anon_sym_min_DASHwidth);
+      if (lookahead == 't') ADVANCE(576);
       END_STATE();
     case 555:
-      if (lookahead == 'e') ADVANCE(575);
+      if (lookahead == 'e') ADVANCE(577);
       END_STATE();
     case 556:
-      ACCEPT_TOKEN(anon_sym_transform);
+      ACCEPT_TOKEN(anon_sym_max_DASHwidth);
       END_STATE();
     case 557:
-      if (lookahead == 'n') ADVANCE(576);
+      if (lookahead == '-') ADVANCE(578);
       END_STATE();
     case 558:
-      ACCEPT_TOKEN(anon_sym_translate);
+      if (lookahead == 't') ADVANCE(579);
       END_STATE();
     case 559:
-      if (lookahead == 'y') ADVANCE(577);
+      if (lookahead == 'e') ADVANCE(580);
       END_STATE();
     case 560:
-      if (lookahead == 'e') ADVANCE(578);
+      ACCEPT_TOKEN(anon_sym_min_DASHwidth);
       END_STATE();
     case 561:
-      if (lookahead == 'k') ADVANCE(579);
+      if (lookahead == 'e') ADVANCE(581);
       END_STATE();
     case 562:
-      ACCEPT_TOKEN(anon_sym_align_DASHtext);
+      ACCEPT_TOKEN(anon_sym_transform);
       END_STATE();
     case 563:
-      ACCEPT_TOKEN(anon_sym_background);
+      if (lookahead == 'n') ADVANCE(582);
       END_STATE();
     case 564:
-      ACCEPT_TOKEN(anon_sym_block_DASHsize);
+      ACCEPT_TOKEN(anon_sym_translate);
       END_STATE();
     case 565:
-      ACCEPT_TOKEN(anon_sym_decoration);
+      if (lookahead == 'y') ADVANCE(583);
       END_STATE();
     case 566:
-      if (lookahead == 'b') ADVANCE(580);
+      if (lookahead == 'e') ADVANCE(584);
       END_STATE();
     case 567:
-      if (lookahead == 'i') ADVANCE(581);
+      if (lookahead == 'k') ADVANCE(585);
       END_STATE();
     case 568:
-      if (lookahead == 'e') ADVANCE(582);
+      ACCEPT_TOKEN(anon_sym_align_DASHtext);
       END_STATE();
     case 569:
-      if (lookahead == 's') ADVANCE(583);
+      ACCEPT_TOKEN(anon_sym_background);
       END_STATE();
     case 570:
-      ACCEPT_TOKEN(anon_sym_max_DASHheight);
+      ACCEPT_TOKEN(anon_sym_block_DASHsize);
       END_STATE();
     case 571:
-      if (lookahead == '-') ADVANCE(584);
+      ACCEPT_TOKEN(anon_sym_decoration);
       END_STATE();
     case 572:
-      if (lookahead == 's') ADVANCE(585);
+      if (lookahead == 'b') ADVANCE(586);
       END_STATE();
     case 573:
-      ACCEPT_TOKEN(anon_sym_min_DASHheight);
+      if (lookahead == 'i') ADVANCE(587);
       END_STATE();
     case 574:
-      if (lookahead == '-') ADVANCE(586);
+      if (lookahead == 'e') ADVANCE(588);
       END_STATE();
     case 575:
-      ACCEPT_TOKEN(anon_sym_play_DASHstate);
+      if (lookahead == 's') ADVANCE(589);
       END_STATE();
     case 576:
-      ACCEPT_TOKEN(anon_sym_transition);
+      ACCEPT_TOKEN(anon_sym_max_DASHheight);
       END_STATE();
     case 577:
-      ACCEPT_TOKEN(anon_sym_visibility);
+      if (lookahead == '-') ADVANCE(590);
       END_STATE();
     case 578:
-      ACCEPT_TOKEN(anon_sym_whitespace);
+      if (lookahead == 's') ADVANCE(591);
       END_STATE();
     case 579:
-      ACCEPT_TOKEN(anon_sym_word_DASHbreak);
+      ACCEPT_TOKEN(anon_sym_min_DASHheight);
       END_STATE();
     case 580:
-      if (lookahead == 'l') ADVANCE(587);
+      if (lookahead == '-') ADVANCE(592);
       END_STATE();
     case 581:
-      if (lookahead == 'n') ADVANCE(588);
+      ACCEPT_TOKEN(anon_sym_play_DASHstate);
       END_STATE();
     case 582:
-      ACCEPT_TOKEN(anon_sym_inline_DASHsize);
+      ACCEPT_TOKEN(anon_sym_transition);
       END_STATE();
     case 583:
-      if (lookahead == 'i') ADVANCE(589);
+      ACCEPT_TOKEN(anon_sym_visibility);
       END_STATE();
     case 584:
-      if (lookahead == 's') ADVANCE(590);
+      ACCEPT_TOKEN(anon_sym_whitespace);
       END_STATE();
     case 585:
-      if (lookahead == 'i') ADVANCE(591);
+      ACCEPT_TOKEN(anon_sym_word_DASHbreak);
       END_STATE();
     case 586:
-      if (lookahead == 's') ADVANCE(592);
+      if (lookahead == 'l') ADVANCE(593);
       END_STATE();
     case 587:
-      if (lookahead == 'e') ADVANCE(593);
+      if (lookahead == 'n') ADVANCE(594);
       END_STATE();
     case 588:
-      ACCEPT_TOKEN(anon_sym_focus_DASHwithin);
+      ACCEPT_TOKEN(anon_sym_inline_DASHsize);
       END_STATE();
     case 589:
-      if (lookahead == 'z') ADVANCE(594);
-      END_STATE();
-    case 590:
       if (lookahead == 'i') ADVANCE(595);
       END_STATE();
-    case 591:
-      if (lookahead == 'z') ADVANCE(596);
+    case 590:
+      if (lookahead == 's') ADVANCE(596);
       END_STATE();
-    case 592:
+    case 591:
       if (lookahead == 'i') ADVANCE(597);
       END_STATE();
+    case 592:
+      if (lookahead == 's') ADVANCE(598);
+      END_STATE();
     case 593:
-      ACCEPT_TOKEN(anon_sym_focus_DASHvisible);
+      if (lookahead == 'e') ADVANCE(599);
       END_STATE();
     case 594:
-      if (lookahead == 'e') ADVANCE(598);
+      ACCEPT_TOKEN(anon_sym_focus_DASHwithin);
       END_STATE();
     case 595:
-      if (lookahead == 'z') ADVANCE(599);
+      if (lookahead == 'z') ADVANCE(600);
       END_STATE();
     case 596:
-      if (lookahead == 'e') ADVANCE(600);
+      if (lookahead == 'i') ADVANCE(601);
       END_STATE();
     case 597:
-      if (lookahead == 'z') ADVANCE(601);
+      if (lookahead == 'z') ADVANCE(602);
       END_STATE();
     case 598:
-      ACCEPT_TOKEN(anon_sym_max_DASHblock_DASHsize);
+      if (lookahead == 'i') ADVANCE(603);
       END_STATE();
     case 599:
-      if (lookahead == 'e') ADVANCE(602);
+      ACCEPT_TOKEN(anon_sym_focus_DASHvisible);
       END_STATE();
     case 600:
-      ACCEPT_TOKEN(anon_sym_min_DASHblock_DASHsize);
+      if (lookahead == 'e') ADVANCE(604);
       END_STATE();
     case 601:
-      if (lookahead == 'e') ADVANCE(603);
+      if (lookahead == 'z') ADVANCE(605);
       END_STATE();
     case 602:
-      ACCEPT_TOKEN(anon_sym_max_DASHinline_DASHsize);
+      if (lookahead == 'e') ADVANCE(606);
       END_STATE();
     case 603:
+      if (lookahead == 'z') ADVANCE(607);
+      END_STATE();
+    case 604:
+      ACCEPT_TOKEN(anon_sym_max_DASHblock_DASHsize);
+      END_STATE();
+    case 605:
+      if (lookahead == 'e') ADVANCE(608);
+      END_STATE();
+    case 606:
+      ACCEPT_TOKEN(anon_sym_min_DASHblock_DASHsize);
+      END_STATE();
+    case 607:
+      if (lookahead == 'e') ADVANCE(609);
+      END_STATE();
+    case 608:
+      ACCEPT_TOKEN(anon_sym_max_DASHinline_DASHsize);
+      END_STATE();
+    case 609:
       ACCEPT_TOKEN(anon_sym_min_DASHinline_DASHsize);
       END_STATE();
     default:
@@ -3672,21 +3749,21 @@ static const TSLexerMode ts_lex_modes[STATE_COUNT] = {
   [23] = {.lex_state = 0},
   [24] = {.lex_state = 0},
   [25] = {.lex_state = 0},
-  [26] = {.lex_state = 2},
-  [27] = {.lex_state = 2},
-  [28] = {.lex_state = 2},
-  [29] = {.lex_state = 2},
-  [30] = {.lex_state = 2},
-  [31] = {.lex_state = 2},
+  [26] = {.lex_state = 0},
+  [27] = {.lex_state = 0},
+  [28] = {.lex_state = 0},
+  [29] = {.lex_state = 0},
+  [30] = {.lex_state = 0},
+  [31] = {.lex_state = 0},
   [32] = {.lex_state = 2},
   [33] = {.lex_state = 2},
   [34] = {.lex_state = 2},
-  [35] = {.lex_state = 0},
-  [36] = {.lex_state = 0},
-  [37] = {.lex_state = 0},
-  [38] = {.lex_state = 0},
-  [39] = {.lex_state = 0},
-  [40] = {.lex_state = 0},
+  [35] = {.lex_state = 2},
+  [36] = {.lex_state = 2},
+  [37] = {.lex_state = 2},
+  [38] = {.lex_state = 2},
+  [39] = {.lex_state = 2},
+  [40] = {.lex_state = 2},
   [41] = {.lex_state = 0},
   [42] = {.lex_state = 0},
   [43] = {.lex_state = 0},
@@ -3701,16 +3778,28 @@ static const TSLexerMode ts_lex_modes[STATE_COUNT] = {
   [52] = {.lex_state = 0},
   [53] = {.lex_state = 0},
   [54] = {.lex_state = 0},
-  [55] = {.lex_state = 5},
+  [55] = {.lex_state = 0},
   [56] = {.lex_state = 0},
   [57] = {.lex_state = 0},
-  [58] = {.lex_state = 0},
+  [58] = {.lex_state = 5},
+  [59] = {.lex_state = 0},
+  [60] = {.lex_state = 0},
+  [61] = {.lex_state = 0},
+  [62] = {.lex_state = 0},
+  [63] = {.lex_state = 0},
+  [64] = {.lex_state = 0},
+  [65] = {.lex_state = 0},
+  [66] = {.lex_state = 0},
+  [67] = {.lex_state = 0},
+  [68] = {.lex_state = 0},
+  [69] = {.lex_state = 0},
 };
 
 static const uint16_t ts_parse_table[LARGE_STATE_COUNT][SYMBOL_COUNT] = {
   [STATE(0)] = {
     [ts_builtin_sym_end] = ACTIONS(1),
     [sym_identifier] = ACTIONS(1),
+    [anon_sym_supports] = ACTIONS(1),
     [anon_sym_LBRACE] = ACTIONS(1),
     [anon_sym_RBRACE] = ACTIONS(1),
     [anon_sym_gradient] = ACTIONS(1),
@@ -3847,28 +3936,30 @@ static const uint16_t ts_parse_table[LARGE_STATE_COUNT][SYMBOL_COUNT] = {
     [sym__newline] = ACTIONS(1),
   },
   [STATE(1)] = {
-    [sym_source_file] = STATE(53),
-    [sym_include] = STATE(21),
-    [sym_declaration] = STATE(21),
-    [sym_declaration_keyword] = STATE(41),
-    [aux_sym_source_file_repeat1] = STATE(21),
+    [sym_source_file] = STATE(60),
+    [sym_include] = STATE(20),
+    [sym_declaration] = STATE(20),
+    [sym_supports_block] = STATE(20),
+    [sym_declaration_keyword] = STATE(48),
+    [aux_sym_source_file_repeat1] = STATE(20),
     [ts_builtin_sym_end] = ACTIONS(5),
-    [anon_sym_tokens] = ACTIONS(7),
-    [anon_sym_grid] = ACTIONS(7),
-    [anon_sym_area] = ACTIONS(7),
-    [anon_sym_card] = ACTIONS(7),
-    [anon_sym_stack] = ACTIONS(7),
-    [anon_sym_row] = ACTIONS(7),
-    [anon_sym_button] = ACTIONS(7),
-    [anon_sym_text] = ACTIONS(7),
-    [anon_sym_center] = ACTIONS(7),
-    [anon_sym_split] = ACTIONS(7),
-    [anon_sym_overlay] = ACTIONS(7),
-    [anon_sym_dock] = ACTIONS(7),
-    [anon_sym_keyframes] = ACTIONS(7),
-    [sym_include_keyword] = ACTIONS(9),
+    [anon_sym_supports] = ACTIONS(7),
+    [anon_sym_tokens] = ACTIONS(9),
+    [anon_sym_grid] = ACTIONS(9),
+    [anon_sym_area] = ACTIONS(9),
+    [anon_sym_card] = ACTIONS(9),
+    [anon_sym_stack] = ACTIONS(9),
+    [anon_sym_row] = ACTIONS(9),
+    [anon_sym_button] = ACTIONS(9),
+    [anon_sym_text] = ACTIONS(9),
+    [anon_sym_center] = ACTIONS(9),
+    [anon_sym_split] = ACTIONS(9),
+    [anon_sym_overlay] = ACTIONS(9),
+    [anon_sym_dock] = ACTIONS(9),
+    [anon_sym_keyframes] = ACTIONS(9),
+    [sym_include_keyword] = ACTIONS(11),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(11),
+    [sym__newline] = ACTIONS(13),
   },
   [STATE(2)] = {
     [sym_state_block] = STATE(3),
@@ -3880,130 +3971,130 @@ static const uint16_t ts_parse_table[LARGE_STATE_COUNT][SYMBOL_COUNT] = {
     [sym_container_block] = STATE(3),
     [sym_keyframe_block] = STATE(3),
     [sym_statement] = STATE(3),
-    [sym_state_keyword] = STATE(38),
-    [sym_property_keyword] = STATE(26),
-    [sym_effect_keyword] = STATE(26),
-    [sym_keyframe_selector] = STATE(39),
+    [sym_state_keyword] = STATE(56),
+    [sym_property_keyword] = STATE(32),
+    [sym_effect_keyword] = STATE(32),
+    [sym_keyframe_selector] = STATE(44),
     [aux_sym_block_repeat1] = STATE(3),
-    [sym_identifier] = ACTIONS(13),
-    [anon_sym_RBRACE] = ACTIONS(15),
-    [anon_sym_gradient] = ACTIONS(17),
-    [anon_sym_section] = ACTIONS(19),
-    [anon_sym_animation] = ACTIONS(21),
-    [anon_sym_below] = ACTIONS(23),
-    [anon_sym_above] = ACTIONS(23),
-    [anon_sym_between] = ACTIONS(25),
-    [anon_sym_container] = ACTIONS(27),
-    [anon_sym_row] = ACTIONS(29),
-    [anon_sym_text] = ACTIONS(29),
-    [anon_sym_hover] = ACTIONS(31),
-    [anon_sym_focus] = ACTIONS(31),
-    [anon_sym_focus_DASHvisible] = ACTIONS(31),
-    [anon_sym_focus_DASHwithin] = ACTIONS(31),
-    [anon_sym_active] = ACTIONS(31),
-    [anon_sym_disabled] = ACTIONS(31),
-    [anon_sym_checked] = ACTIONS(31),
-    [anon_sym_invalid] = ACTIONS(31),
-    [anon_sym_required] = ACTIONS(31),
-    [anon_sym_target] = ACTIONS(31),
-    [sym_special_block_keyword] = ACTIONS(33),
-    [anon_sym_columns] = ACTIONS(29),
-    [anon_sym_rows] = ACTIONS(29),
-    [anon_sym_flow] = ACTIONS(29),
-    [anon_sym_gap] = ACTIONS(29),
-    [anon_sym_display] = ACTIONS(29),
-    [anon_sym_height] = ACTIONS(29),
-    [anon_sym_width] = ACTIONS(29),
-    [anon_sym_min_DASHheight] = ACTIONS(29),
-    [anon_sym_max_DASHheight] = ACTIONS(29),
-    [anon_sym_min_DASHwidth] = ACTIONS(29),
-    [anon_sym_max_DASHwidth] = ACTIONS(29),
-    [anon_sym_inline_DASHsize] = ACTIONS(29),
-    [anon_sym_block_DASHsize] = ACTIONS(29),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(29),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(29),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(29),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(29),
-    [anon_sym_surface] = ACTIONS(29),
-    [anon_sym_background] = ACTIONS(29),
-    [anon_sym_theme] = ACTIONS(29),
-    [anon_sym_color] = ACTIONS(29),
-    [anon_sym_palette] = ACTIONS(29),
-    [anon_sym_tone] = ACTIONS(29),
-    [anon_sym_opacity] = ACTIONS(29),
-    [anon_sym_padding] = ACTIONS(29),
-    [anon_sym_anchor] = ACTIONS(29),
-    [anon_sym_margin] = ACTIONS(29),
-    [anon_sym_radius] = ACTIONS(29),
-    [anon_sym_border] = ACTIONS(29),
-    [anon_sym_shadow] = ACTIONS(29),
-    [anon_sym_outline] = ACTIONS(29),
-    [anon_sym_box] = ACTIONS(29),
-    [anon_sym_visibility] = ACTIONS(29),
-    [anon_sym_flex] = ACTIONS(29),
-    [anon_sym_square] = ACTIONS(29),
-    [anon_sym_place] = ACTIONS(29),
-    [anon_sym_in] = ACTIONS(29),
-    [anon_sym_col] = ACTIONS(29),
-    [anon_sym_span] = ACTIONS(29),
-    [anon_sym_position] = ACTIONS(29),
-    [anon_sym_offset] = ACTIONS(29),
-    [anon_sym_z] = ACTIONS(29),
-    [anon_sym_align] = ACTIONS(29),
-    [anon_sym_justify] = ACTIONS(29),
-    [anon_sym_font] = ACTIONS(29),
-    [anon_sym_size] = ACTIONS(29),
-    [anon_sym_weight] = ACTIONS(29),
-    [anon_sym_case] = ACTIONS(29),
-    [anon_sym_align_DASHtext] = ACTIONS(29),
-    [anon_sym_decoration] = ACTIONS(29),
-    [anon_sym_whitespace] = ACTIONS(29),
-    [anon_sym_word_DASHbreak] = ACTIONS(29),
-    [anon_sym_hyphenate] = ACTIONS(29),
-    [anon_sym_line] = ACTIONS(29),
-    [anon_sym_letter] = ACTIONS(29),
-    [anon_sym_transition] = ACTIONS(29),
-    [anon_sym_duration] = ACTIONS(29),
-    [anon_sym_ease] = ACTIONS(29),
-    [anon_sym_animate] = ACTIONS(29),
-    [anon_sym_delay] = ACTIONS(29),
-    [anon_sym_iteration] = ACTIONS(29),
-    [anon_sym_direction] = ACTIONS(29),
-    [anon_sym_fill] = ACTIONS(29),
-    [anon_sym_play_DASHstate] = ACTIONS(29),
-    [anon_sym_transform] = ACTIONS(29),
-    [anon_sym_filter] = ACTIONS(29),
-    [anon_sym_translate] = ACTIONS(29),
-    [anon_sym_type] = ACTIONS(29),
-    [anon_sym_angle] = ACTIONS(29),
-    [anon_sym_stop] = ACTIONS(29),
-    [anon_sym_corner] = ACTIONS(29),
-    [anon_sym_at] = ACTIONS(29),
-    [anon_sym_shape] = ACTIONS(29),
-    [anon_sym_css] = ACTIONS(29),
-    [anon_sym_lift] = ACTIONS(35),
-    [anon_sym_sink] = ACTIONS(35),
-    [anon_sym_shift] = ACTIONS(35),
-    [anon_sym_grow] = ACTIONS(35),
-    [anon_sym_shrink] = ACTIONS(35),
-    [anon_sym_tilt] = ACTIONS(35),
-    [anon_sym_glow] = ACTIONS(35),
-    [anon_sym_brighten] = ACTIONS(35),
-    [anon_sym_dim] = ACTIONS(35),
-    [anon_sym_blur] = ACTIONS(35),
-    [anon_sym_press] = ACTIONS(35),
-    [anon_sym_pop] = ACTIONS(35),
-    [anon_sym_ring] = ACTIONS(35),
-    [anon_sym_smooth] = ACTIONS(35),
-    [anon_sym_fade] = ACTIONS(35),
-    [anon_sym_scale] = ACTIONS(35),
-    [anon_sym_rotate] = ACTIONS(35),
-    [anon_sym_slide] = ACTIONS(35),
-    [aux_sym_percentage_token1] = ACTIONS(37),
-    [anon_sym_from] = ACTIONS(39),
-    [anon_sym_to] = ACTIONS(39),
+    [sym_identifier] = ACTIONS(15),
+    [anon_sym_RBRACE] = ACTIONS(17),
+    [anon_sym_gradient] = ACTIONS(19),
+    [anon_sym_section] = ACTIONS(21),
+    [anon_sym_animation] = ACTIONS(23),
+    [anon_sym_below] = ACTIONS(25),
+    [anon_sym_above] = ACTIONS(25),
+    [anon_sym_between] = ACTIONS(27),
+    [anon_sym_container] = ACTIONS(29),
+    [anon_sym_row] = ACTIONS(31),
+    [anon_sym_text] = ACTIONS(31),
+    [anon_sym_hover] = ACTIONS(33),
+    [anon_sym_focus] = ACTIONS(33),
+    [anon_sym_focus_DASHvisible] = ACTIONS(33),
+    [anon_sym_focus_DASHwithin] = ACTIONS(33),
+    [anon_sym_active] = ACTIONS(33),
+    [anon_sym_disabled] = ACTIONS(33),
+    [anon_sym_checked] = ACTIONS(33),
+    [anon_sym_invalid] = ACTIONS(33),
+    [anon_sym_required] = ACTIONS(33),
+    [anon_sym_target] = ACTIONS(33),
+    [sym_special_block_keyword] = ACTIONS(35),
+    [anon_sym_columns] = ACTIONS(31),
+    [anon_sym_rows] = ACTIONS(31),
+    [anon_sym_flow] = ACTIONS(31),
+    [anon_sym_gap] = ACTIONS(31),
+    [anon_sym_display] = ACTIONS(31),
+    [anon_sym_height] = ACTIONS(31),
+    [anon_sym_width] = ACTIONS(31),
+    [anon_sym_min_DASHheight] = ACTIONS(31),
+    [anon_sym_max_DASHheight] = ACTIONS(31),
+    [anon_sym_min_DASHwidth] = ACTIONS(31),
+    [anon_sym_max_DASHwidth] = ACTIONS(31),
+    [anon_sym_inline_DASHsize] = ACTIONS(31),
+    [anon_sym_block_DASHsize] = ACTIONS(31),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(31),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(31),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(31),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(31),
+    [anon_sym_surface] = ACTIONS(31),
+    [anon_sym_background] = ACTIONS(31),
+    [anon_sym_theme] = ACTIONS(31),
+    [anon_sym_color] = ACTIONS(31),
+    [anon_sym_palette] = ACTIONS(31),
+    [anon_sym_tone] = ACTIONS(31),
+    [anon_sym_opacity] = ACTIONS(31),
+    [anon_sym_padding] = ACTIONS(31),
+    [anon_sym_anchor] = ACTIONS(31),
+    [anon_sym_margin] = ACTIONS(31),
+    [anon_sym_radius] = ACTIONS(31),
+    [anon_sym_border] = ACTIONS(31),
+    [anon_sym_shadow] = ACTIONS(31),
+    [anon_sym_outline] = ACTIONS(31),
+    [anon_sym_box] = ACTIONS(31),
+    [anon_sym_visibility] = ACTIONS(31),
+    [anon_sym_flex] = ACTIONS(31),
+    [anon_sym_square] = ACTIONS(31),
+    [anon_sym_place] = ACTIONS(31),
+    [anon_sym_in] = ACTIONS(31),
+    [anon_sym_col] = ACTIONS(31),
+    [anon_sym_span] = ACTIONS(31),
+    [anon_sym_position] = ACTIONS(31),
+    [anon_sym_offset] = ACTIONS(31),
+    [anon_sym_z] = ACTIONS(31),
+    [anon_sym_align] = ACTIONS(31),
+    [anon_sym_justify] = ACTIONS(31),
+    [anon_sym_font] = ACTIONS(31),
+    [anon_sym_size] = ACTIONS(31),
+    [anon_sym_weight] = ACTIONS(31),
+    [anon_sym_case] = ACTIONS(31),
+    [anon_sym_align_DASHtext] = ACTIONS(31),
+    [anon_sym_decoration] = ACTIONS(31),
+    [anon_sym_whitespace] = ACTIONS(31),
+    [anon_sym_word_DASHbreak] = ACTIONS(31),
+    [anon_sym_hyphenate] = ACTIONS(31),
+    [anon_sym_line] = ACTIONS(31),
+    [anon_sym_letter] = ACTIONS(31),
+    [anon_sym_transition] = ACTIONS(31),
+    [anon_sym_duration] = ACTIONS(31),
+    [anon_sym_ease] = ACTIONS(31),
+    [anon_sym_animate] = ACTIONS(31),
+    [anon_sym_delay] = ACTIONS(31),
+    [anon_sym_iteration] = ACTIONS(31),
+    [anon_sym_direction] = ACTIONS(31),
+    [anon_sym_fill] = ACTIONS(31),
+    [anon_sym_play_DASHstate] = ACTIONS(31),
+    [anon_sym_transform] = ACTIONS(31),
+    [anon_sym_filter] = ACTIONS(31),
+    [anon_sym_translate] = ACTIONS(31),
+    [anon_sym_type] = ACTIONS(31),
+    [anon_sym_angle] = ACTIONS(31),
+    [anon_sym_stop] = ACTIONS(31),
+    [anon_sym_corner] = ACTIONS(31),
+    [anon_sym_at] = ACTIONS(31),
+    [anon_sym_shape] = ACTIONS(31),
+    [anon_sym_css] = ACTIONS(31),
+    [anon_sym_lift] = ACTIONS(37),
+    [anon_sym_sink] = ACTIONS(37),
+    [anon_sym_shift] = ACTIONS(37),
+    [anon_sym_grow] = ACTIONS(37),
+    [anon_sym_shrink] = ACTIONS(37),
+    [anon_sym_tilt] = ACTIONS(37),
+    [anon_sym_glow] = ACTIONS(37),
+    [anon_sym_brighten] = ACTIONS(37),
+    [anon_sym_dim] = ACTIONS(37),
+    [anon_sym_blur] = ACTIONS(37),
+    [anon_sym_press] = ACTIONS(37),
+    [anon_sym_pop] = ACTIONS(37),
+    [anon_sym_ring] = ACTIONS(37),
+    [anon_sym_smooth] = ACTIONS(37),
+    [anon_sym_fade] = ACTIONS(37),
+    [anon_sym_scale] = ACTIONS(37),
+    [anon_sym_rotate] = ACTIONS(37),
+    [anon_sym_slide] = ACTIONS(37),
+    [aux_sym_percentage_token1] = ACTIONS(39),
+    [anon_sym_from] = ACTIONS(41),
+    [anon_sym_to] = ACTIONS(41),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(41),
+    [sym__newline] = ACTIONS(43),
   },
   [STATE(3)] = {
     [sym_state_block] = STATE(4),
@@ -4015,130 +4106,130 @@ static const uint16_t ts_parse_table[LARGE_STATE_COUNT][SYMBOL_COUNT] = {
     [sym_container_block] = STATE(4),
     [sym_keyframe_block] = STATE(4),
     [sym_statement] = STATE(4),
-    [sym_state_keyword] = STATE(38),
-    [sym_property_keyword] = STATE(26),
-    [sym_effect_keyword] = STATE(26),
-    [sym_keyframe_selector] = STATE(39),
+    [sym_state_keyword] = STATE(56),
+    [sym_property_keyword] = STATE(32),
+    [sym_effect_keyword] = STATE(32),
+    [sym_keyframe_selector] = STATE(44),
     [aux_sym_block_repeat1] = STATE(4),
-    [sym_identifier] = ACTIONS(13),
-    [anon_sym_RBRACE] = ACTIONS(43),
-    [anon_sym_gradient] = ACTIONS(17),
-    [anon_sym_section] = ACTIONS(19),
-    [anon_sym_animation] = ACTIONS(21),
-    [anon_sym_below] = ACTIONS(23),
-    [anon_sym_above] = ACTIONS(23),
-    [anon_sym_between] = ACTIONS(25),
-    [anon_sym_container] = ACTIONS(27),
-    [anon_sym_row] = ACTIONS(29),
-    [anon_sym_text] = ACTIONS(29),
-    [anon_sym_hover] = ACTIONS(31),
-    [anon_sym_focus] = ACTIONS(31),
-    [anon_sym_focus_DASHvisible] = ACTIONS(31),
-    [anon_sym_focus_DASHwithin] = ACTIONS(31),
-    [anon_sym_active] = ACTIONS(31),
-    [anon_sym_disabled] = ACTIONS(31),
-    [anon_sym_checked] = ACTIONS(31),
-    [anon_sym_invalid] = ACTIONS(31),
-    [anon_sym_required] = ACTIONS(31),
-    [anon_sym_target] = ACTIONS(31),
-    [sym_special_block_keyword] = ACTIONS(33),
-    [anon_sym_columns] = ACTIONS(29),
-    [anon_sym_rows] = ACTIONS(29),
-    [anon_sym_flow] = ACTIONS(29),
-    [anon_sym_gap] = ACTIONS(29),
-    [anon_sym_display] = ACTIONS(29),
-    [anon_sym_height] = ACTIONS(29),
-    [anon_sym_width] = ACTIONS(29),
-    [anon_sym_min_DASHheight] = ACTIONS(29),
-    [anon_sym_max_DASHheight] = ACTIONS(29),
-    [anon_sym_min_DASHwidth] = ACTIONS(29),
-    [anon_sym_max_DASHwidth] = ACTIONS(29),
-    [anon_sym_inline_DASHsize] = ACTIONS(29),
-    [anon_sym_block_DASHsize] = ACTIONS(29),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(29),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(29),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(29),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(29),
-    [anon_sym_surface] = ACTIONS(29),
-    [anon_sym_background] = ACTIONS(29),
-    [anon_sym_theme] = ACTIONS(29),
-    [anon_sym_color] = ACTIONS(29),
-    [anon_sym_palette] = ACTIONS(29),
-    [anon_sym_tone] = ACTIONS(29),
-    [anon_sym_opacity] = ACTIONS(29),
-    [anon_sym_padding] = ACTIONS(29),
-    [anon_sym_anchor] = ACTIONS(29),
-    [anon_sym_margin] = ACTIONS(29),
-    [anon_sym_radius] = ACTIONS(29),
-    [anon_sym_border] = ACTIONS(29),
-    [anon_sym_shadow] = ACTIONS(29),
-    [anon_sym_outline] = ACTIONS(29),
-    [anon_sym_box] = ACTIONS(29),
-    [anon_sym_visibility] = ACTIONS(29),
-    [anon_sym_flex] = ACTIONS(29),
-    [anon_sym_square] = ACTIONS(29),
-    [anon_sym_place] = ACTIONS(29),
-    [anon_sym_in] = ACTIONS(29),
-    [anon_sym_col] = ACTIONS(29),
-    [anon_sym_span] = ACTIONS(29),
-    [anon_sym_position] = ACTIONS(29),
-    [anon_sym_offset] = ACTIONS(29),
-    [anon_sym_z] = ACTIONS(29),
-    [anon_sym_align] = ACTIONS(29),
-    [anon_sym_justify] = ACTIONS(29),
-    [anon_sym_font] = ACTIONS(29),
-    [anon_sym_size] = ACTIONS(29),
-    [anon_sym_weight] = ACTIONS(29),
-    [anon_sym_case] = ACTIONS(29),
-    [anon_sym_align_DASHtext] = ACTIONS(29),
-    [anon_sym_decoration] = ACTIONS(29),
-    [anon_sym_whitespace] = ACTIONS(29),
-    [anon_sym_word_DASHbreak] = ACTIONS(29),
-    [anon_sym_hyphenate] = ACTIONS(29),
-    [anon_sym_line] = ACTIONS(29),
-    [anon_sym_letter] = ACTIONS(29),
-    [anon_sym_transition] = ACTIONS(29),
-    [anon_sym_duration] = ACTIONS(29),
-    [anon_sym_ease] = ACTIONS(29),
-    [anon_sym_animate] = ACTIONS(29),
-    [anon_sym_delay] = ACTIONS(29),
-    [anon_sym_iteration] = ACTIONS(29),
-    [anon_sym_direction] = ACTIONS(29),
-    [anon_sym_fill] = ACTIONS(29),
-    [anon_sym_play_DASHstate] = ACTIONS(29),
-    [anon_sym_transform] = ACTIONS(29),
-    [anon_sym_filter] = ACTIONS(29),
-    [anon_sym_translate] = ACTIONS(29),
-    [anon_sym_type] = ACTIONS(29),
-    [anon_sym_angle] = ACTIONS(29),
-    [anon_sym_stop] = ACTIONS(29),
-    [anon_sym_corner] = ACTIONS(29),
-    [anon_sym_at] = ACTIONS(29),
-    [anon_sym_shape] = ACTIONS(29),
-    [anon_sym_css] = ACTIONS(29),
-    [anon_sym_lift] = ACTIONS(35),
-    [anon_sym_sink] = ACTIONS(35),
-    [anon_sym_shift] = ACTIONS(35),
-    [anon_sym_grow] = ACTIONS(35),
-    [anon_sym_shrink] = ACTIONS(35),
-    [anon_sym_tilt] = ACTIONS(35),
-    [anon_sym_glow] = ACTIONS(35),
-    [anon_sym_brighten] = ACTIONS(35),
-    [anon_sym_dim] = ACTIONS(35),
-    [anon_sym_blur] = ACTIONS(35),
-    [anon_sym_press] = ACTIONS(35),
-    [anon_sym_pop] = ACTIONS(35),
-    [anon_sym_ring] = ACTIONS(35),
-    [anon_sym_smooth] = ACTIONS(35),
-    [anon_sym_fade] = ACTIONS(35),
-    [anon_sym_scale] = ACTIONS(35),
-    [anon_sym_rotate] = ACTIONS(35),
-    [anon_sym_slide] = ACTIONS(35),
-    [aux_sym_percentage_token1] = ACTIONS(37),
-    [anon_sym_from] = ACTIONS(39),
-    [anon_sym_to] = ACTIONS(39),
+    [sym_identifier] = ACTIONS(15),
+    [anon_sym_RBRACE] = ACTIONS(45),
+    [anon_sym_gradient] = ACTIONS(19),
+    [anon_sym_section] = ACTIONS(21),
+    [anon_sym_animation] = ACTIONS(23),
+    [anon_sym_below] = ACTIONS(25),
+    [anon_sym_above] = ACTIONS(25),
+    [anon_sym_between] = ACTIONS(27),
+    [anon_sym_container] = ACTIONS(29),
+    [anon_sym_row] = ACTIONS(31),
+    [anon_sym_text] = ACTIONS(31),
+    [anon_sym_hover] = ACTIONS(33),
+    [anon_sym_focus] = ACTIONS(33),
+    [anon_sym_focus_DASHvisible] = ACTIONS(33),
+    [anon_sym_focus_DASHwithin] = ACTIONS(33),
+    [anon_sym_active] = ACTIONS(33),
+    [anon_sym_disabled] = ACTIONS(33),
+    [anon_sym_checked] = ACTIONS(33),
+    [anon_sym_invalid] = ACTIONS(33),
+    [anon_sym_required] = ACTIONS(33),
+    [anon_sym_target] = ACTIONS(33),
+    [sym_special_block_keyword] = ACTIONS(35),
+    [anon_sym_columns] = ACTIONS(31),
+    [anon_sym_rows] = ACTIONS(31),
+    [anon_sym_flow] = ACTIONS(31),
+    [anon_sym_gap] = ACTIONS(31),
+    [anon_sym_display] = ACTIONS(31),
+    [anon_sym_height] = ACTIONS(31),
+    [anon_sym_width] = ACTIONS(31),
+    [anon_sym_min_DASHheight] = ACTIONS(31),
+    [anon_sym_max_DASHheight] = ACTIONS(31),
+    [anon_sym_min_DASHwidth] = ACTIONS(31),
+    [anon_sym_max_DASHwidth] = ACTIONS(31),
+    [anon_sym_inline_DASHsize] = ACTIONS(31),
+    [anon_sym_block_DASHsize] = ACTIONS(31),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(31),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(31),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(31),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(31),
+    [anon_sym_surface] = ACTIONS(31),
+    [anon_sym_background] = ACTIONS(31),
+    [anon_sym_theme] = ACTIONS(31),
+    [anon_sym_color] = ACTIONS(31),
+    [anon_sym_palette] = ACTIONS(31),
+    [anon_sym_tone] = ACTIONS(31),
+    [anon_sym_opacity] = ACTIONS(31),
+    [anon_sym_padding] = ACTIONS(31),
+    [anon_sym_anchor] = ACTIONS(31),
+    [anon_sym_margin] = ACTIONS(31),
+    [anon_sym_radius] = ACTIONS(31),
+    [anon_sym_border] = ACTIONS(31),
+    [anon_sym_shadow] = ACTIONS(31),
+    [anon_sym_outline] = ACTIONS(31),
+    [anon_sym_box] = ACTIONS(31),
+    [anon_sym_visibility] = ACTIONS(31),
+    [anon_sym_flex] = ACTIONS(31),
+    [anon_sym_square] = ACTIONS(31),
+    [anon_sym_place] = ACTIONS(31),
+    [anon_sym_in] = ACTIONS(31),
+    [anon_sym_col] = ACTIONS(31),
+    [anon_sym_span] = ACTIONS(31),
+    [anon_sym_position] = ACTIONS(31),
+    [anon_sym_offset] = ACTIONS(31),
+    [anon_sym_z] = ACTIONS(31),
+    [anon_sym_align] = ACTIONS(31),
+    [anon_sym_justify] = ACTIONS(31),
+    [anon_sym_font] = ACTIONS(31),
+    [anon_sym_size] = ACTIONS(31),
+    [anon_sym_weight] = ACTIONS(31),
+    [anon_sym_case] = ACTIONS(31),
+    [anon_sym_align_DASHtext] = ACTIONS(31),
+    [anon_sym_decoration] = ACTIONS(31),
+    [anon_sym_whitespace] = ACTIONS(31),
+    [anon_sym_word_DASHbreak] = ACTIONS(31),
+    [anon_sym_hyphenate] = ACTIONS(31),
+    [anon_sym_line] = ACTIONS(31),
+    [anon_sym_letter] = ACTIONS(31),
+    [anon_sym_transition] = ACTIONS(31),
+    [anon_sym_duration] = ACTIONS(31),
+    [anon_sym_ease] = ACTIONS(31),
+    [anon_sym_animate] = ACTIONS(31),
+    [anon_sym_delay] = ACTIONS(31),
+    [anon_sym_iteration] = ACTIONS(31),
+    [anon_sym_direction] = ACTIONS(31),
+    [anon_sym_fill] = ACTIONS(31),
+    [anon_sym_play_DASHstate] = ACTIONS(31),
+    [anon_sym_transform] = ACTIONS(31),
+    [anon_sym_filter] = ACTIONS(31),
+    [anon_sym_translate] = ACTIONS(31),
+    [anon_sym_type] = ACTIONS(31),
+    [anon_sym_angle] = ACTIONS(31),
+    [anon_sym_stop] = ACTIONS(31),
+    [anon_sym_corner] = ACTIONS(31),
+    [anon_sym_at] = ACTIONS(31),
+    [anon_sym_shape] = ACTIONS(31),
+    [anon_sym_css] = ACTIONS(31),
+    [anon_sym_lift] = ACTIONS(37),
+    [anon_sym_sink] = ACTIONS(37),
+    [anon_sym_shift] = ACTIONS(37),
+    [anon_sym_grow] = ACTIONS(37),
+    [anon_sym_shrink] = ACTIONS(37),
+    [anon_sym_tilt] = ACTIONS(37),
+    [anon_sym_glow] = ACTIONS(37),
+    [anon_sym_brighten] = ACTIONS(37),
+    [anon_sym_dim] = ACTIONS(37),
+    [anon_sym_blur] = ACTIONS(37),
+    [anon_sym_press] = ACTIONS(37),
+    [anon_sym_pop] = ACTIONS(37),
+    [anon_sym_ring] = ACTIONS(37),
+    [anon_sym_smooth] = ACTIONS(37),
+    [anon_sym_fade] = ACTIONS(37),
+    [anon_sym_scale] = ACTIONS(37),
+    [anon_sym_rotate] = ACTIONS(37),
+    [anon_sym_slide] = ACTIONS(37),
+    [aux_sym_percentage_token1] = ACTIONS(39),
+    [anon_sym_from] = ACTIONS(41),
+    [anon_sym_to] = ACTIONS(41),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(45),
+    [sym__newline] = ACTIONS(47),
   },
   [STATE(4)] = {
     [sym_state_block] = STATE(4),
@@ -4150,130 +4241,130 @@ static const uint16_t ts_parse_table[LARGE_STATE_COUNT][SYMBOL_COUNT] = {
     [sym_container_block] = STATE(4),
     [sym_keyframe_block] = STATE(4),
     [sym_statement] = STATE(4),
-    [sym_state_keyword] = STATE(38),
-    [sym_property_keyword] = STATE(26),
-    [sym_effect_keyword] = STATE(26),
-    [sym_keyframe_selector] = STATE(39),
+    [sym_state_keyword] = STATE(56),
+    [sym_property_keyword] = STATE(32),
+    [sym_effect_keyword] = STATE(32),
+    [sym_keyframe_selector] = STATE(44),
     [aux_sym_block_repeat1] = STATE(4),
-    [sym_identifier] = ACTIONS(47),
-    [anon_sym_RBRACE] = ACTIONS(50),
-    [anon_sym_gradient] = ACTIONS(52),
-    [anon_sym_section] = ACTIONS(55),
-    [anon_sym_animation] = ACTIONS(58),
-    [anon_sym_below] = ACTIONS(61),
-    [anon_sym_above] = ACTIONS(61),
-    [anon_sym_between] = ACTIONS(64),
-    [anon_sym_container] = ACTIONS(67),
-    [anon_sym_row] = ACTIONS(70),
-    [anon_sym_text] = ACTIONS(70),
-    [anon_sym_hover] = ACTIONS(73),
-    [anon_sym_focus] = ACTIONS(73),
-    [anon_sym_focus_DASHvisible] = ACTIONS(73),
-    [anon_sym_focus_DASHwithin] = ACTIONS(73),
-    [anon_sym_active] = ACTIONS(73),
-    [anon_sym_disabled] = ACTIONS(73),
-    [anon_sym_checked] = ACTIONS(73),
-    [anon_sym_invalid] = ACTIONS(73),
-    [anon_sym_required] = ACTIONS(73),
-    [anon_sym_target] = ACTIONS(73),
-    [sym_special_block_keyword] = ACTIONS(76),
-    [anon_sym_columns] = ACTIONS(70),
-    [anon_sym_rows] = ACTIONS(70),
-    [anon_sym_flow] = ACTIONS(70),
-    [anon_sym_gap] = ACTIONS(70),
-    [anon_sym_display] = ACTIONS(70),
-    [anon_sym_height] = ACTIONS(70),
-    [anon_sym_width] = ACTIONS(70),
-    [anon_sym_min_DASHheight] = ACTIONS(70),
-    [anon_sym_max_DASHheight] = ACTIONS(70),
-    [anon_sym_min_DASHwidth] = ACTIONS(70),
-    [anon_sym_max_DASHwidth] = ACTIONS(70),
-    [anon_sym_inline_DASHsize] = ACTIONS(70),
-    [anon_sym_block_DASHsize] = ACTIONS(70),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(70),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(70),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(70),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(70),
-    [anon_sym_surface] = ACTIONS(70),
-    [anon_sym_background] = ACTIONS(70),
-    [anon_sym_theme] = ACTIONS(70),
-    [anon_sym_color] = ACTIONS(70),
-    [anon_sym_palette] = ACTIONS(70),
-    [anon_sym_tone] = ACTIONS(70),
-    [anon_sym_opacity] = ACTIONS(70),
-    [anon_sym_padding] = ACTIONS(70),
-    [anon_sym_anchor] = ACTIONS(70),
-    [anon_sym_margin] = ACTIONS(70),
-    [anon_sym_radius] = ACTIONS(70),
-    [anon_sym_border] = ACTIONS(70),
-    [anon_sym_shadow] = ACTIONS(70),
-    [anon_sym_outline] = ACTIONS(70),
-    [anon_sym_box] = ACTIONS(70),
-    [anon_sym_visibility] = ACTIONS(70),
-    [anon_sym_flex] = ACTIONS(70),
-    [anon_sym_square] = ACTIONS(70),
-    [anon_sym_place] = ACTIONS(70),
-    [anon_sym_in] = ACTIONS(70),
-    [anon_sym_col] = ACTIONS(70),
-    [anon_sym_span] = ACTIONS(70),
-    [anon_sym_position] = ACTIONS(70),
-    [anon_sym_offset] = ACTIONS(70),
-    [anon_sym_z] = ACTIONS(70),
-    [anon_sym_align] = ACTIONS(70),
-    [anon_sym_justify] = ACTIONS(70),
-    [anon_sym_font] = ACTIONS(70),
-    [anon_sym_size] = ACTIONS(70),
-    [anon_sym_weight] = ACTIONS(70),
-    [anon_sym_case] = ACTIONS(70),
-    [anon_sym_align_DASHtext] = ACTIONS(70),
-    [anon_sym_decoration] = ACTIONS(70),
-    [anon_sym_whitespace] = ACTIONS(70),
-    [anon_sym_word_DASHbreak] = ACTIONS(70),
-    [anon_sym_hyphenate] = ACTIONS(70),
-    [anon_sym_line] = ACTIONS(70),
-    [anon_sym_letter] = ACTIONS(70),
-    [anon_sym_transition] = ACTIONS(70),
-    [anon_sym_duration] = ACTIONS(70),
-    [anon_sym_ease] = ACTIONS(70),
-    [anon_sym_animate] = ACTIONS(70),
-    [anon_sym_delay] = ACTIONS(70),
-    [anon_sym_iteration] = ACTIONS(70),
-    [anon_sym_direction] = ACTIONS(70),
-    [anon_sym_fill] = ACTIONS(70),
-    [anon_sym_play_DASHstate] = ACTIONS(70),
-    [anon_sym_transform] = ACTIONS(70),
-    [anon_sym_filter] = ACTIONS(70),
-    [anon_sym_translate] = ACTIONS(70),
-    [anon_sym_type] = ACTIONS(70),
-    [anon_sym_angle] = ACTIONS(70),
-    [anon_sym_stop] = ACTIONS(70),
-    [anon_sym_corner] = ACTIONS(70),
-    [anon_sym_at] = ACTIONS(70),
-    [anon_sym_shape] = ACTIONS(70),
-    [anon_sym_css] = ACTIONS(70),
-    [anon_sym_lift] = ACTIONS(79),
-    [anon_sym_sink] = ACTIONS(79),
-    [anon_sym_shift] = ACTIONS(79),
-    [anon_sym_grow] = ACTIONS(79),
-    [anon_sym_shrink] = ACTIONS(79),
-    [anon_sym_tilt] = ACTIONS(79),
-    [anon_sym_glow] = ACTIONS(79),
-    [anon_sym_brighten] = ACTIONS(79),
-    [anon_sym_dim] = ACTIONS(79),
-    [anon_sym_blur] = ACTIONS(79),
-    [anon_sym_press] = ACTIONS(79),
-    [anon_sym_pop] = ACTIONS(79),
-    [anon_sym_ring] = ACTIONS(79),
-    [anon_sym_smooth] = ACTIONS(79),
-    [anon_sym_fade] = ACTIONS(79),
-    [anon_sym_scale] = ACTIONS(79),
-    [anon_sym_rotate] = ACTIONS(79),
-    [anon_sym_slide] = ACTIONS(79),
-    [aux_sym_percentage_token1] = ACTIONS(82),
-    [anon_sym_from] = ACTIONS(85),
-    [anon_sym_to] = ACTIONS(85),
+    [sym_identifier] = ACTIONS(49),
+    [anon_sym_RBRACE] = ACTIONS(52),
+    [anon_sym_gradient] = ACTIONS(54),
+    [anon_sym_section] = ACTIONS(57),
+    [anon_sym_animation] = ACTIONS(60),
+    [anon_sym_below] = ACTIONS(63),
+    [anon_sym_above] = ACTIONS(63),
+    [anon_sym_between] = ACTIONS(66),
+    [anon_sym_container] = ACTIONS(69),
+    [anon_sym_row] = ACTIONS(72),
+    [anon_sym_text] = ACTIONS(72),
+    [anon_sym_hover] = ACTIONS(75),
+    [anon_sym_focus] = ACTIONS(75),
+    [anon_sym_focus_DASHvisible] = ACTIONS(75),
+    [anon_sym_focus_DASHwithin] = ACTIONS(75),
+    [anon_sym_active] = ACTIONS(75),
+    [anon_sym_disabled] = ACTIONS(75),
+    [anon_sym_checked] = ACTIONS(75),
+    [anon_sym_invalid] = ACTIONS(75),
+    [anon_sym_required] = ACTIONS(75),
+    [anon_sym_target] = ACTIONS(75),
+    [sym_special_block_keyword] = ACTIONS(78),
+    [anon_sym_columns] = ACTIONS(72),
+    [anon_sym_rows] = ACTIONS(72),
+    [anon_sym_flow] = ACTIONS(72),
+    [anon_sym_gap] = ACTIONS(72),
+    [anon_sym_display] = ACTIONS(72),
+    [anon_sym_height] = ACTIONS(72),
+    [anon_sym_width] = ACTIONS(72),
+    [anon_sym_min_DASHheight] = ACTIONS(72),
+    [anon_sym_max_DASHheight] = ACTIONS(72),
+    [anon_sym_min_DASHwidth] = ACTIONS(72),
+    [anon_sym_max_DASHwidth] = ACTIONS(72),
+    [anon_sym_inline_DASHsize] = ACTIONS(72),
+    [anon_sym_block_DASHsize] = ACTIONS(72),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(72),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(72),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(72),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(72),
+    [anon_sym_surface] = ACTIONS(72),
+    [anon_sym_background] = ACTIONS(72),
+    [anon_sym_theme] = ACTIONS(72),
+    [anon_sym_color] = ACTIONS(72),
+    [anon_sym_palette] = ACTIONS(72),
+    [anon_sym_tone] = ACTIONS(72),
+    [anon_sym_opacity] = ACTIONS(72),
+    [anon_sym_padding] = ACTIONS(72),
+    [anon_sym_anchor] = ACTIONS(72),
+    [anon_sym_margin] = ACTIONS(72),
+    [anon_sym_radius] = ACTIONS(72),
+    [anon_sym_border] = ACTIONS(72),
+    [anon_sym_shadow] = ACTIONS(72),
+    [anon_sym_outline] = ACTIONS(72),
+    [anon_sym_box] = ACTIONS(72),
+    [anon_sym_visibility] = ACTIONS(72),
+    [anon_sym_flex] = ACTIONS(72),
+    [anon_sym_square] = ACTIONS(72),
+    [anon_sym_place] = ACTIONS(72),
+    [anon_sym_in] = ACTIONS(72),
+    [anon_sym_col] = ACTIONS(72),
+    [anon_sym_span] = ACTIONS(72),
+    [anon_sym_position] = ACTIONS(72),
+    [anon_sym_offset] = ACTIONS(72),
+    [anon_sym_z] = ACTIONS(72),
+    [anon_sym_align] = ACTIONS(72),
+    [anon_sym_justify] = ACTIONS(72),
+    [anon_sym_font] = ACTIONS(72),
+    [anon_sym_size] = ACTIONS(72),
+    [anon_sym_weight] = ACTIONS(72),
+    [anon_sym_case] = ACTIONS(72),
+    [anon_sym_align_DASHtext] = ACTIONS(72),
+    [anon_sym_decoration] = ACTIONS(72),
+    [anon_sym_whitespace] = ACTIONS(72),
+    [anon_sym_word_DASHbreak] = ACTIONS(72),
+    [anon_sym_hyphenate] = ACTIONS(72),
+    [anon_sym_line] = ACTIONS(72),
+    [anon_sym_letter] = ACTIONS(72),
+    [anon_sym_transition] = ACTIONS(72),
+    [anon_sym_duration] = ACTIONS(72),
+    [anon_sym_ease] = ACTIONS(72),
+    [anon_sym_animate] = ACTIONS(72),
+    [anon_sym_delay] = ACTIONS(72),
+    [anon_sym_iteration] = ACTIONS(72),
+    [anon_sym_direction] = ACTIONS(72),
+    [anon_sym_fill] = ACTIONS(72),
+    [anon_sym_play_DASHstate] = ACTIONS(72),
+    [anon_sym_transform] = ACTIONS(72),
+    [anon_sym_filter] = ACTIONS(72),
+    [anon_sym_translate] = ACTIONS(72),
+    [anon_sym_type] = ACTIONS(72),
+    [anon_sym_angle] = ACTIONS(72),
+    [anon_sym_stop] = ACTIONS(72),
+    [anon_sym_corner] = ACTIONS(72),
+    [anon_sym_at] = ACTIONS(72),
+    [anon_sym_shape] = ACTIONS(72),
+    [anon_sym_css] = ACTIONS(72),
+    [anon_sym_lift] = ACTIONS(81),
+    [anon_sym_sink] = ACTIONS(81),
+    [anon_sym_shift] = ACTIONS(81),
+    [anon_sym_grow] = ACTIONS(81),
+    [anon_sym_shrink] = ACTIONS(81),
+    [anon_sym_tilt] = ACTIONS(81),
+    [anon_sym_glow] = ACTIONS(81),
+    [anon_sym_brighten] = ACTIONS(81),
+    [anon_sym_dim] = ACTIONS(81),
+    [anon_sym_blur] = ACTIONS(81),
+    [anon_sym_press] = ACTIONS(81),
+    [anon_sym_pop] = ACTIONS(81),
+    [anon_sym_ring] = ACTIONS(81),
+    [anon_sym_smooth] = ACTIONS(81),
+    [anon_sym_fade] = ACTIONS(81),
+    [anon_sym_scale] = ACTIONS(81),
+    [anon_sym_rotate] = ACTIONS(81),
+    [anon_sym_slide] = ACTIONS(81),
+    [aux_sym_percentage_token1] = ACTIONS(84),
+    [anon_sym_from] = ACTIONS(87),
+    [anon_sym_to] = ACTIONS(87),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(88),
+    [sym__newline] = ACTIONS(90),
   },
   [STATE(5)] = {
     [sym_state_block] = STATE(6),
@@ -4285,130 +4376,130 @@ static const uint16_t ts_parse_table[LARGE_STATE_COUNT][SYMBOL_COUNT] = {
     [sym_container_block] = STATE(6),
     [sym_keyframe_block] = STATE(6),
     [sym_statement] = STATE(6),
-    [sym_state_keyword] = STATE(38),
-    [sym_property_keyword] = STATE(26),
-    [sym_effect_keyword] = STATE(26),
-    [sym_keyframe_selector] = STATE(39),
+    [sym_state_keyword] = STATE(56),
+    [sym_property_keyword] = STATE(32),
+    [sym_effect_keyword] = STATE(32),
+    [sym_keyframe_selector] = STATE(44),
     [aux_sym_block_repeat1] = STATE(6),
-    [sym_identifier] = ACTIONS(13),
-    [anon_sym_RBRACE] = ACTIONS(91),
-    [anon_sym_gradient] = ACTIONS(17),
-    [anon_sym_section] = ACTIONS(19),
-    [anon_sym_animation] = ACTIONS(21),
-    [anon_sym_below] = ACTIONS(23),
-    [anon_sym_above] = ACTIONS(23),
-    [anon_sym_between] = ACTIONS(25),
-    [anon_sym_container] = ACTIONS(27),
-    [anon_sym_row] = ACTIONS(29),
-    [anon_sym_text] = ACTIONS(29),
-    [anon_sym_hover] = ACTIONS(31),
-    [anon_sym_focus] = ACTIONS(31),
-    [anon_sym_focus_DASHvisible] = ACTIONS(31),
-    [anon_sym_focus_DASHwithin] = ACTIONS(31),
-    [anon_sym_active] = ACTIONS(31),
-    [anon_sym_disabled] = ACTIONS(31),
-    [anon_sym_checked] = ACTIONS(31),
-    [anon_sym_invalid] = ACTIONS(31),
-    [anon_sym_required] = ACTIONS(31),
-    [anon_sym_target] = ACTIONS(31),
-    [sym_special_block_keyword] = ACTIONS(33),
-    [anon_sym_columns] = ACTIONS(29),
-    [anon_sym_rows] = ACTIONS(29),
-    [anon_sym_flow] = ACTIONS(29),
-    [anon_sym_gap] = ACTIONS(29),
-    [anon_sym_display] = ACTIONS(29),
-    [anon_sym_height] = ACTIONS(29),
-    [anon_sym_width] = ACTIONS(29),
-    [anon_sym_min_DASHheight] = ACTIONS(29),
-    [anon_sym_max_DASHheight] = ACTIONS(29),
-    [anon_sym_min_DASHwidth] = ACTIONS(29),
-    [anon_sym_max_DASHwidth] = ACTIONS(29),
-    [anon_sym_inline_DASHsize] = ACTIONS(29),
-    [anon_sym_block_DASHsize] = ACTIONS(29),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(29),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(29),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(29),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(29),
-    [anon_sym_surface] = ACTIONS(29),
-    [anon_sym_background] = ACTIONS(29),
-    [anon_sym_theme] = ACTIONS(29),
-    [anon_sym_color] = ACTIONS(29),
-    [anon_sym_palette] = ACTIONS(29),
-    [anon_sym_tone] = ACTIONS(29),
-    [anon_sym_opacity] = ACTIONS(29),
-    [anon_sym_padding] = ACTIONS(29),
-    [anon_sym_anchor] = ACTIONS(29),
-    [anon_sym_margin] = ACTIONS(29),
-    [anon_sym_radius] = ACTIONS(29),
-    [anon_sym_border] = ACTIONS(29),
-    [anon_sym_shadow] = ACTIONS(29),
-    [anon_sym_outline] = ACTIONS(29),
-    [anon_sym_box] = ACTIONS(29),
-    [anon_sym_visibility] = ACTIONS(29),
-    [anon_sym_flex] = ACTIONS(29),
-    [anon_sym_square] = ACTIONS(29),
-    [anon_sym_place] = ACTIONS(29),
-    [anon_sym_in] = ACTIONS(29),
-    [anon_sym_col] = ACTIONS(29),
-    [anon_sym_span] = ACTIONS(29),
-    [anon_sym_position] = ACTIONS(29),
-    [anon_sym_offset] = ACTIONS(29),
-    [anon_sym_z] = ACTIONS(29),
-    [anon_sym_align] = ACTIONS(29),
-    [anon_sym_justify] = ACTIONS(29),
-    [anon_sym_font] = ACTIONS(29),
-    [anon_sym_size] = ACTIONS(29),
-    [anon_sym_weight] = ACTIONS(29),
-    [anon_sym_case] = ACTIONS(29),
-    [anon_sym_align_DASHtext] = ACTIONS(29),
-    [anon_sym_decoration] = ACTIONS(29),
-    [anon_sym_whitespace] = ACTIONS(29),
-    [anon_sym_word_DASHbreak] = ACTIONS(29),
-    [anon_sym_hyphenate] = ACTIONS(29),
-    [anon_sym_line] = ACTIONS(29),
-    [anon_sym_letter] = ACTIONS(29),
-    [anon_sym_transition] = ACTIONS(29),
-    [anon_sym_duration] = ACTIONS(29),
-    [anon_sym_ease] = ACTIONS(29),
-    [anon_sym_animate] = ACTIONS(29),
-    [anon_sym_delay] = ACTIONS(29),
-    [anon_sym_iteration] = ACTIONS(29),
-    [anon_sym_direction] = ACTIONS(29),
-    [anon_sym_fill] = ACTIONS(29),
-    [anon_sym_play_DASHstate] = ACTIONS(29),
-    [anon_sym_transform] = ACTIONS(29),
-    [anon_sym_filter] = ACTIONS(29),
-    [anon_sym_translate] = ACTIONS(29),
-    [anon_sym_type] = ACTIONS(29),
-    [anon_sym_angle] = ACTIONS(29),
-    [anon_sym_stop] = ACTIONS(29),
-    [anon_sym_corner] = ACTIONS(29),
-    [anon_sym_at] = ACTIONS(29),
-    [anon_sym_shape] = ACTIONS(29),
-    [anon_sym_css] = ACTIONS(29),
-    [anon_sym_lift] = ACTIONS(35),
-    [anon_sym_sink] = ACTIONS(35),
-    [anon_sym_shift] = ACTIONS(35),
-    [anon_sym_grow] = ACTIONS(35),
-    [anon_sym_shrink] = ACTIONS(35),
-    [anon_sym_tilt] = ACTIONS(35),
-    [anon_sym_glow] = ACTIONS(35),
-    [anon_sym_brighten] = ACTIONS(35),
-    [anon_sym_dim] = ACTIONS(35),
-    [anon_sym_blur] = ACTIONS(35),
-    [anon_sym_press] = ACTIONS(35),
-    [anon_sym_pop] = ACTIONS(35),
-    [anon_sym_ring] = ACTIONS(35),
-    [anon_sym_smooth] = ACTIONS(35),
-    [anon_sym_fade] = ACTIONS(35),
-    [anon_sym_scale] = ACTIONS(35),
-    [anon_sym_rotate] = ACTIONS(35),
-    [anon_sym_slide] = ACTIONS(35),
-    [aux_sym_percentage_token1] = ACTIONS(37),
-    [anon_sym_from] = ACTIONS(39),
-    [anon_sym_to] = ACTIONS(39),
+    [sym_identifier] = ACTIONS(15),
+    [anon_sym_RBRACE] = ACTIONS(93),
+    [anon_sym_gradient] = ACTIONS(19),
+    [anon_sym_section] = ACTIONS(21),
+    [anon_sym_animation] = ACTIONS(23),
+    [anon_sym_below] = ACTIONS(25),
+    [anon_sym_above] = ACTIONS(25),
+    [anon_sym_between] = ACTIONS(27),
+    [anon_sym_container] = ACTIONS(29),
+    [anon_sym_row] = ACTIONS(31),
+    [anon_sym_text] = ACTIONS(31),
+    [anon_sym_hover] = ACTIONS(33),
+    [anon_sym_focus] = ACTIONS(33),
+    [anon_sym_focus_DASHvisible] = ACTIONS(33),
+    [anon_sym_focus_DASHwithin] = ACTIONS(33),
+    [anon_sym_active] = ACTIONS(33),
+    [anon_sym_disabled] = ACTIONS(33),
+    [anon_sym_checked] = ACTIONS(33),
+    [anon_sym_invalid] = ACTIONS(33),
+    [anon_sym_required] = ACTIONS(33),
+    [anon_sym_target] = ACTIONS(33),
+    [sym_special_block_keyword] = ACTIONS(35),
+    [anon_sym_columns] = ACTIONS(31),
+    [anon_sym_rows] = ACTIONS(31),
+    [anon_sym_flow] = ACTIONS(31),
+    [anon_sym_gap] = ACTIONS(31),
+    [anon_sym_display] = ACTIONS(31),
+    [anon_sym_height] = ACTIONS(31),
+    [anon_sym_width] = ACTIONS(31),
+    [anon_sym_min_DASHheight] = ACTIONS(31),
+    [anon_sym_max_DASHheight] = ACTIONS(31),
+    [anon_sym_min_DASHwidth] = ACTIONS(31),
+    [anon_sym_max_DASHwidth] = ACTIONS(31),
+    [anon_sym_inline_DASHsize] = ACTIONS(31),
+    [anon_sym_block_DASHsize] = ACTIONS(31),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(31),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(31),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(31),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(31),
+    [anon_sym_surface] = ACTIONS(31),
+    [anon_sym_background] = ACTIONS(31),
+    [anon_sym_theme] = ACTIONS(31),
+    [anon_sym_color] = ACTIONS(31),
+    [anon_sym_palette] = ACTIONS(31),
+    [anon_sym_tone] = ACTIONS(31),
+    [anon_sym_opacity] = ACTIONS(31),
+    [anon_sym_padding] = ACTIONS(31),
+    [anon_sym_anchor] = ACTIONS(31),
+    [anon_sym_margin] = ACTIONS(31),
+    [anon_sym_radius] = ACTIONS(31),
+    [anon_sym_border] = ACTIONS(31),
+    [anon_sym_shadow] = ACTIONS(31),
+    [anon_sym_outline] = ACTIONS(31),
+    [anon_sym_box] = ACTIONS(31),
+    [anon_sym_visibility] = ACTIONS(31),
+    [anon_sym_flex] = ACTIONS(31),
+    [anon_sym_square] = ACTIONS(31),
+    [anon_sym_place] = ACTIONS(31),
+    [anon_sym_in] = ACTIONS(31),
+    [anon_sym_col] = ACTIONS(31),
+    [anon_sym_span] = ACTIONS(31),
+    [anon_sym_position] = ACTIONS(31),
+    [anon_sym_offset] = ACTIONS(31),
+    [anon_sym_z] = ACTIONS(31),
+    [anon_sym_align] = ACTIONS(31),
+    [anon_sym_justify] = ACTIONS(31),
+    [anon_sym_font] = ACTIONS(31),
+    [anon_sym_size] = ACTIONS(31),
+    [anon_sym_weight] = ACTIONS(31),
+    [anon_sym_case] = ACTIONS(31),
+    [anon_sym_align_DASHtext] = ACTIONS(31),
+    [anon_sym_decoration] = ACTIONS(31),
+    [anon_sym_whitespace] = ACTIONS(31),
+    [anon_sym_word_DASHbreak] = ACTIONS(31),
+    [anon_sym_hyphenate] = ACTIONS(31),
+    [anon_sym_line] = ACTIONS(31),
+    [anon_sym_letter] = ACTIONS(31),
+    [anon_sym_transition] = ACTIONS(31),
+    [anon_sym_duration] = ACTIONS(31),
+    [anon_sym_ease] = ACTIONS(31),
+    [anon_sym_animate] = ACTIONS(31),
+    [anon_sym_delay] = ACTIONS(31),
+    [anon_sym_iteration] = ACTIONS(31),
+    [anon_sym_direction] = ACTIONS(31),
+    [anon_sym_fill] = ACTIONS(31),
+    [anon_sym_play_DASHstate] = ACTIONS(31),
+    [anon_sym_transform] = ACTIONS(31),
+    [anon_sym_filter] = ACTIONS(31),
+    [anon_sym_translate] = ACTIONS(31),
+    [anon_sym_type] = ACTIONS(31),
+    [anon_sym_angle] = ACTIONS(31),
+    [anon_sym_stop] = ACTIONS(31),
+    [anon_sym_corner] = ACTIONS(31),
+    [anon_sym_at] = ACTIONS(31),
+    [anon_sym_shape] = ACTIONS(31),
+    [anon_sym_css] = ACTIONS(31),
+    [anon_sym_lift] = ACTIONS(37),
+    [anon_sym_sink] = ACTIONS(37),
+    [anon_sym_shift] = ACTIONS(37),
+    [anon_sym_grow] = ACTIONS(37),
+    [anon_sym_shrink] = ACTIONS(37),
+    [anon_sym_tilt] = ACTIONS(37),
+    [anon_sym_glow] = ACTIONS(37),
+    [anon_sym_brighten] = ACTIONS(37),
+    [anon_sym_dim] = ACTIONS(37),
+    [anon_sym_blur] = ACTIONS(37),
+    [anon_sym_press] = ACTIONS(37),
+    [anon_sym_pop] = ACTIONS(37),
+    [anon_sym_ring] = ACTIONS(37),
+    [anon_sym_smooth] = ACTIONS(37),
+    [anon_sym_fade] = ACTIONS(37),
+    [anon_sym_scale] = ACTIONS(37),
+    [anon_sym_rotate] = ACTIONS(37),
+    [anon_sym_slide] = ACTIONS(37),
+    [aux_sym_percentage_token1] = ACTIONS(39),
+    [anon_sym_from] = ACTIONS(41),
+    [anon_sym_to] = ACTIONS(41),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(93),
+    [sym__newline] = ACTIONS(95),
   },
   [STATE(6)] = {
     [sym_state_block] = STATE(4),
@@ -4420,1723 +4511,1758 @@ static const uint16_t ts_parse_table[LARGE_STATE_COUNT][SYMBOL_COUNT] = {
     [sym_container_block] = STATE(4),
     [sym_keyframe_block] = STATE(4),
     [sym_statement] = STATE(4),
-    [sym_state_keyword] = STATE(38),
-    [sym_property_keyword] = STATE(26),
-    [sym_effect_keyword] = STATE(26),
-    [sym_keyframe_selector] = STATE(39),
+    [sym_state_keyword] = STATE(56),
+    [sym_property_keyword] = STATE(32),
+    [sym_effect_keyword] = STATE(32),
+    [sym_keyframe_selector] = STATE(44),
     [aux_sym_block_repeat1] = STATE(4),
-    [sym_identifier] = ACTIONS(13),
-    [anon_sym_RBRACE] = ACTIONS(95),
-    [anon_sym_gradient] = ACTIONS(17),
-    [anon_sym_section] = ACTIONS(19),
-    [anon_sym_animation] = ACTIONS(21),
-    [anon_sym_below] = ACTIONS(23),
-    [anon_sym_above] = ACTIONS(23),
-    [anon_sym_between] = ACTIONS(25),
-    [anon_sym_container] = ACTIONS(27),
-    [anon_sym_row] = ACTIONS(29),
-    [anon_sym_text] = ACTIONS(29),
-    [anon_sym_hover] = ACTIONS(31),
-    [anon_sym_focus] = ACTIONS(31),
-    [anon_sym_focus_DASHvisible] = ACTIONS(31),
-    [anon_sym_focus_DASHwithin] = ACTIONS(31),
-    [anon_sym_active] = ACTIONS(31),
-    [anon_sym_disabled] = ACTIONS(31),
-    [anon_sym_checked] = ACTIONS(31),
-    [anon_sym_invalid] = ACTIONS(31),
-    [anon_sym_required] = ACTIONS(31),
-    [anon_sym_target] = ACTIONS(31),
-    [sym_special_block_keyword] = ACTIONS(33),
-    [anon_sym_columns] = ACTIONS(29),
-    [anon_sym_rows] = ACTIONS(29),
-    [anon_sym_flow] = ACTIONS(29),
-    [anon_sym_gap] = ACTIONS(29),
-    [anon_sym_display] = ACTIONS(29),
-    [anon_sym_height] = ACTIONS(29),
-    [anon_sym_width] = ACTIONS(29),
-    [anon_sym_min_DASHheight] = ACTIONS(29),
-    [anon_sym_max_DASHheight] = ACTIONS(29),
-    [anon_sym_min_DASHwidth] = ACTIONS(29),
-    [anon_sym_max_DASHwidth] = ACTIONS(29),
-    [anon_sym_inline_DASHsize] = ACTIONS(29),
-    [anon_sym_block_DASHsize] = ACTIONS(29),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(29),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(29),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(29),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(29),
-    [anon_sym_surface] = ACTIONS(29),
-    [anon_sym_background] = ACTIONS(29),
-    [anon_sym_theme] = ACTIONS(29),
-    [anon_sym_color] = ACTIONS(29),
-    [anon_sym_palette] = ACTIONS(29),
-    [anon_sym_tone] = ACTIONS(29),
-    [anon_sym_opacity] = ACTIONS(29),
-    [anon_sym_padding] = ACTIONS(29),
-    [anon_sym_anchor] = ACTIONS(29),
-    [anon_sym_margin] = ACTIONS(29),
-    [anon_sym_radius] = ACTIONS(29),
-    [anon_sym_border] = ACTIONS(29),
-    [anon_sym_shadow] = ACTIONS(29),
-    [anon_sym_outline] = ACTIONS(29),
-    [anon_sym_box] = ACTIONS(29),
-    [anon_sym_visibility] = ACTIONS(29),
-    [anon_sym_flex] = ACTIONS(29),
-    [anon_sym_square] = ACTIONS(29),
-    [anon_sym_place] = ACTIONS(29),
-    [anon_sym_in] = ACTIONS(29),
-    [anon_sym_col] = ACTIONS(29),
-    [anon_sym_span] = ACTIONS(29),
-    [anon_sym_position] = ACTIONS(29),
-    [anon_sym_offset] = ACTIONS(29),
-    [anon_sym_z] = ACTIONS(29),
-    [anon_sym_align] = ACTIONS(29),
-    [anon_sym_justify] = ACTIONS(29),
-    [anon_sym_font] = ACTIONS(29),
-    [anon_sym_size] = ACTIONS(29),
-    [anon_sym_weight] = ACTIONS(29),
-    [anon_sym_case] = ACTIONS(29),
-    [anon_sym_align_DASHtext] = ACTIONS(29),
-    [anon_sym_decoration] = ACTIONS(29),
-    [anon_sym_whitespace] = ACTIONS(29),
-    [anon_sym_word_DASHbreak] = ACTIONS(29),
-    [anon_sym_hyphenate] = ACTIONS(29),
-    [anon_sym_line] = ACTIONS(29),
-    [anon_sym_letter] = ACTIONS(29),
-    [anon_sym_transition] = ACTIONS(29),
-    [anon_sym_duration] = ACTIONS(29),
-    [anon_sym_ease] = ACTIONS(29),
-    [anon_sym_animate] = ACTIONS(29),
-    [anon_sym_delay] = ACTIONS(29),
-    [anon_sym_iteration] = ACTIONS(29),
-    [anon_sym_direction] = ACTIONS(29),
-    [anon_sym_fill] = ACTIONS(29),
-    [anon_sym_play_DASHstate] = ACTIONS(29),
-    [anon_sym_transform] = ACTIONS(29),
-    [anon_sym_filter] = ACTIONS(29),
-    [anon_sym_translate] = ACTIONS(29),
-    [anon_sym_type] = ACTIONS(29),
-    [anon_sym_angle] = ACTIONS(29),
-    [anon_sym_stop] = ACTIONS(29),
-    [anon_sym_corner] = ACTIONS(29),
-    [anon_sym_at] = ACTIONS(29),
-    [anon_sym_shape] = ACTIONS(29),
-    [anon_sym_css] = ACTIONS(29),
-    [anon_sym_lift] = ACTIONS(35),
-    [anon_sym_sink] = ACTIONS(35),
-    [anon_sym_shift] = ACTIONS(35),
-    [anon_sym_grow] = ACTIONS(35),
-    [anon_sym_shrink] = ACTIONS(35),
-    [anon_sym_tilt] = ACTIONS(35),
-    [anon_sym_glow] = ACTIONS(35),
-    [anon_sym_brighten] = ACTIONS(35),
-    [anon_sym_dim] = ACTIONS(35),
-    [anon_sym_blur] = ACTIONS(35),
-    [anon_sym_press] = ACTIONS(35),
-    [anon_sym_pop] = ACTIONS(35),
-    [anon_sym_ring] = ACTIONS(35),
-    [anon_sym_smooth] = ACTIONS(35),
-    [anon_sym_fade] = ACTIONS(35),
-    [anon_sym_scale] = ACTIONS(35),
-    [anon_sym_rotate] = ACTIONS(35),
-    [anon_sym_slide] = ACTIONS(35),
-    [aux_sym_percentage_token1] = ACTIONS(37),
-    [anon_sym_from] = ACTIONS(39),
-    [anon_sym_to] = ACTIONS(39),
+    [sym_identifier] = ACTIONS(15),
+    [anon_sym_RBRACE] = ACTIONS(97),
+    [anon_sym_gradient] = ACTIONS(19),
+    [anon_sym_section] = ACTIONS(21),
+    [anon_sym_animation] = ACTIONS(23),
+    [anon_sym_below] = ACTIONS(25),
+    [anon_sym_above] = ACTIONS(25),
+    [anon_sym_between] = ACTIONS(27),
+    [anon_sym_container] = ACTIONS(29),
+    [anon_sym_row] = ACTIONS(31),
+    [anon_sym_text] = ACTIONS(31),
+    [anon_sym_hover] = ACTIONS(33),
+    [anon_sym_focus] = ACTIONS(33),
+    [anon_sym_focus_DASHvisible] = ACTIONS(33),
+    [anon_sym_focus_DASHwithin] = ACTIONS(33),
+    [anon_sym_active] = ACTIONS(33),
+    [anon_sym_disabled] = ACTIONS(33),
+    [anon_sym_checked] = ACTIONS(33),
+    [anon_sym_invalid] = ACTIONS(33),
+    [anon_sym_required] = ACTIONS(33),
+    [anon_sym_target] = ACTIONS(33),
+    [sym_special_block_keyword] = ACTIONS(35),
+    [anon_sym_columns] = ACTIONS(31),
+    [anon_sym_rows] = ACTIONS(31),
+    [anon_sym_flow] = ACTIONS(31),
+    [anon_sym_gap] = ACTIONS(31),
+    [anon_sym_display] = ACTIONS(31),
+    [anon_sym_height] = ACTIONS(31),
+    [anon_sym_width] = ACTIONS(31),
+    [anon_sym_min_DASHheight] = ACTIONS(31),
+    [anon_sym_max_DASHheight] = ACTIONS(31),
+    [anon_sym_min_DASHwidth] = ACTIONS(31),
+    [anon_sym_max_DASHwidth] = ACTIONS(31),
+    [anon_sym_inline_DASHsize] = ACTIONS(31),
+    [anon_sym_block_DASHsize] = ACTIONS(31),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(31),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(31),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(31),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(31),
+    [anon_sym_surface] = ACTIONS(31),
+    [anon_sym_background] = ACTIONS(31),
+    [anon_sym_theme] = ACTIONS(31),
+    [anon_sym_color] = ACTIONS(31),
+    [anon_sym_palette] = ACTIONS(31),
+    [anon_sym_tone] = ACTIONS(31),
+    [anon_sym_opacity] = ACTIONS(31),
+    [anon_sym_padding] = ACTIONS(31),
+    [anon_sym_anchor] = ACTIONS(31),
+    [anon_sym_margin] = ACTIONS(31),
+    [anon_sym_radius] = ACTIONS(31),
+    [anon_sym_border] = ACTIONS(31),
+    [anon_sym_shadow] = ACTIONS(31),
+    [anon_sym_outline] = ACTIONS(31),
+    [anon_sym_box] = ACTIONS(31),
+    [anon_sym_visibility] = ACTIONS(31),
+    [anon_sym_flex] = ACTIONS(31),
+    [anon_sym_square] = ACTIONS(31),
+    [anon_sym_place] = ACTIONS(31),
+    [anon_sym_in] = ACTIONS(31),
+    [anon_sym_col] = ACTIONS(31),
+    [anon_sym_span] = ACTIONS(31),
+    [anon_sym_position] = ACTIONS(31),
+    [anon_sym_offset] = ACTIONS(31),
+    [anon_sym_z] = ACTIONS(31),
+    [anon_sym_align] = ACTIONS(31),
+    [anon_sym_justify] = ACTIONS(31),
+    [anon_sym_font] = ACTIONS(31),
+    [anon_sym_size] = ACTIONS(31),
+    [anon_sym_weight] = ACTIONS(31),
+    [anon_sym_case] = ACTIONS(31),
+    [anon_sym_align_DASHtext] = ACTIONS(31),
+    [anon_sym_decoration] = ACTIONS(31),
+    [anon_sym_whitespace] = ACTIONS(31),
+    [anon_sym_word_DASHbreak] = ACTIONS(31),
+    [anon_sym_hyphenate] = ACTIONS(31),
+    [anon_sym_line] = ACTIONS(31),
+    [anon_sym_letter] = ACTIONS(31),
+    [anon_sym_transition] = ACTIONS(31),
+    [anon_sym_duration] = ACTIONS(31),
+    [anon_sym_ease] = ACTIONS(31),
+    [anon_sym_animate] = ACTIONS(31),
+    [anon_sym_delay] = ACTIONS(31),
+    [anon_sym_iteration] = ACTIONS(31),
+    [anon_sym_direction] = ACTIONS(31),
+    [anon_sym_fill] = ACTIONS(31),
+    [anon_sym_play_DASHstate] = ACTIONS(31),
+    [anon_sym_transform] = ACTIONS(31),
+    [anon_sym_filter] = ACTIONS(31),
+    [anon_sym_translate] = ACTIONS(31),
+    [anon_sym_type] = ACTIONS(31),
+    [anon_sym_angle] = ACTIONS(31),
+    [anon_sym_stop] = ACTIONS(31),
+    [anon_sym_corner] = ACTIONS(31),
+    [anon_sym_at] = ACTIONS(31),
+    [anon_sym_shape] = ACTIONS(31),
+    [anon_sym_css] = ACTIONS(31),
+    [anon_sym_lift] = ACTIONS(37),
+    [anon_sym_sink] = ACTIONS(37),
+    [anon_sym_shift] = ACTIONS(37),
+    [anon_sym_grow] = ACTIONS(37),
+    [anon_sym_shrink] = ACTIONS(37),
+    [anon_sym_tilt] = ACTIONS(37),
+    [anon_sym_glow] = ACTIONS(37),
+    [anon_sym_brighten] = ACTIONS(37),
+    [anon_sym_dim] = ACTIONS(37),
+    [anon_sym_blur] = ACTIONS(37),
+    [anon_sym_press] = ACTIONS(37),
+    [anon_sym_pop] = ACTIONS(37),
+    [anon_sym_ring] = ACTIONS(37),
+    [anon_sym_smooth] = ACTIONS(37),
+    [anon_sym_fade] = ACTIONS(37),
+    [anon_sym_scale] = ACTIONS(37),
+    [anon_sym_rotate] = ACTIONS(37),
+    [anon_sym_slide] = ACTIONS(37),
+    [aux_sym_percentage_token1] = ACTIONS(39),
+    [anon_sym_from] = ACTIONS(41),
+    [anon_sym_to] = ACTIONS(41),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(45),
+    [sym__newline] = ACTIONS(47),
   },
   [STATE(7)] = {
-    [sym_identifier] = ACTIONS(97),
-    [anon_sym_RBRACE] = ACTIONS(99),
-    [anon_sym_gradient] = ACTIONS(97),
-    [anon_sym_section] = ACTIONS(97),
-    [anon_sym_animation] = ACTIONS(97),
-    [anon_sym_below] = ACTIONS(97),
-    [anon_sym_above] = ACTIONS(97),
-    [anon_sym_between] = ACTIONS(97),
-    [anon_sym_container] = ACTIONS(97),
-    [anon_sym_row] = ACTIONS(97),
-    [anon_sym_text] = ACTIONS(97),
-    [anon_sym_hover] = ACTIONS(97),
-    [anon_sym_focus] = ACTIONS(97),
-    [anon_sym_focus_DASHvisible] = ACTIONS(97),
-    [anon_sym_focus_DASHwithin] = ACTIONS(97),
-    [anon_sym_active] = ACTIONS(97),
-    [anon_sym_disabled] = ACTIONS(97),
-    [anon_sym_checked] = ACTIONS(97),
-    [anon_sym_invalid] = ACTIONS(97),
-    [anon_sym_required] = ACTIONS(97),
-    [anon_sym_target] = ACTIONS(97),
-    [sym_special_block_keyword] = ACTIONS(97),
-    [anon_sym_columns] = ACTIONS(97),
-    [anon_sym_rows] = ACTIONS(97),
-    [anon_sym_flow] = ACTIONS(97),
-    [anon_sym_gap] = ACTIONS(97),
-    [anon_sym_display] = ACTIONS(97),
-    [anon_sym_height] = ACTIONS(97),
-    [anon_sym_width] = ACTIONS(97),
-    [anon_sym_min_DASHheight] = ACTIONS(97),
-    [anon_sym_max_DASHheight] = ACTIONS(97),
-    [anon_sym_min_DASHwidth] = ACTIONS(97),
-    [anon_sym_max_DASHwidth] = ACTIONS(97),
-    [anon_sym_inline_DASHsize] = ACTIONS(97),
-    [anon_sym_block_DASHsize] = ACTIONS(97),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(97),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(97),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(97),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(97),
-    [anon_sym_surface] = ACTIONS(97),
-    [anon_sym_background] = ACTIONS(97),
-    [anon_sym_theme] = ACTIONS(97),
-    [anon_sym_color] = ACTIONS(97),
-    [anon_sym_palette] = ACTIONS(97),
-    [anon_sym_tone] = ACTIONS(97),
-    [anon_sym_opacity] = ACTIONS(97),
-    [anon_sym_padding] = ACTIONS(97),
-    [anon_sym_anchor] = ACTIONS(97),
-    [anon_sym_margin] = ACTIONS(97),
-    [anon_sym_radius] = ACTIONS(97),
-    [anon_sym_border] = ACTIONS(97),
-    [anon_sym_shadow] = ACTIONS(97),
-    [anon_sym_outline] = ACTIONS(97),
-    [anon_sym_box] = ACTIONS(97),
-    [anon_sym_visibility] = ACTIONS(97),
-    [anon_sym_flex] = ACTIONS(97),
-    [anon_sym_square] = ACTIONS(97),
-    [anon_sym_place] = ACTIONS(97),
-    [anon_sym_in] = ACTIONS(97),
-    [anon_sym_col] = ACTIONS(97),
-    [anon_sym_span] = ACTIONS(97),
-    [anon_sym_position] = ACTIONS(97),
-    [anon_sym_offset] = ACTIONS(97),
-    [anon_sym_z] = ACTIONS(97),
-    [anon_sym_align] = ACTIONS(97),
-    [anon_sym_justify] = ACTIONS(97),
-    [anon_sym_font] = ACTIONS(97),
-    [anon_sym_size] = ACTIONS(97),
-    [anon_sym_weight] = ACTIONS(97),
-    [anon_sym_case] = ACTIONS(97),
-    [anon_sym_align_DASHtext] = ACTIONS(97),
-    [anon_sym_decoration] = ACTIONS(97),
-    [anon_sym_whitespace] = ACTIONS(97),
-    [anon_sym_word_DASHbreak] = ACTIONS(97),
-    [anon_sym_hyphenate] = ACTIONS(97),
-    [anon_sym_line] = ACTIONS(97),
-    [anon_sym_letter] = ACTIONS(97),
-    [anon_sym_transition] = ACTIONS(97),
-    [anon_sym_duration] = ACTIONS(97),
-    [anon_sym_ease] = ACTIONS(97),
-    [anon_sym_animate] = ACTIONS(97),
-    [anon_sym_delay] = ACTIONS(97),
-    [anon_sym_iteration] = ACTIONS(97),
-    [anon_sym_direction] = ACTIONS(97),
-    [anon_sym_fill] = ACTIONS(97),
-    [anon_sym_play_DASHstate] = ACTIONS(97),
-    [anon_sym_transform] = ACTIONS(97),
-    [anon_sym_filter] = ACTIONS(97),
-    [anon_sym_translate] = ACTIONS(97),
-    [anon_sym_type] = ACTIONS(97),
-    [anon_sym_angle] = ACTIONS(97),
-    [anon_sym_stop] = ACTIONS(97),
-    [anon_sym_corner] = ACTIONS(97),
-    [anon_sym_at] = ACTIONS(97),
-    [anon_sym_shape] = ACTIONS(97),
-    [anon_sym_css] = ACTIONS(97),
-    [anon_sym_lift] = ACTIONS(97),
-    [anon_sym_sink] = ACTIONS(97),
-    [anon_sym_shift] = ACTIONS(97),
-    [anon_sym_grow] = ACTIONS(97),
-    [anon_sym_shrink] = ACTIONS(97),
-    [anon_sym_tilt] = ACTIONS(97),
-    [anon_sym_glow] = ACTIONS(97),
-    [anon_sym_brighten] = ACTIONS(97),
-    [anon_sym_dim] = ACTIONS(97),
-    [anon_sym_blur] = ACTIONS(97),
-    [anon_sym_press] = ACTIONS(97),
-    [anon_sym_pop] = ACTIONS(97),
-    [anon_sym_ring] = ACTIONS(97),
-    [anon_sym_smooth] = ACTIONS(97),
-    [anon_sym_fade] = ACTIONS(97),
-    [anon_sym_scale] = ACTIONS(97),
-    [anon_sym_rotate] = ACTIONS(97),
-    [anon_sym_slide] = ACTIONS(97),
-    [aux_sym_percentage_token1] = ACTIONS(99),
-    [anon_sym_from] = ACTIONS(97),
-    [anon_sym_to] = ACTIONS(97),
+    [sym_identifier] = ACTIONS(99),
+    [anon_sym_RBRACE] = ACTIONS(101),
+    [anon_sym_gradient] = ACTIONS(99),
+    [anon_sym_section] = ACTIONS(99),
+    [anon_sym_animation] = ACTIONS(99),
+    [anon_sym_below] = ACTIONS(99),
+    [anon_sym_above] = ACTIONS(99),
+    [anon_sym_between] = ACTIONS(99),
+    [anon_sym_container] = ACTIONS(99),
+    [anon_sym_row] = ACTIONS(99),
+    [anon_sym_text] = ACTIONS(99),
+    [anon_sym_hover] = ACTIONS(99),
+    [anon_sym_focus] = ACTIONS(99),
+    [anon_sym_focus_DASHvisible] = ACTIONS(99),
+    [anon_sym_focus_DASHwithin] = ACTIONS(99),
+    [anon_sym_active] = ACTIONS(99),
+    [anon_sym_disabled] = ACTIONS(99),
+    [anon_sym_checked] = ACTIONS(99),
+    [anon_sym_invalid] = ACTIONS(99),
+    [anon_sym_required] = ACTIONS(99),
+    [anon_sym_target] = ACTIONS(99),
+    [sym_special_block_keyword] = ACTIONS(99),
+    [anon_sym_columns] = ACTIONS(99),
+    [anon_sym_rows] = ACTIONS(99),
+    [anon_sym_flow] = ACTIONS(99),
+    [anon_sym_gap] = ACTIONS(99),
+    [anon_sym_display] = ACTIONS(99),
+    [anon_sym_height] = ACTIONS(99),
+    [anon_sym_width] = ACTIONS(99),
+    [anon_sym_min_DASHheight] = ACTIONS(99),
+    [anon_sym_max_DASHheight] = ACTIONS(99),
+    [anon_sym_min_DASHwidth] = ACTIONS(99),
+    [anon_sym_max_DASHwidth] = ACTIONS(99),
+    [anon_sym_inline_DASHsize] = ACTIONS(99),
+    [anon_sym_block_DASHsize] = ACTIONS(99),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(99),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(99),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(99),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(99),
+    [anon_sym_surface] = ACTIONS(99),
+    [anon_sym_background] = ACTIONS(99),
+    [anon_sym_theme] = ACTIONS(99),
+    [anon_sym_color] = ACTIONS(99),
+    [anon_sym_palette] = ACTIONS(99),
+    [anon_sym_tone] = ACTIONS(99),
+    [anon_sym_opacity] = ACTIONS(99),
+    [anon_sym_padding] = ACTIONS(99),
+    [anon_sym_anchor] = ACTIONS(99),
+    [anon_sym_margin] = ACTIONS(99),
+    [anon_sym_radius] = ACTIONS(99),
+    [anon_sym_border] = ACTIONS(99),
+    [anon_sym_shadow] = ACTIONS(99),
+    [anon_sym_outline] = ACTIONS(99),
+    [anon_sym_box] = ACTIONS(99),
+    [anon_sym_visibility] = ACTIONS(99),
+    [anon_sym_flex] = ACTIONS(99),
+    [anon_sym_square] = ACTIONS(99),
+    [anon_sym_place] = ACTIONS(99),
+    [anon_sym_in] = ACTIONS(99),
+    [anon_sym_col] = ACTIONS(99),
+    [anon_sym_span] = ACTIONS(99),
+    [anon_sym_position] = ACTIONS(99),
+    [anon_sym_offset] = ACTIONS(99),
+    [anon_sym_z] = ACTIONS(99),
+    [anon_sym_align] = ACTIONS(99),
+    [anon_sym_justify] = ACTIONS(99),
+    [anon_sym_font] = ACTIONS(99),
+    [anon_sym_size] = ACTIONS(99),
+    [anon_sym_weight] = ACTIONS(99),
+    [anon_sym_case] = ACTIONS(99),
+    [anon_sym_align_DASHtext] = ACTIONS(99),
+    [anon_sym_decoration] = ACTIONS(99),
+    [anon_sym_whitespace] = ACTIONS(99),
+    [anon_sym_word_DASHbreak] = ACTIONS(99),
+    [anon_sym_hyphenate] = ACTIONS(99),
+    [anon_sym_line] = ACTIONS(99),
+    [anon_sym_letter] = ACTIONS(99),
+    [anon_sym_transition] = ACTIONS(99),
+    [anon_sym_duration] = ACTIONS(99),
+    [anon_sym_ease] = ACTIONS(99),
+    [anon_sym_animate] = ACTIONS(99),
+    [anon_sym_delay] = ACTIONS(99),
+    [anon_sym_iteration] = ACTIONS(99),
+    [anon_sym_direction] = ACTIONS(99),
+    [anon_sym_fill] = ACTIONS(99),
+    [anon_sym_play_DASHstate] = ACTIONS(99),
+    [anon_sym_transform] = ACTIONS(99),
+    [anon_sym_filter] = ACTIONS(99),
+    [anon_sym_translate] = ACTIONS(99),
+    [anon_sym_type] = ACTIONS(99),
+    [anon_sym_angle] = ACTIONS(99),
+    [anon_sym_stop] = ACTIONS(99),
+    [anon_sym_corner] = ACTIONS(99),
+    [anon_sym_at] = ACTIONS(99),
+    [anon_sym_shape] = ACTIONS(99),
+    [anon_sym_css] = ACTIONS(99),
+    [anon_sym_lift] = ACTIONS(99),
+    [anon_sym_sink] = ACTIONS(99),
+    [anon_sym_shift] = ACTIONS(99),
+    [anon_sym_grow] = ACTIONS(99),
+    [anon_sym_shrink] = ACTIONS(99),
+    [anon_sym_tilt] = ACTIONS(99),
+    [anon_sym_glow] = ACTIONS(99),
+    [anon_sym_brighten] = ACTIONS(99),
+    [anon_sym_dim] = ACTIONS(99),
+    [anon_sym_blur] = ACTIONS(99),
+    [anon_sym_press] = ACTIONS(99),
+    [anon_sym_pop] = ACTIONS(99),
+    [anon_sym_ring] = ACTIONS(99),
+    [anon_sym_smooth] = ACTIONS(99),
+    [anon_sym_fade] = ACTIONS(99),
+    [anon_sym_scale] = ACTIONS(99),
+    [anon_sym_rotate] = ACTIONS(99),
+    [anon_sym_slide] = ACTIONS(99),
+    [aux_sym_percentage_token1] = ACTIONS(101),
+    [anon_sym_from] = ACTIONS(99),
+    [anon_sym_to] = ACTIONS(99),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(99),
+    [sym__newline] = ACTIONS(101),
   },
   [STATE(8)] = {
-    [sym_identifier] = ACTIONS(101),
-    [anon_sym_RBRACE] = ACTIONS(103),
-    [anon_sym_gradient] = ACTIONS(101),
-    [anon_sym_section] = ACTIONS(101),
-    [anon_sym_animation] = ACTIONS(101),
-    [anon_sym_below] = ACTIONS(101),
-    [anon_sym_above] = ACTIONS(101),
-    [anon_sym_between] = ACTIONS(101),
-    [anon_sym_container] = ACTIONS(101),
-    [anon_sym_row] = ACTIONS(101),
-    [anon_sym_text] = ACTIONS(101),
-    [anon_sym_hover] = ACTIONS(101),
-    [anon_sym_focus] = ACTIONS(101),
-    [anon_sym_focus_DASHvisible] = ACTIONS(101),
-    [anon_sym_focus_DASHwithin] = ACTIONS(101),
-    [anon_sym_active] = ACTIONS(101),
-    [anon_sym_disabled] = ACTIONS(101),
-    [anon_sym_checked] = ACTIONS(101),
-    [anon_sym_invalid] = ACTIONS(101),
-    [anon_sym_required] = ACTIONS(101),
-    [anon_sym_target] = ACTIONS(101),
-    [sym_special_block_keyword] = ACTIONS(101),
-    [anon_sym_columns] = ACTIONS(101),
-    [anon_sym_rows] = ACTIONS(101),
-    [anon_sym_flow] = ACTIONS(101),
-    [anon_sym_gap] = ACTIONS(101),
-    [anon_sym_display] = ACTIONS(101),
-    [anon_sym_height] = ACTIONS(101),
-    [anon_sym_width] = ACTIONS(101),
-    [anon_sym_min_DASHheight] = ACTIONS(101),
-    [anon_sym_max_DASHheight] = ACTIONS(101),
-    [anon_sym_min_DASHwidth] = ACTIONS(101),
-    [anon_sym_max_DASHwidth] = ACTIONS(101),
-    [anon_sym_inline_DASHsize] = ACTIONS(101),
-    [anon_sym_block_DASHsize] = ACTIONS(101),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(101),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(101),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(101),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(101),
-    [anon_sym_surface] = ACTIONS(101),
-    [anon_sym_background] = ACTIONS(101),
-    [anon_sym_theme] = ACTIONS(101),
-    [anon_sym_color] = ACTIONS(101),
-    [anon_sym_palette] = ACTIONS(101),
-    [anon_sym_tone] = ACTIONS(101),
-    [anon_sym_opacity] = ACTIONS(101),
-    [anon_sym_padding] = ACTIONS(101),
-    [anon_sym_anchor] = ACTIONS(101),
-    [anon_sym_margin] = ACTIONS(101),
-    [anon_sym_radius] = ACTIONS(101),
-    [anon_sym_border] = ACTIONS(101),
-    [anon_sym_shadow] = ACTIONS(101),
-    [anon_sym_outline] = ACTIONS(101),
-    [anon_sym_box] = ACTIONS(101),
-    [anon_sym_visibility] = ACTIONS(101),
-    [anon_sym_flex] = ACTIONS(101),
-    [anon_sym_square] = ACTIONS(101),
-    [anon_sym_place] = ACTIONS(101),
-    [anon_sym_in] = ACTIONS(101),
-    [anon_sym_col] = ACTIONS(101),
-    [anon_sym_span] = ACTIONS(101),
-    [anon_sym_position] = ACTIONS(101),
-    [anon_sym_offset] = ACTIONS(101),
-    [anon_sym_z] = ACTIONS(101),
-    [anon_sym_align] = ACTIONS(101),
-    [anon_sym_justify] = ACTIONS(101),
-    [anon_sym_font] = ACTIONS(101),
-    [anon_sym_size] = ACTIONS(101),
-    [anon_sym_weight] = ACTIONS(101),
-    [anon_sym_case] = ACTIONS(101),
-    [anon_sym_align_DASHtext] = ACTIONS(101),
-    [anon_sym_decoration] = ACTIONS(101),
-    [anon_sym_whitespace] = ACTIONS(101),
-    [anon_sym_word_DASHbreak] = ACTIONS(101),
-    [anon_sym_hyphenate] = ACTIONS(101),
-    [anon_sym_line] = ACTIONS(101),
-    [anon_sym_letter] = ACTIONS(101),
-    [anon_sym_transition] = ACTIONS(101),
-    [anon_sym_duration] = ACTIONS(101),
-    [anon_sym_ease] = ACTIONS(101),
-    [anon_sym_animate] = ACTIONS(101),
-    [anon_sym_delay] = ACTIONS(101),
-    [anon_sym_iteration] = ACTIONS(101),
-    [anon_sym_direction] = ACTIONS(101),
-    [anon_sym_fill] = ACTIONS(101),
-    [anon_sym_play_DASHstate] = ACTIONS(101),
-    [anon_sym_transform] = ACTIONS(101),
-    [anon_sym_filter] = ACTIONS(101),
-    [anon_sym_translate] = ACTIONS(101),
-    [anon_sym_type] = ACTIONS(101),
-    [anon_sym_angle] = ACTIONS(101),
-    [anon_sym_stop] = ACTIONS(101),
-    [anon_sym_corner] = ACTIONS(101),
-    [anon_sym_at] = ACTIONS(101),
-    [anon_sym_shape] = ACTIONS(101),
-    [anon_sym_css] = ACTIONS(101),
-    [anon_sym_lift] = ACTIONS(101),
-    [anon_sym_sink] = ACTIONS(101),
-    [anon_sym_shift] = ACTIONS(101),
-    [anon_sym_grow] = ACTIONS(101),
-    [anon_sym_shrink] = ACTIONS(101),
-    [anon_sym_tilt] = ACTIONS(101),
-    [anon_sym_glow] = ACTIONS(101),
-    [anon_sym_brighten] = ACTIONS(101),
-    [anon_sym_dim] = ACTIONS(101),
-    [anon_sym_blur] = ACTIONS(101),
-    [anon_sym_press] = ACTIONS(101),
-    [anon_sym_pop] = ACTIONS(101),
-    [anon_sym_ring] = ACTIONS(101),
-    [anon_sym_smooth] = ACTIONS(101),
-    [anon_sym_fade] = ACTIONS(101),
-    [anon_sym_scale] = ACTIONS(101),
-    [anon_sym_rotate] = ACTIONS(101),
-    [anon_sym_slide] = ACTIONS(101),
-    [aux_sym_percentage_token1] = ACTIONS(103),
-    [anon_sym_from] = ACTIONS(101),
-    [anon_sym_to] = ACTIONS(101),
+    [sym_identifier] = ACTIONS(103),
+    [anon_sym_RBRACE] = ACTIONS(105),
+    [anon_sym_gradient] = ACTIONS(103),
+    [anon_sym_section] = ACTIONS(103),
+    [anon_sym_animation] = ACTIONS(103),
+    [anon_sym_below] = ACTIONS(103),
+    [anon_sym_above] = ACTIONS(103),
+    [anon_sym_between] = ACTIONS(103),
+    [anon_sym_container] = ACTIONS(103),
+    [anon_sym_row] = ACTIONS(103),
+    [anon_sym_text] = ACTIONS(103),
+    [anon_sym_hover] = ACTIONS(103),
+    [anon_sym_focus] = ACTIONS(103),
+    [anon_sym_focus_DASHvisible] = ACTIONS(103),
+    [anon_sym_focus_DASHwithin] = ACTIONS(103),
+    [anon_sym_active] = ACTIONS(103),
+    [anon_sym_disabled] = ACTIONS(103),
+    [anon_sym_checked] = ACTIONS(103),
+    [anon_sym_invalid] = ACTIONS(103),
+    [anon_sym_required] = ACTIONS(103),
+    [anon_sym_target] = ACTIONS(103),
+    [sym_special_block_keyword] = ACTIONS(103),
+    [anon_sym_columns] = ACTIONS(103),
+    [anon_sym_rows] = ACTIONS(103),
+    [anon_sym_flow] = ACTIONS(103),
+    [anon_sym_gap] = ACTIONS(103),
+    [anon_sym_display] = ACTIONS(103),
+    [anon_sym_height] = ACTIONS(103),
+    [anon_sym_width] = ACTIONS(103),
+    [anon_sym_min_DASHheight] = ACTIONS(103),
+    [anon_sym_max_DASHheight] = ACTIONS(103),
+    [anon_sym_min_DASHwidth] = ACTIONS(103),
+    [anon_sym_max_DASHwidth] = ACTIONS(103),
+    [anon_sym_inline_DASHsize] = ACTIONS(103),
+    [anon_sym_block_DASHsize] = ACTIONS(103),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(103),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(103),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(103),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(103),
+    [anon_sym_surface] = ACTIONS(103),
+    [anon_sym_background] = ACTIONS(103),
+    [anon_sym_theme] = ACTIONS(103),
+    [anon_sym_color] = ACTIONS(103),
+    [anon_sym_palette] = ACTIONS(103),
+    [anon_sym_tone] = ACTIONS(103),
+    [anon_sym_opacity] = ACTIONS(103),
+    [anon_sym_padding] = ACTIONS(103),
+    [anon_sym_anchor] = ACTIONS(103),
+    [anon_sym_margin] = ACTIONS(103),
+    [anon_sym_radius] = ACTIONS(103),
+    [anon_sym_border] = ACTIONS(103),
+    [anon_sym_shadow] = ACTIONS(103),
+    [anon_sym_outline] = ACTIONS(103),
+    [anon_sym_box] = ACTIONS(103),
+    [anon_sym_visibility] = ACTIONS(103),
+    [anon_sym_flex] = ACTIONS(103),
+    [anon_sym_square] = ACTIONS(103),
+    [anon_sym_place] = ACTIONS(103),
+    [anon_sym_in] = ACTIONS(103),
+    [anon_sym_col] = ACTIONS(103),
+    [anon_sym_span] = ACTIONS(103),
+    [anon_sym_position] = ACTIONS(103),
+    [anon_sym_offset] = ACTIONS(103),
+    [anon_sym_z] = ACTIONS(103),
+    [anon_sym_align] = ACTIONS(103),
+    [anon_sym_justify] = ACTIONS(103),
+    [anon_sym_font] = ACTIONS(103),
+    [anon_sym_size] = ACTIONS(103),
+    [anon_sym_weight] = ACTIONS(103),
+    [anon_sym_case] = ACTIONS(103),
+    [anon_sym_align_DASHtext] = ACTIONS(103),
+    [anon_sym_decoration] = ACTIONS(103),
+    [anon_sym_whitespace] = ACTIONS(103),
+    [anon_sym_word_DASHbreak] = ACTIONS(103),
+    [anon_sym_hyphenate] = ACTIONS(103),
+    [anon_sym_line] = ACTIONS(103),
+    [anon_sym_letter] = ACTIONS(103),
+    [anon_sym_transition] = ACTIONS(103),
+    [anon_sym_duration] = ACTIONS(103),
+    [anon_sym_ease] = ACTIONS(103),
+    [anon_sym_animate] = ACTIONS(103),
+    [anon_sym_delay] = ACTIONS(103),
+    [anon_sym_iteration] = ACTIONS(103),
+    [anon_sym_direction] = ACTIONS(103),
+    [anon_sym_fill] = ACTIONS(103),
+    [anon_sym_play_DASHstate] = ACTIONS(103),
+    [anon_sym_transform] = ACTIONS(103),
+    [anon_sym_filter] = ACTIONS(103),
+    [anon_sym_translate] = ACTIONS(103),
+    [anon_sym_type] = ACTIONS(103),
+    [anon_sym_angle] = ACTIONS(103),
+    [anon_sym_stop] = ACTIONS(103),
+    [anon_sym_corner] = ACTIONS(103),
+    [anon_sym_at] = ACTIONS(103),
+    [anon_sym_shape] = ACTIONS(103),
+    [anon_sym_css] = ACTIONS(103),
+    [anon_sym_lift] = ACTIONS(103),
+    [anon_sym_sink] = ACTIONS(103),
+    [anon_sym_shift] = ACTIONS(103),
+    [anon_sym_grow] = ACTIONS(103),
+    [anon_sym_shrink] = ACTIONS(103),
+    [anon_sym_tilt] = ACTIONS(103),
+    [anon_sym_glow] = ACTIONS(103),
+    [anon_sym_brighten] = ACTIONS(103),
+    [anon_sym_dim] = ACTIONS(103),
+    [anon_sym_blur] = ACTIONS(103),
+    [anon_sym_press] = ACTIONS(103),
+    [anon_sym_pop] = ACTIONS(103),
+    [anon_sym_ring] = ACTIONS(103),
+    [anon_sym_smooth] = ACTIONS(103),
+    [anon_sym_fade] = ACTIONS(103),
+    [anon_sym_scale] = ACTIONS(103),
+    [anon_sym_rotate] = ACTIONS(103),
+    [anon_sym_slide] = ACTIONS(103),
+    [aux_sym_percentage_token1] = ACTIONS(105),
+    [anon_sym_from] = ACTIONS(103),
+    [anon_sym_to] = ACTIONS(103),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(103),
+    [sym__newline] = ACTIONS(105),
   },
   [STATE(9)] = {
-    [sym_identifier] = ACTIONS(105),
-    [anon_sym_RBRACE] = ACTIONS(107),
-    [anon_sym_gradient] = ACTIONS(105),
-    [anon_sym_section] = ACTIONS(105),
-    [anon_sym_animation] = ACTIONS(105),
-    [anon_sym_below] = ACTIONS(105),
-    [anon_sym_above] = ACTIONS(105),
-    [anon_sym_between] = ACTIONS(105),
-    [anon_sym_container] = ACTIONS(105),
-    [anon_sym_row] = ACTIONS(105),
-    [anon_sym_text] = ACTIONS(105),
-    [anon_sym_hover] = ACTIONS(105),
-    [anon_sym_focus] = ACTIONS(105),
-    [anon_sym_focus_DASHvisible] = ACTIONS(105),
-    [anon_sym_focus_DASHwithin] = ACTIONS(105),
-    [anon_sym_active] = ACTIONS(105),
-    [anon_sym_disabled] = ACTIONS(105),
-    [anon_sym_checked] = ACTIONS(105),
-    [anon_sym_invalid] = ACTIONS(105),
-    [anon_sym_required] = ACTIONS(105),
-    [anon_sym_target] = ACTIONS(105),
-    [sym_special_block_keyword] = ACTIONS(105),
-    [anon_sym_columns] = ACTIONS(105),
-    [anon_sym_rows] = ACTIONS(105),
-    [anon_sym_flow] = ACTIONS(105),
-    [anon_sym_gap] = ACTIONS(105),
-    [anon_sym_display] = ACTIONS(105),
-    [anon_sym_height] = ACTIONS(105),
-    [anon_sym_width] = ACTIONS(105),
-    [anon_sym_min_DASHheight] = ACTIONS(105),
-    [anon_sym_max_DASHheight] = ACTIONS(105),
-    [anon_sym_min_DASHwidth] = ACTIONS(105),
-    [anon_sym_max_DASHwidth] = ACTIONS(105),
-    [anon_sym_inline_DASHsize] = ACTIONS(105),
-    [anon_sym_block_DASHsize] = ACTIONS(105),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(105),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(105),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(105),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(105),
-    [anon_sym_surface] = ACTIONS(105),
-    [anon_sym_background] = ACTIONS(105),
-    [anon_sym_theme] = ACTIONS(105),
-    [anon_sym_color] = ACTIONS(105),
-    [anon_sym_palette] = ACTIONS(105),
-    [anon_sym_tone] = ACTIONS(105),
-    [anon_sym_opacity] = ACTIONS(105),
-    [anon_sym_padding] = ACTIONS(105),
-    [anon_sym_anchor] = ACTIONS(105),
-    [anon_sym_margin] = ACTIONS(105),
-    [anon_sym_radius] = ACTIONS(105),
-    [anon_sym_border] = ACTIONS(105),
-    [anon_sym_shadow] = ACTIONS(105),
-    [anon_sym_outline] = ACTIONS(105),
-    [anon_sym_box] = ACTIONS(105),
-    [anon_sym_visibility] = ACTIONS(105),
-    [anon_sym_flex] = ACTIONS(105),
-    [anon_sym_square] = ACTIONS(105),
-    [anon_sym_place] = ACTIONS(105),
-    [anon_sym_in] = ACTIONS(105),
-    [anon_sym_col] = ACTIONS(105),
-    [anon_sym_span] = ACTIONS(105),
-    [anon_sym_position] = ACTIONS(105),
-    [anon_sym_offset] = ACTIONS(105),
-    [anon_sym_z] = ACTIONS(105),
-    [anon_sym_align] = ACTIONS(105),
-    [anon_sym_justify] = ACTIONS(105),
-    [anon_sym_font] = ACTIONS(105),
-    [anon_sym_size] = ACTIONS(105),
-    [anon_sym_weight] = ACTIONS(105),
-    [anon_sym_case] = ACTIONS(105),
-    [anon_sym_align_DASHtext] = ACTIONS(105),
-    [anon_sym_decoration] = ACTIONS(105),
-    [anon_sym_whitespace] = ACTIONS(105),
-    [anon_sym_word_DASHbreak] = ACTIONS(105),
-    [anon_sym_hyphenate] = ACTIONS(105),
-    [anon_sym_line] = ACTIONS(105),
-    [anon_sym_letter] = ACTIONS(105),
-    [anon_sym_transition] = ACTIONS(105),
-    [anon_sym_duration] = ACTIONS(105),
-    [anon_sym_ease] = ACTIONS(105),
-    [anon_sym_animate] = ACTIONS(105),
-    [anon_sym_delay] = ACTIONS(105),
-    [anon_sym_iteration] = ACTIONS(105),
-    [anon_sym_direction] = ACTIONS(105),
-    [anon_sym_fill] = ACTIONS(105),
-    [anon_sym_play_DASHstate] = ACTIONS(105),
-    [anon_sym_transform] = ACTIONS(105),
-    [anon_sym_filter] = ACTIONS(105),
-    [anon_sym_translate] = ACTIONS(105),
-    [anon_sym_type] = ACTIONS(105),
-    [anon_sym_angle] = ACTIONS(105),
-    [anon_sym_stop] = ACTIONS(105),
-    [anon_sym_corner] = ACTIONS(105),
-    [anon_sym_at] = ACTIONS(105),
-    [anon_sym_shape] = ACTIONS(105),
-    [anon_sym_css] = ACTIONS(105),
-    [anon_sym_lift] = ACTIONS(105),
-    [anon_sym_sink] = ACTIONS(105),
-    [anon_sym_shift] = ACTIONS(105),
-    [anon_sym_grow] = ACTIONS(105),
-    [anon_sym_shrink] = ACTIONS(105),
-    [anon_sym_tilt] = ACTIONS(105),
-    [anon_sym_glow] = ACTIONS(105),
-    [anon_sym_brighten] = ACTIONS(105),
-    [anon_sym_dim] = ACTIONS(105),
-    [anon_sym_blur] = ACTIONS(105),
-    [anon_sym_press] = ACTIONS(105),
-    [anon_sym_pop] = ACTIONS(105),
-    [anon_sym_ring] = ACTIONS(105),
-    [anon_sym_smooth] = ACTIONS(105),
-    [anon_sym_fade] = ACTIONS(105),
-    [anon_sym_scale] = ACTIONS(105),
-    [anon_sym_rotate] = ACTIONS(105),
-    [anon_sym_slide] = ACTIONS(105),
-    [aux_sym_percentage_token1] = ACTIONS(107),
-    [anon_sym_from] = ACTIONS(105),
-    [anon_sym_to] = ACTIONS(105),
+    [sym_identifier] = ACTIONS(107),
+    [anon_sym_RBRACE] = ACTIONS(109),
+    [anon_sym_gradient] = ACTIONS(107),
+    [anon_sym_section] = ACTIONS(107),
+    [anon_sym_animation] = ACTIONS(107),
+    [anon_sym_below] = ACTIONS(107),
+    [anon_sym_above] = ACTIONS(107),
+    [anon_sym_between] = ACTIONS(107),
+    [anon_sym_container] = ACTIONS(107),
+    [anon_sym_row] = ACTIONS(107),
+    [anon_sym_text] = ACTIONS(107),
+    [anon_sym_hover] = ACTIONS(107),
+    [anon_sym_focus] = ACTIONS(107),
+    [anon_sym_focus_DASHvisible] = ACTIONS(107),
+    [anon_sym_focus_DASHwithin] = ACTIONS(107),
+    [anon_sym_active] = ACTIONS(107),
+    [anon_sym_disabled] = ACTIONS(107),
+    [anon_sym_checked] = ACTIONS(107),
+    [anon_sym_invalid] = ACTIONS(107),
+    [anon_sym_required] = ACTIONS(107),
+    [anon_sym_target] = ACTIONS(107),
+    [sym_special_block_keyword] = ACTIONS(107),
+    [anon_sym_columns] = ACTIONS(107),
+    [anon_sym_rows] = ACTIONS(107),
+    [anon_sym_flow] = ACTIONS(107),
+    [anon_sym_gap] = ACTIONS(107),
+    [anon_sym_display] = ACTIONS(107),
+    [anon_sym_height] = ACTIONS(107),
+    [anon_sym_width] = ACTIONS(107),
+    [anon_sym_min_DASHheight] = ACTIONS(107),
+    [anon_sym_max_DASHheight] = ACTIONS(107),
+    [anon_sym_min_DASHwidth] = ACTIONS(107),
+    [anon_sym_max_DASHwidth] = ACTIONS(107),
+    [anon_sym_inline_DASHsize] = ACTIONS(107),
+    [anon_sym_block_DASHsize] = ACTIONS(107),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(107),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(107),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(107),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(107),
+    [anon_sym_surface] = ACTIONS(107),
+    [anon_sym_background] = ACTIONS(107),
+    [anon_sym_theme] = ACTIONS(107),
+    [anon_sym_color] = ACTIONS(107),
+    [anon_sym_palette] = ACTIONS(107),
+    [anon_sym_tone] = ACTIONS(107),
+    [anon_sym_opacity] = ACTIONS(107),
+    [anon_sym_padding] = ACTIONS(107),
+    [anon_sym_anchor] = ACTIONS(107),
+    [anon_sym_margin] = ACTIONS(107),
+    [anon_sym_radius] = ACTIONS(107),
+    [anon_sym_border] = ACTIONS(107),
+    [anon_sym_shadow] = ACTIONS(107),
+    [anon_sym_outline] = ACTIONS(107),
+    [anon_sym_box] = ACTIONS(107),
+    [anon_sym_visibility] = ACTIONS(107),
+    [anon_sym_flex] = ACTIONS(107),
+    [anon_sym_square] = ACTIONS(107),
+    [anon_sym_place] = ACTIONS(107),
+    [anon_sym_in] = ACTIONS(107),
+    [anon_sym_col] = ACTIONS(107),
+    [anon_sym_span] = ACTIONS(107),
+    [anon_sym_position] = ACTIONS(107),
+    [anon_sym_offset] = ACTIONS(107),
+    [anon_sym_z] = ACTIONS(107),
+    [anon_sym_align] = ACTIONS(107),
+    [anon_sym_justify] = ACTIONS(107),
+    [anon_sym_font] = ACTIONS(107),
+    [anon_sym_size] = ACTIONS(107),
+    [anon_sym_weight] = ACTIONS(107),
+    [anon_sym_case] = ACTIONS(107),
+    [anon_sym_align_DASHtext] = ACTIONS(107),
+    [anon_sym_decoration] = ACTIONS(107),
+    [anon_sym_whitespace] = ACTIONS(107),
+    [anon_sym_word_DASHbreak] = ACTIONS(107),
+    [anon_sym_hyphenate] = ACTIONS(107),
+    [anon_sym_line] = ACTIONS(107),
+    [anon_sym_letter] = ACTIONS(107),
+    [anon_sym_transition] = ACTIONS(107),
+    [anon_sym_duration] = ACTIONS(107),
+    [anon_sym_ease] = ACTIONS(107),
+    [anon_sym_animate] = ACTIONS(107),
+    [anon_sym_delay] = ACTIONS(107),
+    [anon_sym_iteration] = ACTIONS(107),
+    [anon_sym_direction] = ACTIONS(107),
+    [anon_sym_fill] = ACTIONS(107),
+    [anon_sym_play_DASHstate] = ACTIONS(107),
+    [anon_sym_transform] = ACTIONS(107),
+    [anon_sym_filter] = ACTIONS(107),
+    [anon_sym_translate] = ACTIONS(107),
+    [anon_sym_type] = ACTIONS(107),
+    [anon_sym_angle] = ACTIONS(107),
+    [anon_sym_stop] = ACTIONS(107),
+    [anon_sym_corner] = ACTIONS(107),
+    [anon_sym_at] = ACTIONS(107),
+    [anon_sym_shape] = ACTIONS(107),
+    [anon_sym_css] = ACTIONS(107),
+    [anon_sym_lift] = ACTIONS(107),
+    [anon_sym_sink] = ACTIONS(107),
+    [anon_sym_shift] = ACTIONS(107),
+    [anon_sym_grow] = ACTIONS(107),
+    [anon_sym_shrink] = ACTIONS(107),
+    [anon_sym_tilt] = ACTIONS(107),
+    [anon_sym_glow] = ACTIONS(107),
+    [anon_sym_brighten] = ACTIONS(107),
+    [anon_sym_dim] = ACTIONS(107),
+    [anon_sym_blur] = ACTIONS(107),
+    [anon_sym_press] = ACTIONS(107),
+    [anon_sym_pop] = ACTIONS(107),
+    [anon_sym_ring] = ACTIONS(107),
+    [anon_sym_smooth] = ACTIONS(107),
+    [anon_sym_fade] = ACTIONS(107),
+    [anon_sym_scale] = ACTIONS(107),
+    [anon_sym_rotate] = ACTIONS(107),
+    [anon_sym_slide] = ACTIONS(107),
+    [aux_sym_percentage_token1] = ACTIONS(109),
+    [anon_sym_from] = ACTIONS(107),
+    [anon_sym_to] = ACTIONS(107),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(107),
+    [sym__newline] = ACTIONS(109),
   },
   [STATE(10)] = {
-    [sym_identifier] = ACTIONS(109),
-    [anon_sym_RBRACE] = ACTIONS(111),
-    [anon_sym_gradient] = ACTIONS(109),
-    [anon_sym_section] = ACTIONS(109),
-    [anon_sym_animation] = ACTIONS(109),
-    [anon_sym_below] = ACTIONS(109),
-    [anon_sym_above] = ACTIONS(109),
-    [anon_sym_between] = ACTIONS(109),
-    [anon_sym_container] = ACTIONS(109),
-    [anon_sym_row] = ACTIONS(109),
-    [anon_sym_text] = ACTIONS(109),
-    [anon_sym_hover] = ACTIONS(109),
-    [anon_sym_focus] = ACTIONS(109),
-    [anon_sym_focus_DASHvisible] = ACTIONS(109),
-    [anon_sym_focus_DASHwithin] = ACTIONS(109),
-    [anon_sym_active] = ACTIONS(109),
-    [anon_sym_disabled] = ACTIONS(109),
-    [anon_sym_checked] = ACTIONS(109),
-    [anon_sym_invalid] = ACTIONS(109),
-    [anon_sym_required] = ACTIONS(109),
-    [anon_sym_target] = ACTIONS(109),
-    [sym_special_block_keyword] = ACTIONS(109),
-    [anon_sym_columns] = ACTIONS(109),
-    [anon_sym_rows] = ACTIONS(109),
-    [anon_sym_flow] = ACTIONS(109),
-    [anon_sym_gap] = ACTIONS(109),
-    [anon_sym_display] = ACTIONS(109),
-    [anon_sym_height] = ACTIONS(109),
-    [anon_sym_width] = ACTIONS(109),
-    [anon_sym_min_DASHheight] = ACTIONS(109),
-    [anon_sym_max_DASHheight] = ACTIONS(109),
-    [anon_sym_min_DASHwidth] = ACTIONS(109),
-    [anon_sym_max_DASHwidth] = ACTIONS(109),
-    [anon_sym_inline_DASHsize] = ACTIONS(109),
-    [anon_sym_block_DASHsize] = ACTIONS(109),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(109),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(109),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(109),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(109),
-    [anon_sym_surface] = ACTIONS(109),
-    [anon_sym_background] = ACTIONS(109),
-    [anon_sym_theme] = ACTIONS(109),
-    [anon_sym_color] = ACTIONS(109),
-    [anon_sym_palette] = ACTIONS(109),
-    [anon_sym_tone] = ACTIONS(109),
-    [anon_sym_opacity] = ACTIONS(109),
-    [anon_sym_padding] = ACTIONS(109),
-    [anon_sym_anchor] = ACTIONS(109),
-    [anon_sym_margin] = ACTIONS(109),
-    [anon_sym_radius] = ACTIONS(109),
-    [anon_sym_border] = ACTIONS(109),
-    [anon_sym_shadow] = ACTIONS(109),
-    [anon_sym_outline] = ACTIONS(109),
-    [anon_sym_box] = ACTIONS(109),
-    [anon_sym_visibility] = ACTIONS(109),
-    [anon_sym_flex] = ACTIONS(109),
-    [anon_sym_square] = ACTIONS(109),
-    [anon_sym_place] = ACTIONS(109),
-    [anon_sym_in] = ACTIONS(109),
-    [anon_sym_col] = ACTIONS(109),
-    [anon_sym_span] = ACTIONS(109),
-    [anon_sym_position] = ACTIONS(109),
-    [anon_sym_offset] = ACTIONS(109),
-    [anon_sym_z] = ACTIONS(109),
-    [anon_sym_align] = ACTIONS(109),
-    [anon_sym_justify] = ACTIONS(109),
-    [anon_sym_font] = ACTIONS(109),
-    [anon_sym_size] = ACTIONS(109),
-    [anon_sym_weight] = ACTIONS(109),
-    [anon_sym_case] = ACTIONS(109),
-    [anon_sym_align_DASHtext] = ACTIONS(109),
-    [anon_sym_decoration] = ACTIONS(109),
-    [anon_sym_whitespace] = ACTIONS(109),
-    [anon_sym_word_DASHbreak] = ACTIONS(109),
-    [anon_sym_hyphenate] = ACTIONS(109),
-    [anon_sym_line] = ACTIONS(109),
-    [anon_sym_letter] = ACTIONS(109),
-    [anon_sym_transition] = ACTIONS(109),
-    [anon_sym_duration] = ACTIONS(109),
-    [anon_sym_ease] = ACTIONS(109),
-    [anon_sym_animate] = ACTIONS(109),
-    [anon_sym_delay] = ACTIONS(109),
-    [anon_sym_iteration] = ACTIONS(109),
-    [anon_sym_direction] = ACTIONS(109),
-    [anon_sym_fill] = ACTIONS(109),
-    [anon_sym_play_DASHstate] = ACTIONS(109),
-    [anon_sym_transform] = ACTIONS(109),
-    [anon_sym_filter] = ACTIONS(109),
-    [anon_sym_translate] = ACTIONS(109),
-    [anon_sym_type] = ACTIONS(109),
-    [anon_sym_angle] = ACTIONS(109),
-    [anon_sym_stop] = ACTIONS(109),
-    [anon_sym_corner] = ACTIONS(109),
-    [anon_sym_at] = ACTIONS(109),
-    [anon_sym_shape] = ACTIONS(109),
-    [anon_sym_css] = ACTIONS(109),
-    [anon_sym_lift] = ACTIONS(109),
-    [anon_sym_sink] = ACTIONS(109),
-    [anon_sym_shift] = ACTIONS(109),
-    [anon_sym_grow] = ACTIONS(109),
-    [anon_sym_shrink] = ACTIONS(109),
-    [anon_sym_tilt] = ACTIONS(109),
-    [anon_sym_glow] = ACTIONS(109),
-    [anon_sym_brighten] = ACTIONS(109),
-    [anon_sym_dim] = ACTIONS(109),
-    [anon_sym_blur] = ACTIONS(109),
-    [anon_sym_press] = ACTIONS(109),
-    [anon_sym_pop] = ACTIONS(109),
-    [anon_sym_ring] = ACTIONS(109),
-    [anon_sym_smooth] = ACTIONS(109),
-    [anon_sym_fade] = ACTIONS(109),
-    [anon_sym_scale] = ACTIONS(109),
-    [anon_sym_rotate] = ACTIONS(109),
-    [anon_sym_slide] = ACTIONS(109),
-    [aux_sym_percentage_token1] = ACTIONS(111),
-    [anon_sym_from] = ACTIONS(109),
-    [anon_sym_to] = ACTIONS(109),
+    [sym_identifier] = ACTIONS(111),
+    [anon_sym_RBRACE] = ACTIONS(113),
+    [anon_sym_gradient] = ACTIONS(111),
+    [anon_sym_section] = ACTIONS(111),
+    [anon_sym_animation] = ACTIONS(111),
+    [anon_sym_below] = ACTIONS(111),
+    [anon_sym_above] = ACTIONS(111),
+    [anon_sym_between] = ACTIONS(111),
+    [anon_sym_container] = ACTIONS(111),
+    [anon_sym_row] = ACTIONS(111),
+    [anon_sym_text] = ACTIONS(111),
+    [anon_sym_hover] = ACTIONS(111),
+    [anon_sym_focus] = ACTIONS(111),
+    [anon_sym_focus_DASHvisible] = ACTIONS(111),
+    [anon_sym_focus_DASHwithin] = ACTIONS(111),
+    [anon_sym_active] = ACTIONS(111),
+    [anon_sym_disabled] = ACTIONS(111),
+    [anon_sym_checked] = ACTIONS(111),
+    [anon_sym_invalid] = ACTIONS(111),
+    [anon_sym_required] = ACTIONS(111),
+    [anon_sym_target] = ACTIONS(111),
+    [sym_special_block_keyword] = ACTIONS(111),
+    [anon_sym_columns] = ACTIONS(111),
+    [anon_sym_rows] = ACTIONS(111),
+    [anon_sym_flow] = ACTIONS(111),
+    [anon_sym_gap] = ACTIONS(111),
+    [anon_sym_display] = ACTIONS(111),
+    [anon_sym_height] = ACTIONS(111),
+    [anon_sym_width] = ACTIONS(111),
+    [anon_sym_min_DASHheight] = ACTIONS(111),
+    [anon_sym_max_DASHheight] = ACTIONS(111),
+    [anon_sym_min_DASHwidth] = ACTIONS(111),
+    [anon_sym_max_DASHwidth] = ACTIONS(111),
+    [anon_sym_inline_DASHsize] = ACTIONS(111),
+    [anon_sym_block_DASHsize] = ACTIONS(111),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(111),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(111),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(111),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(111),
+    [anon_sym_surface] = ACTIONS(111),
+    [anon_sym_background] = ACTIONS(111),
+    [anon_sym_theme] = ACTIONS(111),
+    [anon_sym_color] = ACTIONS(111),
+    [anon_sym_palette] = ACTIONS(111),
+    [anon_sym_tone] = ACTIONS(111),
+    [anon_sym_opacity] = ACTIONS(111),
+    [anon_sym_padding] = ACTIONS(111),
+    [anon_sym_anchor] = ACTIONS(111),
+    [anon_sym_margin] = ACTIONS(111),
+    [anon_sym_radius] = ACTIONS(111),
+    [anon_sym_border] = ACTIONS(111),
+    [anon_sym_shadow] = ACTIONS(111),
+    [anon_sym_outline] = ACTIONS(111),
+    [anon_sym_box] = ACTIONS(111),
+    [anon_sym_visibility] = ACTIONS(111),
+    [anon_sym_flex] = ACTIONS(111),
+    [anon_sym_square] = ACTIONS(111),
+    [anon_sym_place] = ACTIONS(111),
+    [anon_sym_in] = ACTIONS(111),
+    [anon_sym_col] = ACTIONS(111),
+    [anon_sym_span] = ACTIONS(111),
+    [anon_sym_position] = ACTIONS(111),
+    [anon_sym_offset] = ACTIONS(111),
+    [anon_sym_z] = ACTIONS(111),
+    [anon_sym_align] = ACTIONS(111),
+    [anon_sym_justify] = ACTIONS(111),
+    [anon_sym_font] = ACTIONS(111),
+    [anon_sym_size] = ACTIONS(111),
+    [anon_sym_weight] = ACTIONS(111),
+    [anon_sym_case] = ACTIONS(111),
+    [anon_sym_align_DASHtext] = ACTIONS(111),
+    [anon_sym_decoration] = ACTIONS(111),
+    [anon_sym_whitespace] = ACTIONS(111),
+    [anon_sym_word_DASHbreak] = ACTIONS(111),
+    [anon_sym_hyphenate] = ACTIONS(111),
+    [anon_sym_line] = ACTIONS(111),
+    [anon_sym_letter] = ACTIONS(111),
+    [anon_sym_transition] = ACTIONS(111),
+    [anon_sym_duration] = ACTIONS(111),
+    [anon_sym_ease] = ACTIONS(111),
+    [anon_sym_animate] = ACTIONS(111),
+    [anon_sym_delay] = ACTIONS(111),
+    [anon_sym_iteration] = ACTIONS(111),
+    [anon_sym_direction] = ACTIONS(111),
+    [anon_sym_fill] = ACTIONS(111),
+    [anon_sym_play_DASHstate] = ACTIONS(111),
+    [anon_sym_transform] = ACTIONS(111),
+    [anon_sym_filter] = ACTIONS(111),
+    [anon_sym_translate] = ACTIONS(111),
+    [anon_sym_type] = ACTIONS(111),
+    [anon_sym_angle] = ACTIONS(111),
+    [anon_sym_stop] = ACTIONS(111),
+    [anon_sym_corner] = ACTIONS(111),
+    [anon_sym_at] = ACTIONS(111),
+    [anon_sym_shape] = ACTIONS(111),
+    [anon_sym_css] = ACTIONS(111),
+    [anon_sym_lift] = ACTIONS(111),
+    [anon_sym_sink] = ACTIONS(111),
+    [anon_sym_shift] = ACTIONS(111),
+    [anon_sym_grow] = ACTIONS(111),
+    [anon_sym_shrink] = ACTIONS(111),
+    [anon_sym_tilt] = ACTIONS(111),
+    [anon_sym_glow] = ACTIONS(111),
+    [anon_sym_brighten] = ACTIONS(111),
+    [anon_sym_dim] = ACTIONS(111),
+    [anon_sym_blur] = ACTIONS(111),
+    [anon_sym_press] = ACTIONS(111),
+    [anon_sym_pop] = ACTIONS(111),
+    [anon_sym_ring] = ACTIONS(111),
+    [anon_sym_smooth] = ACTIONS(111),
+    [anon_sym_fade] = ACTIONS(111),
+    [anon_sym_scale] = ACTIONS(111),
+    [anon_sym_rotate] = ACTIONS(111),
+    [anon_sym_slide] = ACTIONS(111),
+    [aux_sym_percentage_token1] = ACTIONS(113),
+    [anon_sym_from] = ACTIONS(111),
+    [anon_sym_to] = ACTIONS(111),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(111),
+    [sym__newline] = ACTIONS(113),
   },
   [STATE(11)] = {
-    [sym_identifier] = ACTIONS(113),
-    [anon_sym_RBRACE] = ACTIONS(115),
-    [anon_sym_gradient] = ACTIONS(113),
-    [anon_sym_section] = ACTIONS(113),
-    [anon_sym_animation] = ACTIONS(113),
-    [anon_sym_below] = ACTIONS(113),
-    [anon_sym_above] = ACTIONS(113),
-    [anon_sym_between] = ACTIONS(113),
-    [anon_sym_container] = ACTIONS(113),
-    [anon_sym_row] = ACTIONS(113),
-    [anon_sym_text] = ACTIONS(113),
-    [anon_sym_hover] = ACTIONS(113),
-    [anon_sym_focus] = ACTIONS(113),
-    [anon_sym_focus_DASHvisible] = ACTIONS(113),
-    [anon_sym_focus_DASHwithin] = ACTIONS(113),
-    [anon_sym_active] = ACTIONS(113),
-    [anon_sym_disabled] = ACTIONS(113),
-    [anon_sym_checked] = ACTIONS(113),
-    [anon_sym_invalid] = ACTIONS(113),
-    [anon_sym_required] = ACTIONS(113),
-    [anon_sym_target] = ACTIONS(113),
-    [sym_special_block_keyword] = ACTIONS(113),
-    [anon_sym_columns] = ACTIONS(113),
-    [anon_sym_rows] = ACTIONS(113),
-    [anon_sym_flow] = ACTIONS(113),
-    [anon_sym_gap] = ACTIONS(113),
-    [anon_sym_display] = ACTIONS(113),
-    [anon_sym_height] = ACTIONS(113),
-    [anon_sym_width] = ACTIONS(113),
-    [anon_sym_min_DASHheight] = ACTIONS(113),
-    [anon_sym_max_DASHheight] = ACTIONS(113),
-    [anon_sym_min_DASHwidth] = ACTIONS(113),
-    [anon_sym_max_DASHwidth] = ACTIONS(113),
-    [anon_sym_inline_DASHsize] = ACTIONS(113),
-    [anon_sym_block_DASHsize] = ACTIONS(113),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(113),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(113),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(113),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(113),
-    [anon_sym_surface] = ACTIONS(113),
-    [anon_sym_background] = ACTIONS(113),
-    [anon_sym_theme] = ACTIONS(113),
-    [anon_sym_color] = ACTIONS(113),
-    [anon_sym_palette] = ACTIONS(113),
-    [anon_sym_tone] = ACTIONS(113),
-    [anon_sym_opacity] = ACTIONS(113),
-    [anon_sym_padding] = ACTIONS(113),
-    [anon_sym_anchor] = ACTIONS(113),
-    [anon_sym_margin] = ACTIONS(113),
-    [anon_sym_radius] = ACTIONS(113),
-    [anon_sym_border] = ACTIONS(113),
-    [anon_sym_shadow] = ACTIONS(113),
-    [anon_sym_outline] = ACTIONS(113),
-    [anon_sym_box] = ACTIONS(113),
-    [anon_sym_visibility] = ACTIONS(113),
-    [anon_sym_flex] = ACTIONS(113),
-    [anon_sym_square] = ACTIONS(113),
-    [anon_sym_place] = ACTIONS(113),
-    [anon_sym_in] = ACTIONS(113),
-    [anon_sym_col] = ACTIONS(113),
-    [anon_sym_span] = ACTIONS(113),
-    [anon_sym_position] = ACTIONS(113),
-    [anon_sym_offset] = ACTIONS(113),
-    [anon_sym_z] = ACTIONS(113),
-    [anon_sym_align] = ACTIONS(113),
-    [anon_sym_justify] = ACTIONS(113),
-    [anon_sym_font] = ACTIONS(113),
-    [anon_sym_size] = ACTIONS(113),
-    [anon_sym_weight] = ACTIONS(113),
-    [anon_sym_case] = ACTIONS(113),
-    [anon_sym_align_DASHtext] = ACTIONS(113),
-    [anon_sym_decoration] = ACTIONS(113),
-    [anon_sym_whitespace] = ACTIONS(113),
-    [anon_sym_word_DASHbreak] = ACTIONS(113),
-    [anon_sym_hyphenate] = ACTIONS(113),
-    [anon_sym_line] = ACTIONS(113),
-    [anon_sym_letter] = ACTIONS(113),
-    [anon_sym_transition] = ACTIONS(113),
-    [anon_sym_duration] = ACTIONS(113),
-    [anon_sym_ease] = ACTIONS(113),
-    [anon_sym_animate] = ACTIONS(113),
-    [anon_sym_delay] = ACTIONS(113),
-    [anon_sym_iteration] = ACTIONS(113),
-    [anon_sym_direction] = ACTIONS(113),
-    [anon_sym_fill] = ACTIONS(113),
-    [anon_sym_play_DASHstate] = ACTIONS(113),
-    [anon_sym_transform] = ACTIONS(113),
-    [anon_sym_filter] = ACTIONS(113),
-    [anon_sym_translate] = ACTIONS(113),
-    [anon_sym_type] = ACTIONS(113),
-    [anon_sym_angle] = ACTIONS(113),
-    [anon_sym_stop] = ACTIONS(113),
-    [anon_sym_corner] = ACTIONS(113),
-    [anon_sym_at] = ACTIONS(113),
-    [anon_sym_shape] = ACTIONS(113),
-    [anon_sym_css] = ACTIONS(113),
-    [anon_sym_lift] = ACTIONS(113),
-    [anon_sym_sink] = ACTIONS(113),
-    [anon_sym_shift] = ACTIONS(113),
-    [anon_sym_grow] = ACTIONS(113),
-    [anon_sym_shrink] = ACTIONS(113),
-    [anon_sym_tilt] = ACTIONS(113),
-    [anon_sym_glow] = ACTIONS(113),
-    [anon_sym_brighten] = ACTIONS(113),
-    [anon_sym_dim] = ACTIONS(113),
-    [anon_sym_blur] = ACTIONS(113),
-    [anon_sym_press] = ACTIONS(113),
-    [anon_sym_pop] = ACTIONS(113),
-    [anon_sym_ring] = ACTIONS(113),
-    [anon_sym_smooth] = ACTIONS(113),
-    [anon_sym_fade] = ACTIONS(113),
-    [anon_sym_scale] = ACTIONS(113),
-    [anon_sym_rotate] = ACTIONS(113),
-    [anon_sym_slide] = ACTIONS(113),
-    [aux_sym_percentage_token1] = ACTIONS(115),
-    [anon_sym_from] = ACTIONS(113),
-    [anon_sym_to] = ACTIONS(113),
+    [sym_identifier] = ACTIONS(115),
+    [anon_sym_RBRACE] = ACTIONS(117),
+    [anon_sym_gradient] = ACTIONS(115),
+    [anon_sym_section] = ACTIONS(115),
+    [anon_sym_animation] = ACTIONS(115),
+    [anon_sym_below] = ACTIONS(115),
+    [anon_sym_above] = ACTIONS(115),
+    [anon_sym_between] = ACTIONS(115),
+    [anon_sym_container] = ACTIONS(115),
+    [anon_sym_row] = ACTIONS(115),
+    [anon_sym_text] = ACTIONS(115),
+    [anon_sym_hover] = ACTIONS(115),
+    [anon_sym_focus] = ACTIONS(115),
+    [anon_sym_focus_DASHvisible] = ACTIONS(115),
+    [anon_sym_focus_DASHwithin] = ACTIONS(115),
+    [anon_sym_active] = ACTIONS(115),
+    [anon_sym_disabled] = ACTIONS(115),
+    [anon_sym_checked] = ACTIONS(115),
+    [anon_sym_invalid] = ACTIONS(115),
+    [anon_sym_required] = ACTIONS(115),
+    [anon_sym_target] = ACTIONS(115),
+    [sym_special_block_keyword] = ACTIONS(115),
+    [anon_sym_columns] = ACTIONS(115),
+    [anon_sym_rows] = ACTIONS(115),
+    [anon_sym_flow] = ACTIONS(115),
+    [anon_sym_gap] = ACTIONS(115),
+    [anon_sym_display] = ACTIONS(115),
+    [anon_sym_height] = ACTIONS(115),
+    [anon_sym_width] = ACTIONS(115),
+    [anon_sym_min_DASHheight] = ACTIONS(115),
+    [anon_sym_max_DASHheight] = ACTIONS(115),
+    [anon_sym_min_DASHwidth] = ACTIONS(115),
+    [anon_sym_max_DASHwidth] = ACTIONS(115),
+    [anon_sym_inline_DASHsize] = ACTIONS(115),
+    [anon_sym_block_DASHsize] = ACTIONS(115),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(115),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(115),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(115),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(115),
+    [anon_sym_surface] = ACTIONS(115),
+    [anon_sym_background] = ACTIONS(115),
+    [anon_sym_theme] = ACTIONS(115),
+    [anon_sym_color] = ACTIONS(115),
+    [anon_sym_palette] = ACTIONS(115),
+    [anon_sym_tone] = ACTIONS(115),
+    [anon_sym_opacity] = ACTIONS(115),
+    [anon_sym_padding] = ACTIONS(115),
+    [anon_sym_anchor] = ACTIONS(115),
+    [anon_sym_margin] = ACTIONS(115),
+    [anon_sym_radius] = ACTIONS(115),
+    [anon_sym_border] = ACTIONS(115),
+    [anon_sym_shadow] = ACTIONS(115),
+    [anon_sym_outline] = ACTIONS(115),
+    [anon_sym_box] = ACTIONS(115),
+    [anon_sym_visibility] = ACTIONS(115),
+    [anon_sym_flex] = ACTIONS(115),
+    [anon_sym_square] = ACTIONS(115),
+    [anon_sym_place] = ACTIONS(115),
+    [anon_sym_in] = ACTIONS(115),
+    [anon_sym_col] = ACTIONS(115),
+    [anon_sym_span] = ACTIONS(115),
+    [anon_sym_position] = ACTIONS(115),
+    [anon_sym_offset] = ACTIONS(115),
+    [anon_sym_z] = ACTIONS(115),
+    [anon_sym_align] = ACTIONS(115),
+    [anon_sym_justify] = ACTIONS(115),
+    [anon_sym_font] = ACTIONS(115),
+    [anon_sym_size] = ACTIONS(115),
+    [anon_sym_weight] = ACTIONS(115),
+    [anon_sym_case] = ACTIONS(115),
+    [anon_sym_align_DASHtext] = ACTIONS(115),
+    [anon_sym_decoration] = ACTIONS(115),
+    [anon_sym_whitespace] = ACTIONS(115),
+    [anon_sym_word_DASHbreak] = ACTIONS(115),
+    [anon_sym_hyphenate] = ACTIONS(115),
+    [anon_sym_line] = ACTIONS(115),
+    [anon_sym_letter] = ACTIONS(115),
+    [anon_sym_transition] = ACTIONS(115),
+    [anon_sym_duration] = ACTIONS(115),
+    [anon_sym_ease] = ACTIONS(115),
+    [anon_sym_animate] = ACTIONS(115),
+    [anon_sym_delay] = ACTIONS(115),
+    [anon_sym_iteration] = ACTIONS(115),
+    [anon_sym_direction] = ACTIONS(115),
+    [anon_sym_fill] = ACTIONS(115),
+    [anon_sym_play_DASHstate] = ACTIONS(115),
+    [anon_sym_transform] = ACTIONS(115),
+    [anon_sym_filter] = ACTIONS(115),
+    [anon_sym_translate] = ACTIONS(115),
+    [anon_sym_type] = ACTIONS(115),
+    [anon_sym_angle] = ACTIONS(115),
+    [anon_sym_stop] = ACTIONS(115),
+    [anon_sym_corner] = ACTIONS(115),
+    [anon_sym_at] = ACTIONS(115),
+    [anon_sym_shape] = ACTIONS(115),
+    [anon_sym_css] = ACTIONS(115),
+    [anon_sym_lift] = ACTIONS(115),
+    [anon_sym_sink] = ACTIONS(115),
+    [anon_sym_shift] = ACTIONS(115),
+    [anon_sym_grow] = ACTIONS(115),
+    [anon_sym_shrink] = ACTIONS(115),
+    [anon_sym_tilt] = ACTIONS(115),
+    [anon_sym_glow] = ACTIONS(115),
+    [anon_sym_brighten] = ACTIONS(115),
+    [anon_sym_dim] = ACTIONS(115),
+    [anon_sym_blur] = ACTIONS(115),
+    [anon_sym_press] = ACTIONS(115),
+    [anon_sym_pop] = ACTIONS(115),
+    [anon_sym_ring] = ACTIONS(115),
+    [anon_sym_smooth] = ACTIONS(115),
+    [anon_sym_fade] = ACTIONS(115),
+    [anon_sym_scale] = ACTIONS(115),
+    [anon_sym_rotate] = ACTIONS(115),
+    [anon_sym_slide] = ACTIONS(115),
+    [aux_sym_percentage_token1] = ACTIONS(117),
+    [anon_sym_from] = ACTIONS(115),
+    [anon_sym_to] = ACTIONS(115),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(115),
+    [sym__newline] = ACTIONS(117),
   },
   [STATE(12)] = {
-    [sym_identifier] = ACTIONS(117),
-    [anon_sym_RBRACE] = ACTIONS(119),
-    [anon_sym_gradient] = ACTIONS(117),
-    [anon_sym_section] = ACTIONS(117),
-    [anon_sym_animation] = ACTIONS(117),
-    [anon_sym_below] = ACTIONS(117),
-    [anon_sym_above] = ACTIONS(117),
-    [anon_sym_between] = ACTIONS(117),
-    [anon_sym_container] = ACTIONS(117),
-    [anon_sym_row] = ACTIONS(117),
-    [anon_sym_text] = ACTIONS(117),
-    [anon_sym_hover] = ACTIONS(117),
-    [anon_sym_focus] = ACTIONS(117),
-    [anon_sym_focus_DASHvisible] = ACTIONS(117),
-    [anon_sym_focus_DASHwithin] = ACTIONS(117),
-    [anon_sym_active] = ACTIONS(117),
-    [anon_sym_disabled] = ACTIONS(117),
-    [anon_sym_checked] = ACTIONS(117),
-    [anon_sym_invalid] = ACTIONS(117),
-    [anon_sym_required] = ACTIONS(117),
-    [anon_sym_target] = ACTIONS(117),
-    [sym_special_block_keyword] = ACTIONS(117),
-    [anon_sym_columns] = ACTIONS(117),
-    [anon_sym_rows] = ACTIONS(117),
-    [anon_sym_flow] = ACTIONS(117),
-    [anon_sym_gap] = ACTIONS(117),
-    [anon_sym_display] = ACTIONS(117),
-    [anon_sym_height] = ACTIONS(117),
-    [anon_sym_width] = ACTIONS(117),
-    [anon_sym_min_DASHheight] = ACTIONS(117),
-    [anon_sym_max_DASHheight] = ACTIONS(117),
-    [anon_sym_min_DASHwidth] = ACTIONS(117),
-    [anon_sym_max_DASHwidth] = ACTIONS(117),
-    [anon_sym_inline_DASHsize] = ACTIONS(117),
-    [anon_sym_block_DASHsize] = ACTIONS(117),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(117),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(117),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(117),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(117),
-    [anon_sym_surface] = ACTIONS(117),
-    [anon_sym_background] = ACTIONS(117),
-    [anon_sym_theme] = ACTIONS(117),
-    [anon_sym_color] = ACTIONS(117),
-    [anon_sym_palette] = ACTIONS(117),
-    [anon_sym_tone] = ACTIONS(117),
-    [anon_sym_opacity] = ACTIONS(117),
-    [anon_sym_padding] = ACTIONS(117),
-    [anon_sym_anchor] = ACTIONS(117),
-    [anon_sym_margin] = ACTIONS(117),
-    [anon_sym_radius] = ACTIONS(117),
-    [anon_sym_border] = ACTIONS(117),
-    [anon_sym_shadow] = ACTIONS(117),
-    [anon_sym_outline] = ACTIONS(117),
-    [anon_sym_box] = ACTIONS(117),
-    [anon_sym_visibility] = ACTIONS(117),
-    [anon_sym_flex] = ACTIONS(117),
-    [anon_sym_square] = ACTIONS(117),
-    [anon_sym_place] = ACTIONS(117),
-    [anon_sym_in] = ACTIONS(117),
-    [anon_sym_col] = ACTIONS(117),
-    [anon_sym_span] = ACTIONS(117),
-    [anon_sym_position] = ACTIONS(117),
-    [anon_sym_offset] = ACTIONS(117),
-    [anon_sym_z] = ACTIONS(117),
-    [anon_sym_align] = ACTIONS(117),
-    [anon_sym_justify] = ACTIONS(117),
-    [anon_sym_font] = ACTIONS(117),
-    [anon_sym_size] = ACTIONS(117),
-    [anon_sym_weight] = ACTIONS(117),
-    [anon_sym_case] = ACTIONS(117),
-    [anon_sym_align_DASHtext] = ACTIONS(117),
-    [anon_sym_decoration] = ACTIONS(117),
-    [anon_sym_whitespace] = ACTIONS(117),
-    [anon_sym_word_DASHbreak] = ACTIONS(117),
-    [anon_sym_hyphenate] = ACTIONS(117),
-    [anon_sym_line] = ACTIONS(117),
-    [anon_sym_letter] = ACTIONS(117),
-    [anon_sym_transition] = ACTIONS(117),
-    [anon_sym_duration] = ACTIONS(117),
-    [anon_sym_ease] = ACTIONS(117),
-    [anon_sym_animate] = ACTIONS(117),
-    [anon_sym_delay] = ACTIONS(117),
-    [anon_sym_iteration] = ACTIONS(117),
-    [anon_sym_direction] = ACTIONS(117),
-    [anon_sym_fill] = ACTIONS(117),
-    [anon_sym_play_DASHstate] = ACTIONS(117),
-    [anon_sym_transform] = ACTIONS(117),
-    [anon_sym_filter] = ACTIONS(117),
-    [anon_sym_translate] = ACTIONS(117),
-    [anon_sym_type] = ACTIONS(117),
-    [anon_sym_angle] = ACTIONS(117),
-    [anon_sym_stop] = ACTIONS(117),
-    [anon_sym_corner] = ACTIONS(117),
-    [anon_sym_at] = ACTIONS(117),
-    [anon_sym_shape] = ACTIONS(117),
-    [anon_sym_css] = ACTIONS(117),
-    [anon_sym_lift] = ACTIONS(117),
-    [anon_sym_sink] = ACTIONS(117),
-    [anon_sym_shift] = ACTIONS(117),
-    [anon_sym_grow] = ACTIONS(117),
-    [anon_sym_shrink] = ACTIONS(117),
-    [anon_sym_tilt] = ACTIONS(117),
-    [anon_sym_glow] = ACTIONS(117),
-    [anon_sym_brighten] = ACTIONS(117),
-    [anon_sym_dim] = ACTIONS(117),
-    [anon_sym_blur] = ACTIONS(117),
-    [anon_sym_press] = ACTIONS(117),
-    [anon_sym_pop] = ACTIONS(117),
-    [anon_sym_ring] = ACTIONS(117),
-    [anon_sym_smooth] = ACTIONS(117),
-    [anon_sym_fade] = ACTIONS(117),
-    [anon_sym_scale] = ACTIONS(117),
-    [anon_sym_rotate] = ACTIONS(117),
-    [anon_sym_slide] = ACTIONS(117),
-    [aux_sym_percentage_token1] = ACTIONS(119),
-    [anon_sym_from] = ACTIONS(117),
-    [anon_sym_to] = ACTIONS(117),
+    [sym_identifier] = ACTIONS(119),
+    [anon_sym_RBRACE] = ACTIONS(121),
+    [anon_sym_gradient] = ACTIONS(119),
+    [anon_sym_section] = ACTIONS(119),
+    [anon_sym_animation] = ACTIONS(119),
+    [anon_sym_below] = ACTIONS(119),
+    [anon_sym_above] = ACTIONS(119),
+    [anon_sym_between] = ACTIONS(119),
+    [anon_sym_container] = ACTIONS(119),
+    [anon_sym_row] = ACTIONS(119),
+    [anon_sym_text] = ACTIONS(119),
+    [anon_sym_hover] = ACTIONS(119),
+    [anon_sym_focus] = ACTIONS(119),
+    [anon_sym_focus_DASHvisible] = ACTIONS(119),
+    [anon_sym_focus_DASHwithin] = ACTIONS(119),
+    [anon_sym_active] = ACTIONS(119),
+    [anon_sym_disabled] = ACTIONS(119),
+    [anon_sym_checked] = ACTIONS(119),
+    [anon_sym_invalid] = ACTIONS(119),
+    [anon_sym_required] = ACTIONS(119),
+    [anon_sym_target] = ACTIONS(119),
+    [sym_special_block_keyword] = ACTIONS(119),
+    [anon_sym_columns] = ACTIONS(119),
+    [anon_sym_rows] = ACTIONS(119),
+    [anon_sym_flow] = ACTIONS(119),
+    [anon_sym_gap] = ACTIONS(119),
+    [anon_sym_display] = ACTIONS(119),
+    [anon_sym_height] = ACTIONS(119),
+    [anon_sym_width] = ACTIONS(119),
+    [anon_sym_min_DASHheight] = ACTIONS(119),
+    [anon_sym_max_DASHheight] = ACTIONS(119),
+    [anon_sym_min_DASHwidth] = ACTIONS(119),
+    [anon_sym_max_DASHwidth] = ACTIONS(119),
+    [anon_sym_inline_DASHsize] = ACTIONS(119),
+    [anon_sym_block_DASHsize] = ACTIONS(119),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(119),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(119),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(119),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(119),
+    [anon_sym_surface] = ACTIONS(119),
+    [anon_sym_background] = ACTIONS(119),
+    [anon_sym_theme] = ACTIONS(119),
+    [anon_sym_color] = ACTIONS(119),
+    [anon_sym_palette] = ACTIONS(119),
+    [anon_sym_tone] = ACTIONS(119),
+    [anon_sym_opacity] = ACTIONS(119),
+    [anon_sym_padding] = ACTIONS(119),
+    [anon_sym_anchor] = ACTIONS(119),
+    [anon_sym_margin] = ACTIONS(119),
+    [anon_sym_radius] = ACTIONS(119),
+    [anon_sym_border] = ACTIONS(119),
+    [anon_sym_shadow] = ACTIONS(119),
+    [anon_sym_outline] = ACTIONS(119),
+    [anon_sym_box] = ACTIONS(119),
+    [anon_sym_visibility] = ACTIONS(119),
+    [anon_sym_flex] = ACTIONS(119),
+    [anon_sym_square] = ACTIONS(119),
+    [anon_sym_place] = ACTIONS(119),
+    [anon_sym_in] = ACTIONS(119),
+    [anon_sym_col] = ACTIONS(119),
+    [anon_sym_span] = ACTIONS(119),
+    [anon_sym_position] = ACTIONS(119),
+    [anon_sym_offset] = ACTIONS(119),
+    [anon_sym_z] = ACTIONS(119),
+    [anon_sym_align] = ACTIONS(119),
+    [anon_sym_justify] = ACTIONS(119),
+    [anon_sym_font] = ACTIONS(119),
+    [anon_sym_size] = ACTIONS(119),
+    [anon_sym_weight] = ACTIONS(119),
+    [anon_sym_case] = ACTIONS(119),
+    [anon_sym_align_DASHtext] = ACTIONS(119),
+    [anon_sym_decoration] = ACTIONS(119),
+    [anon_sym_whitespace] = ACTIONS(119),
+    [anon_sym_word_DASHbreak] = ACTIONS(119),
+    [anon_sym_hyphenate] = ACTIONS(119),
+    [anon_sym_line] = ACTIONS(119),
+    [anon_sym_letter] = ACTIONS(119),
+    [anon_sym_transition] = ACTIONS(119),
+    [anon_sym_duration] = ACTIONS(119),
+    [anon_sym_ease] = ACTIONS(119),
+    [anon_sym_animate] = ACTIONS(119),
+    [anon_sym_delay] = ACTIONS(119),
+    [anon_sym_iteration] = ACTIONS(119),
+    [anon_sym_direction] = ACTIONS(119),
+    [anon_sym_fill] = ACTIONS(119),
+    [anon_sym_play_DASHstate] = ACTIONS(119),
+    [anon_sym_transform] = ACTIONS(119),
+    [anon_sym_filter] = ACTIONS(119),
+    [anon_sym_translate] = ACTIONS(119),
+    [anon_sym_type] = ACTIONS(119),
+    [anon_sym_angle] = ACTIONS(119),
+    [anon_sym_stop] = ACTIONS(119),
+    [anon_sym_corner] = ACTIONS(119),
+    [anon_sym_at] = ACTIONS(119),
+    [anon_sym_shape] = ACTIONS(119),
+    [anon_sym_css] = ACTIONS(119),
+    [anon_sym_lift] = ACTIONS(119),
+    [anon_sym_sink] = ACTIONS(119),
+    [anon_sym_shift] = ACTIONS(119),
+    [anon_sym_grow] = ACTIONS(119),
+    [anon_sym_shrink] = ACTIONS(119),
+    [anon_sym_tilt] = ACTIONS(119),
+    [anon_sym_glow] = ACTIONS(119),
+    [anon_sym_brighten] = ACTIONS(119),
+    [anon_sym_dim] = ACTIONS(119),
+    [anon_sym_blur] = ACTIONS(119),
+    [anon_sym_press] = ACTIONS(119),
+    [anon_sym_pop] = ACTIONS(119),
+    [anon_sym_ring] = ACTIONS(119),
+    [anon_sym_smooth] = ACTIONS(119),
+    [anon_sym_fade] = ACTIONS(119),
+    [anon_sym_scale] = ACTIONS(119),
+    [anon_sym_rotate] = ACTIONS(119),
+    [anon_sym_slide] = ACTIONS(119),
+    [aux_sym_percentage_token1] = ACTIONS(121),
+    [anon_sym_from] = ACTIONS(119),
+    [anon_sym_to] = ACTIONS(119),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(119),
+    [sym__newline] = ACTIONS(121),
   },
   [STATE(13)] = {
-    [sym_identifier] = ACTIONS(121),
-    [anon_sym_RBRACE] = ACTIONS(123),
-    [anon_sym_gradient] = ACTIONS(121),
-    [anon_sym_section] = ACTIONS(121),
-    [anon_sym_animation] = ACTIONS(121),
-    [anon_sym_below] = ACTIONS(121),
-    [anon_sym_above] = ACTIONS(121),
-    [anon_sym_between] = ACTIONS(121),
-    [anon_sym_container] = ACTIONS(121),
-    [anon_sym_row] = ACTIONS(121),
-    [anon_sym_text] = ACTIONS(121),
-    [anon_sym_hover] = ACTIONS(121),
-    [anon_sym_focus] = ACTIONS(121),
-    [anon_sym_focus_DASHvisible] = ACTIONS(121),
-    [anon_sym_focus_DASHwithin] = ACTIONS(121),
-    [anon_sym_active] = ACTIONS(121),
-    [anon_sym_disabled] = ACTIONS(121),
-    [anon_sym_checked] = ACTIONS(121),
-    [anon_sym_invalid] = ACTIONS(121),
-    [anon_sym_required] = ACTIONS(121),
-    [anon_sym_target] = ACTIONS(121),
-    [sym_special_block_keyword] = ACTIONS(121),
-    [anon_sym_columns] = ACTIONS(121),
-    [anon_sym_rows] = ACTIONS(121),
-    [anon_sym_flow] = ACTIONS(121),
-    [anon_sym_gap] = ACTIONS(121),
-    [anon_sym_display] = ACTIONS(121),
-    [anon_sym_height] = ACTIONS(121),
-    [anon_sym_width] = ACTIONS(121),
-    [anon_sym_min_DASHheight] = ACTIONS(121),
-    [anon_sym_max_DASHheight] = ACTIONS(121),
-    [anon_sym_min_DASHwidth] = ACTIONS(121),
-    [anon_sym_max_DASHwidth] = ACTIONS(121),
-    [anon_sym_inline_DASHsize] = ACTIONS(121),
-    [anon_sym_block_DASHsize] = ACTIONS(121),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(121),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(121),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(121),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(121),
-    [anon_sym_surface] = ACTIONS(121),
-    [anon_sym_background] = ACTIONS(121),
-    [anon_sym_theme] = ACTIONS(121),
-    [anon_sym_color] = ACTIONS(121),
-    [anon_sym_palette] = ACTIONS(121),
-    [anon_sym_tone] = ACTIONS(121),
-    [anon_sym_opacity] = ACTIONS(121),
-    [anon_sym_padding] = ACTIONS(121),
-    [anon_sym_anchor] = ACTIONS(121),
-    [anon_sym_margin] = ACTIONS(121),
-    [anon_sym_radius] = ACTIONS(121),
-    [anon_sym_border] = ACTIONS(121),
-    [anon_sym_shadow] = ACTIONS(121),
-    [anon_sym_outline] = ACTIONS(121),
-    [anon_sym_box] = ACTIONS(121),
-    [anon_sym_visibility] = ACTIONS(121),
-    [anon_sym_flex] = ACTIONS(121),
-    [anon_sym_square] = ACTIONS(121),
-    [anon_sym_place] = ACTIONS(121),
-    [anon_sym_in] = ACTIONS(121),
-    [anon_sym_col] = ACTIONS(121),
-    [anon_sym_span] = ACTIONS(121),
-    [anon_sym_position] = ACTIONS(121),
-    [anon_sym_offset] = ACTIONS(121),
-    [anon_sym_z] = ACTIONS(121),
-    [anon_sym_align] = ACTIONS(121),
-    [anon_sym_justify] = ACTIONS(121),
-    [anon_sym_font] = ACTIONS(121),
-    [anon_sym_size] = ACTIONS(121),
-    [anon_sym_weight] = ACTIONS(121),
-    [anon_sym_case] = ACTIONS(121),
-    [anon_sym_align_DASHtext] = ACTIONS(121),
-    [anon_sym_decoration] = ACTIONS(121),
-    [anon_sym_whitespace] = ACTIONS(121),
-    [anon_sym_word_DASHbreak] = ACTIONS(121),
-    [anon_sym_hyphenate] = ACTIONS(121),
-    [anon_sym_line] = ACTIONS(121),
-    [anon_sym_letter] = ACTIONS(121),
-    [anon_sym_transition] = ACTIONS(121),
-    [anon_sym_duration] = ACTIONS(121),
-    [anon_sym_ease] = ACTIONS(121),
-    [anon_sym_animate] = ACTIONS(121),
-    [anon_sym_delay] = ACTIONS(121),
-    [anon_sym_iteration] = ACTIONS(121),
-    [anon_sym_direction] = ACTIONS(121),
-    [anon_sym_fill] = ACTIONS(121),
-    [anon_sym_play_DASHstate] = ACTIONS(121),
-    [anon_sym_transform] = ACTIONS(121),
-    [anon_sym_filter] = ACTIONS(121),
-    [anon_sym_translate] = ACTIONS(121),
-    [anon_sym_type] = ACTIONS(121),
-    [anon_sym_angle] = ACTIONS(121),
-    [anon_sym_stop] = ACTIONS(121),
-    [anon_sym_corner] = ACTIONS(121),
-    [anon_sym_at] = ACTIONS(121),
-    [anon_sym_shape] = ACTIONS(121),
-    [anon_sym_css] = ACTIONS(121),
-    [anon_sym_lift] = ACTIONS(121),
-    [anon_sym_sink] = ACTIONS(121),
-    [anon_sym_shift] = ACTIONS(121),
-    [anon_sym_grow] = ACTIONS(121),
-    [anon_sym_shrink] = ACTIONS(121),
-    [anon_sym_tilt] = ACTIONS(121),
-    [anon_sym_glow] = ACTIONS(121),
-    [anon_sym_brighten] = ACTIONS(121),
-    [anon_sym_dim] = ACTIONS(121),
-    [anon_sym_blur] = ACTIONS(121),
-    [anon_sym_press] = ACTIONS(121),
-    [anon_sym_pop] = ACTIONS(121),
-    [anon_sym_ring] = ACTIONS(121),
-    [anon_sym_smooth] = ACTIONS(121),
-    [anon_sym_fade] = ACTIONS(121),
-    [anon_sym_scale] = ACTIONS(121),
-    [anon_sym_rotate] = ACTIONS(121),
-    [anon_sym_slide] = ACTIONS(121),
-    [aux_sym_percentage_token1] = ACTIONS(123),
-    [anon_sym_from] = ACTIONS(121),
-    [anon_sym_to] = ACTIONS(121),
+    [sym_identifier] = ACTIONS(123),
+    [anon_sym_RBRACE] = ACTIONS(125),
+    [anon_sym_gradient] = ACTIONS(123),
+    [anon_sym_section] = ACTIONS(123),
+    [anon_sym_animation] = ACTIONS(123),
+    [anon_sym_below] = ACTIONS(123),
+    [anon_sym_above] = ACTIONS(123),
+    [anon_sym_between] = ACTIONS(123),
+    [anon_sym_container] = ACTIONS(123),
+    [anon_sym_row] = ACTIONS(123),
+    [anon_sym_text] = ACTIONS(123),
+    [anon_sym_hover] = ACTIONS(123),
+    [anon_sym_focus] = ACTIONS(123),
+    [anon_sym_focus_DASHvisible] = ACTIONS(123),
+    [anon_sym_focus_DASHwithin] = ACTIONS(123),
+    [anon_sym_active] = ACTIONS(123),
+    [anon_sym_disabled] = ACTIONS(123),
+    [anon_sym_checked] = ACTIONS(123),
+    [anon_sym_invalid] = ACTIONS(123),
+    [anon_sym_required] = ACTIONS(123),
+    [anon_sym_target] = ACTIONS(123),
+    [sym_special_block_keyword] = ACTIONS(123),
+    [anon_sym_columns] = ACTIONS(123),
+    [anon_sym_rows] = ACTIONS(123),
+    [anon_sym_flow] = ACTIONS(123),
+    [anon_sym_gap] = ACTIONS(123),
+    [anon_sym_display] = ACTIONS(123),
+    [anon_sym_height] = ACTIONS(123),
+    [anon_sym_width] = ACTIONS(123),
+    [anon_sym_min_DASHheight] = ACTIONS(123),
+    [anon_sym_max_DASHheight] = ACTIONS(123),
+    [anon_sym_min_DASHwidth] = ACTIONS(123),
+    [anon_sym_max_DASHwidth] = ACTIONS(123),
+    [anon_sym_inline_DASHsize] = ACTIONS(123),
+    [anon_sym_block_DASHsize] = ACTIONS(123),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(123),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(123),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(123),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(123),
+    [anon_sym_surface] = ACTIONS(123),
+    [anon_sym_background] = ACTIONS(123),
+    [anon_sym_theme] = ACTIONS(123),
+    [anon_sym_color] = ACTIONS(123),
+    [anon_sym_palette] = ACTIONS(123),
+    [anon_sym_tone] = ACTIONS(123),
+    [anon_sym_opacity] = ACTIONS(123),
+    [anon_sym_padding] = ACTIONS(123),
+    [anon_sym_anchor] = ACTIONS(123),
+    [anon_sym_margin] = ACTIONS(123),
+    [anon_sym_radius] = ACTIONS(123),
+    [anon_sym_border] = ACTIONS(123),
+    [anon_sym_shadow] = ACTIONS(123),
+    [anon_sym_outline] = ACTIONS(123),
+    [anon_sym_box] = ACTIONS(123),
+    [anon_sym_visibility] = ACTIONS(123),
+    [anon_sym_flex] = ACTIONS(123),
+    [anon_sym_square] = ACTIONS(123),
+    [anon_sym_place] = ACTIONS(123),
+    [anon_sym_in] = ACTIONS(123),
+    [anon_sym_col] = ACTIONS(123),
+    [anon_sym_span] = ACTIONS(123),
+    [anon_sym_position] = ACTIONS(123),
+    [anon_sym_offset] = ACTIONS(123),
+    [anon_sym_z] = ACTIONS(123),
+    [anon_sym_align] = ACTIONS(123),
+    [anon_sym_justify] = ACTIONS(123),
+    [anon_sym_font] = ACTIONS(123),
+    [anon_sym_size] = ACTIONS(123),
+    [anon_sym_weight] = ACTIONS(123),
+    [anon_sym_case] = ACTIONS(123),
+    [anon_sym_align_DASHtext] = ACTIONS(123),
+    [anon_sym_decoration] = ACTIONS(123),
+    [anon_sym_whitespace] = ACTIONS(123),
+    [anon_sym_word_DASHbreak] = ACTIONS(123),
+    [anon_sym_hyphenate] = ACTIONS(123),
+    [anon_sym_line] = ACTIONS(123),
+    [anon_sym_letter] = ACTIONS(123),
+    [anon_sym_transition] = ACTIONS(123),
+    [anon_sym_duration] = ACTIONS(123),
+    [anon_sym_ease] = ACTIONS(123),
+    [anon_sym_animate] = ACTIONS(123),
+    [anon_sym_delay] = ACTIONS(123),
+    [anon_sym_iteration] = ACTIONS(123),
+    [anon_sym_direction] = ACTIONS(123),
+    [anon_sym_fill] = ACTIONS(123),
+    [anon_sym_play_DASHstate] = ACTIONS(123),
+    [anon_sym_transform] = ACTIONS(123),
+    [anon_sym_filter] = ACTIONS(123),
+    [anon_sym_translate] = ACTIONS(123),
+    [anon_sym_type] = ACTIONS(123),
+    [anon_sym_angle] = ACTIONS(123),
+    [anon_sym_stop] = ACTIONS(123),
+    [anon_sym_corner] = ACTIONS(123),
+    [anon_sym_at] = ACTIONS(123),
+    [anon_sym_shape] = ACTIONS(123),
+    [anon_sym_css] = ACTIONS(123),
+    [anon_sym_lift] = ACTIONS(123),
+    [anon_sym_sink] = ACTIONS(123),
+    [anon_sym_shift] = ACTIONS(123),
+    [anon_sym_grow] = ACTIONS(123),
+    [anon_sym_shrink] = ACTIONS(123),
+    [anon_sym_tilt] = ACTIONS(123),
+    [anon_sym_glow] = ACTIONS(123),
+    [anon_sym_brighten] = ACTIONS(123),
+    [anon_sym_dim] = ACTIONS(123),
+    [anon_sym_blur] = ACTIONS(123),
+    [anon_sym_press] = ACTIONS(123),
+    [anon_sym_pop] = ACTIONS(123),
+    [anon_sym_ring] = ACTIONS(123),
+    [anon_sym_smooth] = ACTIONS(123),
+    [anon_sym_fade] = ACTIONS(123),
+    [anon_sym_scale] = ACTIONS(123),
+    [anon_sym_rotate] = ACTIONS(123),
+    [anon_sym_slide] = ACTIONS(123),
+    [aux_sym_percentage_token1] = ACTIONS(125),
+    [anon_sym_from] = ACTIONS(123),
+    [anon_sym_to] = ACTIONS(123),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(123),
+    [sym__newline] = ACTIONS(125),
   },
   [STATE(14)] = {
-    [sym_identifier] = ACTIONS(125),
-    [anon_sym_RBRACE] = ACTIONS(127),
-    [anon_sym_gradient] = ACTIONS(125),
-    [anon_sym_section] = ACTIONS(125),
-    [anon_sym_animation] = ACTIONS(125),
-    [anon_sym_below] = ACTIONS(125),
-    [anon_sym_above] = ACTIONS(125),
-    [anon_sym_between] = ACTIONS(125),
-    [anon_sym_container] = ACTIONS(125),
-    [anon_sym_row] = ACTIONS(125),
-    [anon_sym_text] = ACTIONS(125),
-    [anon_sym_hover] = ACTIONS(125),
-    [anon_sym_focus] = ACTIONS(125),
-    [anon_sym_focus_DASHvisible] = ACTIONS(125),
-    [anon_sym_focus_DASHwithin] = ACTIONS(125),
-    [anon_sym_active] = ACTIONS(125),
-    [anon_sym_disabled] = ACTIONS(125),
-    [anon_sym_checked] = ACTIONS(125),
-    [anon_sym_invalid] = ACTIONS(125),
-    [anon_sym_required] = ACTIONS(125),
-    [anon_sym_target] = ACTIONS(125),
-    [sym_special_block_keyword] = ACTIONS(125),
-    [anon_sym_columns] = ACTIONS(125),
-    [anon_sym_rows] = ACTIONS(125),
-    [anon_sym_flow] = ACTIONS(125),
-    [anon_sym_gap] = ACTIONS(125),
-    [anon_sym_display] = ACTIONS(125),
-    [anon_sym_height] = ACTIONS(125),
-    [anon_sym_width] = ACTIONS(125),
-    [anon_sym_min_DASHheight] = ACTIONS(125),
-    [anon_sym_max_DASHheight] = ACTIONS(125),
-    [anon_sym_min_DASHwidth] = ACTIONS(125),
-    [anon_sym_max_DASHwidth] = ACTIONS(125),
-    [anon_sym_inline_DASHsize] = ACTIONS(125),
-    [anon_sym_block_DASHsize] = ACTIONS(125),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(125),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(125),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(125),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(125),
-    [anon_sym_surface] = ACTIONS(125),
-    [anon_sym_background] = ACTIONS(125),
-    [anon_sym_theme] = ACTIONS(125),
-    [anon_sym_color] = ACTIONS(125),
-    [anon_sym_palette] = ACTIONS(125),
-    [anon_sym_tone] = ACTIONS(125),
-    [anon_sym_opacity] = ACTIONS(125),
-    [anon_sym_padding] = ACTIONS(125),
-    [anon_sym_anchor] = ACTIONS(125),
-    [anon_sym_margin] = ACTIONS(125),
-    [anon_sym_radius] = ACTIONS(125),
-    [anon_sym_border] = ACTIONS(125),
-    [anon_sym_shadow] = ACTIONS(125),
-    [anon_sym_outline] = ACTIONS(125),
-    [anon_sym_box] = ACTIONS(125),
-    [anon_sym_visibility] = ACTIONS(125),
-    [anon_sym_flex] = ACTIONS(125),
-    [anon_sym_square] = ACTIONS(125),
-    [anon_sym_place] = ACTIONS(125),
-    [anon_sym_in] = ACTIONS(125),
-    [anon_sym_col] = ACTIONS(125),
-    [anon_sym_span] = ACTIONS(125),
-    [anon_sym_position] = ACTIONS(125),
-    [anon_sym_offset] = ACTIONS(125),
-    [anon_sym_z] = ACTIONS(125),
-    [anon_sym_align] = ACTIONS(125),
-    [anon_sym_justify] = ACTIONS(125),
-    [anon_sym_font] = ACTIONS(125),
-    [anon_sym_size] = ACTIONS(125),
-    [anon_sym_weight] = ACTIONS(125),
-    [anon_sym_case] = ACTIONS(125),
-    [anon_sym_align_DASHtext] = ACTIONS(125),
-    [anon_sym_decoration] = ACTIONS(125),
-    [anon_sym_whitespace] = ACTIONS(125),
-    [anon_sym_word_DASHbreak] = ACTIONS(125),
-    [anon_sym_hyphenate] = ACTIONS(125),
-    [anon_sym_line] = ACTIONS(125),
-    [anon_sym_letter] = ACTIONS(125),
-    [anon_sym_transition] = ACTIONS(125),
-    [anon_sym_duration] = ACTIONS(125),
-    [anon_sym_ease] = ACTIONS(125),
-    [anon_sym_animate] = ACTIONS(125),
-    [anon_sym_delay] = ACTIONS(125),
-    [anon_sym_iteration] = ACTIONS(125),
-    [anon_sym_direction] = ACTIONS(125),
-    [anon_sym_fill] = ACTIONS(125),
-    [anon_sym_play_DASHstate] = ACTIONS(125),
-    [anon_sym_transform] = ACTIONS(125),
-    [anon_sym_filter] = ACTIONS(125),
-    [anon_sym_translate] = ACTIONS(125),
-    [anon_sym_type] = ACTIONS(125),
-    [anon_sym_angle] = ACTIONS(125),
-    [anon_sym_stop] = ACTIONS(125),
-    [anon_sym_corner] = ACTIONS(125),
-    [anon_sym_at] = ACTIONS(125),
-    [anon_sym_shape] = ACTIONS(125),
-    [anon_sym_css] = ACTIONS(125),
-    [anon_sym_lift] = ACTIONS(125),
-    [anon_sym_sink] = ACTIONS(125),
-    [anon_sym_shift] = ACTIONS(125),
-    [anon_sym_grow] = ACTIONS(125),
-    [anon_sym_shrink] = ACTIONS(125),
-    [anon_sym_tilt] = ACTIONS(125),
-    [anon_sym_glow] = ACTIONS(125),
-    [anon_sym_brighten] = ACTIONS(125),
-    [anon_sym_dim] = ACTIONS(125),
-    [anon_sym_blur] = ACTIONS(125),
-    [anon_sym_press] = ACTIONS(125),
-    [anon_sym_pop] = ACTIONS(125),
-    [anon_sym_ring] = ACTIONS(125),
-    [anon_sym_smooth] = ACTIONS(125),
-    [anon_sym_fade] = ACTIONS(125),
-    [anon_sym_scale] = ACTIONS(125),
-    [anon_sym_rotate] = ACTIONS(125),
-    [anon_sym_slide] = ACTIONS(125),
-    [aux_sym_percentage_token1] = ACTIONS(127),
-    [anon_sym_from] = ACTIONS(125),
-    [anon_sym_to] = ACTIONS(125),
+    [sym_identifier] = ACTIONS(127),
+    [anon_sym_RBRACE] = ACTIONS(129),
+    [anon_sym_gradient] = ACTIONS(127),
+    [anon_sym_section] = ACTIONS(127),
+    [anon_sym_animation] = ACTIONS(127),
+    [anon_sym_below] = ACTIONS(127),
+    [anon_sym_above] = ACTIONS(127),
+    [anon_sym_between] = ACTIONS(127),
+    [anon_sym_container] = ACTIONS(127),
+    [anon_sym_row] = ACTIONS(127),
+    [anon_sym_text] = ACTIONS(127),
+    [anon_sym_hover] = ACTIONS(127),
+    [anon_sym_focus] = ACTIONS(127),
+    [anon_sym_focus_DASHvisible] = ACTIONS(127),
+    [anon_sym_focus_DASHwithin] = ACTIONS(127),
+    [anon_sym_active] = ACTIONS(127),
+    [anon_sym_disabled] = ACTIONS(127),
+    [anon_sym_checked] = ACTIONS(127),
+    [anon_sym_invalid] = ACTIONS(127),
+    [anon_sym_required] = ACTIONS(127),
+    [anon_sym_target] = ACTIONS(127),
+    [sym_special_block_keyword] = ACTIONS(127),
+    [anon_sym_columns] = ACTIONS(127),
+    [anon_sym_rows] = ACTIONS(127),
+    [anon_sym_flow] = ACTIONS(127),
+    [anon_sym_gap] = ACTIONS(127),
+    [anon_sym_display] = ACTIONS(127),
+    [anon_sym_height] = ACTIONS(127),
+    [anon_sym_width] = ACTIONS(127),
+    [anon_sym_min_DASHheight] = ACTIONS(127),
+    [anon_sym_max_DASHheight] = ACTIONS(127),
+    [anon_sym_min_DASHwidth] = ACTIONS(127),
+    [anon_sym_max_DASHwidth] = ACTIONS(127),
+    [anon_sym_inline_DASHsize] = ACTIONS(127),
+    [anon_sym_block_DASHsize] = ACTIONS(127),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(127),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(127),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(127),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(127),
+    [anon_sym_surface] = ACTIONS(127),
+    [anon_sym_background] = ACTIONS(127),
+    [anon_sym_theme] = ACTIONS(127),
+    [anon_sym_color] = ACTIONS(127),
+    [anon_sym_palette] = ACTIONS(127),
+    [anon_sym_tone] = ACTIONS(127),
+    [anon_sym_opacity] = ACTIONS(127),
+    [anon_sym_padding] = ACTIONS(127),
+    [anon_sym_anchor] = ACTIONS(127),
+    [anon_sym_margin] = ACTIONS(127),
+    [anon_sym_radius] = ACTIONS(127),
+    [anon_sym_border] = ACTIONS(127),
+    [anon_sym_shadow] = ACTIONS(127),
+    [anon_sym_outline] = ACTIONS(127),
+    [anon_sym_box] = ACTIONS(127),
+    [anon_sym_visibility] = ACTIONS(127),
+    [anon_sym_flex] = ACTIONS(127),
+    [anon_sym_square] = ACTIONS(127),
+    [anon_sym_place] = ACTIONS(127),
+    [anon_sym_in] = ACTIONS(127),
+    [anon_sym_col] = ACTIONS(127),
+    [anon_sym_span] = ACTIONS(127),
+    [anon_sym_position] = ACTIONS(127),
+    [anon_sym_offset] = ACTIONS(127),
+    [anon_sym_z] = ACTIONS(127),
+    [anon_sym_align] = ACTIONS(127),
+    [anon_sym_justify] = ACTIONS(127),
+    [anon_sym_font] = ACTIONS(127),
+    [anon_sym_size] = ACTIONS(127),
+    [anon_sym_weight] = ACTIONS(127),
+    [anon_sym_case] = ACTIONS(127),
+    [anon_sym_align_DASHtext] = ACTIONS(127),
+    [anon_sym_decoration] = ACTIONS(127),
+    [anon_sym_whitespace] = ACTIONS(127),
+    [anon_sym_word_DASHbreak] = ACTIONS(127),
+    [anon_sym_hyphenate] = ACTIONS(127),
+    [anon_sym_line] = ACTIONS(127),
+    [anon_sym_letter] = ACTIONS(127),
+    [anon_sym_transition] = ACTIONS(127),
+    [anon_sym_duration] = ACTIONS(127),
+    [anon_sym_ease] = ACTIONS(127),
+    [anon_sym_animate] = ACTIONS(127),
+    [anon_sym_delay] = ACTIONS(127),
+    [anon_sym_iteration] = ACTIONS(127),
+    [anon_sym_direction] = ACTIONS(127),
+    [anon_sym_fill] = ACTIONS(127),
+    [anon_sym_play_DASHstate] = ACTIONS(127),
+    [anon_sym_transform] = ACTIONS(127),
+    [anon_sym_filter] = ACTIONS(127),
+    [anon_sym_translate] = ACTIONS(127),
+    [anon_sym_type] = ACTIONS(127),
+    [anon_sym_angle] = ACTIONS(127),
+    [anon_sym_stop] = ACTIONS(127),
+    [anon_sym_corner] = ACTIONS(127),
+    [anon_sym_at] = ACTIONS(127),
+    [anon_sym_shape] = ACTIONS(127),
+    [anon_sym_css] = ACTIONS(127),
+    [anon_sym_lift] = ACTIONS(127),
+    [anon_sym_sink] = ACTIONS(127),
+    [anon_sym_shift] = ACTIONS(127),
+    [anon_sym_grow] = ACTIONS(127),
+    [anon_sym_shrink] = ACTIONS(127),
+    [anon_sym_tilt] = ACTIONS(127),
+    [anon_sym_glow] = ACTIONS(127),
+    [anon_sym_brighten] = ACTIONS(127),
+    [anon_sym_dim] = ACTIONS(127),
+    [anon_sym_blur] = ACTIONS(127),
+    [anon_sym_press] = ACTIONS(127),
+    [anon_sym_pop] = ACTIONS(127),
+    [anon_sym_ring] = ACTIONS(127),
+    [anon_sym_smooth] = ACTIONS(127),
+    [anon_sym_fade] = ACTIONS(127),
+    [anon_sym_scale] = ACTIONS(127),
+    [anon_sym_rotate] = ACTIONS(127),
+    [anon_sym_slide] = ACTIONS(127),
+    [aux_sym_percentage_token1] = ACTIONS(129),
+    [anon_sym_from] = ACTIONS(127),
+    [anon_sym_to] = ACTIONS(127),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(127),
+    [sym__newline] = ACTIONS(129),
   },
   [STATE(15)] = {
-    [sym_identifier] = ACTIONS(129),
-    [anon_sym_RBRACE] = ACTIONS(131),
-    [anon_sym_gradient] = ACTIONS(129),
-    [anon_sym_section] = ACTIONS(129),
-    [anon_sym_animation] = ACTIONS(129),
-    [anon_sym_below] = ACTIONS(129),
-    [anon_sym_above] = ACTIONS(129),
-    [anon_sym_between] = ACTIONS(129),
-    [anon_sym_container] = ACTIONS(129),
-    [anon_sym_row] = ACTIONS(129),
-    [anon_sym_text] = ACTIONS(129),
-    [anon_sym_hover] = ACTIONS(129),
-    [anon_sym_focus] = ACTIONS(129),
-    [anon_sym_focus_DASHvisible] = ACTIONS(129),
-    [anon_sym_focus_DASHwithin] = ACTIONS(129),
-    [anon_sym_active] = ACTIONS(129),
-    [anon_sym_disabled] = ACTIONS(129),
-    [anon_sym_checked] = ACTIONS(129),
-    [anon_sym_invalid] = ACTIONS(129),
-    [anon_sym_required] = ACTIONS(129),
-    [anon_sym_target] = ACTIONS(129),
-    [sym_special_block_keyword] = ACTIONS(129),
-    [anon_sym_columns] = ACTIONS(129),
-    [anon_sym_rows] = ACTIONS(129),
-    [anon_sym_flow] = ACTIONS(129),
-    [anon_sym_gap] = ACTIONS(129),
-    [anon_sym_display] = ACTIONS(129),
-    [anon_sym_height] = ACTIONS(129),
-    [anon_sym_width] = ACTIONS(129),
-    [anon_sym_min_DASHheight] = ACTIONS(129),
-    [anon_sym_max_DASHheight] = ACTIONS(129),
-    [anon_sym_min_DASHwidth] = ACTIONS(129),
-    [anon_sym_max_DASHwidth] = ACTIONS(129),
-    [anon_sym_inline_DASHsize] = ACTIONS(129),
-    [anon_sym_block_DASHsize] = ACTIONS(129),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(129),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(129),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(129),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(129),
-    [anon_sym_surface] = ACTIONS(129),
-    [anon_sym_background] = ACTIONS(129),
-    [anon_sym_theme] = ACTIONS(129),
-    [anon_sym_color] = ACTIONS(129),
-    [anon_sym_palette] = ACTIONS(129),
-    [anon_sym_tone] = ACTIONS(129),
-    [anon_sym_opacity] = ACTIONS(129),
-    [anon_sym_padding] = ACTIONS(129),
-    [anon_sym_anchor] = ACTIONS(129),
-    [anon_sym_margin] = ACTIONS(129),
-    [anon_sym_radius] = ACTIONS(129),
-    [anon_sym_border] = ACTIONS(129),
-    [anon_sym_shadow] = ACTIONS(129),
-    [anon_sym_outline] = ACTIONS(129),
-    [anon_sym_box] = ACTIONS(129),
-    [anon_sym_visibility] = ACTIONS(129),
-    [anon_sym_flex] = ACTIONS(129),
-    [anon_sym_square] = ACTIONS(129),
-    [anon_sym_place] = ACTIONS(129),
-    [anon_sym_in] = ACTIONS(129),
-    [anon_sym_col] = ACTIONS(129),
-    [anon_sym_span] = ACTIONS(129),
-    [anon_sym_position] = ACTIONS(129),
-    [anon_sym_offset] = ACTIONS(129),
-    [anon_sym_z] = ACTIONS(129),
-    [anon_sym_align] = ACTIONS(129),
-    [anon_sym_justify] = ACTIONS(129),
-    [anon_sym_font] = ACTIONS(129),
-    [anon_sym_size] = ACTIONS(129),
-    [anon_sym_weight] = ACTIONS(129),
-    [anon_sym_case] = ACTIONS(129),
-    [anon_sym_align_DASHtext] = ACTIONS(129),
-    [anon_sym_decoration] = ACTIONS(129),
-    [anon_sym_whitespace] = ACTIONS(129),
-    [anon_sym_word_DASHbreak] = ACTIONS(129),
-    [anon_sym_hyphenate] = ACTIONS(129),
-    [anon_sym_line] = ACTIONS(129),
-    [anon_sym_letter] = ACTIONS(129),
-    [anon_sym_transition] = ACTIONS(129),
-    [anon_sym_duration] = ACTIONS(129),
-    [anon_sym_ease] = ACTIONS(129),
-    [anon_sym_animate] = ACTIONS(129),
-    [anon_sym_delay] = ACTIONS(129),
-    [anon_sym_iteration] = ACTIONS(129),
-    [anon_sym_direction] = ACTIONS(129),
-    [anon_sym_fill] = ACTIONS(129),
-    [anon_sym_play_DASHstate] = ACTIONS(129),
-    [anon_sym_transform] = ACTIONS(129),
-    [anon_sym_filter] = ACTIONS(129),
-    [anon_sym_translate] = ACTIONS(129),
-    [anon_sym_type] = ACTIONS(129),
-    [anon_sym_angle] = ACTIONS(129),
-    [anon_sym_stop] = ACTIONS(129),
-    [anon_sym_corner] = ACTIONS(129),
-    [anon_sym_at] = ACTIONS(129),
-    [anon_sym_shape] = ACTIONS(129),
-    [anon_sym_css] = ACTIONS(129),
-    [anon_sym_lift] = ACTIONS(129),
-    [anon_sym_sink] = ACTIONS(129),
-    [anon_sym_shift] = ACTIONS(129),
-    [anon_sym_grow] = ACTIONS(129),
-    [anon_sym_shrink] = ACTIONS(129),
-    [anon_sym_tilt] = ACTIONS(129),
-    [anon_sym_glow] = ACTIONS(129),
-    [anon_sym_brighten] = ACTIONS(129),
-    [anon_sym_dim] = ACTIONS(129),
-    [anon_sym_blur] = ACTIONS(129),
-    [anon_sym_press] = ACTIONS(129),
-    [anon_sym_pop] = ACTIONS(129),
-    [anon_sym_ring] = ACTIONS(129),
-    [anon_sym_smooth] = ACTIONS(129),
-    [anon_sym_fade] = ACTIONS(129),
-    [anon_sym_scale] = ACTIONS(129),
-    [anon_sym_rotate] = ACTIONS(129),
-    [anon_sym_slide] = ACTIONS(129),
-    [aux_sym_percentage_token1] = ACTIONS(131),
-    [anon_sym_from] = ACTIONS(129),
-    [anon_sym_to] = ACTIONS(129),
+    [sym_identifier] = ACTIONS(131),
+    [anon_sym_RBRACE] = ACTIONS(133),
+    [anon_sym_gradient] = ACTIONS(131),
+    [anon_sym_section] = ACTIONS(131),
+    [anon_sym_animation] = ACTIONS(131),
+    [anon_sym_below] = ACTIONS(131),
+    [anon_sym_above] = ACTIONS(131),
+    [anon_sym_between] = ACTIONS(131),
+    [anon_sym_container] = ACTIONS(131),
+    [anon_sym_row] = ACTIONS(131),
+    [anon_sym_text] = ACTIONS(131),
+    [anon_sym_hover] = ACTIONS(131),
+    [anon_sym_focus] = ACTIONS(131),
+    [anon_sym_focus_DASHvisible] = ACTIONS(131),
+    [anon_sym_focus_DASHwithin] = ACTIONS(131),
+    [anon_sym_active] = ACTIONS(131),
+    [anon_sym_disabled] = ACTIONS(131),
+    [anon_sym_checked] = ACTIONS(131),
+    [anon_sym_invalid] = ACTIONS(131),
+    [anon_sym_required] = ACTIONS(131),
+    [anon_sym_target] = ACTIONS(131),
+    [sym_special_block_keyword] = ACTIONS(131),
+    [anon_sym_columns] = ACTIONS(131),
+    [anon_sym_rows] = ACTIONS(131),
+    [anon_sym_flow] = ACTIONS(131),
+    [anon_sym_gap] = ACTIONS(131),
+    [anon_sym_display] = ACTIONS(131),
+    [anon_sym_height] = ACTIONS(131),
+    [anon_sym_width] = ACTIONS(131),
+    [anon_sym_min_DASHheight] = ACTIONS(131),
+    [anon_sym_max_DASHheight] = ACTIONS(131),
+    [anon_sym_min_DASHwidth] = ACTIONS(131),
+    [anon_sym_max_DASHwidth] = ACTIONS(131),
+    [anon_sym_inline_DASHsize] = ACTIONS(131),
+    [anon_sym_block_DASHsize] = ACTIONS(131),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(131),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(131),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(131),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(131),
+    [anon_sym_surface] = ACTIONS(131),
+    [anon_sym_background] = ACTIONS(131),
+    [anon_sym_theme] = ACTIONS(131),
+    [anon_sym_color] = ACTIONS(131),
+    [anon_sym_palette] = ACTIONS(131),
+    [anon_sym_tone] = ACTIONS(131),
+    [anon_sym_opacity] = ACTIONS(131),
+    [anon_sym_padding] = ACTIONS(131),
+    [anon_sym_anchor] = ACTIONS(131),
+    [anon_sym_margin] = ACTIONS(131),
+    [anon_sym_radius] = ACTIONS(131),
+    [anon_sym_border] = ACTIONS(131),
+    [anon_sym_shadow] = ACTIONS(131),
+    [anon_sym_outline] = ACTIONS(131),
+    [anon_sym_box] = ACTIONS(131),
+    [anon_sym_visibility] = ACTIONS(131),
+    [anon_sym_flex] = ACTIONS(131),
+    [anon_sym_square] = ACTIONS(131),
+    [anon_sym_place] = ACTIONS(131),
+    [anon_sym_in] = ACTIONS(131),
+    [anon_sym_col] = ACTIONS(131),
+    [anon_sym_span] = ACTIONS(131),
+    [anon_sym_position] = ACTIONS(131),
+    [anon_sym_offset] = ACTIONS(131),
+    [anon_sym_z] = ACTIONS(131),
+    [anon_sym_align] = ACTIONS(131),
+    [anon_sym_justify] = ACTIONS(131),
+    [anon_sym_font] = ACTIONS(131),
+    [anon_sym_size] = ACTIONS(131),
+    [anon_sym_weight] = ACTIONS(131),
+    [anon_sym_case] = ACTIONS(131),
+    [anon_sym_align_DASHtext] = ACTIONS(131),
+    [anon_sym_decoration] = ACTIONS(131),
+    [anon_sym_whitespace] = ACTIONS(131),
+    [anon_sym_word_DASHbreak] = ACTIONS(131),
+    [anon_sym_hyphenate] = ACTIONS(131),
+    [anon_sym_line] = ACTIONS(131),
+    [anon_sym_letter] = ACTIONS(131),
+    [anon_sym_transition] = ACTIONS(131),
+    [anon_sym_duration] = ACTIONS(131),
+    [anon_sym_ease] = ACTIONS(131),
+    [anon_sym_animate] = ACTIONS(131),
+    [anon_sym_delay] = ACTIONS(131),
+    [anon_sym_iteration] = ACTIONS(131),
+    [anon_sym_direction] = ACTIONS(131),
+    [anon_sym_fill] = ACTIONS(131),
+    [anon_sym_play_DASHstate] = ACTIONS(131),
+    [anon_sym_transform] = ACTIONS(131),
+    [anon_sym_filter] = ACTIONS(131),
+    [anon_sym_translate] = ACTIONS(131),
+    [anon_sym_type] = ACTIONS(131),
+    [anon_sym_angle] = ACTIONS(131),
+    [anon_sym_stop] = ACTIONS(131),
+    [anon_sym_corner] = ACTIONS(131),
+    [anon_sym_at] = ACTIONS(131),
+    [anon_sym_shape] = ACTIONS(131),
+    [anon_sym_css] = ACTIONS(131),
+    [anon_sym_lift] = ACTIONS(131),
+    [anon_sym_sink] = ACTIONS(131),
+    [anon_sym_shift] = ACTIONS(131),
+    [anon_sym_grow] = ACTIONS(131),
+    [anon_sym_shrink] = ACTIONS(131),
+    [anon_sym_tilt] = ACTIONS(131),
+    [anon_sym_glow] = ACTIONS(131),
+    [anon_sym_brighten] = ACTIONS(131),
+    [anon_sym_dim] = ACTIONS(131),
+    [anon_sym_blur] = ACTIONS(131),
+    [anon_sym_press] = ACTIONS(131),
+    [anon_sym_pop] = ACTIONS(131),
+    [anon_sym_ring] = ACTIONS(131),
+    [anon_sym_smooth] = ACTIONS(131),
+    [anon_sym_fade] = ACTIONS(131),
+    [anon_sym_scale] = ACTIONS(131),
+    [anon_sym_rotate] = ACTIONS(131),
+    [anon_sym_slide] = ACTIONS(131),
+    [aux_sym_percentage_token1] = ACTIONS(133),
+    [anon_sym_from] = ACTIONS(131),
+    [anon_sym_to] = ACTIONS(131),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(131),
+    [sym__newline] = ACTIONS(133),
   },
   [STATE(16)] = {
-    [sym_identifier] = ACTIONS(133),
-    [anon_sym_RBRACE] = ACTIONS(135),
-    [anon_sym_gradient] = ACTIONS(133),
-    [anon_sym_section] = ACTIONS(133),
-    [anon_sym_animation] = ACTIONS(133),
-    [anon_sym_below] = ACTIONS(133),
-    [anon_sym_above] = ACTIONS(133),
-    [anon_sym_between] = ACTIONS(133),
-    [anon_sym_container] = ACTIONS(133),
-    [anon_sym_row] = ACTIONS(133),
-    [anon_sym_text] = ACTIONS(133),
-    [anon_sym_hover] = ACTIONS(133),
-    [anon_sym_focus] = ACTIONS(133),
-    [anon_sym_focus_DASHvisible] = ACTIONS(133),
-    [anon_sym_focus_DASHwithin] = ACTIONS(133),
-    [anon_sym_active] = ACTIONS(133),
-    [anon_sym_disabled] = ACTIONS(133),
-    [anon_sym_checked] = ACTIONS(133),
-    [anon_sym_invalid] = ACTIONS(133),
-    [anon_sym_required] = ACTIONS(133),
-    [anon_sym_target] = ACTIONS(133),
-    [sym_special_block_keyword] = ACTIONS(133),
-    [anon_sym_columns] = ACTIONS(133),
-    [anon_sym_rows] = ACTIONS(133),
-    [anon_sym_flow] = ACTIONS(133),
-    [anon_sym_gap] = ACTIONS(133),
-    [anon_sym_display] = ACTIONS(133),
-    [anon_sym_height] = ACTIONS(133),
-    [anon_sym_width] = ACTIONS(133),
-    [anon_sym_min_DASHheight] = ACTIONS(133),
-    [anon_sym_max_DASHheight] = ACTIONS(133),
-    [anon_sym_min_DASHwidth] = ACTIONS(133),
-    [anon_sym_max_DASHwidth] = ACTIONS(133),
-    [anon_sym_inline_DASHsize] = ACTIONS(133),
-    [anon_sym_block_DASHsize] = ACTIONS(133),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(133),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(133),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(133),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(133),
-    [anon_sym_surface] = ACTIONS(133),
-    [anon_sym_background] = ACTIONS(133),
-    [anon_sym_theme] = ACTIONS(133),
-    [anon_sym_color] = ACTIONS(133),
-    [anon_sym_palette] = ACTIONS(133),
-    [anon_sym_tone] = ACTIONS(133),
-    [anon_sym_opacity] = ACTIONS(133),
-    [anon_sym_padding] = ACTIONS(133),
-    [anon_sym_anchor] = ACTIONS(133),
-    [anon_sym_margin] = ACTIONS(133),
-    [anon_sym_radius] = ACTIONS(133),
-    [anon_sym_border] = ACTIONS(133),
-    [anon_sym_shadow] = ACTIONS(133),
-    [anon_sym_outline] = ACTIONS(133),
-    [anon_sym_box] = ACTIONS(133),
-    [anon_sym_visibility] = ACTIONS(133),
-    [anon_sym_flex] = ACTIONS(133),
-    [anon_sym_square] = ACTIONS(133),
-    [anon_sym_place] = ACTIONS(133),
-    [anon_sym_in] = ACTIONS(133),
-    [anon_sym_col] = ACTIONS(133),
-    [anon_sym_span] = ACTIONS(133),
-    [anon_sym_position] = ACTIONS(133),
-    [anon_sym_offset] = ACTIONS(133),
-    [anon_sym_z] = ACTIONS(133),
-    [anon_sym_align] = ACTIONS(133),
-    [anon_sym_justify] = ACTIONS(133),
-    [anon_sym_font] = ACTIONS(133),
-    [anon_sym_size] = ACTIONS(133),
-    [anon_sym_weight] = ACTIONS(133),
-    [anon_sym_case] = ACTIONS(133),
-    [anon_sym_align_DASHtext] = ACTIONS(133),
-    [anon_sym_decoration] = ACTIONS(133),
-    [anon_sym_whitespace] = ACTIONS(133),
-    [anon_sym_word_DASHbreak] = ACTIONS(133),
-    [anon_sym_hyphenate] = ACTIONS(133),
-    [anon_sym_line] = ACTIONS(133),
-    [anon_sym_letter] = ACTIONS(133),
-    [anon_sym_transition] = ACTIONS(133),
-    [anon_sym_duration] = ACTIONS(133),
-    [anon_sym_ease] = ACTIONS(133),
-    [anon_sym_animate] = ACTIONS(133),
-    [anon_sym_delay] = ACTIONS(133),
-    [anon_sym_iteration] = ACTIONS(133),
-    [anon_sym_direction] = ACTIONS(133),
-    [anon_sym_fill] = ACTIONS(133),
-    [anon_sym_play_DASHstate] = ACTIONS(133),
-    [anon_sym_transform] = ACTIONS(133),
-    [anon_sym_filter] = ACTIONS(133),
-    [anon_sym_translate] = ACTIONS(133),
-    [anon_sym_type] = ACTIONS(133),
-    [anon_sym_angle] = ACTIONS(133),
-    [anon_sym_stop] = ACTIONS(133),
-    [anon_sym_corner] = ACTIONS(133),
-    [anon_sym_at] = ACTIONS(133),
-    [anon_sym_shape] = ACTIONS(133),
-    [anon_sym_css] = ACTIONS(133),
-    [anon_sym_lift] = ACTIONS(133),
-    [anon_sym_sink] = ACTIONS(133),
-    [anon_sym_shift] = ACTIONS(133),
-    [anon_sym_grow] = ACTIONS(133),
-    [anon_sym_shrink] = ACTIONS(133),
-    [anon_sym_tilt] = ACTIONS(133),
-    [anon_sym_glow] = ACTIONS(133),
-    [anon_sym_brighten] = ACTIONS(133),
-    [anon_sym_dim] = ACTIONS(133),
-    [anon_sym_blur] = ACTIONS(133),
-    [anon_sym_press] = ACTIONS(133),
-    [anon_sym_pop] = ACTIONS(133),
-    [anon_sym_ring] = ACTIONS(133),
-    [anon_sym_smooth] = ACTIONS(133),
-    [anon_sym_fade] = ACTIONS(133),
-    [anon_sym_scale] = ACTIONS(133),
-    [anon_sym_rotate] = ACTIONS(133),
-    [anon_sym_slide] = ACTIONS(133),
-    [aux_sym_percentage_token1] = ACTIONS(135),
-    [anon_sym_from] = ACTIONS(133),
-    [anon_sym_to] = ACTIONS(133),
+    [sym_identifier] = ACTIONS(135),
+    [anon_sym_RBRACE] = ACTIONS(137),
+    [anon_sym_gradient] = ACTIONS(135),
+    [anon_sym_section] = ACTIONS(135),
+    [anon_sym_animation] = ACTIONS(135),
+    [anon_sym_below] = ACTIONS(135),
+    [anon_sym_above] = ACTIONS(135),
+    [anon_sym_between] = ACTIONS(135),
+    [anon_sym_container] = ACTIONS(135),
+    [anon_sym_row] = ACTIONS(135),
+    [anon_sym_text] = ACTIONS(135),
+    [anon_sym_hover] = ACTIONS(135),
+    [anon_sym_focus] = ACTIONS(135),
+    [anon_sym_focus_DASHvisible] = ACTIONS(135),
+    [anon_sym_focus_DASHwithin] = ACTIONS(135),
+    [anon_sym_active] = ACTIONS(135),
+    [anon_sym_disabled] = ACTIONS(135),
+    [anon_sym_checked] = ACTIONS(135),
+    [anon_sym_invalid] = ACTIONS(135),
+    [anon_sym_required] = ACTIONS(135),
+    [anon_sym_target] = ACTIONS(135),
+    [sym_special_block_keyword] = ACTIONS(135),
+    [anon_sym_columns] = ACTIONS(135),
+    [anon_sym_rows] = ACTIONS(135),
+    [anon_sym_flow] = ACTIONS(135),
+    [anon_sym_gap] = ACTIONS(135),
+    [anon_sym_display] = ACTIONS(135),
+    [anon_sym_height] = ACTIONS(135),
+    [anon_sym_width] = ACTIONS(135),
+    [anon_sym_min_DASHheight] = ACTIONS(135),
+    [anon_sym_max_DASHheight] = ACTIONS(135),
+    [anon_sym_min_DASHwidth] = ACTIONS(135),
+    [anon_sym_max_DASHwidth] = ACTIONS(135),
+    [anon_sym_inline_DASHsize] = ACTIONS(135),
+    [anon_sym_block_DASHsize] = ACTIONS(135),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(135),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(135),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(135),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(135),
+    [anon_sym_surface] = ACTIONS(135),
+    [anon_sym_background] = ACTIONS(135),
+    [anon_sym_theme] = ACTIONS(135),
+    [anon_sym_color] = ACTIONS(135),
+    [anon_sym_palette] = ACTIONS(135),
+    [anon_sym_tone] = ACTIONS(135),
+    [anon_sym_opacity] = ACTIONS(135),
+    [anon_sym_padding] = ACTIONS(135),
+    [anon_sym_anchor] = ACTIONS(135),
+    [anon_sym_margin] = ACTIONS(135),
+    [anon_sym_radius] = ACTIONS(135),
+    [anon_sym_border] = ACTIONS(135),
+    [anon_sym_shadow] = ACTIONS(135),
+    [anon_sym_outline] = ACTIONS(135),
+    [anon_sym_box] = ACTIONS(135),
+    [anon_sym_visibility] = ACTIONS(135),
+    [anon_sym_flex] = ACTIONS(135),
+    [anon_sym_square] = ACTIONS(135),
+    [anon_sym_place] = ACTIONS(135),
+    [anon_sym_in] = ACTIONS(135),
+    [anon_sym_col] = ACTIONS(135),
+    [anon_sym_span] = ACTIONS(135),
+    [anon_sym_position] = ACTIONS(135),
+    [anon_sym_offset] = ACTIONS(135),
+    [anon_sym_z] = ACTIONS(135),
+    [anon_sym_align] = ACTIONS(135),
+    [anon_sym_justify] = ACTIONS(135),
+    [anon_sym_font] = ACTIONS(135),
+    [anon_sym_size] = ACTIONS(135),
+    [anon_sym_weight] = ACTIONS(135),
+    [anon_sym_case] = ACTIONS(135),
+    [anon_sym_align_DASHtext] = ACTIONS(135),
+    [anon_sym_decoration] = ACTIONS(135),
+    [anon_sym_whitespace] = ACTIONS(135),
+    [anon_sym_word_DASHbreak] = ACTIONS(135),
+    [anon_sym_hyphenate] = ACTIONS(135),
+    [anon_sym_line] = ACTIONS(135),
+    [anon_sym_letter] = ACTIONS(135),
+    [anon_sym_transition] = ACTIONS(135),
+    [anon_sym_duration] = ACTIONS(135),
+    [anon_sym_ease] = ACTIONS(135),
+    [anon_sym_animate] = ACTIONS(135),
+    [anon_sym_delay] = ACTIONS(135),
+    [anon_sym_iteration] = ACTIONS(135),
+    [anon_sym_direction] = ACTIONS(135),
+    [anon_sym_fill] = ACTIONS(135),
+    [anon_sym_play_DASHstate] = ACTIONS(135),
+    [anon_sym_transform] = ACTIONS(135),
+    [anon_sym_filter] = ACTIONS(135),
+    [anon_sym_translate] = ACTIONS(135),
+    [anon_sym_type] = ACTIONS(135),
+    [anon_sym_angle] = ACTIONS(135),
+    [anon_sym_stop] = ACTIONS(135),
+    [anon_sym_corner] = ACTIONS(135),
+    [anon_sym_at] = ACTIONS(135),
+    [anon_sym_shape] = ACTIONS(135),
+    [anon_sym_css] = ACTIONS(135),
+    [anon_sym_lift] = ACTIONS(135),
+    [anon_sym_sink] = ACTIONS(135),
+    [anon_sym_shift] = ACTIONS(135),
+    [anon_sym_grow] = ACTIONS(135),
+    [anon_sym_shrink] = ACTIONS(135),
+    [anon_sym_tilt] = ACTIONS(135),
+    [anon_sym_glow] = ACTIONS(135),
+    [anon_sym_brighten] = ACTIONS(135),
+    [anon_sym_dim] = ACTIONS(135),
+    [anon_sym_blur] = ACTIONS(135),
+    [anon_sym_press] = ACTIONS(135),
+    [anon_sym_pop] = ACTIONS(135),
+    [anon_sym_ring] = ACTIONS(135),
+    [anon_sym_smooth] = ACTIONS(135),
+    [anon_sym_fade] = ACTIONS(135),
+    [anon_sym_scale] = ACTIONS(135),
+    [anon_sym_rotate] = ACTIONS(135),
+    [anon_sym_slide] = ACTIONS(135),
+    [aux_sym_percentage_token1] = ACTIONS(137),
+    [anon_sym_from] = ACTIONS(135),
+    [anon_sym_to] = ACTIONS(135),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(135),
+    [sym__newline] = ACTIONS(137),
   },
   [STATE(17)] = {
-    [sym_identifier] = ACTIONS(137),
-    [anon_sym_RBRACE] = ACTIONS(139),
-    [anon_sym_gradient] = ACTIONS(137),
-    [anon_sym_section] = ACTIONS(137),
-    [anon_sym_animation] = ACTIONS(137),
-    [anon_sym_below] = ACTIONS(137),
-    [anon_sym_above] = ACTIONS(137),
-    [anon_sym_between] = ACTIONS(137),
-    [anon_sym_container] = ACTIONS(137),
-    [anon_sym_row] = ACTIONS(137),
-    [anon_sym_text] = ACTIONS(137),
-    [anon_sym_hover] = ACTIONS(137),
-    [anon_sym_focus] = ACTIONS(137),
-    [anon_sym_focus_DASHvisible] = ACTIONS(137),
-    [anon_sym_focus_DASHwithin] = ACTIONS(137),
-    [anon_sym_active] = ACTIONS(137),
-    [anon_sym_disabled] = ACTIONS(137),
-    [anon_sym_checked] = ACTIONS(137),
-    [anon_sym_invalid] = ACTIONS(137),
-    [anon_sym_required] = ACTIONS(137),
-    [anon_sym_target] = ACTIONS(137),
-    [sym_special_block_keyword] = ACTIONS(137),
-    [anon_sym_columns] = ACTIONS(137),
-    [anon_sym_rows] = ACTIONS(137),
-    [anon_sym_flow] = ACTIONS(137),
-    [anon_sym_gap] = ACTIONS(137),
-    [anon_sym_display] = ACTIONS(137),
-    [anon_sym_height] = ACTIONS(137),
-    [anon_sym_width] = ACTIONS(137),
-    [anon_sym_min_DASHheight] = ACTIONS(137),
-    [anon_sym_max_DASHheight] = ACTIONS(137),
-    [anon_sym_min_DASHwidth] = ACTIONS(137),
-    [anon_sym_max_DASHwidth] = ACTIONS(137),
-    [anon_sym_inline_DASHsize] = ACTIONS(137),
-    [anon_sym_block_DASHsize] = ACTIONS(137),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(137),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(137),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(137),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(137),
-    [anon_sym_surface] = ACTIONS(137),
-    [anon_sym_background] = ACTIONS(137),
-    [anon_sym_theme] = ACTIONS(137),
-    [anon_sym_color] = ACTIONS(137),
-    [anon_sym_palette] = ACTIONS(137),
-    [anon_sym_tone] = ACTIONS(137),
-    [anon_sym_opacity] = ACTIONS(137),
-    [anon_sym_padding] = ACTIONS(137),
-    [anon_sym_anchor] = ACTIONS(137),
-    [anon_sym_margin] = ACTIONS(137),
-    [anon_sym_radius] = ACTIONS(137),
-    [anon_sym_border] = ACTIONS(137),
-    [anon_sym_shadow] = ACTIONS(137),
-    [anon_sym_outline] = ACTIONS(137),
-    [anon_sym_box] = ACTIONS(137),
-    [anon_sym_visibility] = ACTIONS(137),
-    [anon_sym_flex] = ACTIONS(137),
-    [anon_sym_square] = ACTIONS(137),
-    [anon_sym_place] = ACTIONS(137),
-    [anon_sym_in] = ACTIONS(137),
-    [anon_sym_col] = ACTIONS(137),
-    [anon_sym_span] = ACTIONS(137),
-    [anon_sym_position] = ACTIONS(137),
-    [anon_sym_offset] = ACTIONS(137),
-    [anon_sym_z] = ACTIONS(137),
-    [anon_sym_align] = ACTIONS(137),
-    [anon_sym_justify] = ACTIONS(137),
-    [anon_sym_font] = ACTIONS(137),
-    [anon_sym_size] = ACTIONS(137),
-    [anon_sym_weight] = ACTIONS(137),
-    [anon_sym_case] = ACTIONS(137),
-    [anon_sym_align_DASHtext] = ACTIONS(137),
-    [anon_sym_decoration] = ACTIONS(137),
-    [anon_sym_whitespace] = ACTIONS(137),
-    [anon_sym_word_DASHbreak] = ACTIONS(137),
-    [anon_sym_hyphenate] = ACTIONS(137),
-    [anon_sym_line] = ACTIONS(137),
-    [anon_sym_letter] = ACTIONS(137),
-    [anon_sym_transition] = ACTIONS(137),
-    [anon_sym_duration] = ACTIONS(137),
-    [anon_sym_ease] = ACTIONS(137),
-    [anon_sym_animate] = ACTIONS(137),
-    [anon_sym_delay] = ACTIONS(137),
-    [anon_sym_iteration] = ACTIONS(137),
-    [anon_sym_direction] = ACTIONS(137),
-    [anon_sym_fill] = ACTIONS(137),
-    [anon_sym_play_DASHstate] = ACTIONS(137),
-    [anon_sym_transform] = ACTIONS(137),
-    [anon_sym_filter] = ACTIONS(137),
-    [anon_sym_translate] = ACTIONS(137),
-    [anon_sym_type] = ACTIONS(137),
-    [anon_sym_angle] = ACTIONS(137),
-    [anon_sym_stop] = ACTIONS(137),
-    [anon_sym_corner] = ACTIONS(137),
-    [anon_sym_at] = ACTIONS(137),
-    [anon_sym_shape] = ACTIONS(137),
-    [anon_sym_css] = ACTIONS(137),
-    [anon_sym_lift] = ACTIONS(137),
-    [anon_sym_sink] = ACTIONS(137),
-    [anon_sym_shift] = ACTIONS(137),
-    [anon_sym_grow] = ACTIONS(137),
-    [anon_sym_shrink] = ACTIONS(137),
-    [anon_sym_tilt] = ACTIONS(137),
-    [anon_sym_glow] = ACTIONS(137),
-    [anon_sym_brighten] = ACTIONS(137),
-    [anon_sym_dim] = ACTIONS(137),
-    [anon_sym_blur] = ACTIONS(137),
-    [anon_sym_press] = ACTIONS(137),
-    [anon_sym_pop] = ACTIONS(137),
-    [anon_sym_ring] = ACTIONS(137),
-    [anon_sym_smooth] = ACTIONS(137),
-    [anon_sym_fade] = ACTIONS(137),
-    [anon_sym_scale] = ACTIONS(137),
-    [anon_sym_rotate] = ACTIONS(137),
-    [anon_sym_slide] = ACTIONS(137),
-    [aux_sym_percentage_token1] = ACTIONS(139),
-    [anon_sym_from] = ACTIONS(137),
-    [anon_sym_to] = ACTIONS(137),
+    [sym_identifier] = ACTIONS(139),
+    [anon_sym_RBRACE] = ACTIONS(141),
+    [anon_sym_gradient] = ACTIONS(139),
+    [anon_sym_section] = ACTIONS(139),
+    [anon_sym_animation] = ACTIONS(139),
+    [anon_sym_below] = ACTIONS(139),
+    [anon_sym_above] = ACTIONS(139),
+    [anon_sym_between] = ACTIONS(139),
+    [anon_sym_container] = ACTIONS(139),
+    [anon_sym_row] = ACTIONS(139),
+    [anon_sym_text] = ACTIONS(139),
+    [anon_sym_hover] = ACTIONS(139),
+    [anon_sym_focus] = ACTIONS(139),
+    [anon_sym_focus_DASHvisible] = ACTIONS(139),
+    [anon_sym_focus_DASHwithin] = ACTIONS(139),
+    [anon_sym_active] = ACTIONS(139),
+    [anon_sym_disabled] = ACTIONS(139),
+    [anon_sym_checked] = ACTIONS(139),
+    [anon_sym_invalid] = ACTIONS(139),
+    [anon_sym_required] = ACTIONS(139),
+    [anon_sym_target] = ACTIONS(139),
+    [sym_special_block_keyword] = ACTIONS(139),
+    [anon_sym_columns] = ACTIONS(139),
+    [anon_sym_rows] = ACTIONS(139),
+    [anon_sym_flow] = ACTIONS(139),
+    [anon_sym_gap] = ACTIONS(139),
+    [anon_sym_display] = ACTIONS(139),
+    [anon_sym_height] = ACTIONS(139),
+    [anon_sym_width] = ACTIONS(139),
+    [anon_sym_min_DASHheight] = ACTIONS(139),
+    [anon_sym_max_DASHheight] = ACTIONS(139),
+    [anon_sym_min_DASHwidth] = ACTIONS(139),
+    [anon_sym_max_DASHwidth] = ACTIONS(139),
+    [anon_sym_inline_DASHsize] = ACTIONS(139),
+    [anon_sym_block_DASHsize] = ACTIONS(139),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(139),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(139),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(139),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(139),
+    [anon_sym_surface] = ACTIONS(139),
+    [anon_sym_background] = ACTIONS(139),
+    [anon_sym_theme] = ACTIONS(139),
+    [anon_sym_color] = ACTIONS(139),
+    [anon_sym_palette] = ACTIONS(139),
+    [anon_sym_tone] = ACTIONS(139),
+    [anon_sym_opacity] = ACTIONS(139),
+    [anon_sym_padding] = ACTIONS(139),
+    [anon_sym_anchor] = ACTIONS(139),
+    [anon_sym_margin] = ACTIONS(139),
+    [anon_sym_radius] = ACTIONS(139),
+    [anon_sym_border] = ACTIONS(139),
+    [anon_sym_shadow] = ACTIONS(139),
+    [anon_sym_outline] = ACTIONS(139),
+    [anon_sym_box] = ACTIONS(139),
+    [anon_sym_visibility] = ACTIONS(139),
+    [anon_sym_flex] = ACTIONS(139),
+    [anon_sym_square] = ACTIONS(139),
+    [anon_sym_place] = ACTIONS(139),
+    [anon_sym_in] = ACTIONS(139),
+    [anon_sym_col] = ACTIONS(139),
+    [anon_sym_span] = ACTIONS(139),
+    [anon_sym_position] = ACTIONS(139),
+    [anon_sym_offset] = ACTIONS(139),
+    [anon_sym_z] = ACTIONS(139),
+    [anon_sym_align] = ACTIONS(139),
+    [anon_sym_justify] = ACTIONS(139),
+    [anon_sym_font] = ACTIONS(139),
+    [anon_sym_size] = ACTIONS(139),
+    [anon_sym_weight] = ACTIONS(139),
+    [anon_sym_case] = ACTIONS(139),
+    [anon_sym_align_DASHtext] = ACTIONS(139),
+    [anon_sym_decoration] = ACTIONS(139),
+    [anon_sym_whitespace] = ACTIONS(139),
+    [anon_sym_word_DASHbreak] = ACTIONS(139),
+    [anon_sym_hyphenate] = ACTIONS(139),
+    [anon_sym_line] = ACTIONS(139),
+    [anon_sym_letter] = ACTIONS(139),
+    [anon_sym_transition] = ACTIONS(139),
+    [anon_sym_duration] = ACTIONS(139),
+    [anon_sym_ease] = ACTIONS(139),
+    [anon_sym_animate] = ACTIONS(139),
+    [anon_sym_delay] = ACTIONS(139),
+    [anon_sym_iteration] = ACTIONS(139),
+    [anon_sym_direction] = ACTIONS(139),
+    [anon_sym_fill] = ACTIONS(139),
+    [anon_sym_play_DASHstate] = ACTIONS(139),
+    [anon_sym_transform] = ACTIONS(139),
+    [anon_sym_filter] = ACTIONS(139),
+    [anon_sym_translate] = ACTIONS(139),
+    [anon_sym_type] = ACTIONS(139),
+    [anon_sym_angle] = ACTIONS(139),
+    [anon_sym_stop] = ACTIONS(139),
+    [anon_sym_corner] = ACTIONS(139),
+    [anon_sym_at] = ACTIONS(139),
+    [anon_sym_shape] = ACTIONS(139),
+    [anon_sym_css] = ACTIONS(139),
+    [anon_sym_lift] = ACTIONS(139),
+    [anon_sym_sink] = ACTIONS(139),
+    [anon_sym_shift] = ACTIONS(139),
+    [anon_sym_grow] = ACTIONS(139),
+    [anon_sym_shrink] = ACTIONS(139),
+    [anon_sym_tilt] = ACTIONS(139),
+    [anon_sym_glow] = ACTIONS(139),
+    [anon_sym_brighten] = ACTIONS(139),
+    [anon_sym_dim] = ACTIONS(139),
+    [anon_sym_blur] = ACTIONS(139),
+    [anon_sym_press] = ACTIONS(139),
+    [anon_sym_pop] = ACTIONS(139),
+    [anon_sym_ring] = ACTIONS(139),
+    [anon_sym_smooth] = ACTIONS(139),
+    [anon_sym_fade] = ACTIONS(139),
+    [anon_sym_scale] = ACTIONS(139),
+    [anon_sym_rotate] = ACTIONS(139),
+    [anon_sym_slide] = ACTIONS(139),
+    [aux_sym_percentage_token1] = ACTIONS(141),
+    [anon_sym_from] = ACTIONS(139),
+    [anon_sym_to] = ACTIONS(139),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(139),
+    [sym__newline] = ACTIONS(141),
   },
   [STATE(18)] = {
-    [sym_identifier] = ACTIONS(141),
-    [anon_sym_RBRACE] = ACTIONS(143),
-    [anon_sym_gradient] = ACTIONS(141),
-    [anon_sym_section] = ACTIONS(141),
-    [anon_sym_animation] = ACTIONS(141),
-    [anon_sym_below] = ACTIONS(141),
-    [anon_sym_above] = ACTIONS(141),
-    [anon_sym_between] = ACTIONS(141),
-    [anon_sym_container] = ACTIONS(141),
-    [anon_sym_row] = ACTIONS(141),
-    [anon_sym_text] = ACTIONS(141),
-    [anon_sym_hover] = ACTIONS(141),
-    [anon_sym_focus] = ACTIONS(141),
-    [anon_sym_focus_DASHvisible] = ACTIONS(141),
-    [anon_sym_focus_DASHwithin] = ACTIONS(141),
-    [anon_sym_active] = ACTIONS(141),
-    [anon_sym_disabled] = ACTIONS(141),
-    [anon_sym_checked] = ACTIONS(141),
-    [anon_sym_invalid] = ACTIONS(141),
-    [anon_sym_required] = ACTIONS(141),
-    [anon_sym_target] = ACTIONS(141),
-    [sym_special_block_keyword] = ACTIONS(141),
-    [anon_sym_columns] = ACTIONS(141),
-    [anon_sym_rows] = ACTIONS(141),
-    [anon_sym_flow] = ACTIONS(141),
-    [anon_sym_gap] = ACTIONS(141),
-    [anon_sym_display] = ACTIONS(141),
-    [anon_sym_height] = ACTIONS(141),
-    [anon_sym_width] = ACTIONS(141),
-    [anon_sym_min_DASHheight] = ACTIONS(141),
-    [anon_sym_max_DASHheight] = ACTIONS(141),
-    [anon_sym_min_DASHwidth] = ACTIONS(141),
-    [anon_sym_max_DASHwidth] = ACTIONS(141),
-    [anon_sym_inline_DASHsize] = ACTIONS(141),
-    [anon_sym_block_DASHsize] = ACTIONS(141),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(141),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(141),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(141),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(141),
-    [anon_sym_surface] = ACTIONS(141),
-    [anon_sym_background] = ACTIONS(141),
-    [anon_sym_theme] = ACTIONS(141),
-    [anon_sym_color] = ACTIONS(141),
-    [anon_sym_palette] = ACTIONS(141),
-    [anon_sym_tone] = ACTIONS(141),
-    [anon_sym_opacity] = ACTIONS(141),
-    [anon_sym_padding] = ACTIONS(141),
-    [anon_sym_anchor] = ACTIONS(141),
-    [anon_sym_margin] = ACTIONS(141),
-    [anon_sym_radius] = ACTIONS(141),
-    [anon_sym_border] = ACTIONS(141),
-    [anon_sym_shadow] = ACTIONS(141),
-    [anon_sym_outline] = ACTIONS(141),
-    [anon_sym_box] = ACTIONS(141),
-    [anon_sym_visibility] = ACTIONS(141),
-    [anon_sym_flex] = ACTIONS(141),
-    [anon_sym_square] = ACTIONS(141),
-    [anon_sym_place] = ACTIONS(141),
-    [anon_sym_in] = ACTIONS(141),
-    [anon_sym_col] = ACTIONS(141),
-    [anon_sym_span] = ACTIONS(141),
-    [anon_sym_position] = ACTIONS(141),
-    [anon_sym_offset] = ACTIONS(141),
-    [anon_sym_z] = ACTIONS(141),
-    [anon_sym_align] = ACTIONS(141),
-    [anon_sym_justify] = ACTIONS(141),
-    [anon_sym_font] = ACTIONS(141),
-    [anon_sym_size] = ACTIONS(141),
-    [anon_sym_weight] = ACTIONS(141),
-    [anon_sym_case] = ACTIONS(141),
-    [anon_sym_align_DASHtext] = ACTIONS(141),
-    [anon_sym_decoration] = ACTIONS(141),
-    [anon_sym_whitespace] = ACTIONS(141),
-    [anon_sym_word_DASHbreak] = ACTIONS(141),
-    [anon_sym_hyphenate] = ACTIONS(141),
-    [anon_sym_line] = ACTIONS(141),
-    [anon_sym_letter] = ACTIONS(141),
-    [anon_sym_transition] = ACTIONS(141),
-    [anon_sym_duration] = ACTIONS(141),
-    [anon_sym_ease] = ACTIONS(141),
-    [anon_sym_animate] = ACTIONS(141),
-    [anon_sym_delay] = ACTIONS(141),
-    [anon_sym_iteration] = ACTIONS(141),
-    [anon_sym_direction] = ACTIONS(141),
-    [anon_sym_fill] = ACTIONS(141),
-    [anon_sym_play_DASHstate] = ACTIONS(141),
-    [anon_sym_transform] = ACTIONS(141),
-    [anon_sym_filter] = ACTIONS(141),
-    [anon_sym_translate] = ACTIONS(141),
-    [anon_sym_type] = ACTIONS(141),
-    [anon_sym_angle] = ACTIONS(141),
-    [anon_sym_stop] = ACTIONS(141),
-    [anon_sym_corner] = ACTIONS(141),
-    [anon_sym_at] = ACTIONS(141),
-    [anon_sym_shape] = ACTIONS(141),
-    [anon_sym_css] = ACTIONS(141),
-    [anon_sym_lift] = ACTIONS(141),
-    [anon_sym_sink] = ACTIONS(141),
-    [anon_sym_shift] = ACTIONS(141),
-    [anon_sym_grow] = ACTIONS(141),
-    [anon_sym_shrink] = ACTIONS(141),
-    [anon_sym_tilt] = ACTIONS(141),
-    [anon_sym_glow] = ACTIONS(141),
-    [anon_sym_brighten] = ACTIONS(141),
-    [anon_sym_dim] = ACTIONS(141),
-    [anon_sym_blur] = ACTIONS(141),
-    [anon_sym_press] = ACTIONS(141),
-    [anon_sym_pop] = ACTIONS(141),
-    [anon_sym_ring] = ACTIONS(141),
-    [anon_sym_smooth] = ACTIONS(141),
-    [anon_sym_fade] = ACTIONS(141),
-    [anon_sym_scale] = ACTIONS(141),
-    [anon_sym_rotate] = ACTIONS(141),
-    [anon_sym_slide] = ACTIONS(141),
-    [aux_sym_percentage_token1] = ACTIONS(143),
-    [anon_sym_from] = ACTIONS(141),
-    [anon_sym_to] = ACTIONS(141),
+    [sym_identifier] = ACTIONS(143),
+    [anon_sym_RBRACE] = ACTIONS(145),
+    [anon_sym_gradient] = ACTIONS(143),
+    [anon_sym_section] = ACTIONS(143),
+    [anon_sym_animation] = ACTIONS(143),
+    [anon_sym_below] = ACTIONS(143),
+    [anon_sym_above] = ACTIONS(143),
+    [anon_sym_between] = ACTIONS(143),
+    [anon_sym_container] = ACTIONS(143),
+    [anon_sym_row] = ACTIONS(143),
+    [anon_sym_text] = ACTIONS(143),
+    [anon_sym_hover] = ACTIONS(143),
+    [anon_sym_focus] = ACTIONS(143),
+    [anon_sym_focus_DASHvisible] = ACTIONS(143),
+    [anon_sym_focus_DASHwithin] = ACTIONS(143),
+    [anon_sym_active] = ACTIONS(143),
+    [anon_sym_disabled] = ACTIONS(143),
+    [anon_sym_checked] = ACTIONS(143),
+    [anon_sym_invalid] = ACTIONS(143),
+    [anon_sym_required] = ACTIONS(143),
+    [anon_sym_target] = ACTIONS(143),
+    [sym_special_block_keyword] = ACTIONS(143),
+    [anon_sym_columns] = ACTIONS(143),
+    [anon_sym_rows] = ACTIONS(143),
+    [anon_sym_flow] = ACTIONS(143),
+    [anon_sym_gap] = ACTIONS(143),
+    [anon_sym_display] = ACTIONS(143),
+    [anon_sym_height] = ACTIONS(143),
+    [anon_sym_width] = ACTIONS(143),
+    [anon_sym_min_DASHheight] = ACTIONS(143),
+    [anon_sym_max_DASHheight] = ACTIONS(143),
+    [anon_sym_min_DASHwidth] = ACTIONS(143),
+    [anon_sym_max_DASHwidth] = ACTIONS(143),
+    [anon_sym_inline_DASHsize] = ACTIONS(143),
+    [anon_sym_block_DASHsize] = ACTIONS(143),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(143),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(143),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(143),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(143),
+    [anon_sym_surface] = ACTIONS(143),
+    [anon_sym_background] = ACTIONS(143),
+    [anon_sym_theme] = ACTIONS(143),
+    [anon_sym_color] = ACTIONS(143),
+    [anon_sym_palette] = ACTIONS(143),
+    [anon_sym_tone] = ACTIONS(143),
+    [anon_sym_opacity] = ACTIONS(143),
+    [anon_sym_padding] = ACTIONS(143),
+    [anon_sym_anchor] = ACTIONS(143),
+    [anon_sym_margin] = ACTIONS(143),
+    [anon_sym_radius] = ACTIONS(143),
+    [anon_sym_border] = ACTIONS(143),
+    [anon_sym_shadow] = ACTIONS(143),
+    [anon_sym_outline] = ACTIONS(143),
+    [anon_sym_box] = ACTIONS(143),
+    [anon_sym_visibility] = ACTIONS(143),
+    [anon_sym_flex] = ACTIONS(143),
+    [anon_sym_square] = ACTIONS(143),
+    [anon_sym_place] = ACTIONS(143),
+    [anon_sym_in] = ACTIONS(143),
+    [anon_sym_col] = ACTIONS(143),
+    [anon_sym_span] = ACTIONS(143),
+    [anon_sym_position] = ACTIONS(143),
+    [anon_sym_offset] = ACTIONS(143),
+    [anon_sym_z] = ACTIONS(143),
+    [anon_sym_align] = ACTIONS(143),
+    [anon_sym_justify] = ACTIONS(143),
+    [anon_sym_font] = ACTIONS(143),
+    [anon_sym_size] = ACTIONS(143),
+    [anon_sym_weight] = ACTIONS(143),
+    [anon_sym_case] = ACTIONS(143),
+    [anon_sym_align_DASHtext] = ACTIONS(143),
+    [anon_sym_decoration] = ACTIONS(143),
+    [anon_sym_whitespace] = ACTIONS(143),
+    [anon_sym_word_DASHbreak] = ACTIONS(143),
+    [anon_sym_hyphenate] = ACTIONS(143),
+    [anon_sym_line] = ACTIONS(143),
+    [anon_sym_letter] = ACTIONS(143),
+    [anon_sym_transition] = ACTIONS(143),
+    [anon_sym_duration] = ACTIONS(143),
+    [anon_sym_ease] = ACTIONS(143),
+    [anon_sym_animate] = ACTIONS(143),
+    [anon_sym_delay] = ACTIONS(143),
+    [anon_sym_iteration] = ACTIONS(143),
+    [anon_sym_direction] = ACTIONS(143),
+    [anon_sym_fill] = ACTIONS(143),
+    [anon_sym_play_DASHstate] = ACTIONS(143),
+    [anon_sym_transform] = ACTIONS(143),
+    [anon_sym_filter] = ACTIONS(143),
+    [anon_sym_translate] = ACTIONS(143),
+    [anon_sym_type] = ACTIONS(143),
+    [anon_sym_angle] = ACTIONS(143),
+    [anon_sym_stop] = ACTIONS(143),
+    [anon_sym_corner] = ACTIONS(143),
+    [anon_sym_at] = ACTIONS(143),
+    [anon_sym_shape] = ACTIONS(143),
+    [anon_sym_css] = ACTIONS(143),
+    [anon_sym_lift] = ACTIONS(143),
+    [anon_sym_sink] = ACTIONS(143),
+    [anon_sym_shift] = ACTIONS(143),
+    [anon_sym_grow] = ACTIONS(143),
+    [anon_sym_shrink] = ACTIONS(143),
+    [anon_sym_tilt] = ACTIONS(143),
+    [anon_sym_glow] = ACTIONS(143),
+    [anon_sym_brighten] = ACTIONS(143),
+    [anon_sym_dim] = ACTIONS(143),
+    [anon_sym_blur] = ACTIONS(143),
+    [anon_sym_press] = ACTIONS(143),
+    [anon_sym_pop] = ACTIONS(143),
+    [anon_sym_ring] = ACTIONS(143),
+    [anon_sym_smooth] = ACTIONS(143),
+    [anon_sym_fade] = ACTIONS(143),
+    [anon_sym_scale] = ACTIONS(143),
+    [anon_sym_rotate] = ACTIONS(143),
+    [anon_sym_slide] = ACTIONS(143),
+    [aux_sym_percentage_token1] = ACTIONS(145),
+    [anon_sym_from] = ACTIONS(143),
+    [anon_sym_to] = ACTIONS(143),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(143),
+    [sym__newline] = ACTIONS(145),
   },
   [STATE(19)] = {
-    [sym_identifier] = ACTIONS(145),
-    [anon_sym_RBRACE] = ACTIONS(147),
-    [anon_sym_gradient] = ACTIONS(145),
-    [anon_sym_section] = ACTIONS(145),
-    [anon_sym_animation] = ACTIONS(145),
-    [anon_sym_below] = ACTIONS(145),
-    [anon_sym_above] = ACTIONS(145),
-    [anon_sym_between] = ACTIONS(145),
-    [anon_sym_container] = ACTIONS(145),
-    [anon_sym_row] = ACTIONS(145),
-    [anon_sym_text] = ACTIONS(145),
-    [anon_sym_hover] = ACTIONS(145),
-    [anon_sym_focus] = ACTIONS(145),
-    [anon_sym_focus_DASHvisible] = ACTIONS(145),
-    [anon_sym_focus_DASHwithin] = ACTIONS(145),
-    [anon_sym_active] = ACTIONS(145),
-    [anon_sym_disabled] = ACTIONS(145),
-    [anon_sym_checked] = ACTIONS(145),
-    [anon_sym_invalid] = ACTIONS(145),
-    [anon_sym_required] = ACTIONS(145),
-    [anon_sym_target] = ACTIONS(145),
-    [sym_special_block_keyword] = ACTIONS(145),
-    [anon_sym_columns] = ACTIONS(145),
-    [anon_sym_rows] = ACTIONS(145),
-    [anon_sym_flow] = ACTIONS(145),
-    [anon_sym_gap] = ACTIONS(145),
-    [anon_sym_display] = ACTIONS(145),
-    [anon_sym_height] = ACTIONS(145),
-    [anon_sym_width] = ACTIONS(145),
-    [anon_sym_min_DASHheight] = ACTIONS(145),
-    [anon_sym_max_DASHheight] = ACTIONS(145),
-    [anon_sym_min_DASHwidth] = ACTIONS(145),
-    [anon_sym_max_DASHwidth] = ACTIONS(145),
-    [anon_sym_inline_DASHsize] = ACTIONS(145),
-    [anon_sym_block_DASHsize] = ACTIONS(145),
-    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(145),
-    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(145),
-    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(145),
-    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(145),
-    [anon_sym_surface] = ACTIONS(145),
-    [anon_sym_background] = ACTIONS(145),
-    [anon_sym_theme] = ACTIONS(145),
-    [anon_sym_color] = ACTIONS(145),
-    [anon_sym_palette] = ACTIONS(145),
-    [anon_sym_tone] = ACTIONS(145),
-    [anon_sym_opacity] = ACTIONS(145),
-    [anon_sym_padding] = ACTIONS(145),
-    [anon_sym_anchor] = ACTIONS(145),
-    [anon_sym_margin] = ACTIONS(145),
-    [anon_sym_radius] = ACTIONS(145),
-    [anon_sym_border] = ACTIONS(145),
-    [anon_sym_shadow] = ACTIONS(145),
-    [anon_sym_outline] = ACTIONS(145),
-    [anon_sym_box] = ACTIONS(145),
-    [anon_sym_visibility] = ACTIONS(145),
-    [anon_sym_flex] = ACTIONS(145),
-    [anon_sym_square] = ACTIONS(145),
-    [anon_sym_place] = ACTIONS(145),
-    [anon_sym_in] = ACTIONS(145),
-    [anon_sym_col] = ACTIONS(145),
-    [anon_sym_span] = ACTIONS(145),
-    [anon_sym_position] = ACTIONS(145),
-    [anon_sym_offset] = ACTIONS(145),
-    [anon_sym_z] = ACTIONS(145),
-    [anon_sym_align] = ACTIONS(145),
-    [anon_sym_justify] = ACTIONS(145),
-    [anon_sym_font] = ACTIONS(145),
-    [anon_sym_size] = ACTIONS(145),
-    [anon_sym_weight] = ACTIONS(145),
-    [anon_sym_case] = ACTIONS(145),
-    [anon_sym_align_DASHtext] = ACTIONS(145),
-    [anon_sym_decoration] = ACTIONS(145),
-    [anon_sym_whitespace] = ACTIONS(145),
-    [anon_sym_word_DASHbreak] = ACTIONS(145),
-    [anon_sym_hyphenate] = ACTIONS(145),
-    [anon_sym_line] = ACTIONS(145),
-    [anon_sym_letter] = ACTIONS(145),
-    [anon_sym_transition] = ACTIONS(145),
-    [anon_sym_duration] = ACTIONS(145),
-    [anon_sym_ease] = ACTIONS(145),
-    [anon_sym_animate] = ACTIONS(145),
-    [anon_sym_delay] = ACTIONS(145),
-    [anon_sym_iteration] = ACTIONS(145),
-    [anon_sym_direction] = ACTIONS(145),
-    [anon_sym_fill] = ACTIONS(145),
-    [anon_sym_play_DASHstate] = ACTIONS(145),
-    [anon_sym_transform] = ACTIONS(145),
-    [anon_sym_filter] = ACTIONS(145),
-    [anon_sym_translate] = ACTIONS(145),
-    [anon_sym_type] = ACTIONS(145),
-    [anon_sym_angle] = ACTIONS(145),
-    [anon_sym_stop] = ACTIONS(145),
-    [anon_sym_corner] = ACTIONS(145),
-    [anon_sym_at] = ACTIONS(145),
-    [anon_sym_shape] = ACTIONS(145),
-    [anon_sym_css] = ACTIONS(145),
-    [anon_sym_lift] = ACTIONS(145),
-    [anon_sym_sink] = ACTIONS(145),
-    [anon_sym_shift] = ACTIONS(145),
-    [anon_sym_grow] = ACTIONS(145),
-    [anon_sym_shrink] = ACTIONS(145),
-    [anon_sym_tilt] = ACTIONS(145),
-    [anon_sym_glow] = ACTIONS(145),
-    [anon_sym_brighten] = ACTIONS(145),
-    [anon_sym_dim] = ACTIONS(145),
-    [anon_sym_blur] = ACTIONS(145),
-    [anon_sym_press] = ACTIONS(145),
-    [anon_sym_pop] = ACTIONS(145),
-    [anon_sym_ring] = ACTIONS(145),
-    [anon_sym_smooth] = ACTIONS(145),
-    [anon_sym_fade] = ACTIONS(145),
-    [anon_sym_scale] = ACTIONS(145),
-    [anon_sym_rotate] = ACTIONS(145),
-    [anon_sym_slide] = ACTIONS(145),
-    [aux_sym_percentage_token1] = ACTIONS(147),
-    [anon_sym_from] = ACTIONS(145),
-    [anon_sym_to] = ACTIONS(145),
+    [sym_identifier] = ACTIONS(147),
+    [anon_sym_RBRACE] = ACTIONS(149),
+    [anon_sym_gradient] = ACTIONS(147),
+    [anon_sym_section] = ACTIONS(147),
+    [anon_sym_animation] = ACTIONS(147),
+    [anon_sym_below] = ACTIONS(147),
+    [anon_sym_above] = ACTIONS(147),
+    [anon_sym_between] = ACTIONS(147),
+    [anon_sym_container] = ACTIONS(147),
+    [anon_sym_row] = ACTIONS(147),
+    [anon_sym_text] = ACTIONS(147),
+    [anon_sym_hover] = ACTIONS(147),
+    [anon_sym_focus] = ACTIONS(147),
+    [anon_sym_focus_DASHvisible] = ACTIONS(147),
+    [anon_sym_focus_DASHwithin] = ACTIONS(147),
+    [anon_sym_active] = ACTIONS(147),
+    [anon_sym_disabled] = ACTIONS(147),
+    [anon_sym_checked] = ACTIONS(147),
+    [anon_sym_invalid] = ACTIONS(147),
+    [anon_sym_required] = ACTIONS(147),
+    [anon_sym_target] = ACTIONS(147),
+    [sym_special_block_keyword] = ACTIONS(147),
+    [anon_sym_columns] = ACTIONS(147),
+    [anon_sym_rows] = ACTIONS(147),
+    [anon_sym_flow] = ACTIONS(147),
+    [anon_sym_gap] = ACTIONS(147),
+    [anon_sym_display] = ACTIONS(147),
+    [anon_sym_height] = ACTIONS(147),
+    [anon_sym_width] = ACTIONS(147),
+    [anon_sym_min_DASHheight] = ACTIONS(147),
+    [anon_sym_max_DASHheight] = ACTIONS(147),
+    [anon_sym_min_DASHwidth] = ACTIONS(147),
+    [anon_sym_max_DASHwidth] = ACTIONS(147),
+    [anon_sym_inline_DASHsize] = ACTIONS(147),
+    [anon_sym_block_DASHsize] = ACTIONS(147),
+    [anon_sym_min_DASHinline_DASHsize] = ACTIONS(147),
+    [anon_sym_max_DASHinline_DASHsize] = ACTIONS(147),
+    [anon_sym_min_DASHblock_DASHsize] = ACTIONS(147),
+    [anon_sym_max_DASHblock_DASHsize] = ACTIONS(147),
+    [anon_sym_surface] = ACTIONS(147),
+    [anon_sym_background] = ACTIONS(147),
+    [anon_sym_theme] = ACTIONS(147),
+    [anon_sym_color] = ACTIONS(147),
+    [anon_sym_palette] = ACTIONS(147),
+    [anon_sym_tone] = ACTIONS(147),
+    [anon_sym_opacity] = ACTIONS(147),
+    [anon_sym_padding] = ACTIONS(147),
+    [anon_sym_anchor] = ACTIONS(147),
+    [anon_sym_margin] = ACTIONS(147),
+    [anon_sym_radius] = ACTIONS(147),
+    [anon_sym_border] = ACTIONS(147),
+    [anon_sym_shadow] = ACTIONS(147),
+    [anon_sym_outline] = ACTIONS(147),
+    [anon_sym_box] = ACTIONS(147),
+    [anon_sym_visibility] = ACTIONS(147),
+    [anon_sym_flex] = ACTIONS(147),
+    [anon_sym_square] = ACTIONS(147),
+    [anon_sym_place] = ACTIONS(147),
+    [anon_sym_in] = ACTIONS(147),
+    [anon_sym_col] = ACTIONS(147),
+    [anon_sym_span] = ACTIONS(147),
+    [anon_sym_position] = ACTIONS(147),
+    [anon_sym_offset] = ACTIONS(147),
+    [anon_sym_z] = ACTIONS(147),
+    [anon_sym_align] = ACTIONS(147),
+    [anon_sym_justify] = ACTIONS(147),
+    [anon_sym_font] = ACTIONS(147),
+    [anon_sym_size] = ACTIONS(147),
+    [anon_sym_weight] = ACTIONS(147),
+    [anon_sym_case] = ACTIONS(147),
+    [anon_sym_align_DASHtext] = ACTIONS(147),
+    [anon_sym_decoration] = ACTIONS(147),
+    [anon_sym_whitespace] = ACTIONS(147),
+    [anon_sym_word_DASHbreak] = ACTIONS(147),
+    [anon_sym_hyphenate] = ACTIONS(147),
+    [anon_sym_line] = ACTIONS(147),
+    [anon_sym_letter] = ACTIONS(147),
+    [anon_sym_transition] = ACTIONS(147),
+    [anon_sym_duration] = ACTIONS(147),
+    [anon_sym_ease] = ACTIONS(147),
+    [anon_sym_animate] = ACTIONS(147),
+    [anon_sym_delay] = ACTIONS(147),
+    [anon_sym_iteration] = ACTIONS(147),
+    [anon_sym_direction] = ACTIONS(147),
+    [anon_sym_fill] = ACTIONS(147),
+    [anon_sym_play_DASHstate] = ACTIONS(147),
+    [anon_sym_transform] = ACTIONS(147),
+    [anon_sym_filter] = ACTIONS(147),
+    [anon_sym_translate] = ACTIONS(147),
+    [anon_sym_type] = ACTIONS(147),
+    [anon_sym_angle] = ACTIONS(147),
+    [anon_sym_stop] = ACTIONS(147),
+    [anon_sym_corner] = ACTIONS(147),
+    [anon_sym_at] = ACTIONS(147),
+    [anon_sym_shape] = ACTIONS(147),
+    [anon_sym_css] = ACTIONS(147),
+    [anon_sym_lift] = ACTIONS(147),
+    [anon_sym_sink] = ACTIONS(147),
+    [anon_sym_shift] = ACTIONS(147),
+    [anon_sym_grow] = ACTIONS(147),
+    [anon_sym_shrink] = ACTIONS(147),
+    [anon_sym_tilt] = ACTIONS(147),
+    [anon_sym_glow] = ACTIONS(147),
+    [anon_sym_brighten] = ACTIONS(147),
+    [anon_sym_dim] = ACTIONS(147),
+    [anon_sym_blur] = ACTIONS(147),
+    [anon_sym_press] = ACTIONS(147),
+    [anon_sym_pop] = ACTIONS(147),
+    [anon_sym_ring] = ACTIONS(147),
+    [anon_sym_smooth] = ACTIONS(147),
+    [anon_sym_fade] = ACTIONS(147),
+    [anon_sym_scale] = ACTIONS(147),
+    [anon_sym_rotate] = ACTIONS(147),
+    [anon_sym_slide] = ACTIONS(147),
+    [aux_sym_percentage_token1] = ACTIONS(149),
+    [anon_sym_from] = ACTIONS(147),
+    [anon_sym_to] = ACTIONS(147),
     [sym_comment] = ACTIONS(3),
-    [sym__newline] = ACTIONS(147),
+    [sym__newline] = ACTIONS(149),
   },
 };
 
 static const uint16_t ts_small_parse_table[] = {
-  [0] = 7,
+  [0] = 8,
     ACTIONS(3), 1,
       sym_comment,
-    ACTIONS(149), 1,
-      ts_builtin_sym_end,
-    ACTIONS(154), 1,
+    ACTIONS(7), 1,
+      anon_sym_supports,
+    ACTIONS(11), 1,
       sym_include_keyword,
+    ACTIONS(151), 1,
+      ts_builtin_sym_end,
+    ACTIONS(153), 1,
+      sym__newline,
+    STATE(48), 1,
+      sym_declaration_keyword,
+    STATE(21), 4,
+      sym_include,
+      sym_declaration,
+      sym_supports_block,
+      aux_sym_source_file_repeat1,
+    ACTIONS(9), 13,
+      anon_sym_tokens,
+      anon_sym_grid,
+      anon_sym_area,
+      anon_sym_card,
+      anon_sym_stack,
+      anon_sym_row,
+      anon_sym_button,
+      anon_sym_text,
+      anon_sym_center,
+      anon_sym_split,
+      anon_sym_overlay,
+      anon_sym_dock,
+      anon_sym_keyframes,
+  [40] = 8,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(155), 1,
+      ts_builtin_sym_end,
     ACTIONS(157), 1,
+      anon_sym_supports,
+    ACTIONS(163), 1,
+      sym_include_keyword,
+    ACTIONS(166), 1,
       sym__newline,
-    STATE(41), 1,
+    STATE(48), 1,
       sym_declaration_keyword,
-    STATE(20), 3,
+    STATE(21), 4,
       sym_include,
       sym_declaration,
+      sym_supports_block,
       aux_sym_source_file_repeat1,
-    ACTIONS(151), 13,
+    ACTIONS(160), 13,
       anon_sym_tokens,
       anon_sym_grid,
       anon_sym_area,
@@ -6150,22 +6276,19 @@ static const uint16_t ts_small_parse_table[] = {
       anon_sym_overlay,
       anon_sym_dock,
       anon_sym_keyframes,
-  [36] = 7,
+  [80] = 6,
     ACTIONS(3), 1,
       sym_comment,
-    ACTIONS(9), 1,
-      sym_include_keyword,
-    ACTIONS(160), 1,
-      ts_builtin_sym_end,
-    ACTIONS(162), 1,
+    ACTIONS(169), 1,
+      anon_sym_RBRACE,
+    ACTIONS(171), 1,
       sym__newline,
-    STATE(41), 1,
+    STATE(48), 1,
       sym_declaration_keyword,
-    STATE(20), 3,
-      sym_include,
+    STATE(24), 2,
       sym_declaration,
-      aux_sym_source_file_repeat1,
-    ACTIONS(7), 13,
+      aux_sym_supports_body_repeat1,
+    ACTIONS(9), 13,
       anon_sym_tokens,
       anon_sym_grid,
       anon_sym_area,
@@ -6179,11 +6302,13 @@ static const uint16_t ts_small_parse_table[] = {
       anon_sym_overlay,
       anon_sym_dock,
       anon_sym_keyframes,
-  [72] = 2,
+  [112] = 2,
     ACTIONS(3), 1,
       sym_comment,
-    ACTIONS(111), 16,
+    ACTIONS(141), 18,
       ts_builtin_sym_end,
+      anon_sym_supports,
+      anon_sym_RBRACE,
       anon_sym_tokens,
       anon_sym_grid,
       anon_sym_area,
@@ -6199,11 +6324,39 @@ static const uint16_t ts_small_parse_table[] = {
       anon_sym_keyframes,
       sym_include_keyword,
       sym__newline,
-  [94] = 2,
+  [136] = 6,
     ACTIONS(3), 1,
       sym_comment,
-    ACTIONS(164), 16,
+    ACTIONS(173), 1,
+      anon_sym_RBRACE,
+    ACTIONS(178), 1,
+      sym__newline,
+    STATE(48), 1,
+      sym_declaration_keyword,
+    STATE(24), 2,
+      sym_declaration,
+      aux_sym_supports_body_repeat1,
+    ACTIONS(175), 13,
+      anon_sym_tokens,
+      anon_sym_grid,
+      anon_sym_area,
+      anon_sym_card,
+      anon_sym_stack,
+      anon_sym_row,
+      anon_sym_button,
+      anon_sym_text,
+      anon_sym_center,
+      anon_sym_split,
+      anon_sym_overlay,
+      anon_sym_dock,
+      anon_sym_keyframes,
+  [168] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(145), 18,
       ts_builtin_sym_end,
+      anon_sym_supports,
+      anon_sym_RBRACE,
       anon_sym_tokens,
       anon_sym_grid,
       anon_sym_area,
@@ -6219,11 +6372,39 @@ static const uint16_t ts_small_parse_table[] = {
       anon_sym_keyframes,
       sym_include_keyword,
       sym__newline,
-  [116] = 2,
+  [192] = 6,
     ACTIONS(3), 1,
       sym_comment,
-    ACTIONS(166), 16,
+    ACTIONS(181), 1,
+      anon_sym_RBRACE,
+    ACTIONS(183), 1,
+      sym__newline,
+    STATE(48), 1,
+      sym_declaration_keyword,
+    STATE(22), 2,
+      sym_declaration,
+      aux_sym_supports_body_repeat1,
+    ACTIONS(9), 13,
+      anon_sym_tokens,
+      anon_sym_grid,
+      anon_sym_area,
+      anon_sym_card,
+      anon_sym_stack,
+      anon_sym_row,
+      anon_sym_button,
+      anon_sym_text,
+      anon_sym_center,
+      anon_sym_split,
+      anon_sym_overlay,
+      anon_sym_dock,
+      anon_sym_keyframes,
+  [224] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(185), 18,
       ts_builtin_sym_end,
+      anon_sym_supports,
+      anon_sym_RBRACE,
       anon_sym_tokens,
       anon_sym_grid,
       anon_sym_area,
@@ -6239,11 +6420,12 @@ static const uint16_t ts_small_parse_table[] = {
       anon_sym_keyframes,
       sym_include_keyword,
       sym__newline,
-  [138] = 2,
+  [248] = 2,
     ACTIONS(3), 1,
       sym_comment,
-    ACTIONS(147), 16,
+    ACTIONS(187), 17,
       ts_builtin_sym_end,
+      anon_sym_supports,
       anon_sym_tokens,
       anon_sym_grid,
       anon_sym_area,
@@ -6259,320 +6441,435 @@ static const uint16_t ts_small_parse_table[] = {
       anon_sym_keyframes,
       sym_include_keyword,
       sym__newline,
-  [160] = 7,
-    ACTIONS(170), 1,
-      aux_sym_percentage_token1,
-    ACTIONS(172), 1,
+  [271] = 2,
+    ACTIONS(3), 1,
       sym_comment,
-    ACTIONS(174), 1,
+    ACTIONS(189), 17,
+      ts_builtin_sym_end,
+      anon_sym_supports,
+      anon_sym_tokens,
+      anon_sym_grid,
+      anon_sym_area,
+      anon_sym_card,
+      anon_sym_stack,
+      anon_sym_row,
+      anon_sym_button,
+      anon_sym_text,
+      anon_sym_center,
+      anon_sym_split,
+      anon_sym_overlay,
+      anon_sym_dock,
+      anon_sym_keyframes,
+      sym_include_keyword,
       sym__newline,
-    STATE(28), 1,
-      aux_sym_statement_repeat1,
-    STATE(31), 1,
-      sym_percentage,
-    STATE(34), 1,
-      sym_value,
-    ACTIONS(168), 5,
-      sym_string,
-      sym_identifier,
-      sym_number,
-      sym_raw_value,
-      sym_color_literal,
-  [186] = 7,
-    ACTIONS(172), 1,
+  [294] = 2,
+    ACTIONS(3), 1,
       sym_comment,
-    ACTIONS(179), 1,
-      aux_sym_percentage_token1,
-    ACTIONS(182), 1,
+    ACTIONS(191), 17,
+      ts_builtin_sym_end,
+      anon_sym_supports,
+      anon_sym_tokens,
+      anon_sym_grid,
+      anon_sym_area,
+      anon_sym_card,
+      anon_sym_stack,
+      anon_sym_row,
+      anon_sym_button,
+      anon_sym_text,
+      anon_sym_center,
+      anon_sym_split,
+      anon_sym_overlay,
+      anon_sym_dock,
+      anon_sym_keyframes,
+      sym_include_keyword,
       sym__newline,
-    STATE(27), 1,
-      aux_sym_statement_repeat1,
-    STATE(31), 1,
-      sym_percentage,
-    STATE(34), 1,
-      sym_value,
-    ACTIONS(176), 5,
-      sym_string,
-      sym_identifier,
-      sym_number,
-      sym_raw_value,
-      sym_color_literal,
-  [212] = 7,
-    ACTIONS(170), 1,
-      aux_sym_percentage_token1,
-    ACTIONS(172), 1,
+  [317] = 2,
+    ACTIONS(3), 1,
       sym_comment,
-    ACTIONS(184), 1,
+    ACTIONS(193), 17,
+      ts_builtin_sym_end,
+      anon_sym_supports,
+      anon_sym_tokens,
+      anon_sym_grid,
+      anon_sym_area,
+      anon_sym_card,
+      anon_sym_stack,
+      anon_sym_row,
+      anon_sym_button,
+      anon_sym_text,
+      anon_sym_center,
+      anon_sym_split,
+      anon_sym_overlay,
+      anon_sym_dock,
+      anon_sym_keyframes,
+      sym_include_keyword,
       sym__newline,
-    STATE(27), 1,
-      aux_sym_statement_repeat1,
-    STATE(31), 1,
-      sym_percentage,
-    STATE(34), 1,
-      sym_value,
-    ACTIONS(168), 5,
-      sym_string,
-      sym_identifier,
-      sym_number,
-      sym_raw_value,
-      sym_color_literal,
-  [238] = 4,
-    ACTIONS(172), 1,
-      sym_comment,
-    ACTIONS(186), 1,
-      sym_identifier,
-    ACTIONS(191), 1,
-      sym__newline,
-    ACTIONS(189), 5,
-      sym_string,
+  [340] = 7,
+    ACTIONS(197), 1,
       aux_sym_percentage_token1,
-      sym_number,
-      sym_raw_value,
-      sym_color_literal,
-  [255] = 3,
-    ACTIONS(172), 1,
-      sym_comment,
-    ACTIONS(195), 1,
-      sym__newline,
-    ACTIONS(193), 6,
-      sym_string,
-      sym_identifier,
-      aux_sym_percentage_token1,
-      sym_number,
-      sym_raw_value,
-      sym_color_literal,
-  [270] = 3,
-    ACTIONS(172), 1,
-      sym_comment,
     ACTIONS(199), 1,
-      sym__newline,
-    ACTIONS(197), 6,
-      sym_string,
-      sym_identifier,
-      aux_sym_percentage_token1,
-      sym_number,
-      sym_raw_value,
-      sym_color_literal,
-  [285] = 3,
-    ACTIONS(172), 1,
       sym_comment,
-    ACTIONS(191), 1,
+    ACTIONS(201), 1,
       sym__newline,
-    ACTIONS(189), 6,
+    STATE(33), 1,
+      aux_sym_statement_repeat1,
+    STATE(37), 1,
+      sym_percentage,
+    STATE(38), 1,
+      sym_value,
+    ACTIONS(195), 5,
       sym_string,
       sym_identifier,
-      aux_sym_percentage_token1,
       sym_number,
       sym_raw_value,
       sym_color_literal,
-  [300] = 3,
-    ACTIONS(172), 1,
+  [366] = 7,
+    ACTIONS(197), 1,
+      aux_sym_percentage_token1,
+    ACTIONS(199), 1,
       sym_comment,
     ACTIONS(203), 1,
       sym__newline,
-    ACTIONS(201), 6,
+    STATE(34), 1,
+      aux_sym_statement_repeat1,
+    STATE(37), 1,
+      sym_percentage,
+    STATE(38), 1,
+      sym_value,
+    ACTIONS(195), 5,
       sym_string,
       sym_identifier,
-      aux_sym_percentage_token1,
       sym_number,
       sym_raw_value,
       sym_color_literal,
-  [315] = 3,
-    ACTIONS(172), 1,
+  [392] = 7,
+    ACTIONS(199), 1,
       sym_comment,
-    ACTIONS(207), 1,
-      sym__newline,
-    ACTIONS(205), 6,
-      sym_string,
-      sym_identifier,
+    ACTIONS(208), 1,
       aux_sym_percentage_token1,
-      sym_number,
-      sym_raw_value,
-      sym_color_literal,
-  [330] = 3,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(209), 1,
-      anon_sym_LBRACE,
-    STATE(17), 1,
-      sym_block,
-  [340] = 3,
-    ACTIONS(3), 1,
-      sym_comment,
     ACTIONS(211), 1,
-      anon_sym_LBRACE,
-    STATE(24), 1,
-      sym_block,
-  [350] = 3,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(209), 1,
-      anon_sym_LBRACE,
-    STATE(9), 1,
-      sym_block,
-  [360] = 3,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(209), 1,
-      anon_sym_LBRACE,
-    STATE(12), 1,
-      sym_block,
-  [370] = 3,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(209), 1,
-      anon_sym_LBRACE,
-    STATE(13), 1,
-      sym_block,
-  [380] = 3,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(209), 1,
-      anon_sym_LBRACE,
-    STATE(7), 1,
-      sym_block,
-  [390] = 3,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(213), 1,
+      sym__newline,
+    STATE(34), 1,
+      aux_sym_statement_repeat1,
+    STATE(37), 1,
+      sym_percentage,
+    STATE(38), 1,
+      sym_value,
+    ACTIONS(205), 5,
+      sym_string,
       sym_identifier,
-    STATE(36), 1,
-      sym_declaration_name,
-  [400] = 3,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(209), 1,
-      anon_sym_LBRACE,
-    STATE(14), 1,
-      sym_block,
-  [410] = 3,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(209), 1,
-      anon_sym_LBRACE,
-    STATE(15), 1,
-      sym_block,
-  [420] = 3,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(209), 1,
-      anon_sym_LBRACE,
-    STATE(11), 1,
-      sym_block,
-  [430] = 3,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(209), 1,
-      anon_sym_LBRACE,
-    STATE(18), 1,
-      sym_block,
-  [440] = 2,
-    ACTIONS(3), 1,
+      sym_number,
+      sym_raw_value,
+      sym_color_literal,
+  [418] = 3,
+    ACTIONS(199), 1,
       sym_comment,
     ACTIONS(215), 1,
+      sym__newline,
+    ACTIONS(213), 6,
+      sym_string,
       sym_identifier,
-  [447] = 2,
-    ACTIONS(3), 1,
+      aux_sym_percentage_token1,
+      sym_number,
+      sym_raw_value,
+      sym_color_literal,
+  [433] = 4,
+    ACTIONS(199), 1,
       sym_comment,
     ACTIONS(217), 1,
       sym_identifier,
-  [454] = 2,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(219), 1,
-      anon_sym_LBRACE,
-  [461] = 2,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(221), 1,
-      sym_identifier,
-  [468] = 2,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(223), 1,
-      sym_identifier,
-  [475] = 2,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(225), 1,
-      sym_identifier,
-  [482] = 2,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(227), 1,
-      anon_sym_LBRACE,
-  [489] = 2,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(229), 1,
-      ts_builtin_sym_end,
-  [496] = 2,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(231), 1,
-      anon_sym_LBRACE,
-  [503] = 2,
-    ACTIONS(172), 1,
-      sym_comment,
-    ACTIONS(233), 1,
-      sym_include_target,
-  [510] = 2,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(235), 1,
-      sym_identifier,
-  [517] = 2,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(237), 1,
-      sym_identifier,
-  [524] = 2,
-    ACTIONS(3), 1,
-      sym_comment,
-    ACTIONS(239), 1,
+    ACTIONS(222), 1,
       sym__newline,
+    ACTIONS(220), 5,
+      sym_string,
+      aux_sym_percentage_token1,
+      sym_number,
+      sym_raw_value,
+      sym_color_literal,
+  [450] = 3,
+    ACTIONS(199), 1,
+      sym_comment,
+    ACTIONS(226), 1,
+      sym__newline,
+    ACTIONS(224), 6,
+      sym_string,
+      sym_identifier,
+      aux_sym_percentage_token1,
+      sym_number,
+      sym_raw_value,
+      sym_color_literal,
+  [465] = 3,
+    ACTIONS(199), 1,
+      sym_comment,
+    ACTIONS(230), 1,
+      sym__newline,
+    ACTIONS(228), 6,
+      sym_string,
+      sym_identifier,
+      aux_sym_percentage_token1,
+      sym_number,
+      sym_raw_value,
+      sym_color_literal,
+  [480] = 3,
+    ACTIONS(199), 1,
+      sym_comment,
+    ACTIONS(234), 1,
+      sym__newline,
+    ACTIONS(232), 6,
+      sym_string,
+      sym_identifier,
+      aux_sym_percentage_token1,
+      sym_number,
+      sym_raw_value,
+      sym_color_literal,
+  [495] = 3,
+    ACTIONS(199), 1,
+      sym_comment,
+    ACTIONS(222), 1,
+      sym__newline,
+    ACTIONS(220), 6,
+      sym_string,
+      sym_identifier,
+      aux_sym_percentage_token1,
+      sym_number,
+      sym_raw_value,
+      sym_color_literal,
+  [510] = 4,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(236), 1,
+      sym_identifier,
+    ACTIONS(238), 1,
+      anon_sym_LBRACE,
+    STATE(42), 1,
+      aux_sym_support_predicate_repeat1,
+  [523] = 4,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(240), 1,
+      sym_identifier,
+    ACTIONS(242), 1,
+      anon_sym_LBRACE,
+    STATE(43), 1,
+      aux_sym_support_predicate_repeat1,
+  [536] = 4,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(244), 1,
+      sym_identifier,
+    ACTIONS(247), 1,
+      anon_sym_LBRACE,
+    STATE(43), 1,
+      aux_sym_support_predicate_repeat1,
+  [549] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(249), 1,
+      anon_sym_LBRACE,
+    STATE(9), 1,
+      sym_block,
+  [559] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(249), 1,
+      anon_sym_LBRACE,
+    STATE(13), 1,
+      sym_block,
+  [569] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(249), 1,
+      anon_sym_LBRACE,
+    STATE(12), 1,
+      sym_block,
+  [579] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(249), 1,
+      anon_sym_LBRACE,
+    STATE(15), 1,
+      sym_block,
+  [589] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(251), 1,
+      sym_identifier,
+    STATE(52), 1,
+      sym_declaration_name,
+  [599] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(249), 1,
+      anon_sym_LBRACE,
+    STATE(14), 1,
+      sym_block,
+  [609] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(253), 1,
+      sym_identifier,
+    STATE(53), 1,
+      sym_support_predicate,
+  [619] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(249), 1,
+      anon_sym_LBRACE,
+    STATE(10), 1,
+      sym_block,
+  [629] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(255), 1,
+      anon_sym_LBRACE,
+    STATE(27), 1,
+      sym_block,
+  [639] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(257), 1,
+      anon_sym_LBRACE,
+    STATE(31), 1,
+      sym_supports_body,
+  [649] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(249), 1,
+      anon_sym_LBRACE,
+    STATE(16), 1,
+      sym_block,
+  [659] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(249), 1,
+      anon_sym_LBRACE,
+    STATE(11), 1,
+      sym_block,
+  [669] = 3,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(249), 1,
+      anon_sym_LBRACE,
+    STATE(8), 1,
+      sym_block,
+  [679] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(259), 1,
+      sym_identifier,
+  [686] = 2,
+    ACTIONS(199), 1,
+      sym_comment,
+    ACTIONS(261), 1,
+      sym_include_target,
+  [693] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(263), 1,
+      sym_identifier,
+  [700] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(265), 1,
+      ts_builtin_sym_end,
+  [707] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(267), 1,
+      sym_identifier,
+  [714] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(269), 1,
+      sym_identifier,
+  [721] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(271), 1,
+      sym__newline,
+  [728] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(273), 1,
+      anon_sym_LBRACE,
+  [735] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(275), 1,
+      anon_sym_LBRACE,
+  [742] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(277), 1,
+      anon_sym_LBRACE,
+  [749] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(279), 1,
+      sym_identifier,
+  [756] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(281), 1,
+      sym_identifier,
+  [763] = 2,
+    ACTIONS(3), 1,
+      sym_comment,
+    ACTIONS(283), 1,
+      sym_identifier,
 };
 
 static const uint32_t ts_small_parse_table_map[] = {
   [SMALL_STATE(20)] = 0,
-  [SMALL_STATE(21)] = 36,
-  [SMALL_STATE(22)] = 72,
-  [SMALL_STATE(23)] = 94,
-  [SMALL_STATE(24)] = 116,
-  [SMALL_STATE(25)] = 138,
-  [SMALL_STATE(26)] = 160,
-  [SMALL_STATE(27)] = 186,
-  [SMALL_STATE(28)] = 212,
-  [SMALL_STATE(29)] = 238,
-  [SMALL_STATE(30)] = 255,
-  [SMALL_STATE(31)] = 270,
-  [SMALL_STATE(32)] = 285,
-  [SMALL_STATE(33)] = 300,
-  [SMALL_STATE(34)] = 315,
-  [SMALL_STATE(35)] = 330,
-  [SMALL_STATE(36)] = 340,
-  [SMALL_STATE(37)] = 350,
-  [SMALL_STATE(38)] = 360,
-  [SMALL_STATE(39)] = 370,
-  [SMALL_STATE(40)] = 380,
-  [SMALL_STATE(41)] = 390,
-  [SMALL_STATE(42)] = 400,
-  [SMALL_STATE(43)] = 410,
-  [SMALL_STATE(44)] = 420,
-  [SMALL_STATE(45)] = 430,
-  [SMALL_STATE(46)] = 440,
-  [SMALL_STATE(47)] = 447,
-  [SMALL_STATE(48)] = 454,
-  [SMALL_STATE(49)] = 461,
-  [SMALL_STATE(50)] = 468,
-  [SMALL_STATE(51)] = 475,
-  [SMALL_STATE(52)] = 482,
-  [SMALL_STATE(53)] = 489,
-  [SMALL_STATE(54)] = 496,
-  [SMALL_STATE(55)] = 503,
-  [SMALL_STATE(56)] = 510,
-  [SMALL_STATE(57)] = 517,
-  [SMALL_STATE(58)] = 524,
+  [SMALL_STATE(21)] = 40,
+  [SMALL_STATE(22)] = 80,
+  [SMALL_STATE(23)] = 112,
+  [SMALL_STATE(24)] = 136,
+  [SMALL_STATE(25)] = 168,
+  [SMALL_STATE(26)] = 192,
+  [SMALL_STATE(27)] = 224,
+  [SMALL_STATE(28)] = 248,
+  [SMALL_STATE(29)] = 271,
+  [SMALL_STATE(30)] = 294,
+  [SMALL_STATE(31)] = 317,
+  [SMALL_STATE(32)] = 340,
+  [SMALL_STATE(33)] = 366,
+  [SMALL_STATE(34)] = 392,
+  [SMALL_STATE(35)] = 418,
+  [SMALL_STATE(36)] = 433,
+  [SMALL_STATE(37)] = 450,
+  [SMALL_STATE(38)] = 465,
+  [SMALL_STATE(39)] = 480,
+  [SMALL_STATE(40)] = 495,
+  [SMALL_STATE(41)] = 510,
+  [SMALL_STATE(42)] = 523,
+  [SMALL_STATE(43)] = 536,
+  [SMALL_STATE(44)] = 549,
+  [SMALL_STATE(45)] = 559,
+  [SMALL_STATE(46)] = 569,
+  [SMALL_STATE(47)] = 579,
+  [SMALL_STATE(48)] = 589,
+  [SMALL_STATE(49)] = 599,
+  [SMALL_STATE(50)] = 609,
+  [SMALL_STATE(51)] = 619,
+  [SMALL_STATE(52)] = 629,
+  [SMALL_STATE(53)] = 639,
+  [SMALL_STATE(54)] = 649,
+  [SMALL_STATE(55)] = 659,
+  [SMALL_STATE(56)] = 669,
+  [SMALL_STATE(57)] = 679,
+  [SMALL_STATE(58)] = 686,
+  [SMALL_STATE(59)] = 693,
+  [SMALL_STATE(60)] = 700,
+  [SMALL_STATE(61)] = 707,
+  [SMALL_STATE(62)] = 714,
+  [SMALL_STATE(63)] = 721,
+  [SMALL_STATE(64)] = 728,
+  [SMALL_STATE(65)] = 735,
+  [SMALL_STATE(66)] = 742,
+  [SMALL_STATE(67)] = 749,
+  [SMALL_STATE(68)] = 756,
+  [SMALL_STATE(69)] = 763,
 };
 
 static const TSParseActionEntry ts_parse_actions[] = {
@@ -6580,113 +6877,133 @@ static const TSParseActionEntry ts_parse_actions[] = {
   [1] = {.entry = {.count = 1, .reusable = false}}, RECOVER(),
   [3] = {.entry = {.count = 1, .reusable = true}}, SHIFT_EXTRA(),
   [5] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_source_file, 0, 0, 0),
-  [7] = {.entry = {.count = 1, .reusable = true}}, SHIFT(51),
-  [9] = {.entry = {.count = 1, .reusable = true}}, SHIFT(55),
-  [11] = {.entry = {.count = 1, .reusable = true}}, SHIFT(21),
-  [13] = {.entry = {.count = 1, .reusable = false}}, SHIFT(26),
-  [15] = {.entry = {.count = 1, .reusable = true}}, SHIFT(22),
-  [17] = {.entry = {.count = 1, .reusable = false}}, SHIFT(47),
-  [19] = {.entry = {.count = 1, .reusable = false}}, SHIFT(50),
-  [21] = {.entry = {.count = 1, .reusable = false}}, SHIFT(29),
-  [23] = {.entry = {.count = 1, .reusable = false}}, SHIFT(57),
-  [25] = {.entry = {.count = 1, .reusable = false}}, SHIFT(46),
-  [27] = {.entry = {.count = 1, .reusable = false}}, SHIFT(49),
-  [29] = {.entry = {.count = 1, .reusable = false}}, SHIFT(32),
-  [31] = {.entry = {.count = 1, .reusable = false}}, SHIFT(48),
-  [33] = {.entry = {.count = 1, .reusable = false}}, SHIFT(37),
-  [35] = {.entry = {.count = 1, .reusable = false}}, SHIFT(30),
-  [37] = {.entry = {.count = 1, .reusable = true}}, SHIFT(52),
-  [39] = {.entry = {.count = 1, .reusable = false}}, SHIFT(52),
-  [41] = {.entry = {.count = 1, .reusable = true}}, SHIFT(3),
-  [43] = {.entry = {.count = 1, .reusable = true}}, SHIFT(25),
-  [45] = {.entry = {.count = 1, .reusable = true}}, SHIFT(4),
-  [47] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(26),
-  [50] = {.entry = {.count = 1, .reusable = true}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0),
-  [52] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(47),
-  [55] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(50),
-  [58] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(29),
-  [61] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(57),
-  [64] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(46),
-  [67] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(49),
-  [70] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(32),
-  [73] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(48),
-  [76] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(37),
-  [79] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(30),
-  [82] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(52),
-  [85] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(52),
-  [88] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(4),
-  [91] = {.entry = {.count = 1, .reusable = true}}, SHIFT(10),
-  [93] = {.entry = {.count = 1, .reusable = true}}, SHIFT(6),
-  [95] = {.entry = {.count = 1, .reusable = true}}, SHIFT(19),
-  [97] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_responsive_block, 3, 0, 8),
-  [99] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_responsive_block, 3, 0, 8),
-  [101] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_statement, 2, 0, 4),
-  [103] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_statement, 2, 0, 4),
-  [105] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_advanced_block, 2, 0, 3),
-  [107] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_advanced_block, 2, 0, 3),
-  [109] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_block, 2, 0, 0),
-  [111] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_block, 2, 0, 0),
-  [113] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_section_block, 3, 0, 7),
-  [115] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_section_block, 3, 0, 7),
-  [117] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_state_block, 2, 0, 3),
-  [119] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_state_block, 2, 0, 3),
-  [121] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_keyframe_block, 2, 0, 6),
-  [123] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_keyframe_block, 2, 0, 6),
-  [125] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_responsive_block, 4, 0, 11),
-  [127] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_responsive_block, 4, 0, 11),
-  [129] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_gradient_block, 3, 0, 7),
-  [131] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_gradient_block, 3, 0, 7),
-  [133] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_statement, 3, 0, 9),
-  [135] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_statement, 3, 0, 9),
-  [137] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_animation_block, 3, 0, 7),
-  [139] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_animation_block, 3, 0, 7),
-  [141] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_container_block, 3, 0, 7),
-  [143] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_container_block, 3, 0, 7),
-  [145] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_block, 3, 0, 0),
-  [147] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_block, 3, 0, 0),
-  [149] = {.entry = {.count = 1, .reusable = true}}, REDUCE(aux_sym_source_file_repeat1, 2, 0, 0),
-  [151] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_source_file_repeat1, 2, 0, 0), SHIFT_REPEAT(51),
-  [154] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_source_file_repeat1, 2, 0, 0), SHIFT_REPEAT(55),
-  [157] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_source_file_repeat1, 2, 0, 0), SHIFT_REPEAT(20),
-  [160] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_source_file, 1, 0, 0),
-  [162] = {.entry = {.count = 1, .reusable = true}}, SHIFT(20),
-  [164] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_include, 3, 0, 1),
-  [166] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_declaration, 3, 0, 2),
-  [168] = {.entry = {.count = 1, .reusable = false}}, SHIFT(31),
-  [170] = {.entry = {.count = 1, .reusable = false}}, SHIFT(33),
-  [172] = {.entry = {.count = 1, .reusable = false}}, SHIFT_EXTRA(),
-  [174] = {.entry = {.count = 1, .reusable = true}}, SHIFT(8),
-  [176] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_statement_repeat1, 2, 0, 10), SHIFT_REPEAT(31),
-  [179] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_statement_repeat1, 2, 0, 10), SHIFT_REPEAT(33),
-  [182] = {.entry = {.count = 1, .reusable = true}}, REDUCE(aux_sym_statement_repeat1, 2, 0, 10),
-  [184] = {.entry = {.count = 1, .reusable = true}}, SHIFT(16),
-  [186] = {.entry = {.count = 2, .reusable = false}}, REDUCE(sym_property_keyword, 1, 0, 0), SHIFT(35),
-  [189] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_property_keyword, 1, 0, 0),
-  [191] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_property_keyword, 1, 0, 0),
-  [193] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_effect_keyword, 1, 0, 0),
-  [195] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_effect_keyword, 1, 0, 0),
-  [197] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_value, 1, 0, 0),
-  [199] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_value, 1, 0, 0),
-  [201] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_percentage, 1, 0, 0),
-  [203] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_percentage, 1, 0, 0),
-  [205] = {.entry = {.count = 1, .reusable = false}}, REDUCE(aux_sym_statement_repeat1, 1, 0, 5),
-  [207] = {.entry = {.count = 1, .reusable = true}}, REDUCE(aux_sym_statement_repeat1, 1, 0, 5),
-  [209] = {.entry = {.count = 1, .reusable = true}}, SHIFT(5),
-  [211] = {.entry = {.count = 1, .reusable = true}}, SHIFT(2),
-  [213] = {.entry = {.count = 1, .reusable = true}}, SHIFT(54),
-  [215] = {.entry = {.count = 1, .reusable = true}}, SHIFT(56),
-  [217] = {.entry = {.count = 1, .reusable = true}}, SHIFT(43),
-  [219] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_state_keyword, 1, 0, 0),
-  [221] = {.entry = {.count = 1, .reusable = true}}, SHIFT(45),
-  [223] = {.entry = {.count = 1, .reusable = true}}, SHIFT(44),
-  [225] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_declaration_keyword, 1, 0, 0),
-  [227] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_keyframe_selector, 1, 0, 0),
-  [229] = {.entry = {.count = 1, .reusable = true}},  ACCEPT_INPUT(),
-  [231] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_declaration_name, 1, 0, 0),
-  [233] = {.entry = {.count = 1, .reusable = false}}, SHIFT(58),
-  [235] = {.entry = {.count = 1, .reusable = true}}, SHIFT(42),
-  [237] = {.entry = {.count = 1, .reusable = true}}, SHIFT(40),
-  [239] = {.entry = {.count = 1, .reusable = true}}, SHIFT(23),
+  [7] = {.entry = {.count = 1, .reusable = true}}, SHIFT(50),
+  [9] = {.entry = {.count = 1, .reusable = true}}, SHIFT(68),
+  [11] = {.entry = {.count = 1, .reusable = true}}, SHIFT(58),
+  [13] = {.entry = {.count = 1, .reusable = true}}, SHIFT(20),
+  [15] = {.entry = {.count = 1, .reusable = false}}, SHIFT(32),
+  [17] = {.entry = {.count = 1, .reusable = true}}, SHIFT(23),
+  [19] = {.entry = {.count = 1, .reusable = false}}, SHIFT(61),
+  [21] = {.entry = {.count = 1, .reusable = false}}, SHIFT(62),
+  [23] = {.entry = {.count = 1, .reusable = false}}, SHIFT(36),
+  [25] = {.entry = {.count = 1, .reusable = false}}, SHIFT(67),
+  [27] = {.entry = {.count = 1, .reusable = false}}, SHIFT(69),
+  [29] = {.entry = {.count = 1, .reusable = false}}, SHIFT(59),
+  [31] = {.entry = {.count = 1, .reusable = false}}, SHIFT(40),
+  [33] = {.entry = {.count = 1, .reusable = false}}, SHIFT(65),
+  [35] = {.entry = {.count = 1, .reusable = false}}, SHIFT(51),
+  [37] = {.entry = {.count = 1, .reusable = false}}, SHIFT(39),
+  [39] = {.entry = {.count = 1, .reusable = true}}, SHIFT(66),
+  [41] = {.entry = {.count = 1, .reusable = false}}, SHIFT(66),
+  [43] = {.entry = {.count = 1, .reusable = true}}, SHIFT(3),
+  [45] = {.entry = {.count = 1, .reusable = true}}, SHIFT(25),
+  [47] = {.entry = {.count = 1, .reusable = true}}, SHIFT(4),
+  [49] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(32),
+  [52] = {.entry = {.count = 1, .reusable = true}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0),
+  [54] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(61),
+  [57] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(62),
+  [60] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(36),
+  [63] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(67),
+  [66] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(69),
+  [69] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(59),
+  [72] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(40),
+  [75] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(65),
+  [78] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(51),
+  [81] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(39),
+  [84] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(66),
+  [87] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(66),
+  [90] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_block_repeat1, 2, 0, 0), SHIFT_REPEAT(4),
+  [93] = {.entry = {.count = 1, .reusable = true}}, SHIFT(17),
+  [95] = {.entry = {.count = 1, .reusable = true}}, SHIFT(6),
+  [97] = {.entry = {.count = 1, .reusable = true}}, SHIFT(18),
+  [99] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_statement, 2, 0, 5),
+  [101] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_statement, 2, 0, 5),
+  [103] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_state_block, 2, 0, 4),
+  [105] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_state_block, 2, 0, 4),
+  [107] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_keyframe_block, 2, 0, 7),
+  [109] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_keyframe_block, 2, 0, 7),
+  [111] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_advanced_block, 2, 0, 4),
+  [113] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_advanced_block, 2, 0, 4),
+  [115] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_gradient_block, 3, 0, 8),
+  [117] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_gradient_block, 3, 0, 8),
+  [119] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_animation_block, 3, 0, 8),
+  [121] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_animation_block, 3, 0, 8),
+  [123] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_section_block, 3, 0, 8),
+  [125] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_section_block, 3, 0, 8),
+  [127] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_container_block, 3, 0, 8),
+  [129] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_container_block, 3, 0, 8),
+  [131] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_responsive_block, 3, 0, 9),
+  [133] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_responsive_block, 3, 0, 9),
+  [135] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_responsive_block, 4, 0, 12),
+  [137] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_responsive_block, 4, 0, 12),
+  [139] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_block, 2, 0, 0),
+  [141] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_block, 2, 0, 0),
+  [143] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_block, 3, 0, 0),
+  [145] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_block, 3, 0, 0),
+  [147] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_statement, 3, 0, 10),
+  [149] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_statement, 3, 0, 10),
+  [151] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_source_file, 1, 0, 0),
+  [153] = {.entry = {.count = 1, .reusable = true}}, SHIFT(21),
+  [155] = {.entry = {.count = 1, .reusable = true}}, REDUCE(aux_sym_source_file_repeat1, 2, 0, 0),
+  [157] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_source_file_repeat1, 2, 0, 0), SHIFT_REPEAT(50),
+  [160] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_source_file_repeat1, 2, 0, 0), SHIFT_REPEAT(68),
+  [163] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_source_file_repeat1, 2, 0, 0), SHIFT_REPEAT(58),
+  [166] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_source_file_repeat1, 2, 0, 0), SHIFT_REPEAT(21),
+  [169] = {.entry = {.count = 1, .reusable = true}}, SHIFT(30),
+  [171] = {.entry = {.count = 1, .reusable = true}}, SHIFT(24),
+  [173] = {.entry = {.count = 1, .reusable = true}}, REDUCE(aux_sym_supports_body_repeat1, 2, 0, 0),
+  [175] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_supports_body_repeat1, 2, 0, 0), SHIFT_REPEAT(68),
+  [178] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_supports_body_repeat1, 2, 0, 0), SHIFT_REPEAT(24),
+  [181] = {.entry = {.count = 1, .reusable = true}}, SHIFT(28),
+  [183] = {.entry = {.count = 1, .reusable = true}}, SHIFT(22),
+  [185] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_declaration, 3, 0, 3),
+  [187] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_supports_body, 2, 0, 0),
+  [189] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_include, 3, 0, 2),
+  [191] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_supports_body, 3, 0, 0),
+  [193] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_supports_block, 3, 0, 1),
+  [195] = {.entry = {.count = 1, .reusable = false}}, SHIFT(37),
+  [197] = {.entry = {.count = 1, .reusable = false}}, SHIFT(35),
+  [199] = {.entry = {.count = 1, .reusable = false}}, SHIFT_EXTRA(),
+  [201] = {.entry = {.count = 1, .reusable = true}}, SHIFT(7),
+  [203] = {.entry = {.count = 1, .reusable = true}}, SHIFT(19),
+  [205] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_statement_repeat1, 2, 0, 11), SHIFT_REPEAT(37),
+  [208] = {.entry = {.count = 2, .reusable = false}}, REDUCE(aux_sym_statement_repeat1, 2, 0, 11), SHIFT_REPEAT(35),
+  [211] = {.entry = {.count = 1, .reusable = true}}, REDUCE(aux_sym_statement_repeat1, 2, 0, 11),
+  [213] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_percentage, 1, 0, 0),
+  [215] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_percentage, 1, 0, 0),
+  [217] = {.entry = {.count = 2, .reusable = false}}, REDUCE(sym_property_keyword, 1, 0, 0), SHIFT(46),
+  [220] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_property_keyword, 1, 0, 0),
+  [222] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_property_keyword, 1, 0, 0),
+  [224] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_value, 1, 0, 0),
+  [226] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_value, 1, 0, 0),
+  [228] = {.entry = {.count = 1, .reusable = false}}, REDUCE(aux_sym_statement_repeat1, 1, 0, 6),
+  [230] = {.entry = {.count = 1, .reusable = true}}, REDUCE(aux_sym_statement_repeat1, 1, 0, 6),
+  [232] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_effect_keyword, 1, 0, 0),
+  [234] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_effect_keyword, 1, 0, 0),
+  [236] = {.entry = {.count = 1, .reusable = true}}, SHIFT(42),
+  [238] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_support_predicate, 1, 0, 0),
+  [240] = {.entry = {.count = 1, .reusable = true}}, SHIFT(43),
+  [242] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_support_predicate, 2, 0, 0),
+  [244] = {.entry = {.count = 2, .reusable = true}}, REDUCE(aux_sym_support_predicate_repeat1, 2, 0, 0), SHIFT_REPEAT(43),
+  [247] = {.entry = {.count = 1, .reusable = true}}, REDUCE(aux_sym_support_predicate_repeat1, 2, 0, 0),
+  [249] = {.entry = {.count = 1, .reusable = true}}, SHIFT(5),
+  [251] = {.entry = {.count = 1, .reusable = true}}, SHIFT(64),
+  [253] = {.entry = {.count = 1, .reusable = true}}, SHIFT(41),
+  [255] = {.entry = {.count = 1, .reusable = true}}, SHIFT(2),
+  [257] = {.entry = {.count = 1, .reusable = true}}, SHIFT(26),
+  [259] = {.entry = {.count = 1, .reusable = true}}, SHIFT(54),
+  [261] = {.entry = {.count = 1, .reusable = false}}, SHIFT(63),
+  [263] = {.entry = {.count = 1, .reusable = true}}, SHIFT(49),
+  [265] = {.entry = {.count = 1, .reusable = true}},  ACCEPT_INPUT(),
+  [267] = {.entry = {.count = 1, .reusable = true}}, SHIFT(55),
+  [269] = {.entry = {.count = 1, .reusable = true}}, SHIFT(45),
+  [271] = {.entry = {.count = 1, .reusable = true}}, SHIFT(29),
+  [273] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_declaration_name, 1, 0, 0),
+  [275] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_state_keyword, 1, 0, 0),
+  [277] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_keyframe_selector, 1, 0, 0),
+  [279] = {.entry = {.count = 1, .reusable = true}}, SHIFT(47),
+  [281] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_declaration_keyword, 1, 0, 0),
+  [283] = {.entry = {.count = 1, .reusable = true}}, SHIFT(57),
 };
 
 #ifdef __cplusplus

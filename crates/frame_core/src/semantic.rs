@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use crate::{
     knowledge,
     symbols::{index_document, SymbolIndex},
-    tokens, Declaration, DeclarationKind, Diagnostic, Document, Node, Statement,
+    tokens, Declaration, DeclarationKind, Diagnostic, Document, Identifier, Node, Span, Statement,
 };
 
 pub fn validate(document: &Document) -> Vec<Diagnostic> {
@@ -12,7 +12,9 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
     let symbols = index_document("", document);
 
     for declaration in &document.declarations {
-        if !names.insert(declaration.name.text.clone()) {
+        if declaration.kind != DeclarationKind::Supports
+            && !names.insert(declaration.name.text.clone())
+        {
             diagnostics.push(Diagnostic::error(
                 format!(
                     "Duplicate declaration `{}`.\n\nEach Frame declaration exports one stable class name, so names must be unique within the compiled graph.\n\nRename one declaration, or merge the rules if they describe the same UI concept.",
@@ -34,6 +36,11 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
             ));
         }
 
+        if declaration.kind == DeclarationKind::Supports {
+            validate_supports_declaration(declaration, &symbols, &mut diagnostics);
+            continue;
+        }
+
         validate_statements(declaration, &symbols, &mut diagnostics);
 
         if declaration.kind == DeclarationKind::Area {
@@ -46,6 +53,133 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
     }
 
     diagnostics
+}
+
+fn validate_supports_declaration(
+    declaration: &Declaration,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    validate_supports_predicate(&declaration.name.text, declaration.name.span, diagnostics);
+
+    if declaration.body.is_empty() {
+        diagnostics.push(Diagnostic::error(
+            "supports block is empty.\n\nAdd one or more style declarations inside, such as `grid AppShell { ... }`.",
+            declaration.span,
+        ));
+        return;
+    }
+
+    for node in &declaration.body {
+        match node {
+            Node::Statement(statement) => diagnostics.push(Diagnostic::error(
+                format!(
+                    "supports blocks contain style declarations, not loose statements.\n\nWrap `{}` inside a declaration such as `card Feature {{ ... }}`.",
+                    statement.words.join(" ")
+                ),
+                statement.span,
+            )),
+            Node::Block(block) => {
+                let Some(nested) = declaration_from_block(block) else {
+                    diagnostics.push(Diagnostic::error(
+                        format!(
+                            "supports block contains invalid declaration `{}`.\n\nUse style declarations like `grid AppShell`, `card GlassPanel`, or `button PrimaryButton`.",
+                            block.name
+                        ),
+                        block.span,
+                    ));
+                    continue;
+                };
+
+                if !is_style_declaration_kind(&nested.kind) {
+                    diagnostics.push(Diagnostic::error(
+                        format!(
+                            "`{}` cannot be declared inside `supports`.\n\nSupports blocks are for generated style declarations, not tokens, keyframes, or nested feature gates.",
+                            block.name
+                        ),
+                        block.span,
+                    ));
+                    continue;
+                }
+
+                validate_statements(&nested, symbols, diagnostics);
+                if nested.kind == DeclarationKind::Area {
+                    validate_area(&nested, symbols, diagnostics);
+                }
+            }
+        }
+    }
+}
+
+fn validate_supports_predicate(predicate: &str, span: Span, diagnostics: &mut Vec<Diagnostic>) {
+    let words = predicate.split_whitespace().collect::<Vec<_>>();
+    match words.as_slice() {
+        ["display", "grid" | "flex"]
+        | ["backdrop", "blur"]
+        | ["color", "oklch"]
+        | ["selector", "has"]
+        | ["container", "queries"]
+        | ["subgrid"] => {}
+        ["display", value] => diagnostics.push(Diagnostic::error(
+            format!("Unknown display support value `{value}`.\n\nUse `supports display grid` or `supports display flex`."),
+            span,
+        )),
+        [category, ..] => diagnostics.push(Diagnostic::error(
+            format!("Unknown support predicate `{predicate}`.\n\nUse typed predicates like `display grid`, `backdrop blur`, `color oklch`, `selector has`, `container queries`, or `subgrid`. Unknown category: `{category}`."),
+            span,
+        )),
+        [] => diagnostics.push(Diagnostic::error(
+            "supports expects a typed predicate such as `supports display grid`.",
+            span,
+        )),
+    }
+}
+
+fn declaration_from_block(block: &crate::Block) -> Option<Declaration> {
+    let mut parts = block.name.split_whitespace();
+    let kind_text = parts.next()?;
+    let name_text = parts.next()?;
+    let kind = match kind_text {
+        "grid" => DeclarationKind::Grid,
+        "area" => DeclarationKind::Area,
+        "card" => DeclarationKind::Card,
+        "stack" => DeclarationKind::Stack,
+        "row" => DeclarationKind::Row,
+        "button" => DeclarationKind::Button,
+        "text" => DeclarationKind::Text,
+        "center" => DeclarationKind::Center,
+        "split" => DeclarationKind::Split,
+        "overlay" => DeclarationKind::Overlay,
+        "dock" => DeclarationKind::Dock,
+        "tokens" => DeclarationKind::Tokens,
+        "keyframes" => DeclarationKind::Keyframes,
+        "supports" => DeclarationKind::Supports,
+        other => DeclarationKind::Unknown(other.to_string()),
+    };
+
+    Some(Declaration {
+        kind,
+        name: Identifier::new(name_text, block.span),
+        body: block.body.clone(),
+        span: block.span,
+    })
+}
+
+fn is_style_declaration_kind(kind: &DeclarationKind) -> bool {
+    matches!(
+        kind,
+        DeclarationKind::Grid
+            | DeclarationKind::Area
+            | DeclarationKind::Card
+            | DeclarationKind::Stack
+            | DeclarationKind::Row
+            | DeclarationKind::Button
+            | DeclarationKind::Text
+            | DeclarationKind::Center
+            | DeclarationKind::Split
+            | DeclarationKind::Overlay
+            | DeclarationKind::Dock
+    )
 }
 
 #[allow(dead_code)]
@@ -65,7 +199,7 @@ fn collect_grids(document: &Document) -> HashMap<String, HashSet<String>> {
                         .words
                         .iter()
                         .skip(1)
-                        .filter(|word| word.as_str() != "responsive" && word.as_str() != "cards")
+                        .filter(|word| !matches!(word.as_str(), "responsive" | "cards" | "subgrid"))
                         .cloned()
                         .collect()
                 })
@@ -2331,6 +2465,85 @@ mod tests {
         };
 
         assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn accepts_typed_supports_blocks() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Supports,
+                    "display grid",
+                    vec![block(
+                        "grid AppShell",
+                        vec![statement(&["columns", "sidebar", "content"])],
+                    )],
+                ),
+                declaration(
+                    DeclarationKind::Supports,
+                    "backdrop blur",
+                    vec![block(
+                        "card GlassPanel",
+                        vec![statement(&["surface", "glass"])],
+                    )],
+                ),
+                declaration(
+                    DeclarationKind::Supports,
+                    "subgrid",
+                    vec![block(
+                        "grid NestedGrid",
+                        vec![statement(&["columns", "subgrid"])],
+                    )],
+                ),
+            ],
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn rejects_invalid_typed_supports_blocks() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Supports,
+                    "display table",
+                    vec![block(
+                        "grid AppShell",
+                        vec![statement(&["columns", "content"])],
+                    )],
+                ),
+                declaration(
+                    DeclarationKind::Supports,
+                    "magic sparkle",
+                    vec![statement(&["columns", "content"])],
+                ),
+                declaration(
+                    DeclarationKind::Supports,
+                    "color oklch",
+                    vec![block(
+                        "tokens Brand",
+                        vec![statement(&["color", "brand", "#fff"])],
+                    )],
+                ),
+            ],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert_eq!(diagnostics.len(), 4);
+        assert!(diagnostics[0]
+            .message
+            .contains("Unknown display support value"));
+        assert!(diagnostics[1].message.contains("Unknown support predicate"));
+        assert!(diagnostics[2]
+            .message
+            .contains("supports blocks contain style declarations"));
+        assert!(diagnostics[3]
+            .message
+            .contains("cannot be declared inside `supports`"));
     }
 
     #[test]

@@ -53,7 +53,7 @@ pub fn collect_document_symbols(source: &str) -> DocumentSymbols {
                     .split_whitespace()
                     .skip(1)
                     .filter(|value| {
-                        !matches!(value, &"responsive" | &"cards")
+                        !matches!(value, &"responsive" | &"cards" | &"subgrid")
                             && value
                                 .chars()
                                 .next()
@@ -82,7 +82,7 @@ pub fn collect_document_symbols(source: &str) -> DocumentSymbols {
                     }
                     let mut search_start = statement.span.start;
                     for word in statement.words.into_iter().skip(1) {
-                        if matches!(word.as_str(), "responsive" | "cards") {
+                        if matches!(word.as_str(), "responsive" | "cards" | "subgrid") {
                             continue;
                         }
                         if let Some(relative) = source[search_start..statement.span.end].find(&word)
@@ -216,6 +216,7 @@ fn declaration_kind_label(kind: &DeclarationKind) -> &str {
         DeclarationKind::Overlay => "overlay",
         DeclarationKind::Dock => "dock",
         DeclarationKind::Keyframes => "keyframes",
+        DeclarationKind::Supports => "supports",
         DeclarationKind::Unknown(value) => value.as_str(),
     }
 }
@@ -223,6 +224,7 @@ fn declaration_kind_label(kind: &DeclarationKind) -> &str {
 fn symbol_kind(kind: &DeclarationKind) -> SymbolKind {
     match kind {
         DeclarationKind::Grid => SymbolKind::NAMESPACE,
+        DeclarationKind::Supports => SymbolKind::NAMESPACE,
         DeclarationKind::Area => SymbolKind::FIELD,
         DeclarationKind::Text => SymbolKind::STRING,
         DeclarationKind::Tokens => SymbolKind::CONSTANT,

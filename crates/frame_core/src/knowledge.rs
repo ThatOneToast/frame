@@ -112,6 +112,7 @@ pub fn declaration_keywords() -> &'static [&'static str] {
         "overlay",
         "dock",
         "keyframes",
+        "supports",
     ]
 }
 

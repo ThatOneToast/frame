@@ -136,6 +136,7 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "above" => RESPONSIVE_DOC,
         "between" => RESPONSIVE_DOC,
         "container" => CONTAINER_DOC,
+        "supports" => "Starts a typed feature query block.\n\nUse predicates like `supports display grid`, `supports backdrop blur`, `supports color oklch`, `supports selector has`, `supports container queries`, or `supports subgrid`.\n\nGenerated CSS emits an `@supports` rule.",
         "from" | "to" => KEYFRAME_SELECTOR_DOC,
         "opacity" => "Animates opacity in keyframes.\n\nGenerated CSS writes `opacity: ...`.",
         "transform" => "Animates transform functions in keyframes.\n\nGenerated CSS writes `transform: ...`.",
@@ -911,6 +912,7 @@ mod tests {
         assert!(hover_doc("target").unwrap().contains(":target"));
         assert!(hover_doc("lift").unwrap().contains("small%44"));
         assert!(hover_doc("tilt").unwrap().contains("subtle%23"));
+        assert!(hover_doc("supports").unwrap().contains("@supports"));
     }
 
     #[test]

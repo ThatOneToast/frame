@@ -33,6 +33,24 @@ grid Dashboard {
   }
 }
 
+supports display grid {
+  grid SupportedShell {
+    columns sidebar content
+  }
+}
+
+supports selector has {
+  card ParentAware {
+    border accent
+  }
+}
+
+supports subgrid {
+  grid NestedGrid {
+    columns subgrid
+  }
+}
+
 keyframes FloatIn {
   from {
     opacity 0

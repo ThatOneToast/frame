@@ -53,7 +53,7 @@ Existing Frame styling already covers a useful subset:
 - [x] app shell tracks
 - [x] responsive card grids
 - [ ] full CSS grid line placement
-- [ ] `subgrid`
+- [x] `subgrid` through `supports subgrid { grid Name { columns subgrid } }`
 - [ ] masonry-like layout strategy
 - [x] flex grow/shrink/basis
 - [x] flex wrap
@@ -210,7 +210,7 @@ Existing Frame styling already covers a useful subset:
 
 - [x] scoped `advanced { css "property" value }`
 - [ ] unsafe/global CSS escape hatch policy
-- [ ] `@supports`
+- [x] typed `supports` predicates
 - [ ] `@layer`
 - [ ] `@scope`
 - [ ] custom property registration

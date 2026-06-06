@@ -77,6 +77,11 @@ impl<'a> Parser<'a> {
                 continue;
             }
 
+            if line.starts_with("supports ") {
+                declarations.push(self.parse_supports_declaration()?);
+                continue;
+            }
+
             declarations.push(self.parse_declaration()?);
         }
 
@@ -173,22 +178,7 @@ impl<'a> Parser<'a> {
             )
         })?;
 
-        let kind = match kind_text {
-            "grid" => DeclarationKind::Grid,
-            "area" => DeclarationKind::Area,
-            "card" => DeclarationKind::Card,
-            "stack" => DeclarationKind::Stack,
-            "row" => DeclarationKind::Row,
-            "button" => DeclarationKind::Button,
-            "text" => DeclarationKind::Text,
-            "tokens" => DeclarationKind::Tokens,
-            "center" => DeclarationKind::Center,
-            "split" => DeclarationKind::Split,
-            "overlay" => DeclarationKind::Overlay,
-            "dock" => DeclarationKind::Dock,
-            "keyframes" => DeclarationKind::Keyframes,
-            other => DeclarationKind::Unknown(other.to_string()),
-        };
+        let kind = declaration_kind(kind_text);
 
         let name_start = line.start + line.text.find(name_text).unwrap_or(0);
         let name = Identifier::new(
@@ -217,7 +207,67 @@ impl<'a> Parser<'a> {
         })
     }
 
+    fn parse_supports_declaration(&mut self) -> Result<Declaration, ParseError> {
+        let line = self
+            .current_line()
+            .expect("parse_supports_declaration needs a line");
+        let content = content_without_comment(line.text);
+
+        if !content.ends_with('{') {
+            return Err(ParseError::one(
+                format!("expected supports block ending with `{{`, found `{content}`"),
+                Span {
+                    start: line.start,
+                    end: line.end,
+                },
+            ));
+        }
+
+        let header = content.trim_end_matches('{').trim();
+        let predicate = header.strip_prefix("supports ").unwrap_or_default().trim();
+        if predicate.is_empty() {
+            return Err(ParseError::one(
+                "supports expects a typed predicate such as `supports display grid`",
+                Span {
+                    start: line.start,
+                    end: line.end,
+                },
+            ));
+        }
+
+        let predicate_start = line.start + line.text.find(predicate).unwrap_or(0);
+        self.advance();
+        let body = self.parse_nodes_until_close_with_declaration_blocks(true)?;
+        let end = self
+            .previous_line()
+            .map(|line| line.end)
+            .unwrap_or(line.end);
+
+        Ok(Declaration {
+            kind: DeclarationKind::Supports,
+            name: Identifier::new(
+                predicate,
+                Span {
+                    start: predicate_start,
+                    end: predicate_start + predicate.len(),
+                },
+            ),
+            body,
+            span: Span {
+                start: line.start,
+                end,
+            },
+        })
+    }
+
     fn parse_nodes_until_close(&mut self) -> Result<Vec<Node>, ParseError> {
+        self.parse_nodes_until_close_with_declaration_blocks(false)
+    }
+
+    fn parse_nodes_until_close_with_declaration_blocks(
+        &mut self,
+        allow_declaration_blocks: bool,
+    ) -> Result<Vec<Node>, ParseError> {
         let mut nodes = Vec::new();
 
         while let Some(line) = self.current_line() {
@@ -235,7 +285,12 @@ impl<'a> Parser<'a> {
 
             if content.ends_with('{') {
                 let name = content.trim_end_matches('{').trim();
-                if !is_allowed_nested_block(name) {
+                let is_declaration_block = allow_declaration_blocks
+                    && name
+                        .split_whitespace()
+                        .next()
+                        .is_some_and(is_declaration_keyword);
+                if !is_declaration_block && !is_allowed_nested_block(name) {
                     return Err(ParseError::one(
                         format!("unknown nested block `{name}`"),
                         Span {
@@ -246,7 +301,7 @@ impl<'a> Parser<'a> {
                 }
 
                 self.advance();
-                let body = self.parse_nodes_until_close()?;
+                let body = self.parse_nodes_until_close_with_declaration_blocks(false)?;
                 let end = self
                     .previous_line()
                     .map(|line| line.end)
@@ -305,6 +360,30 @@ impl<'a> Parser<'a> {
     fn advance(&mut self) {
         self.index += 1;
     }
+}
+
+fn declaration_kind(kind: &str) -> DeclarationKind {
+    match kind {
+        "grid" => DeclarationKind::Grid,
+        "area" => DeclarationKind::Area,
+        "card" => DeclarationKind::Card,
+        "stack" => DeclarationKind::Stack,
+        "row" => DeclarationKind::Row,
+        "button" => DeclarationKind::Button,
+        "text" => DeclarationKind::Text,
+        "tokens" => DeclarationKind::Tokens,
+        "center" => DeclarationKind::Center,
+        "split" => DeclarationKind::Split,
+        "overlay" => DeclarationKind::Overlay,
+        "dock" => DeclarationKind::Dock,
+        "keyframes" => DeclarationKind::Keyframes,
+        "supports" => DeclarationKind::Supports,
+        other => DeclarationKind::Unknown(other.to_string()),
+    }
+}
+
+fn is_declaration_keyword(kind: &str) -> bool {
+    !matches!(declaration_kind(kind), DeclarationKind::Unknown(_))
 }
 
 fn is_allowed_nested_block(name: &str) -> bool {
@@ -530,6 +609,27 @@ card QuickLinkCard {
         assert!(matches!(
             declaration.body[3],
             Node::Block(ref block) if block.name == "invalid"
+        ));
+    }
+
+    #[test]
+    fn parses_typed_supports_blocks_with_nested_declarations() {
+        let source = r#"
+supports display grid {
+  grid AppShell {
+    columns sidebar content
+  }
+}
+"#;
+
+        let document = parse(source).expect("supports block should parse");
+        let declaration = &document.declarations[0];
+
+        assert_eq!(declaration.kind, DeclarationKind::Supports);
+        assert_eq!(declaration.name.text, "display grid");
+        assert!(matches!(
+            declaration.body[0],
+            Node::Block(ref block) if block.name == "grid AppShell"
         ));
     }
 

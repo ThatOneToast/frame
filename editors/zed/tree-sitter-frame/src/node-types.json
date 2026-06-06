@@ -384,6 +384,10 @@
         {
           "type": "include",
           "named": true
+        },
+        {
+          "type": "supports_block",
+          "named": true
         }
       ]
     }
@@ -451,6 +455,62 @@
           }
         ]
       }
+    }
+  },
+  {
+    "type": "support_predicate",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "supports_block",
+    "named": true,
+    "fields": {
+      "predicate": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "support_predicate",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "supports_body",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "supports_body",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "declaration",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -948,6 +1008,10 @@
   {
     "type": "string",
     "named": true
+  },
+  {
+    "type": "supports",
+    "named": false
   },
   {
     "type": "surface",

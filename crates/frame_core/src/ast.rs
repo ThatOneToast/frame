@@ -36,6 +36,7 @@ pub enum DeclarationKind {
     Overlay,
     Dock,
     Keyframes,
+    Supports,
     Unknown(String),
 }
 

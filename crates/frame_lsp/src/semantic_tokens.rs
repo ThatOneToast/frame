@@ -26,6 +26,11 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
             if let Some(target) = words.get(1) {
                 push_word(line, line_index, target, 4, &mut raw);
             }
+        } else if first == "supports" {
+            push_word(line, line_index, first, 0, &mut raw);
+            for value in words.iter().skip(1) {
+                push_word(line, line_index, value.trim_end_matches('{'), 3, &mut raw);
+            }
         } else if knowledge::declaration_keywords().contains(&first) {
             push_word(line, line_index, first, 0, &mut raw);
             if let Some(name) = words.get(1) {
@@ -160,6 +165,12 @@ fn is_known_value(value: &str) -> bool {
                 | "offset"
                 | "up"
                 | "down"
+                | "backdrop"
+                | "selector"
+                | "queries"
+                | "oklch"
+                | "has"
+                | "subgrid"
         )
         || tokens::BORDER_LINE_STYLES.contains(&value)
         || is_tuned_amount(value)
@@ -253,6 +264,14 @@ mod tests {
         );
 
         assert!(tokens.data.iter().any(|token| token.token_type == 2));
+        assert!(tokens.data.iter().any(|token| token.token_type == 3));
+    }
+
+    #[test]
+    fn emits_tokens_for_supports_predicates() {
+        let tokens = semantic_tokens("supports display grid {\n  grid AppShell {\n  }\n}\n");
+
+        assert!(tokens.data.iter().any(|token| token.token_type == 0));
         assert!(tokens.data.iter().any(|token| token.token_type == 3));
     }
 }

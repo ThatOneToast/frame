@@ -14,6 +14,10 @@
           },
           {
             "type": "SYMBOL",
+            "name": "supports_block"
+          },
+          {
+            "type": "SYMBOL",
             "name": "declaration"
           },
           {
@@ -70,6 +74,72 @@
         {
           "type": "SYMBOL",
           "name": "block"
+        }
+      ]
+    },
+    "supports_block": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "supports"
+        },
+        {
+          "type": "FIELD",
+          "name": "predicate",
+          "content": {
+            "type": "SYMBOL",
+            "name": "support_predicate"
+          }
+        },
+        {
+          "type": "SYMBOL",
+          "name": "supports_body"
+        }
+      ]
+    },
+    "support_predicate": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          }
+        }
+      ]
+    },
+    "supports_body": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "{"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_newline"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "declaration"
+              }
+            ]
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "}"
         }
       ]
     },

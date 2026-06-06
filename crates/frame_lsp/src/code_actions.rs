@@ -271,7 +271,7 @@ fn grids_with_named_columns(source: &str) -> Vec<(String, Vec<String>, usize)> {
                                 .chars()
                                 .next()
                                 .is_some_and(|character| character.is_ascii_alphabetic())
-                                && !matches!(*value, "responsive" | "cards")
+                                && !matches!(*value, "responsive" | "cards" | "subgrid")
                         })
                         .map(ToOwned::to_owned)
                         .collect();

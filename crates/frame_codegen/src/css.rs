@@ -1,4 +1,7 @@
-use frame_core::{symbols::index_document, DeclarationKind, Document, Node, Statement};
+use frame_core::{
+    symbols::{index_document, SymbolIndex},
+    Declaration, DeclarationKind, Document, Identifier, Node, Statement,
+};
 
 pub fn generate_css(document: &Document) -> String {
     let mut css = String::new();
@@ -74,105 +77,177 @@ pub fn generate_css(document: &Document) -> String {
     css.push_str("}\n\n");
 
     for declaration in &document.declarations {
-        let class_name = format!("fr-{}", declaration.name.text);
-
-        match declaration.kind {
-            DeclarationKind::Grid => {
-                css.push_str(&format!(".{class_name} {{\n  display: grid;\n"));
-                emit_grid(&mut css, &declaration.body);
-                emit_common(&mut css, &declaration.body, &symbols);
-                css.push_str("}\n\n");
-                emit_grid_section_rules(&mut css, &class_name, &declaration.body);
-                emit_condition_blocks(
-                    &mut css,
-                    &class_name,
-                    declaration.kind.clone(),
-                    &declaration.body,
-                );
-            }
-            DeclarationKind::Area => {
-                css.push_str(&format!(".{class_name} {{\n"));
-                emit_common(&mut css, &declaration.body, &symbols);
-                if let Some(value) = find_statement_value(&declaration.body, "place") {
-                    css.push_str(&format!("  grid-area: {value};\n"));
-                }
-                if let Some(value) = find_statement_value(&declaration.body, "col") {
-                    css.push_str(&format!("  grid-column: {value};\n"));
-                }
-                if let Some(value) = find_statement_value(&declaration.body, "row") {
-                    css.push_str(&format!("  grid-row: {value};\n"));
-                }
-                if let Some(value) = find_statement_value(&declaration.body, "span") {
-                    css.push_str(&format!("  grid-column: span {value};\n"));
-                }
-                css.push_str("}\n\n");
-                emit_condition_blocks(
-                    &mut css,
-                    &class_name,
-                    declaration.kind.clone(),
-                    &declaration.body,
-                );
-            }
-            DeclarationKind::Card
-            | DeclarationKind::Stack
-            | DeclarationKind::Row
-            | DeclarationKind::Button
-            | DeclarationKind::Text
-            | DeclarationKind::Center
-            | DeclarationKind::Split
-            | DeclarationKind::Overlay
-            | DeclarationKind::Dock => {
-                css.push_str(&format!(".{class_name} {{\n"));
-                match declaration.kind {
-                    DeclarationKind::Card | DeclarationKind::Stack => {
-                        css.push_str("  display: flex;\n  flex-direction: column;\n")
-                    }
-                    DeclarationKind::Row => {
-                        css.push_str("  display: flex;\n  flex-direction: row;\n")
-                    }
-                    DeclarationKind::Center => {
-                        css.push_str("  display: grid;\n  place-items: center;\n")
-                    }
-                    DeclarationKind::Split => {
-                        css.push_str("  display: grid;\n  grid-template-columns: minmax(0, auto) minmax(0, 1fr);\n")
-                    }
-                    DeclarationKind::Overlay => {
-                        css.push_str("  position: fixed;\n  inset: 0;\n  display: grid;\n")
-                    }
-                    DeclarationKind::Dock => {
-                        css.push_str("  position: fixed;\n  inset-inline: 0;\n  bottom: 0;\n")
-                    }
-                    _ => {}
-                }
-                emit_common(&mut css, &declaration.body, &symbols);
-                css.push_str("}\n\n");
-
-                for node in &declaration.body {
-                    if let Node::Block(block) = node {
-                        let Some(selector) = state_selector(&block.name) else {
-                            continue;
-                        };
-                        css.push_str(&format!(".{class_name}{selector} {{\n"));
-                        emit_effects(&mut css, &block.body);
-                        css.push_str("}\n\n");
-                    }
-                }
-                emit_condition_blocks(
-                    &mut css,
-                    &class_name,
-                    declaration.kind.clone(),
-                    &declaration.body,
-                );
-            }
-            DeclarationKind::Keyframes => {
-                emit_custom_keyframes(&mut css, &declaration.name.text, &declaration.body);
-            }
-            _ => {}
-        }
+        emit_declaration_css(&mut css, declaration, &symbols);
     }
 
     emit_keyframes(&mut css);
     css
+}
+
+fn emit_declaration_css(css: &mut String, declaration: &Declaration, symbols: &SymbolIndex) {
+    let class_name = format!("fr-{}", declaration.name.text);
+
+    match declaration.kind {
+        DeclarationKind::Grid => {
+            css.push_str(&format!(".{class_name} {{\n  display: grid;\n"));
+            emit_grid(css, &declaration.body);
+            emit_common(css, &declaration.body, symbols);
+            css.push_str("}\n\n");
+            emit_grid_section_rules(css, &class_name, &declaration.body);
+            emit_condition_blocks(
+                css,
+                &class_name,
+                declaration.kind.clone(),
+                &declaration.body,
+            );
+        }
+        DeclarationKind::Area => {
+            css.push_str(&format!(".{class_name} {{\n"));
+            emit_common(css, &declaration.body, symbols);
+            if let Some(value) = find_statement_value(&declaration.body, "place") {
+                css.push_str(&format!("  grid-area: {value};\n"));
+            }
+            if let Some(value) = find_statement_value(&declaration.body, "col") {
+                css.push_str(&format!("  grid-column: {value};\n"));
+            }
+            if let Some(value) = find_statement_value(&declaration.body, "row") {
+                css.push_str(&format!("  grid-row: {value};\n"));
+            }
+            if let Some(value) = find_statement_value(&declaration.body, "span") {
+                css.push_str(&format!("  grid-column: span {value};\n"));
+            }
+            css.push_str("}\n\n");
+            emit_condition_blocks(
+                css,
+                &class_name,
+                declaration.kind.clone(),
+                &declaration.body,
+            );
+        }
+        DeclarationKind::Card
+        | DeclarationKind::Stack
+        | DeclarationKind::Row
+        | DeclarationKind::Button
+        | DeclarationKind::Text
+        | DeclarationKind::Center
+        | DeclarationKind::Split
+        | DeclarationKind::Overlay
+        | DeclarationKind::Dock => {
+            css.push_str(&format!(".{class_name} {{\n"));
+            match declaration.kind {
+                DeclarationKind::Card | DeclarationKind::Stack => {
+                    css.push_str("  display: flex;\n  flex-direction: column;\n")
+                }
+                DeclarationKind::Row => css.push_str("  display: flex;\n  flex-direction: row;\n"),
+                DeclarationKind::Center => {
+                    css.push_str("  display: grid;\n  place-items: center;\n")
+                }
+                DeclarationKind::Split => css.push_str(
+                    "  display: grid;\n  grid-template-columns: minmax(0, auto) minmax(0, 1fr);\n",
+                ),
+                DeclarationKind::Overlay => {
+                    css.push_str("  position: fixed;\n  inset: 0;\n  display: grid;\n")
+                }
+                DeclarationKind::Dock => {
+                    css.push_str("  position: fixed;\n  inset-inline: 0;\n  bottom: 0;\n")
+                }
+                _ => {}
+            }
+            emit_common(css, &declaration.body, symbols);
+            css.push_str("}\n\n");
+
+            for node in &declaration.body {
+                if let Node::Block(block) = node {
+                    let Some(selector) = state_selector(&block.name) else {
+                        continue;
+                    };
+                    css.push_str(&format!(".{class_name}{selector} {{\n"));
+                    emit_effects(css, &block.body);
+                    css.push_str("}\n\n");
+                }
+            }
+            emit_condition_blocks(
+                css,
+                &class_name,
+                declaration.kind.clone(),
+                &declaration.body,
+            );
+        }
+        DeclarationKind::Keyframes => {
+            emit_custom_keyframes(css, &declaration.name.text, &declaration.body);
+        }
+        DeclarationKind::Supports => emit_supports(css, declaration, symbols),
+        _ => {}
+    }
+}
+
+fn emit_supports(css: &mut String, declaration: &Declaration, symbols: &SymbolIndex) {
+    let Some(condition) = supports_condition(&declaration.name.text) else {
+        return;
+    };
+
+    css.push_str(&format!("@supports {condition} {{\n"));
+    let mut nested_css = String::new();
+    for node in &declaration.body {
+        let Node::Block(block) = node else {
+            continue;
+        };
+        let Some(nested) = declaration_from_block(block) else {
+            continue;
+        };
+        emit_declaration_css(&mut nested_css, &nested, symbols);
+    }
+    for line in nested_css.lines() {
+        if line.is_empty() {
+            css.push('\n');
+        } else {
+            css.push_str("  ");
+            css.push_str(line);
+            css.push('\n');
+        }
+    }
+    css.push_str("}\n\n");
+}
+
+fn supports_condition(predicate: &str) -> Option<&'static str> {
+    match predicate.split_whitespace().collect::<Vec<_>>().as_slice() {
+        ["display", "grid"] => Some("(display: grid)"),
+        ["display", "flex"] => Some("(display: flex)"),
+        ["backdrop", "blur"] => Some("(backdrop-filter: blur(1px))"),
+        ["color", "oklch"] => Some("(color: oklch(50% 0.1 180))"),
+        ["selector", "has"] => Some("selector(:has(*))"),
+        ["container", "queries"] => Some("(container-type: inline-size)"),
+        ["subgrid"] => Some("(grid-template-columns: subgrid)"),
+        _ => None,
+    }
+}
+
+fn declaration_from_block(block: &frame_core::Block) -> Option<Declaration> {
+    let mut parts = block.name.split_whitespace();
+    let kind_text = parts.next()?;
+    let name_text = parts.next()?;
+    let kind = match kind_text {
+        "grid" => DeclarationKind::Grid,
+        "area" => DeclarationKind::Area,
+        "card" => DeclarationKind::Card,
+        "stack" => DeclarationKind::Stack,
+        "row" => DeclarationKind::Row,
+        "button" => DeclarationKind::Button,
+        "text" => DeclarationKind::Text,
+        "center" => DeclarationKind::Center,
+        "split" => DeclarationKind::Split,
+        "overlay" => DeclarationKind::Overlay,
+        "dock" => DeclarationKind::Dock,
+        "keyframes" => DeclarationKind::Keyframes,
+        _ => return None,
+    };
+
+    Some(Declaration {
+        kind,
+        name: Identifier::new(name_text, block.span),
+        body: block.body.clone(),
+        span: block.span,
+    })
 }
 
 fn emit_grid(css: &mut String, body: &[Node]) {
@@ -1293,6 +1368,7 @@ fn column_css_value(value: &str) -> &str {
         value if is_percentage(value) => value,
         "auto" => "auto",
         "fill" => "minmax(0, 1fr)",
+        "subgrid" => "subgrid",
         _ => "minmax(0, 1fr)",
     }
 }
@@ -1319,6 +1395,9 @@ fn is_percentage(value: &str) -> bool {
 }
 
 fn is_identifier_grid_name(value: &str) -> bool {
+    if value == "subgrid" {
+        return false;
+    }
     value
         .chars()
         .next()
@@ -2347,6 +2426,51 @@ mod tests {
         assert!(css.contains("@media (max-width: 1023px)"));
         assert!(css.contains("@container (max-width: 42rem)"));
         assert!(css.contains(".fr-AppShell"));
+    }
+
+    #[test]
+    fn generates_typed_supports_blocks() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Supports,
+                    "display grid",
+                    vec![Node::Block(frame_core::Block {
+                        name: "grid AppShell".to_string(),
+                        body: vec![statement(&["columns", "sidebar", "content"])],
+                        span: Span::default(),
+                    })],
+                ),
+                declaration(
+                    DeclarationKind::Supports,
+                    "selector has",
+                    vec![Node::Block(frame_core::Block {
+                        name: "card ParentAware".to_string(),
+                        body: vec![statement(&["border", "accent"])],
+                        span: Span::default(),
+                    })],
+                ),
+                declaration(
+                    DeclarationKind::Supports,
+                    "subgrid",
+                    vec![Node::Block(frame_core::Block {
+                        name: "grid NestedGrid".to_string(),
+                        body: vec![statement(&["columns", "subgrid"])],
+                        span: Span::default(),
+                    })],
+                ),
+            ],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains("@supports (display: grid)"));
+        assert!(css.contains(".fr-AppShell"));
+        assert!(css.contains("@supports selector(:has(*))"));
+        assert!(css.contains(".fr-ParentAware"));
+        assert!(css.contains("@supports (grid-template-columns: subgrid)"));
+        assert!(css.contains("grid-template-columns: subgrid;"));
     }
 
     #[test]

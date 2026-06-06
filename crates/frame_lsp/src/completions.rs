@@ -101,6 +101,7 @@ const DECLARATIONS: &[&str] = &[
     "overlay",
     "dock",
     "keyframes",
+    "supports",
 ];
 
 struct FrameSnippet {
@@ -492,6 +493,10 @@ pub fn completions_at_with_includes(
 
     if line.trim_start().starts_with("#include") {
         return include_suggestions(include_files);
+    }
+
+    if line_words.first().map(String::as_str) == Some("supports") {
+        return supports_predicate_completions(&line_words);
     }
 
     if is_inside_block(source, offset, "gradient") {
@@ -1286,6 +1291,56 @@ fn motion_amount_suggestions(amounts: &[&str], detail: &'static str) -> Vec<Comp
     items
 }
 
+fn supports_predicate_completions(line_words: &[String]) -> Vec<CompletionSuggestion> {
+    match line_words.get(1).map(String::as_str) {
+        None => suggestions_with_category(
+            &[
+                "display",
+                "backdrop",
+                "color",
+                "selector",
+                "container",
+                "subgrid",
+            ],
+            "support predicate",
+            "Typed feature query category.",
+            CompletionCategory::AdvancedProperty,
+        ),
+        Some("display") => suggestions_with_category(
+            &["grid", "flex"],
+            "support value",
+            "Display feature query value.",
+            CompletionCategory::AdvancedProperty,
+        ),
+        Some("backdrop") => suggestions_with_category(
+            &["blur"],
+            "support value",
+            "Backdrops feature query value.",
+            CompletionCategory::AdvancedProperty,
+        ),
+        Some("color") => suggestions_with_category(
+            &["oklch"],
+            "support value",
+            "Color-space feature query value.",
+            CompletionCategory::AdvancedProperty,
+        ),
+        Some("selector") => suggestions_with_category(
+            &["has"],
+            "support value",
+            "Selector feature query value.",
+            CompletionCategory::AdvancedProperty,
+        ),
+        Some("container") => suggestions_with_category(
+            &["queries"],
+            "support value",
+            "Container-query feature query value.",
+            CompletionCategory::AdvancedProperty,
+        ),
+        Some("subgrid") => Vec::new(),
+        Some(_) => Vec::new(),
+    }
+}
+
 fn category_for_detail(detail: &str) -> CompletionCategory {
     match detail {
         "declaration" => CompletionCategory::Declaration,
@@ -1416,6 +1471,7 @@ fn completion_documentation(label: &str) -> Option<String> {
         "above" => "Starts a responsive override for viewports at or above a breakpoint.",
         "between" => "Starts a responsive override between two breakpoints.\n\nExample:\n\nbetween tablet desktop {\n  columns sidebar content\n}",
         "container" => "Starts a container query override.\n\nExample:\n\ncontainer narrow {\n  columns content\n}",
+        "supports" => "Starts a typed feature query block.\n\nExample:\n\nsupports display grid {\n  grid AppShell {\n    columns sidebar content\n  }\n}\n\nGenerated CSS emits `@supports (display: grid)`.",
         "theme" => "Applies semantic color intent to text and border.",
         "hover" => "Starts hover effects. Only effect keywords are valid inside.",
         "focus" => "Starts keyboard focus effects, usually `ring accent`.",
@@ -1684,6 +1740,23 @@ mod tests {
         assert!(labels.contains(&"slight".to_string()));
         assert!(labels.contains(&"subtle%44".to_string()));
         assert!(labels.contains(&"dramatic%50".to_string()));
+    }
+
+    #[test]
+    fn supports_blocks_suggest_typed_predicates() {
+        let labels = labels_for("supports ");
+
+        assert!(labels.contains(&"display".to_string()));
+        assert!(labels.contains(&"backdrop".to_string()));
+        assert!(labels.contains(&"subgrid".to_string()));
+
+        let labels = labels_for("supports display ");
+
+        assert_eq!(labels, vec!["grid".to_string(), "flex".to_string()]);
+
+        let labels = labels_for("supports selector ");
+
+        assert_eq!(labels, vec!["has".to_string()]);
     }
 
     #[test]
