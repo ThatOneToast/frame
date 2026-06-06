@@ -167,8 +167,14 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "interactive" => "Marks a surface as pointer-interactive and emits cursor affordance.",
         "hover" => "Defines effects applied when the user hovers this component.\n\nExample:\n\nhover {\n  lift small\n  glow accent\n}",
         "focus" => "Defines effects applied when keyboard or assistive focus reaches this component.",
+        "focus-visible" => "Defines effects applied when focus should be visibly indicated.\n\nGenerated CSS emits `:focus-visible`.",
+        "focus-within" => "Defines effects applied when this element or any descendant has focus.\n\nGenerated CSS emits `:focus-within`.",
         "active" => "Defines effects applied while this component is being pressed.",
         "disabled" => "Defines visual treatment for unavailable controls.",
+        "checked" => "Defines effects applied to checked controls.\n\nGenerated CSS emits `:checked`.",
+        "invalid" => "Defines effects applied to invalid form controls.\n\nGenerated CSS emits `:invalid`.",
+        "required" => "Defines effects applied to required form controls.\n\nGenerated CSS emits `:required`.",
+        "target" => "Defines effects applied when this element matches the URL fragment target.\n\nGenerated CSS emits `:target`.",
         "lift" => "Moves a component upward to express hover elevation.",
         "glow" => "Adds a semantic glow, commonly using accent, danger, or success.",
         "brighten" => "Slightly increases visual brightness for interactive feedback.",
@@ -889,6 +895,14 @@ mod tests {
         assert!(hover_doc("whitespace").unwrap().contains("white-space"));
         assert!(hover_doc("word-break").unwrap().contains("word-break"));
         assert!(hover_doc("hyphenate").unwrap().contains("hyphens"));
+        assert!(hover_doc("focus-visible")
+            .unwrap()
+            .contains(":focus-visible"));
+        assert!(hover_doc("focus-within").unwrap().contains(":focus-within"));
+        assert!(hover_doc("checked").unwrap().contains(":checked"));
+        assert!(hover_doc("invalid").unwrap().contains(":invalid"));
+        assert!(hover_doc("required").unwrap().contains(":required"));
+        assert!(hover_doc("target").unwrap().contains(":target"));
     }
 
     #[test]

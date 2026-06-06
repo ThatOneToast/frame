@@ -33,7 +33,18 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
             }
         } else if matches!(
             first,
-            "hover" | "focus" | "active" | "disabled" | "from" | "to"
+            "hover"
+                | "focus"
+                | "focus-visible"
+                | "focus-within"
+                | "active"
+                | "disabled"
+                | "checked"
+                | "invalid"
+                | "required"
+                | "target"
+                | "from"
+                | "to"
         ) || first.ends_with('%')
         {
             push_word(line, line_index, first, 0, &mut raw);
@@ -209,5 +220,15 @@ mod tests {
 
         assert!(tokens.data.iter().any(|token| token.token_type == 2));
         assert!(tokens.data.iter().any(|token| token.token_type == 3));
+    }
+
+    #[test]
+    fn emits_tokens_for_expanded_interaction_states() {
+        let tokens = semantic_tokens(
+            "button Field {\n  focus-visible {\n    ring accent\n  }\n  invalid {\n    ring danger\n  }\n}\n",
+        );
+
+        assert!(tokens.data.iter().any(|token| token.token_type == 0));
+        assert!(tokens.data.iter().any(|token| token.token_type == 2));
     }
 }

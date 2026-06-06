@@ -308,8 +308,20 @@ impl<'a> Parser<'a> {
 }
 
 fn is_allowed_nested_block(name: &str) -> bool {
-    matches!(name, "hover" | "focus" | "active" | "disabled" | "advanced")
-        || name == "gradient"
+    matches!(
+        name,
+        "hover"
+            | "focus"
+            | "focus-visible"
+            | "focus-within"
+            | "active"
+            | "disabled"
+            | "checked"
+            | "invalid"
+            | "required"
+            | "target"
+            | "advanced"
+    ) || name == "gradient"
         || name.starts_with("gradient ")
         || name.starts_with("section ")
         || name.starts_with("animation ")
@@ -491,6 +503,14 @@ card QuickLinkCard {
     lift small
     glow accent
   }
+
+  focus-within {
+    ring accent
+  }
+
+  invalid {
+    ring danger
+  }
 }
 "#;
 
@@ -498,8 +518,19 @@ card QuickLinkCard {
         let declaration = &document.declarations[0];
 
         assert_eq!(declaration.name.text, "QuickLinkCard");
-        assert_eq!(declaration.body.len(), 2);
-        assert!(matches!(declaration.body[1], Node::Block(_)));
+        assert_eq!(declaration.body.len(), 4);
+        assert!(matches!(
+            declaration.body[1],
+            Node::Block(ref block) if block.name == "hover"
+        ));
+        assert!(matches!(
+            declaration.body[2],
+            Node::Block(ref block) if block.name == "focus-within"
+        ));
+        assert!(matches!(
+            declaration.body[3],
+            Node::Block(ref block) if block.name == "invalid"
+        ));
     }
 
     #[test]

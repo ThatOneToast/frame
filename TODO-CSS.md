@@ -197,14 +197,14 @@ Existing Frame styling already covers a useful subset:
 - [x] `focus`
 - [x] `active`
 - [x] `disabled`
-- [ ] `focus-visible`
-- [ ] `focus-within`
-- [ ] `checked`
-- [ ] `invalid`
-- [ ] `required`
+- [x] `focus-visible`
+- [x] `focus-within`
+- [x] `checked`
+- [x] `invalid`
+- [x] `required`
 - [ ] `placeholder`
 - [ ] `selection`
-- [ ] `target`
+- [x] `target`
 
 ## Advanced CSS and Escape Hatches
 

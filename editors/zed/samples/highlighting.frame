@@ -96,4 +96,12 @@ card DemoCard {
     glow accent
     transition smooth
   }
+
+  focus-within {
+    ring accent
+  }
+
+  invalid {
+    ring danger
+  }
 }

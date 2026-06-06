@@ -577,6 +577,10 @@
     "named": false
   },
   {
+    "type": "checked",
+    "named": false
+  },
+  {
     "type": "col",
     "named": false
   },
@@ -670,6 +674,14 @@
     "named": false
   },
   {
+    "type": "focus-visible",
+    "named": false
+  },
+  {
+    "type": "focus-within",
+    "named": false
+  },
+  {
     "type": "font",
     "named": false
   },
@@ -723,6 +735,10 @@
   },
   {
     "type": "inline-size",
+    "named": false
+  },
+  {
+    "type": "invalid",
     "named": false
   },
   {
@@ -838,6 +854,10 @@
     "named": true
   },
   {
+    "type": "required",
+    "named": false
+  },
+  {
     "type": "ring",
     "named": false
   },
@@ -911,6 +931,10 @@
   },
   {
     "type": "surface",
+    "named": false
+  },
+  {
+    "type": "target",
     "named": false
   },
   {

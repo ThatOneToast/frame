@@ -16,7 +16,18 @@ const DECLARATION_KEYWORDS = [
   "keyframes",
 ];
 
-const STATE_KEYWORDS = ["hover", "focus", "active", "disabled"];
+const STATE_KEYWORDS = [
+  "hover",
+  "focus",
+  "focus-visible",
+  "focus-within",
+  "active",
+  "disabled",
+  "checked",
+  "invalid",
+  "required",
+  "target",
+];
 
 const PROPERTY_KEYWORDS = [
   "columns",

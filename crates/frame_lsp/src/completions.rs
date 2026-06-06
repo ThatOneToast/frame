@@ -331,8 +331,14 @@ const CARD_PROPERTIES: &[&str] = &[
     "advanced",
     "hover",
     "focus",
+    "focus-visible",
+    "focus-within",
     "active",
     "disabled",
+    "checked",
+    "invalid",
+    "required",
+    "target",
 ];
 
 const COMMON_PROPERTIES: &[&str] = &[
@@ -440,7 +446,6 @@ const BORDER_WIDTH_VALUES: &[&str] = &["small", "medium", "large"];
 const BORDER_STYLE_VALUES: &[&str] = &[
     "none", "solid", "dashed", "dotted", "double", "groove", "ridge", "inset", "outset",
 ];
-
 const SURFACE_VALUES: &[&str] = &[
     "panel",
     "main",
@@ -1282,7 +1287,8 @@ fn property_category(label: &str) -> CompletionCategory {
         | "direction" | "fill" | "play-state" | "transform" | "filter" => {
             CompletionCategory::MotionProperty
         }
-        "hover" | "focus" | "active" | "disabled" => CompletionCategory::StateBlock,
+        "hover" | "focus" | "focus-visible" | "focus-within" | "active" | "disabled"
+        | "checked" | "invalid" | "required" | "target" => CompletionCategory::StateBlock,
         "advanced" | "css" => CompletionCategory::AdvancedProperty,
         "type" | "angle" | "stop" | "corner" | "at" | "shape" | "gradient" => {
             CompletionCategory::TokenProperty
@@ -1366,8 +1372,14 @@ fn completion_documentation(label: &str) -> Option<String> {
         "theme" => "Applies semantic color intent to text and border.",
         "hover" => "Starts hover effects. Only effect keywords are valid inside.",
         "focus" => "Starts keyboard focus effects, usually `ring accent`.",
+        "focus-visible" => "Starts keyboard-visible focus effects. Emits `:focus-visible`.",
+        "focus-within" => "Starts effects when this element or a descendant has focus. Emits `:focus-within`.",
         "active" => "Starts pressed-state effects, usually `press`.",
         "disabled" => "Starts unavailable-state effects, usually `dim medium`.",
+        "checked" => "Starts effects for checked controls. Emits `:checked`.",
+        "invalid" => "Starts effects for invalid form controls. Emits `:invalid`.",
+        "required" => "Starts effects for required form controls. Emits `:required`.",
+        "target" => "Starts effects for URL fragment targets. Emits `:target`.",
         "responsive" => "Use with `columns responsive cards` for an auto-fitting card grid.",
         "cards" => "Completes `columns responsive cards`.",
         "auto" => "Automatic sizing.",
@@ -1571,6 +1583,12 @@ mod tests {
 
         assert!(labels.contains(&"surface".to_string()));
         assert!(labels.contains(&"hover".to_string()));
+        assert!(labels.contains(&"focus-visible".to_string()));
+        assert!(labels.contains(&"focus-within".to_string()));
+        assert!(labels.contains(&"checked".to_string()));
+        assert!(labels.contains(&"invalid".to_string()));
+        assert!(labels.contains(&"required".to_string()));
+        assert!(labels.contains(&"target".to_string()));
         assert!(labels.contains(&"hover state".to_string()));
         assert!(labels.contains(&"animation block".to_string()));
         assert!(!labels.contains(&"columns".to_string()));

@@ -1,4 +1,15 @@
-const STATE_BLOCKS: &[&str] = &["hover", "focus", "active", "disabled"];
+const STATE_BLOCKS: &[&str] = &[
+    "hover",
+    "focus",
+    "focus-visible",
+    "focus-within",
+    "active",
+    "disabled",
+    "checked",
+    "invalid",
+    "required",
+    "target",
+];
 
 pub fn format_source(source: &str) -> String {
     let mut output = Vec::new();

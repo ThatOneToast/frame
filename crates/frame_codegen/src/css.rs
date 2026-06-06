@@ -1452,8 +1452,14 @@ fn state_selector(name: &str) -> Option<&'static str> {
     match name {
         "hover" => Some(":hover"),
         "focus" => Some(":focus-visible"),
+        "focus-visible" => Some(":focus-visible"),
+        "focus-within" => Some(":focus-within"),
         "active" => Some(":active"),
         "disabled" => Some(":disabled"),
+        "checked" => Some(":checked"),
+        "invalid" => Some(":invalid"),
+        "required" => Some(":required"),
+        "target" => Some(":target"),
         _ => None,
     }
 }
@@ -1758,6 +1764,58 @@ mod tests {
         assert!(css.contains(".fr-QuickLinkCard:hover"));
         assert!(css.contains("transform: translateY(-2px);"));
         assert!(css.contains("filter: brightness(1.04);"));
+    }
+
+    #[test]
+    fn generates_expanded_interaction_state_selectors() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Button,
+                "FieldButton",
+                vec![
+                    Node::Block(frame_core::Block {
+                        name: "focus-visible".to_string(),
+                        body: vec![statement(&["ring", "accent"])],
+                        span: Span::default(),
+                    }),
+                    Node::Block(frame_core::Block {
+                        name: "focus-within".to_string(),
+                        body: vec![statement(&["ring", "accent"])],
+                        span: Span::default(),
+                    }),
+                    Node::Block(frame_core::Block {
+                        name: "checked".to_string(),
+                        body: vec![statement(&["glow", "accent"])],
+                        span: Span::default(),
+                    }),
+                    Node::Block(frame_core::Block {
+                        name: "invalid".to_string(),
+                        body: vec![statement(&["ring", "danger"])],
+                        span: Span::default(),
+                    }),
+                    Node::Block(frame_core::Block {
+                        name: "required".to_string(),
+                        body: vec![statement(&["glow", "warning"])],
+                        span: Span::default(),
+                    }),
+                    Node::Block(frame_core::Block {
+                        name: "target".to_string(),
+                        body: vec![statement(&["glow", "accent"])],
+                        span: Span::default(),
+                    }),
+                ],
+            )],
+        };
+
+        let css = generate_css(&document);
+
+        assert!(css.contains(".fr-FieldButton:focus-visible"));
+        assert!(css.contains(".fr-FieldButton:focus-within"));
+        assert!(css.contains(".fr-FieldButton:checked"));
+        assert!(css.contains(".fr-FieldButton:invalid"));
+        assert!(css.contains(".fr-FieldButton:required"));
+        assert!(css.contains(".fr-FieldButton:target"));
     }
 
     #[test]

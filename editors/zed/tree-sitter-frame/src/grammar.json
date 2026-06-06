@@ -456,11 +456,35 @@
         },
         {
           "type": "STRING",
+          "value": "focus-visible"
+        },
+        {
+          "type": "STRING",
+          "value": "focus-within"
+        },
+        {
+          "type": "STRING",
           "value": "active"
         },
         {
           "type": "STRING",
           "value": "disabled"
+        },
+        {
+          "type": "STRING",
+          "value": "checked"
+        },
+        {
+          "type": "STRING",
+          "value": "invalid"
+        },
+        {
+          "type": "STRING",
+          "value": "required"
+        },
+        {
+          "type": "STRING",
+          "value": "target"
         }
       ]
     },

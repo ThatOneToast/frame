@@ -120,7 +120,19 @@ fn declaration_kind(header: &str) -> Option<&str> {
 }
 
 fn is_state(header: &str) -> bool {
-    matches!(header, "hover" | "focus" | "active" | "disabled")
+    matches!(
+        header,
+        "hover"
+            | "focus"
+            | "focus-visible"
+            | "focus-within"
+            | "active"
+            | "disabled"
+            | "checked"
+            | "invalid"
+            | "required"
+            | "target"
+    )
 }
 
 fn area_grid_before(source: &str, offset: usize) -> Option<String> {
