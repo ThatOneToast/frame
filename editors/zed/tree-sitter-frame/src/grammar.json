@@ -1858,11 +1858,23 @@
         },
         {
           "type": "STRING",
+          "value": "click"
+        },
+        {
+          "type": "STRING",
           "value": "input"
         },
         {
           "type": "STRING",
           "value": "change"
+        },
+        {
+          "type": "STRING",
+          "value": "submit"
+        },
+        {
+          "type": "STRING",
+          "value": "reset"
         },
         {
           "type": "STRING",
@@ -2037,11 +2049,19 @@
         },
         {
           "type": "STRING",
+          "value": "tracks"
+        },
+        {
+          "type": "STRING",
+          "value": "areas"
+        },
+        {
+          "type": "STRING",
           "value": "flow"
         },
         {
           "type": "STRING",
-          "value": "gap"
+          "value": "layout"
         },
         {
           "type": "STRING",
@@ -2049,51 +2069,27 @@
         },
         {
           "type": "STRING",
-          "value": "height"
+          "value": "gap"
         },
         {
           "type": "STRING",
-          "value": "width"
+          "value": "place"
         },
         {
           "type": "STRING",
-          "value": "min-height"
+          "value": "in"
         },
         {
           "type": "STRING",
-          "value": "max-height"
+          "value": "col"
         },
         {
           "type": "STRING",
-          "value": "min-width"
+          "value": "row"
         },
         {
           "type": "STRING",
-          "value": "max-width"
-        },
-        {
-          "type": "STRING",
-          "value": "inline-size"
-        },
-        {
-          "type": "STRING",
-          "value": "block-size"
-        },
-        {
-          "type": "STRING",
-          "value": "min-inline-size"
-        },
-        {
-          "type": "STRING",
-          "value": "max-inline-size"
-        },
-        {
-          "type": "STRING",
-          "value": "min-block-size"
-        },
-        {
-          "type": "STRING",
-          "value": "max-block-size"
+          "value": "span"
         },
         {
           "type": "STRING",
@@ -2149,6 +2145,18 @@
         },
         {
           "type": "STRING",
+          "value": "overflow"
+        },
+        {
+          "type": "STRING",
+          "value": "scroll"
+        },
+        {
+          "type": "STRING",
+          "value": "scrollbar"
+        },
+        {
+          "type": "STRING",
           "value": "shadow"
         },
         {
@@ -2173,23 +2181,75 @@
         },
         {
           "type": "STRING",
-          "value": "place"
+          "value": "width"
         },
         {
           "type": "STRING",
-          "value": "in"
+          "value": "height"
         },
         {
           "type": "STRING",
-          "value": "col"
+          "value": "inline-size"
         },
         {
           "type": "STRING",
-          "value": "row"
+          "value": "block-size"
         },
         {
           "type": "STRING",
-          "value": "span"
+          "value": "min-inline-size"
+        },
+        {
+          "type": "STRING",
+          "value": "max-inline-size"
+        },
+        {
+          "type": "STRING",
+          "value": "min-block-size"
+        },
+        {
+          "type": "STRING",
+          "value": "max-block-size"
+        },
+        {
+          "type": "STRING",
+          "value": "min-width"
+        },
+        {
+          "type": "STRING",
+          "value": "max-width"
+        },
+        {
+          "type": "STRING",
+          "value": "min-height"
+        },
+        {
+          "type": "STRING",
+          "value": "max-height"
+        },
+        {
+          "type": "STRING",
+          "value": "align"
+        },
+        {
+          "type": "STRING",
+          "value": "justify"
+        },
+        {
+          "type": "STRING",
+          "value": "self"
+        },
+        {
+          "type": "STRING",
+          "value": "nudge"
+        },
+        {
+          "type": "STRING",
+          "value": "truncate"
+        },
+        {
+          "type": "STRING",
+          "value": "wrap"
         },
         {
           "type": "STRING",
@@ -2202,14 +2262,6 @@
         {
           "type": "STRING",
           "value": "z"
-        },
-        {
-          "type": "STRING",
-          "value": "align"
-        },
-        {
-          "type": "STRING",
-          "value": "justify"
         },
         {
           "type": "STRING",
@@ -2257,6 +2309,14 @@
         },
         {
           "type": "STRING",
+          "value": "control"
+        },
+        {
+          "type": "STRING",
+          "value": "interactive"
+        },
+        {
+          "type": "STRING",
           "value": "transition"
         },
         {
@@ -2297,19 +2357,11 @@
         },
         {
           "type": "STRING",
-          "value": "opacity"
-        },
-        {
-          "type": "STRING",
           "value": "transform"
         },
         {
           "type": "STRING",
           "value": "filter"
-        },
-        {
-          "type": "STRING",
-          "value": "translate"
         },
         {
           "type": "STRING",

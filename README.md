@@ -58,17 +58,17 @@ Existing pieces:
 ```txt
 crates/
   frame_core/      AST, diagnostics, semantic model, IR, formatting, knowledge tables
-  frame_parser/    parser and parse errors
+  frame_parser/    line-oriented parser and parse errors
   frame_codegen/   CSS, TypeScript class exports, IR JSON, contracts
-  frame_cli/       check, compile, format, watch, init, emit-ir, emit-contracts
+  frame_runtime/   renderer-neutral runtime model
+  frame_cli/       check, compile, format, watch, init, build, doctor, new
   frame_lsp/       LSP server
 
 packages/
   frame-svelte/    current Svelte/Vite integration
-  runtime-dom/     minimal browser DOM renderer for Frame IR
 
 editors/
-  zed/             Zed extension with syntax support
+  zed/             Zed extension with tree-sitter grammar and LSP
 
 implementations/
   chat-app/        rough reference implementation experiments
@@ -260,19 +260,32 @@ Start here:
 
 ## Commands
 
-Current commands are still styling/compiler oriented:
-
 ```bash
 cargo fmt
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 
-cargo run -p frame_cli -- check examples/svelte/src/lib/frame/app.frame
-cargo run -p frame_cli -- compile examples/svelte/src/lib/frame/app.frame --out examples/svelte/src/lib/frame
-cargo run -p frame_cli -- format examples/svelte/src/lib/frame/app.frame
-```
+# Project scaffolding
+frame new my-app --template web
+frame new my-app --template svelte
 
-These commands should remain useful while the new IR/runtime architecture is introduced.
+# Existing project init
+frame init web
+frame init svelte
+
+# Check and compile
+frame check src/frame/app.frame
+frame compile src/frame/app.frame --out dist/
+frame watch src/frame/app.frame --out dist/
+frame format src/frame/app.frame
+
+# Debug output
+frame emit-ir src/frame/app.frame
+frame emit-contracts src/frame/app.frame
+
+# Environment check
+frame doctor
+```
 
 ## License
 

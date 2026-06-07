@@ -1388,6 +1388,10 @@
     "named": false
   },
   {
+    "type": "areas",
+    "named": false
+  },
+  {
     "type": "at",
     "named": false
   },
@@ -1476,6 +1480,10 @@
     "named": false
   },
   {
+    "type": "click",
+    "named": false
+  },
+  {
     "type": "close",
     "named": false
   },
@@ -1514,6 +1522,10 @@
   },
   {
     "type": "container",
+    "named": false
+  },
+  {
+    "type": "control",
     "named": false
   },
   {
@@ -1753,6 +1765,10 @@
     "named": false
   },
   {
+    "type": "interactive",
+    "named": false
+  },
+  {
     "type": "invalid",
     "named": false
   },
@@ -1790,6 +1806,10 @@
   },
   {
     "type": "label",
+    "named": false
+  },
+  {
+    "type": "layout",
     "named": false
   },
   {
@@ -1877,6 +1897,10 @@
     "named": false
   },
   {
+    "type": "nudge",
+    "named": false
+  },
+  {
     "type": "number",
     "named": false
   },
@@ -1910,6 +1934,10 @@
   },
   {
     "type": "outline",
+    "named": false
+  },
+  {
+    "type": "overflow",
     "named": false
   },
   {
@@ -1997,6 +2025,10 @@
     "named": false
   },
   {
+    "type": "reset",
+    "named": false
+  },
+  {
     "type": "right",
     "named": false
   },
@@ -2029,6 +2061,10 @@
     "named": false
   },
   {
+    "type": "scrollbar",
+    "named": false
+  },
+  {
     "type": "section",
     "named": false
   },
@@ -2038,6 +2074,10 @@
   },
   {
     "type": "selected",
+    "named": false
+  },
+  {
+    "type": "self",
     "named": false
   },
   {
@@ -2145,6 +2185,10 @@
     "named": false
   },
   {
+    "type": "submit",
+    "named": false
+  },
+  {
     "type": "supports",
     "named": false
   },
@@ -2201,6 +2245,10 @@
     "named": false
   },
   {
+    "type": "tracks",
+    "named": false
+  },
+  {
     "type": "transform",
     "named": false
   },
@@ -2209,11 +2257,11 @@
     "named": false
   },
   {
-    "type": "translate",
+    "type": "true",
     "named": false
   },
   {
-    "type": "true",
+    "type": "truncate",
     "named": false
   },
   {
@@ -2254,6 +2302,10 @@
   },
   {
     "type": "word-break",
+    "named": false
+  },
+  {
+    "type": "wrap",
     "named": false
   },
   {

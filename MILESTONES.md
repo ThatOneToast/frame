@@ -343,13 +343,14 @@ Success criteria:
 
 ## Milestone 13 — Web App Target
 
-Status: **Paused until the semantic language redesign milestone is resolved.**
+Status: **Scaffolding complete. Runtime feature work paused.**
 
 Goal: make Frame usable as a standalone web UI language.
 
 Deliverables:
 
-- [ ] `frame init web`.
+- [x] `frame init web`.
+- [x] `frame new` with web and svelte templates.
 - [ ] Dev server or Vite-compatible runtime flow.
 - [ ] Browser example app.
 - [ ] Build output docs.

@@ -144,11 +144,14 @@ This file tracks the implementation path. Unchecked implementation items should 
 
 ## Phase 8 — CLI
 
-- [ ] Add `frame build` for full IR/runtime output. (Deferred to Phase 6 — DOM Runtime)
+- [x] Add `frame build` for CSS output from config.
 - [x] Add `frame check` support for UI declarations.
 - [x] Add `frame emit-ir` for debugging.
 - [x] Add `frame emit-contracts` for TypeScript contracts.
-- [ ] Add `frame init web`. (Deferred to Phase 10 — Web App Target)
+- [x] Add `frame init web`.
+- [x] Add `frame init svelte`.
+- [x] Add `frame new` with web and svelte templates.
+- [x] Add `frame doctor` for environment checks.
 - [ ] Add `frame init tauri`. (Deferred to Phase 12 — Tauri/WebView Target)
 - [x] Keep existing styling commands compatible during migration.
 

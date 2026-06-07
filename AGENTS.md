@@ -22,21 +22,29 @@ The immediate goal is documentation and architecture preparation. Do not start i
 
 ## Current Repository Reality
 
-The current codebase already has a useful styling compiler foundation:
+The current codebase has a compiler foundation and initial runtime model:
 
 ```txt
 crates/
   frame_core/      AST, diagnostics, formatting, semantic model, knowledge tables
+    semantic/      split validators: constants, helpers, ui, declarations, statements
   frame_parser/    line-oriented parser and parse errors
-  frame_codegen/   CSS and TypeScript class export generation
-  frame_cli/       check, compile, format, watch, init
+    lib.rs         parse(), ParseError, Parser struct, tests
+    document.rs    component, state, props, slot, view parsing
+    declarations.rs declaration and nested block parsing
+    ui.rs          UI element, event, property, loop parsing
+    helpers.rs     utility functions and keyword tables
+  frame_codegen/   CSS, TypeScript class exports, IR JSON, contracts
+    css/           split emitters: mod, emit, properties, helpers, tests
+  frame_runtime/   renderer-neutral runtime model (state, events, patches)
+  frame_cli/       check, compile, format, watch, init, build, doctor, new
   frame_lsp/       LSP server
 
 packages/
   frame-svelte/    existing Svelte/Vite integration
 
 editors/
-  zed/             editor extension work
+  zed/             Zed extension with tree-sitter grammar and LSP
 
 implementations/
   chat-app/        rough application experiments
@@ -147,16 +155,30 @@ crates/
   frame_core/
     ast.rs
     diagnostics.rs
-    semantic.rs
+    semantic/
+      mod.rs
+      constants.rs
+      helpers.rs
+      ui.rs
+      declarations.rs
+      statements.rs
     ir.rs
     source_map.rs
 
   frame_parser/
-    lexer.rs
-    parser.rs
+    lib.rs
+    document.rs
+    declarations.rs
+    ui.rs
+    helpers.rs
 
   frame_codegen/
-    css.rs
+    css/
+      mod.rs
+      emit.rs
+      properties.rs
+      helpers.rs
+      tests.rs
     ts_contracts.rs
     ir_json.rs
 
@@ -211,9 +233,9 @@ Every major feature should explain:
 
 ## Current Work Mode
 
-The pre-DOM compiler foundation is complete. This includes the parser, semantic model, Frame IR, TypeScript contracts, CLI, and LSP support for UI syntax.
+The pre-DOM compiler foundation is complete. This includes the parser, semantic model, Frame IR, TypeScript contracts, CLI, and LSP support for UI syntax. The DOM runtime crate exists with a renderer-neutral model, but DOM rendering implementation is paused while the semantic language redesign milestone is resolved.
 
-The next major phase is the DOM runtime (Milestone 6). Do not implement runtime rendering, mount/unmount, or DOM event dispatch until the DOM runtime phase begins.
+The CLI was recently modularized and now includes `build`, `doctor`, `new`, `init web`, and `init svelte`. The largest source files (`semantic.rs`, `css.rs`, `parser/lib.rs`) have been split into submodules for maintainability.
 
 All changes should be tested with:
 
