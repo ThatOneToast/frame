@@ -36,6 +36,7 @@ fn init_web_template(root: &Path) -> anyhow::Result<()> {
     fs::write(root.join("index.html"), WEB_INDEX)?;
     fs::write(root.join("src/main.ts"), WEB_MAIN_TS)?;
     fs::write(root.join("src/handlers.ts"), WEB_HANDLERS_TS)?;
+    fs::write(root.join("src/app-theme.frame"), WEB_APP_THEME)?;
     fs::write(root.join("README.md"), WEB_README)?;
 
     // Build the initial source so generated files exist.
@@ -89,14 +90,17 @@ pub(crate) fn web_package_json() -> String {
   "type": "module",
   "scripts": {
     "frame:build": "frame build",
-    "dev": "npm run frame:build && vite",
+    "frame:watch": "frame build --watch",
+    "dev": "run-p frame:watch vite:dev",
+    "vite:dev": "vite",
     "build": "npm run frame:build && vite build",
     "check": "npm run frame:build && tsc --noEmit",
     "preview": "vite preview"
   },
   "devDependencies": {
     "vite": "^5.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "npm-run-all": "^4.1.5"
   },
   "dependencies": {
     "@frame/runtime-dom": "__FRAME_RUNTIME_DOM_DEPENDENCY__"
@@ -182,6 +186,18 @@ export const handlers: AppHandlers = {
 };
 "#;
 
+pub(crate) const WEB_APP_THEME: &str = r#"card AppShell {
+  surface main
+  padding medium
+}
+
+card PrimaryAction {
+  surface raised
+  padding small
+  radius medium
+}
+"#;
+
 pub(crate) const WEB_README: &str = r#"# Frame Web Project
 
 A standalone Frame UI project using the DOM runtime.
@@ -189,6 +205,7 @@ A standalone Frame UI project using the DOM runtime.
 ## Files
 
 - `src/app.frame` — your Frame UI source
+- `src/app-theme.frame` — project-wide theme styles and shared declarations
 - `src/generated/generated.css` — compiled CSS output
 - `src/generated/app.ir.json` — stable serialized Frame IR
 - `src/generated/app.ir.ts` — typed IR module consumed by TypeScript
@@ -197,6 +214,16 @@ A standalone Frame UI project using the DOM runtime.
 - `src/main.ts` — app entry point (mounts the Frame runtime)
 - `src/handlers.ts` — your handler implementations
 
+## Theme File
+
+`src/app-theme.frame` is automatically discovered and included in every Frame file in the project. Styles and declarations defined there are available without explicit `#include`.
+
+Precedence:
+1. Local declarations in the current file
+2. Explicit `#include` files
+3. `src/app-theme.frame`
+4. Built-in default Frame theme values
+
 ## Commands
 
 Build (CSS + IR + types + skeletons):
@@ -204,13 +231,19 @@ Build (CSS + IR + types + skeletons):
 npm run frame:build
 ```
 
-Dev server:
+Watch mode (rebuilds when any `.frame` file changes):
+```bash
+npm run frame:watch
+```
+
+Dev server (watch + Vite):
 ```bash
 npm install
 npm run dev
 ```
 
-`npm run dev` and `npm run build` regenerate Frame output before Vite starts.
+`npm run dev` runs Frame watch and Vite dev in parallel.
+`npm run build` runs a one-shot Frame build then Vite build.
 `npm run check` regenerates Frame output and type-checks the runtime wiring.
 The build command writes generated-only files under `src/generated`.
 It creates `src/generated/frame.handlers.ts` only when missing. Copy functions from there into `src/handlers.ts` and implement them.

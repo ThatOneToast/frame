@@ -114,6 +114,11 @@ pub fn init_web(dry_run: bool, force: bool, _yes: bool) -> anyhow::Result<()> {
         crate::commands::new::WEB_HANDLERS_TS,
         force,
     )?;
+    write_if_missing_or_forced(
+        &root.join("src/app-theme.frame"),
+        crate::commands::new::WEB_APP_THEME,
+        force,
+    )?;
 
     crate::commands::build::build_project_at(&root)?;
     println!("Frame web init is ready.\n");

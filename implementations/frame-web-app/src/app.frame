@@ -55,36 +55,3 @@ stack MainPanel {
   padding large
   surface panel
 }
-
-grid AppShell {
-  columns content
-  height screen
-  padding large
-}
-
-card TaskRow {
-  padding small
-  gap medium
-  surface main
-}
-
-card PrimaryButton {
-  background accent
-  padding medium
-  radius medium
-}
-
-card SecondaryButton {
-  surface main
-  padding small
-  radius medium
-  background yellow
-}
-
-card DisabledButton {
-  opacity muted
-}
-
-card CompletedTask {
-  opacity muted
-}

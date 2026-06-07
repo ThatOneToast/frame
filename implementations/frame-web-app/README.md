@@ -12,6 +12,7 @@ This app demonstrates:
 - State updates from handlers
 - Conditional disabled state (`disabled when`)
 - Conditional style switching (`style DisabledButton when $saving`)
+- Project theme file (`app-theme.frame`) for shared styles
 - Generated typed IR consumed by TypeScript
 - Handler implementations using generated types
 - Runtime debug mode with `?debug`
@@ -19,6 +20,7 @@ This app demonstrates:
 ## Files
 
 - `src/app.frame` — Frame UI source
+- `src/app-theme.frame` — project-wide shared styles and declarations
 - `src/handlers.ts` — TypeScript handler implementations
 - `src/main.ts` — app entry point
 - `src/generated/generated.css` — compiled CSS output
@@ -26,6 +28,10 @@ This app demonstrates:
 - `src/generated/app.ir.ts` — typed IR module
 - `src/generated/frame.types.ts` — generated TypeScript contracts
 - `src/generated/frame.handlers.ts` — generated skeleton (non-destructive)
+
+## Theme File
+
+Shared styles like `AppShell`, `PrimaryButton`, and `TaskRow` live in `src/app-theme.frame` and are automatically available to every Frame file in the project without explicit `#include`.
 
 ## Commands
 
@@ -36,13 +42,20 @@ npm run check
 npm run build
 ```
 
-Dev server:
+Watch mode (rebuilds when any `.frame` file changes):
+```bash
+npm run frame:watch
+```
+
+Dev server (watch + Vite):
 ```bash
 npm install
 npm run dev
 ```
 
-`npm run dev`, `npm run check`, and `npm run build` regenerate Frame output before running Vite or TypeScript.
+`npm run dev` runs Frame watch and Vite dev in parallel.
+`npm run build` runs a one-shot Frame build then Vite build.
+`npm run check` regenerates Frame output and type-checks the runtime wiring.
 
 ## Runtime Debug
 

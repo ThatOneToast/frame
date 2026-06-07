@@ -4,14 +4,17 @@
   "type": "module",
   "scripts": {
     "frame:build": "frame build",
-    "dev": "npm run frame:build && vite",
+    "frame:watch": "frame build --watch",
+    "dev": "run-p frame:watch vite:dev",
+    "vite:dev": "vite",
     "build": "npm run frame:build && vite build",
     "check": "npm run frame:build && tsc --noEmit",
     "preview": "vite preview"
   },
   "devDependencies": {
     "vite": "^5.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "npm-run-all": "^4.1.5"
   },
   "dependencies": {
     "@frame/runtime-dom": "file:../../packages/runtime-dom"
