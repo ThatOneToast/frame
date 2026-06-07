@@ -1,15 +1,15 @@
 export type FrameIrDocument = {
   version: number;
-  components: FrameIrComponent[];
+  components: readonly FrameIrComponent[];
 };
 
 export type FrameIrComponent = {
   name: string;
-  props: FrameIrProp[];
-  state: FrameIrState[];
-  slots?: FrameIrSlot[];
-  nodes: FrameIrNode[];
-  capabilities: string[];
+  props: readonly FrameIrProp[];
+  state: readonly FrameIrState[];
+  slots?: readonly FrameIrSlot[];
+  nodes: readonly FrameIrNode[];
+  capabilities: readonly string[];
   source: FrameIrSourceSpan;
 };
 
@@ -39,7 +39,7 @@ export type FrameIrStateDefault =
 
 export type FrameIrSlot = {
   name: string;
-  fallback: FrameIrNode[];
+  fallback: readonly FrameIrNode[];
   source: FrameIrSourceSpan;
 };
 
@@ -55,11 +55,11 @@ export type FrameIrElement = {
   render_kind?: string;
   name: string;
   style: FrameIrStyleBinding;
-  attributes: FrameIrAttribute[];
-  bindings: FrameIrBinding[];
-  events: FrameIrEvent[];
-  conditions: FrameIrCondition[];
-  children: FrameIrNode[];
+  attributes: readonly FrameIrAttribute[];
+  bindings: readonly FrameIrBinding[];
+  events: readonly FrameIrEvent[];
+  conditions: readonly FrameIrCondition[];
+  children: readonly FrameIrNode[];
   source: FrameIrSourceSpan;
 };
 
@@ -72,7 +72,7 @@ export type FrameIrTextValue = { Literal: string } | { DataRef: string };
 
 export type FrameIrComponentInvocation = {
   name: string;
-  arguments: FrameIrComponentArgument[];
+  arguments: readonly FrameIrComponentArgument[];
   source: FrameIrSourceSpan;
 };
 
@@ -91,7 +91,7 @@ export type FrameIrList = {
   item: string;
   collection: string;
   key?: string | null;
-  children: FrameIrNode[];
+  children: readonly FrameIrNode[];
   source: FrameIrSourceSpan;
 };
 
@@ -111,7 +111,7 @@ export type FrameIrBinding = {
 
 export type FrameIrEvent = {
   event: string;
-  modifiers: string[];
+  modifiers: readonly string[];
   handler: string;
   source: FrameIrSourceSpan;
 };

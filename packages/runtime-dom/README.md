@@ -8,7 +8,7 @@ It does not support SSR, hydration, routing, transitions, portals, suspense, asy
 
 ```ts
 import { mount } from '@frame/runtime-dom';
-import ir from './app.ir.json' assert { type: 'json' };
+import ir from './generated/app.ir';
 
 const app = mount(ir, {
   component: 'Counter',
@@ -30,3 +30,5 @@ app.getDebugStats();
 app.resetDebugStats();
 app.flush();
 ```
+
+`frame build` writes both `app.ir.json` and `app.ir.ts`. The JSON file is the stable serialized IR artifact. The TS module imports `defineFrameIrDocument` and checks the same IR object as a literal, which keeps TypeScript enum fields such as `value_type: "Text"` aligned with the runtime types.

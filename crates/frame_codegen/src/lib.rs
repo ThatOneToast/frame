@@ -10,5 +10,5 @@ pub mod typescript;
 
 pub use contracts::generate_contracts;
 pub use css::generate_css;
-pub use ir_json::generate_ir_json;
+pub use ir_json::{generate_ir_json, generate_ir_typescript};
 pub use typescript::generate_typescript;

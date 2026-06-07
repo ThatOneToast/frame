@@ -340,6 +340,47 @@ fn compile_stdin_css_only_fails_for_invalid_frame() {
 }
 
 #[test]
+fn new_web_generates_typed_runtime_project() {
+    let root = temp_out_dir();
+    fs::create_dir_all(&root).expect("temporary project parent should be creatable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("new")
+        .arg("demo-web")
+        .arg("--template")
+        .arg("web")
+        .current_dir(&root)
+        .output()
+        .expect("frame new web should run");
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let project = root.join("demo-web");
+    assert!(project.join("src/frame/app.frame").exists());
+    assert!(project.join("src/generated/generated.css").exists());
+    assert!(project.join("src/generated/generated.ts").exists());
+    assert!(project.join("src/generated/app.ir.json").exists());
+    assert!(project.join("src/generated/app.ir.ts").exists());
+
+    let main_ts = fs::read_to_string(project.join("src/main.ts")).expect("main ts");
+    let frame_source =
+        fs::read_to_string(project.join("src/frame/app.frame")).expect("frame source");
+    let ir_ts = fs::read_to_string(project.join("src/generated/app.ir.ts")).expect("typed ir");
+
+    assert!(main_ts.contains("import appIr from './generated/app.ir';"));
+    assert!(frame_source.contains("screen Main"));
+    assert!(frame_source.contains("action Increment"));
+    assert!(ir_ts.contains("defineFrameIrDocument"));
+    assert!(ir_ts.contains("as const"));
+
+    fs::remove_dir_all(root).expect("temporary project should be removable");
+}
+
+#[test]
 fn init_svelte_dry_run_detects_project_without_writing() {
     let root = temp_out_dir();
     fs::create_dir_all(&root).expect("temporary project should be creatable");

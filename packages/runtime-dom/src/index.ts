@@ -374,6 +374,10 @@ const SVG_TAGS = new Set(['svg', 'path']);
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const USER_CLASSES = new WeakMap<Element, Set<string>>();
 
+export function defineFrameIrDocument<const T extends FrameIrDocument>(ir: T): T {
+  return ir;
+}
+
 export function mount(ir: FrameIrDocument, options: MountOptions): MountedFrameApp {
   const components = new Map(ir.components.map((component) => [component.name, component]));
   const component = components.get(options.component);
@@ -570,7 +574,7 @@ function applySemanticDefaults(dom: Element, element: FrameIrElement): void {
 
 function renderComponentInvocation(
   name: string,
-  args: Array<{ name: string; value: FrameIrComponentArgumentValue }>,
+  args: readonly { name: string; value: FrameIrComponentArgumentValue }[],
   parent: RenderContext
 ): RenderedBlock {
   const component = parent.components.get(name);
@@ -778,7 +782,7 @@ function readListValues(list: FrameIrList, context: RenderContext): FrameRuntime
 
 function applyAttributes(
   dom: Element,
-  attributes: FrameIrAttribute[],
+  attributes: readonly FrameIrAttribute[],
   context: RenderContext
 ): void {
   for (const attribute of attributes) {
@@ -797,7 +801,7 @@ function applyAttributes(
   }
 }
 
-function applyBindings(dom: Element, bindings: FrameIrBinding[], context: RenderContext): void {
+function applyBindings(dom: Element, bindings: readonly FrameIrBinding[], context: RenderContext): void {
   for (const binding of bindings) {
     const patch = () => {
       setBindingValue(dom, binding.property, context.state.get(binding.state));
@@ -822,7 +826,7 @@ function applyBindings(dom: Element, bindings: FrameIrBinding[], context: Render
 
 function applyConditionalProperties(
   dom: Element,
-  conditions: FrameIrCondition[],
+  conditions: readonly FrameIrCondition[],
   context: RenderContext
 ): void {
   for (const condition of conditions) {
@@ -853,7 +857,7 @@ function applyConditionalProperties(
   }
 }
 
-function applyShow(dom: Element, conditions: FrameIrCondition[], context: RenderContext): void {
+function applyShow(dom: Element, conditions: readonly FrameIrCondition[], context: RenderContext): void {
   for (const condition of conditions) {
     if ('Show' in condition) {
       const patch = () => {
@@ -873,7 +877,7 @@ function applyShow(dom: Element, conditions: FrameIrCondition[], context: Render
 function applyStyles(
   dom: Element,
   style: FrameIrStyleBinding,
-  conditions: FrameIrCondition[],
+  conditions: readonly FrameIrCondition[],
   context: RenderContext
 ): void {
   dom.classList.add(className(styleName(style)));
@@ -894,7 +898,7 @@ function applyStyles(
   }
 }
 
-function attachEvents(dom: Element, events: FrameIrEvent[], context: RenderContext): void {
+function attachEvents(dom: Element, events: readonly FrameIrEvent[], context: RenderContext): void {
   for (const event of events) {
     const listener = (domEvent: Event) => {
       if (!matchesModifiers(domEvent, event.modifiers)) {
@@ -941,7 +945,7 @@ function domEventName(eventName: string): string {
   return eventName;
 }
 
-function shouldRender(conditions: FrameIrCondition[], context: RenderContext): boolean {
+function shouldRender(conditions: readonly FrameIrCondition[], context: RenderContext): boolean {
   return conditions.every((condition) => !('Show' in condition) || Boolean(readValue(condition.Show.state, context)));
 }
 
@@ -1032,7 +1036,7 @@ function setBindingValue(dom: Element, property: string, value: FrameRuntimeValu
   setDomValue(dom, property, value, true);
 }
 
-function matchesModifiers(event: Event, modifiers: string[]): boolean {
+function matchesModifiers(event: Event, modifiers: readonly string[]): boolean {
   for (const modifier of modifiers) {
     if (['prevent', 'stop', 'once', 'capture', 'passive'].includes(modifier)) {
       continue;
@@ -1119,7 +1123,7 @@ function isSelectable(dom: Element): dom is HTMLSelectElement {
   return dom instanceof dom.ownerDocument.defaultView!.HTMLSelectElement;
 }
 
-function eventOptions(modifiers: string[]): AddEventListenerOptions {
+function eventOptions(modifiers: readonly string[]): AddEventListenerOptions {
   return {
     capture: modifiers.includes('capture'),
     once: modifiers.includes('once'),
@@ -1277,7 +1281,7 @@ function argumentDependencies(value: FrameIrComponentArgumentValue): string[] {
   return [];
 }
 
-function conditionDependencies(conditions: FrameIrCondition[], kind?: 'Show'): string[] {
+function conditionDependencies(conditions: readonly FrameIrCondition[], kind?: 'Show'): string[] {
   const deps: string[] = [];
   for (const condition of conditions) {
     if ('Show' in condition && (!kind || kind === 'Show')) {

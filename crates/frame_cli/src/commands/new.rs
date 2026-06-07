@@ -42,8 +42,8 @@ fn init_web_template(root: &Path) -> anyhow::Result<()> {
     fs::write(root.join("src/handlers.ts"), WEB_HANDLERS_TS)?;
     fs::write(root.join("README.md"), WEB_README)?;
 
-    // Build the initial source so generated files exist
-    crate::commands::build::build_project()?;
+    // Build the initial source so generated files exist.
+    crate::commands::build::build_project_at(root)?;
 
     Ok(())
 }
@@ -81,7 +81,7 @@ fn init_svelte_template(root: &Path) -> anyhow::Result<()> {
 const WEB_CONFIG: &str = r#"{
   "name": "frame-web-app",
   "version": "0.1.0",
-  "source": "src/frame/app.frame",
+  "entry": "src/frame/app.frame",
   "outDir": "src/generated"
 }
 "#;
@@ -136,7 +136,7 @@ const WEB_INDEX: &str = r#"<!DOCTYPE html>
 "#;
 
 const WEB_MAIN_TS: &str = r#"import { mount } from '@frame/runtime-dom';
-import appIr from './generated/app.ir.json';
+import appIr from './generated/app.ir';
 import { handlers } from './handlers';
 
 const app = mount(appIr, {
@@ -167,7 +167,8 @@ A standalone Frame UI project using the DOM runtime.
 
 - `src/frame/app.frame` — your Frame UI source
 - `src/generated/generated.css` — compiled CSS output
-- `src/generated/app.ir.json` — compiled Frame IR for the runtime
+- `src/generated/app.ir.json` — stable serialized Frame IR
+- `src/generated/app.ir.ts` — typed IR module consumed by TypeScript
 - `src/main.ts` — app entry point (mounts the Frame runtime)
 - `src/handlers.ts` — your handler implementations
 

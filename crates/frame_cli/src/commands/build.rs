@@ -1,10 +1,15 @@
 use std::path::Path;
 
 pub fn build_project() -> anyhow::Result<()> {
-    let config_path = std::path::PathBuf::from("frame.config.json");
+    build_project_at(Path::new("."))
+}
+
+pub fn build_project_at(root: &Path) -> anyhow::Result<()> {
+    let config_path = root.join("frame.config.json");
     if !config_path.exists() {
         anyhow::bail!(
-            "No frame.config.json found in the current directory.\n\nRun `frame init` first or create a frame.config.json."
+            "No frame.config.json found in {}.\n\nRun `frame init` first or create a frame.config.json.",
+            root.display()
         );
     }
 
@@ -21,15 +26,31 @@ pub fn build_project() -> anyhow::Result<()> {
         .and_then(|v| v.as_str())
         .unwrap_or("src/frame");
 
-    let entry_path = Path::new(entry);
-    let out_path = Path::new(out_dir);
+    let entry_path = root.join(entry);
+    let out_path = root.join(out_dir);
 
     if !entry_path.exists() {
         anyhow::bail!("Entry file `{}` does not exist.", entry);
     }
 
-    crate::commands::compile::compile_file(entry_path, out_path, &[])?;
-    crate::commands::emit::emit_ir(entry_path, Some(&out_path.join("app.ir.json")), &[])?;
+    let document = crate::commands::compile::compile_file_document(&entry_path, &[])?;
+    std::fs::create_dir_all(&out_path)?;
+    std::fs::write(
+        out_path.join("generated.css"),
+        frame_codegen::generate_css(&document),
+    )?;
+    std::fs::write(
+        out_path.join("generated.ts"),
+        frame_codegen::generate_typescript(&document),
+    )?;
+    std::fs::write(
+        out_path.join("app.ir.json"),
+        frame_codegen::generate_ir_json(&document)?,
+    )?;
+    std::fs::write(
+        out_path.join("app.ir.ts"),
+        frame_codegen::generate_ir_typescript(&document)?,
+    )?;
     println!("Frame build complete.");
     Ok(())
 }
