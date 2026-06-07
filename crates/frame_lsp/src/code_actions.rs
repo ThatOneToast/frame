@@ -80,6 +80,45 @@ pub fn code_actions_for_source(source: &str, uri: &Url) -> Vec<CodeActionOrComma
         }
     }
 
+    // Automatic style lookup nodes with no matching declaration
+    let known_styles = existing_style_names(source, &current_path);
+    for (node_name, offset) in missing_automatic_style_nodes(source, &current_path) {
+        actions.push(edit_action(
+            &format!("Create style `{node_name}`"),
+            uri,
+            insertion_at_end(source),
+            format!("\nstyle {node_name} {{\n  padding medium\n}}\n"),
+        ));
+
+        for style in &known_styles {
+            if style == &node_name {
+                continue;
+            }
+            // Find position after the node name in the source
+            let line_start = source[..offset].rfind('\n').map(|i| i + 1).unwrap_or(0);
+            let col = offset - line_start;
+            let line_text = &source[line_start..];
+            let end_of_name = line_text[col..]
+                .find(|c: char| c.is_whitespace() || c == '{')
+                .map(|i| col + i)
+                .unwrap_or(col + node_name.len());
+            let name_end = line_start + end_of_name;
+            let line_idx = source[..name_end].matches('\n').count() as u32;
+            let col_idx =
+                (name_end - source[..name_end].rfind('\n').map(|i| i + 1).unwrap_or(0)) as u32;
+
+            actions.push(edit_action(
+                &format!("Map `{node_name}` to existing style `{style}`"),
+                uri,
+                Range::new(
+                    Position::new(line_idx, col_idx),
+                    Position::new(line_idx, col_idx),
+                ),
+                format!(":{style}"),
+            ));
+        }
+    }
+
     for component in missing_component_references(source, &current_path) {
         let targets = crate::project::include_files_for_symbol(
             &current_path,
@@ -329,6 +368,86 @@ fn missing_style_references(source: &str, current_path: &Path) -> Vec<String> {
     refs.into_iter()
         .filter(|style| !crate::project::style_exists_across_files(current_path, source, style))
         .collect()
+}
+
+/// Nodes declared with an automatic style lookup name that has no matching declaration.
+fn missing_automatic_style_nodes(source: &str, current_path: &Path) -> Vec<(String, usize)> {
+    let Ok(document) = parse(source) else {
+        return Vec::new();
+    };
+    let mut missing = Vec::new();
+    for component in &document.components {
+        if let Some(view) = &component.view {
+            for node in &view.nodes {
+                collect_missing_automatic_styles(node, current_path, source, &mut missing);
+            }
+        }
+        for slot in &component.slots {
+            for node in &slot.nodes {
+                collect_missing_automatic_styles(node, current_path, source, &mut missing);
+            }
+        }
+    }
+    missing
+}
+
+fn collect_missing_automatic_styles(
+    node: &frame_core::ast::UiNode,
+    current_path: &Path,
+    source: &str,
+    out: &mut Vec<(String, usize)>,
+) {
+    match node {
+        frame_core::ast::UiNode::Element(el) => {
+            let already_mapped = el.style.is_some();
+            if !already_mapped {
+                let decl_exists =
+                    crate::project::style_exists_across_files(current_path, source, &el.name.text)
+                        || crate::project::component_exists_across_files(
+                            current_path,
+                            source,
+                            &el.name.text,
+                        );
+                if !decl_exists {
+                    out.push((el.name.text.clone(), el.span.start));
+                }
+            }
+            for child in &el.children {
+                collect_missing_automatic_styles(child, current_path, source, out);
+            }
+        }
+        frame_core::ast::UiNode::Loop(l) => {
+            for child in &l.children {
+                collect_missing_automatic_styles(child, current_path, source, out);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn existing_style_names(source: &str, current_path: &Path) -> Vec<String> {
+    let mut names = Vec::new();
+    for line in source.lines() {
+        let trimmed = line.trim();
+        if let Some(rest) = trimmed.strip_prefix("style ") {
+            if let Some(name) = rest.split_whitespace().next() {
+                names.push(name.to_string());
+            }
+        }
+    }
+    for (_, include_source, _, _) in crate::project::resolve_includes(current_path, source) {
+        for line in include_source.lines() {
+            let trimmed = line.trim();
+            if let Some(rest) = trimmed.strip_prefix("style ") {
+                if let Some(name) = rest.split_whitespace().next() {
+                    names.push(name.to_string());
+                }
+            }
+        }
+    }
+    names.sort();
+    names.dedup();
+    names
 }
 
 fn missing_component_references(source: &str, current_path: &Path) -> Vec<String> {
@@ -1056,6 +1175,24 @@ mod tests {
             .collect::<Vec<_>>();
 
         assert!(titles.contains(&"Create style `LoadingButton`"));
+    }
+
+    #[test]
+    fn offers_map_automatic_style_to_existing_style() {
+        let source =
+            "style PrimaryButton {\n}\n\ncomponent ChatInput {\n  view {\n    action Send {\n    }\n  }\n}\n";
+        let uri = Url::parse("file:///demo.frame").unwrap();
+        let actions = code_actions_for_source(source, &uri);
+        let titles = actions
+            .iter()
+            .filter_map(|action| match action {
+                CodeActionOrCommand::CodeAction(action) => Some(action.title.as_str()),
+                CodeActionOrCommand::Command(_) => None,
+            })
+            .collect::<Vec<_>>();
+
+        assert!(titles.contains(&"Create style `Send`"));
+        assert!(titles.contains(&"Map `Send` to existing style `PrimaryButton`"));
     }
 
     #[test]

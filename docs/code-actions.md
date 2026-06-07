@@ -13,6 +13,7 @@ Current actions include:
 - Convert common browser primitives such as `button`, `div`, and `a` to Frame primitives such as `action`, `panel`, and `link`.
 - Convert browser event attributes such as `onclick` and `onchange` to Frame event bindings such as `on press @handler`.
 - Create a missing same-file style skeleton for unresolved style bindings (automatic lookup, explicit binding, and conditional aliases).
+- Map an automatic style lookup node to an existing style declaration (e.g., `action Send` → `action Send:PrimaryButton`).
 - Create a missing handler skeleton in a companion `handlers.ts` file.
 - Create a missing state entry with inferred type (`text`, `bool`, `number`, or `list`).
 - Create a missing prop entry with inferred type.

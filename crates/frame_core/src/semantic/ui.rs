@@ -116,10 +116,10 @@ pub(crate) fn validate_ui_node(
             if let Some(style) = &element.style {
                 validate_style_ref(&style.name, symbols, diagnostics);
             } else if !symbols.declarations.contains_key(&element.name.text) {
-                diagnostics.push(Diagnostic::info(
+                diagnostics.push(Diagnostic::warning(
                     format!(
-                        "`{}` will use automatic style lookup when a matching style exists.",
-                        element.name.text
+                        "`{}` has no matching style.\n\nFrame uses automatic style lookup by name. Create `style {} {{ }}`, add an explicit mapping like `{} {}:ExistingStyle`, or ignore this if the default runtime style is intended.",
+                        element.name.text, element.name.text, element.kind.text, element.name.text
                     ),
                     element.name.span,
                 ));

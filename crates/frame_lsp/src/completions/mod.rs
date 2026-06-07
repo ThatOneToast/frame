@@ -57,6 +57,7 @@ const UI_KEYWORDS: &[&str] = &[
     "when",
     "style",
     "disabled",
+    "readonly",
     "label",
     "hint",
     "description",
@@ -128,6 +129,15 @@ const LIST_BODY_COMPLETIONS: &[&str] = &[
     "item Item",
     "empty Empty",
 ];
+
+const TEXT_BODY_COMPLETIONS: &[&str] = &["$state", "$prop", "style StyleName when $state"];
+
+const MEDIA_BODY_COMPLETIONS: &[&str] = &["source \"...\"", "alt \"...\"", "decorative true"];
+
+const DIALOG_BODY_COMPLETIONS: &[&str] =
+    &["show when $state", "title \"Title\"", "text \"Message\""];
+
+const POPOVER_BODY_COMPLETIONS: &[&str] = &["text \"Content\""];
 
 const GRID_PROPERTIES: &[&str] = &[
     "columns",
@@ -395,6 +405,87 @@ pub fn completions_at_with_includes(
     }
 
     if is_inside_ancestor_block(source, offset, "view") {
+        // $ trigger: suggest state, props, and loop variables
+        if line.trim_end().ends_with('$') {
+            if let Some(ref document) = parsed_document {
+                if let Some(component) = find_component_at_offset(document, offset) {
+                    let mut refs = Vec::new();
+                    if let Some(ref state) = component.state {
+                        for value in &state.values {
+                            refs.push(CompletionSuggestion {
+                                label: format!("${}", value.name.text),
+                                detail: "state",
+                                documentation: format!(
+                                    "Component state `{}` of type `{}`.",
+                                    value.name.text,
+                                    state_type_label(&value.value_type)
+                                ),
+                                insert_text: Some(value.name.text.clone()),
+                                is_snippet: false,
+                                category: CompletionCategory::Value,
+                            });
+                        }
+                    }
+                    if let Some(ref props) = component.props {
+                        for value in &props.values {
+                            refs.push(CompletionSuggestion {
+                                label: format!("${}", value.name.text),
+                                detail: "prop",
+                                documentation: format!(
+                                    "Component prop `{}` of type `{}`.",
+                                    value.name.text,
+                                    prop_type_label(&value.value_type)
+                                ),
+                                insert_text: Some(value.name.text.clone()),
+                                is_snippet: false,
+                                category: CompletionCategory::Value,
+                            });
+                        }
+                    }
+                    // Collect loop variables from view and slots
+                    if let Some(ref view) = component.view {
+                        collect_loop_variables(&view.nodes, &mut refs);
+                    }
+                    for slot in &component.slots {
+                        collect_loop_variables(&slot.nodes, &mut refs);
+                    }
+                    refs.sort_by(|a, b| a.label.cmp(&b.label));
+                    refs.dedup_by(|a, b| a.label == b.label);
+                    return refs;
+                }
+            }
+        }
+
+        // @ trigger: suggest known handlers
+        if line.trim_end().ends_with('@') {
+            if let Some(ref document) = parsed_document {
+                if let Some(component) = find_component_at_offset(document, offset) {
+                    let mut handlers = std::collections::HashSet::new();
+                    if let Some(ref view) = component.view {
+                        collect_handlers(&view.nodes, &mut handlers);
+                    }
+                    for slot in &component.slots {
+                        collect_loop_handlers(&slot.nodes, &mut handlers);
+                    }
+                    let mut items: Vec<CompletionSuggestion> = handlers
+                        .into_iter()
+                        .map(|name| CompletionSuggestion {
+                            label: format!("@{name}"),
+                            detail: "handler",
+                            documentation: format!(
+                                "External handler reference `{name}`. Frame stores the handler name, not inline script bodies."
+                            ),
+                            insert_text: Some(name),
+                            is_snippet: false,
+                            category: CompletionCategory::Value,
+                        })
+                        .collect();
+                    items.sort_by(|a, b| a.label.cmp(&b.label));
+                    return items;
+                }
+            }
+        }
+
         if line_words.first().map(String::as_str) == Some("on") {
             let mut items = suggestions_with_category(
                 UI_EVENTS,
@@ -410,6 +501,7 @@ pub fn completions_at_with_includes(
             ));
             return items;
         }
+
         if line_words.is_empty() || line.trim().is_empty() {
             if let Some(kind) = nearest_ui_element_kind(source, offset) {
                 let items = match kind.as_str() {
@@ -434,6 +526,26 @@ pub fn completions_at_with_includes(
                         LIST_BODY_COMPLETIONS,
                         "collection body",
                         "Collection rendering suggestions with keyed identity and empty states.",
+                    )),
+                    "text" | "title" | "label" | "badge" => Some(primitive_body_completions(
+                        TEXT_BODY_COMPLETIONS,
+                        "text body",
+                        "Text content and style switching suggestions.",
+                    )),
+                    "media" | "image" | "avatar" => Some(primitive_body_completions(
+                        MEDIA_BODY_COMPLETIONS,
+                        "media body",
+                        "Media source and accessibility suggestions.",
+                    )),
+                    "dialog" => Some(primitive_body_completions(
+                        DIALOG_BODY_COMPLETIONS,
+                        "dialog body",
+                        "Dialog visibility and content suggestions.",
+                    )),
+                    "popover" => Some(primitive_body_completions(
+                        POPOVER_BODY_COMPLETIONS,
+                        "popover body",
+                        "Popover content suggestions.",
                     )),
                     _ => None,
                 };
@@ -675,6 +787,101 @@ fn nearest_ui_element_kind(source: &str, offset: usize) -> Option<String> {
         }
     }
     stack.into_iter().rev().find(|kind| !kind.is_empty())
+}
+
+fn find_component_at_offset(
+    document: &frame_core::Document,
+    offset: usize,
+) -> Option<&frame_core::ComponentDecl> {
+    document
+        .components
+        .iter()
+        .find(|component| component.span.start <= offset && component.span.end >= offset)
+}
+
+fn collect_loop_variables(nodes: &[frame_core::UiNode], refs: &mut Vec<CompletionSuggestion>) {
+    for node in nodes {
+        match node {
+            frame_core::UiNode::Loop(loop_node) => {
+                refs.push(CompletionSuggestion {
+                    label: format!("${}", loop_node.item.text),
+                    detail: "loop variable",
+                    documentation: format!(
+                        "Loop item variable `{}` from `for {} in ...`.",
+                        loop_node.item.text, loop_node.item.text
+                    ),
+                    insert_text: Some(loop_node.item.text.clone()),
+                    is_snippet: false,
+                    category: CompletionCategory::Value,
+                });
+                if let Some(ref key) = loop_node.key {
+                    refs.push(CompletionSuggestion {
+                        label: format!("${}", key.name.text),
+                        detail: "loop key",
+                        documentation: format!(
+                            "Loop key variable `{}` from `key ${}`.",
+                            key.name.text, key.name.text
+                        ),
+                        insert_text: Some(key.name.text.clone()),
+                        is_snippet: false,
+                        category: CompletionCategory::Value,
+                    });
+                }
+                collect_loop_variables(&loop_node.children, refs);
+            }
+            frame_core::UiNode::Element(element) => {
+                collect_loop_variables(&element.children, refs);
+            }
+            _ => {}
+        }
+    }
+}
+
+fn collect_handlers(
+    nodes: &[frame_core::UiNode],
+    handlers: &mut std::collections::HashSet<String>,
+) {
+    for node in nodes {
+        match node {
+            frame_core::UiNode::Element(element) => {
+                for event in &element.events {
+                    handlers.insert(event.handler.name.text.clone());
+                }
+                collect_handlers(&element.children, handlers);
+            }
+            frame_core::UiNode::Loop(loop_node) => {
+                collect_loop_handlers(&loop_node.children, handlers);
+            }
+            _ => {}
+        }
+    }
+}
+
+fn collect_loop_handlers(
+    nodes: &[frame_core::UiNode],
+    handlers: &mut std::collections::HashSet<String>,
+) {
+    collect_handlers(nodes, handlers);
+}
+
+fn state_type_label(value_type: &frame_core::StateType) -> &'static str {
+    match value_type {
+        frame_core::StateType::Text => "text",
+        frame_core::StateType::Bool => "bool",
+        frame_core::StateType::Number => "number",
+        frame_core::StateType::List => "list",
+        frame_core::StateType::Unknown(_) => "unknown",
+    }
+}
+
+fn prop_type_label(value_type: &frame_core::PropType) -> &'static str {
+    match value_type {
+        frame_core::PropType::Text => "text",
+        frame_core::PropType::Bool => "bool",
+        frame_core::PropType::Number => "number",
+        frame_core::PropType::List => "list",
+        frame_core::PropType::Unknown(_) => "unknown",
+    }
 }
 
 #[cfg(test)]
@@ -1074,5 +1281,82 @@ mod tests {
         .collect::<Vec<_>>();
 
         assert_eq!(labels, vec!["cards".to_string(), "tokens".to_string()]);
+    }
+
+    #[test]
+    fn dollar_trigger_suggests_state_and_props() {
+        let source = "component ChatInput {\n  props {\n    channel text\n  }\n  state {\n    draft text = \"\"\n    sending bool = false\n  }\n  view {\n    text $draft\n  }\n}\n";
+        let offset = source.find("$draft").unwrap() + 1;
+        let labels = completions_at(source, offset)
+            .into_iter()
+            .map(|item| item.label)
+            .collect::<Vec<_>>();
+
+        assert!(
+            labels.contains(&"$draft".to_string()),
+            "expected $draft in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"$sending".to_string()),
+            "expected $sending in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"$channel".to_string()),
+            "expected $channel in {:?}",
+            labels
+        );
+    }
+
+    #[test]
+    fn at_trigger_suggests_known_handlers() {
+        let source = "component ChatInput {\n  view {\n    action Send {\n      on press @sendMessage\n    }\n    action Delete {\n      on press @deleteMessage\n    }\n  }\n}\n";
+        let offset = source.find("@sendMessage").unwrap() + 1;
+        let labels = completions_at(source, offset)
+            .into_iter()
+            .map(|item| item.label)
+            .collect::<Vec<_>>();
+
+        assert!(
+            labels.contains(&"@sendMessage".to_string()),
+            "expected @sendMessage in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"@deleteMessage".to_string()),
+            "expected @deleteMessage in {:?}",
+            labels
+        );
+    }
+
+    #[test]
+    fn text_primitive_body_suggests_data_refs() {
+        let labels = labels_for("component ChatInput {\n  view {\n    text Label {\n      ");
+
+        assert!(labels.contains(&"$state".to_string()));
+        assert!(labels.contains(&"style StyleName when $state".to_string()));
+    }
+
+    #[test]
+    fn media_primitive_body_suggests_source_and_alt() {
+        let labels = labels_for("component ChatInput {\n  view {\n    image Avatar {\n      ");
+
+        assert!(labels.contains(&"source \"...\"".to_string()));
+        assert!(labels.contains(&"alt \"...\"".to_string()));
+    }
+
+    #[test]
+    fn dialog_primitive_body_suggests_show_when() {
+        let labels = labels_for("component ChatInput {\n  view {\n    dialog Confirm {\n      ");
+
+        assert!(labels.contains(&"show when $state".to_string()));
+    }
+
+    #[test]
+    fn primitive_body_does_not_suggest_invalid_on_text() {
+        let labels = labels_for("component ChatInput {\n  view {\n    text Label {\n      ");
+
+        assert!(!labels.contains(&"value bind $state".to_string()));
     }
 }
