@@ -4,7 +4,7 @@ Frame's UI layer should be able to represent the full capability of HTML and the
 
 Do not mark an item complete until Frame syntax, AST/IR representation, semantic validation, runtime behavior, docs, and tests exist.
 
-Current status: UI syntax including `component`, `props`, `state`, `view`, `slot`, element, text, event, data reference, handler reference, binding, conditional rendering, conditional style, loop metadata, and component invocation is parsed, validated, lowered to Frame IR, and can generate TypeScript contracts. `packages/runtime-dom` implements a Phase 4 browser renderer with scheduled dependency-aware patching, hardened list reconciliation, practical HTML coverage, forms, global attributes, URL safety checks, cleanup counters, and accessibility/security diagnostics. SSR, hydration, routing, portals, suspense, async components, and transition/animation runtimes remain open.
+Current status: UI syntax including `component`, `props`, `state`, `view`, `slot`, semantic primitives, text, events, data references, handler references, bindings, conditional rendering, conditional style, loop metadata, and component invocation is parsed, validated, lowered to Frame IR, and can generate TypeScript contracts. `packages/runtime-dom` implements a Phase 4 browser renderer with scheduled dependency-aware patching, hardened list reconciliation, practical HTML coverage, forms, global attributes, URL safety checks, cleanup counters, and accessibility/security diagnostics. The standalone web app workflow now generates typed IR, contracts, append-only handler skeletons, and a Vite-compatible app without Svelte or React. SSR, hydration, routing, portals, suspense, async components, and transition/animation runtimes remain open.
 
 ## Design Goals
 
@@ -42,17 +42,25 @@ Current status: UI syntax including `component`, `props`, `state`, `view`, `slot
 - [x] `state { ... }`
 - [x] `view { ... }`
 - [ ] `slot Default { ... }`
-- [x] `button Send { ... }`
-- [x] `button Send:PrimaryButton { ... }`
+- [x] `screen App { ... }`
+- [x] `panel Sidebar { ... }`
+- [x] `stack Content { ... }`
+- [x] `row Toolbar { ... }`
+- [x] `field Email { input EmailInput { ... } }`
+- [x] `action Send { ... }`
+- [x] `action Send:PrimaryButton { ... }`
 - [x] `text "literal"`
 - [x] `text $value`
-- [x] `on click @handler`
+- [x] `on press @handler`
 - [x] `on keydown.enter @handler`
 - [x] `show when $condition`
 - [x] `disabled when $condition`
 - [x] `style when $condition = StyleName`
+- [x] `style StyleName when $condition`
 - [x] `for item in $items key $item.id { ... }`
 - [ ] `if $condition { ... } else { ... }`
+
+Browser element spellings such as `button` and `div` are retained only as migration diagnostics and lowering targets, not primary author-facing syntax.
 
 ## HTML Document Structure
 
@@ -273,6 +281,18 @@ Frame should not directly become a scripting language for browser APIs. It shoul
 - [ ] file system access through handlers/services only
 - [ ] WebSocket/WebRTC through handlers/services only
 - [ ] Tauri commands through handlers/services only
+
+## Standalone Web App Workflow
+
+- [x] `frame new --template web` creates a Vite app using `src/app.frame`.
+- [x] `frame init web` can scaffold an empty directory.
+- [x] `npm run dev` regenerates Frame output before Vite starts.
+- [x] `npm run build` regenerates Frame output before Vite builds.
+- [x] Generated typed IR imports `defineFrameIrDocument(... as const)`.
+- [x] Generated contracts include event-specific handler aliases.
+- [x] Handler skeletons are generated non-destructively and append missing stubs.
+- [x] User-owned handler implementations live outside `src/generated`.
+- [x] CLI tests cover template scripts, output paths, and repeated build stability.
 
 ## Documentation Requirements
 

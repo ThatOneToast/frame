@@ -311,6 +311,14 @@ frame emit-contracts app.frame
 
 Generated contracts define `ComponentProps`, `ComponentState`, `ComponentHandlers`, and a shared `FrameEventContext<TState, TProps>`. They do not generate runtime code or overwrite user implementation files.
 
+For standalone web apps, prefer `frame build`. It emits CSS, JSON IR, typed TS IR, contracts, and append-only handler skeletons under `src/generated`:
+
+```bash
+frame build
+```
+
+User-owned handler implementations live in `src/handlers.ts`; generated files describe the required signatures and runtime contract.
+
 ### Runtime status
 
 The DOM runtime currently supports mounting, disposal, element/text creation, nested components, props, state, events, bindings, conditions, style classes, dependency-aware patches, keyed and positional lists, common HTML elements, global attributes, URL safety checks, and form controls. It does not implement SSR, hydration, routing, portals, suspense, or async components.

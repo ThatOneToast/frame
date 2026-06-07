@@ -266,18 +266,34 @@ frame init web
 frame init svelte
 
 # Check and compile
-frame check src/frame/app.frame
-frame compile src/frame/app.frame --out dist/
-frame watch src/frame/app.frame --out dist/
-frame format src/frame/app.frame
+frame check src/app.frame
+frame build
+frame compile src/app.frame --out src/generated
+frame watch src/app.frame --out src/generated
+frame format src/app.frame
 
 # Debug output
-frame emit-ir src/frame/app.frame
-frame emit-contracts src/frame/app.frame
+frame emit-ir src/app.frame
+frame emit-contracts src/app.frame
 
 # Environment check
 frame doctor
 ```
+
+Standalone web projects created with `frame new my-app --template web` use:
+
+```txt
+src/
+  app.frame
+  handlers.ts
+  generated/
+    app.ir.json
+    app.ir.ts
+    frame.types.ts
+    frame.handlers.ts
+```
+
+`npm run dev` and `npm run build` run `frame build` before Vite. Generated IR and contracts are overwritten only when content changes. `frame.handlers.ts` is a generated reference file; `frame build` preserves existing content and appends missing stubs, while user-owned implementations live in `src/handlers.ts`.
 
 ## License
 

@@ -8,6 +8,8 @@ Do not mark an item complete until parser support, semantic validation, codegen,
 
 Existing Frame styling already covers a useful subset:
 
+Sweep note, 2026-06-07: web app workflow was reviewed in this pass, but no new structured CSS properties were implemented. Existing CSS completion status is unchanged.
+
 - [x] `grid`
 - [x] `area`
 - [x] `card`

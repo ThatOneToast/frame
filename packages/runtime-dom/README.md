@@ -81,9 +81,11 @@ Missing handlers are warned at mount time in debug mode. Invalid prop types thro
 - `app.ir.json` — stable serialized IR artifact
 - `app.ir.ts` — typed IR module with `defineFrameIrDocument(... as const)`
 - `frame.types.ts` — generated TypeScript contracts including `FrameEventContext`, `FramePressEvent`, `FrameInputEvent`, component `State`/`Props`/`Handlers` types
-- `frame.handlers.ts` — non-destructive handler skeletons with TODO comments (only written if missing)
+- `frame.handlers.ts` — non-destructive handler skeletons with TODO comments. Existing files are preserved; missing stubs are appended.
 
 The generated types keep TypeScript enum fields such as `value_type: "Text"` aligned with the runtime types.
+
+Generated-only files include headers with the source `.frame` path and regeneration command. User-owned handler implementations should live outside `src/generated`, typically in `src/handlers.ts`.
 
 ## Examples
 

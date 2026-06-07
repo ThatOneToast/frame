@@ -15,6 +15,25 @@ The stable serialized artifact is JSON from `frame emit-ir` or `frame build`:
 
 Runnable TypeScript projects should consume the generated `app.ir.ts` module from `frame build`, not import JSON directly. TypeScript widens JSON string literals to `string`, which loses the enum precision of fields such as `value_type: "Text"`. The generated TS module wraps the same JSON object with `defineFrameIrDocument(... as const)`, so compiler-emitted IR is checked against `FrameIrDocument` without `as any`.
 
+`frame build` writes the current project shape:
+
+```txt
+src/
+  app.frame
+  handlers.ts
+  generated/
+    app.ir.json
+    app.ir.ts
+    frame.types.ts
+    frame.handlers.ts
+```
+
+- `app.ir.json` is the stable serialized IR artifact.
+- `app.ir.ts` is the TypeScript-checked IR module and includes a generated-only header.
+- `frame.types.ts` contains generated contracts for props, state, and handlers.
+- `frame.handlers.ts` is a generated reference file. Existing content is preserved and missing stubs are appended.
+- `src/handlers.ts` is user-owned runtime logic.
+
 ## Document
 
 `FrameIrDocument`

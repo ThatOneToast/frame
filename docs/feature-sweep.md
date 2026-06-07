@@ -23,8 +23,8 @@ Last verified: 2026-06-07 milestone continuation sweep — Phase 1-4 complete
 | Clippy CI fix | Resolve `collapsible_match` failures in `semantic/ui.rs` | Converted two inner `if` statements to match guards on `"dialog"` and `"source"` arms | `cargo clippy --workspace --all-targets -- -D warnings` passes |
 | Generated contracts | TypeScript contracts for props, state, handlers | `generate_contracts` produces `frame.types.ts` with `FrameEventContext`, component types, and handler interfaces | 3 existing + 2 new tests |
 | Event-specific types | Semantic handler aliases per event kind | `FramePressEvent`, `FrameInputEvent`, `FrameToggleEvent`, `FrameKeyboardEvent`, `FrameFormEvent` generated in contracts | CLI test verifies `FramePressEvent` in output |
-| Handler skeletons | Non-destructive implementation stubs | `generate_skeletons` produces `frame.handlers.ts` with `export function` stubs and TODO comments; only written if missing | 2 new tests |
-| Build command | Emit contracts and skeletons alongside IR/CSS | `frame build` now writes `frame.types.ts` and `frame.handlers.ts` (if missing) | CLI `new_web_generates_typed_runtime_project` test |
+| Handler skeletons | Non-destructive implementation stubs | `generate_skeletons` produces typed `frame.handlers.ts` stubs; `frame build` preserves existing content and appends missing stubs | CLI lifecycle test |
+| Build command | Emit contracts and skeletons alongside IR/CSS | `frame build` writes CSS, TS exports, JSON IR, typed IR, contracts, and append-only skeletons with per-file status output | CLI `new_web_generates_typed_runtime_project` and lifecycle tests |
 | Web app template | Runnable standalone project with Vite | `frame new --template web` creates HTML, Vite config, TypeScript config, entry, handlers, and Frame source | CLI test |
 | Standalone example | Real browser app without Svelte/React | `implementations/frame-web-app` todo app with semantic layout, input binding, actions, lists, and handlers; builds with `npm run build` | Manual build verified |
 
@@ -158,8 +158,8 @@ npm test
 
 All commands passed.
 
-- Rust: 85 LSP tests, 46 `frame_core` tests, 18 parser tests, 17 CLI tests (including 20 golden fixture assertions), 32 `frame_codegen` tests (including 5 contract/skeleton tests)
+- Rust: 85 LSP tests, 46 `frame_core` tests, 18 parser tests, 19 CLI tests (including 20 golden fixture assertions), 32 `frame_codegen` tests (including contract/skeleton import coverage)
 - TypeScript: 71 `runtime-dom` tests, 9 `frame-svelte` tests
-- End-to-end: all 10 runtime examples verified with `frame check`; all examples build; `implementations/frame-web-app` builds with Vite
+- End-to-end: all 10 runtime examples verified with `frame check`; all examples build; `implementations/frame-web-app` builds with Vite; fresh web template installs and builds
 - Tree-sitter: `generate`, `parse`, and highlight tests pass
 - Zed extension: `cargo test` passes
