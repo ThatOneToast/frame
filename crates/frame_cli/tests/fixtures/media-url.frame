@@ -1,0 +1,9 @@
+component MediaApp {
+  view {
+    screen Main {
+      media Preview {
+        source "/video.mp4"
+      }
+    }
+  }
+}

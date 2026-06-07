@@ -1,0 +1,21 @@
+component EventApp {
+  state {
+    query text = ""
+  }
+
+  view {
+    screen Main {
+      action Send {
+        text "Send"
+        on click @sendMessage
+        on keydown.enter @sendMessage
+      }
+
+      input SearchBox {
+        value bind $query
+        on input @updateQuery
+        on focus @trackFocus
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+component KeyedListApp {
+  state {
+    items list = []
+    selectedId text = ""
+  }
+
+  view {
+    screen Main {
+      list ItemList {
+        for item in $items key $selectedId {
+          text $item
+        }
+      }
+    }
+  }
+}

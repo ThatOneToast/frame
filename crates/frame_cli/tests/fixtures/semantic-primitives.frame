@@ -1,0 +1,33 @@
+component SemanticApp {
+  state {
+    query text = ""
+    enabled bool = true
+  }
+
+  view {
+    screen Main {
+      action SearchButton {
+        text "Search"
+        on click @performSearch
+      }
+
+      field QueryField {
+        input SearchInput {
+          value $query
+          on keydown.enter @performSearch
+        }
+      }
+
+      editor NotesEditor {
+        value bind $query
+      }
+
+      toggle FeatureToggle {
+        checked when $enabled
+      }
+
+      title "Settings"
+      label "Active"
+    }
+  }
+}

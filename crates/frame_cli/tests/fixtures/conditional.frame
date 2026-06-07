@@ -1,0 +1,29 @@
+component ConditionalApp {
+  state {
+    visible bool = true
+    loggedIn bool = false
+    admin bool = false
+  }
+
+  view {
+    screen Main {
+      panel InfoPanel {
+        show when $visible
+        text "Visible content"
+      }
+
+      panel AdminPanel {
+        hidden when $loggedIn
+        text "Admin only"
+      }
+
+      action LoginButton {
+        text "Login"
+        disabled when $loggedIn
+      }
+
+      text "Admin view"
+      show when $admin
+    }
+  }
+}

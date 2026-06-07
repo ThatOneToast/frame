@@ -1,0 +1,30 @@
+component ChildItem {
+  props {
+    label text
+  }
+
+  view {
+    row ItemRow {
+      text $label
+    }
+  }
+}
+
+component NestedApp {
+  state {
+    query text = ""
+  }
+
+  slot Header {
+    text "Default header"
+  }
+
+  view {
+    screen Main {
+      stack Content {
+        ChildItem(label: "First")
+        ChildItem(label: "Second")
+      }
+    }
+  }
+}

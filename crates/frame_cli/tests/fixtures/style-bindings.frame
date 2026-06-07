@@ -1,0 +1,25 @@
+component StyleApp {
+  state {
+    loading bool = false
+  }
+
+  view {
+    screen Main {
+      // automatic style lookup (name used as style)
+      action PrimaryButton {
+        text "Submit"
+      }
+
+      // explicit style mapping
+      action Send:PrimaryButton {
+        text "Send"
+      }
+
+      // conditional style alias
+      action Submit:PrimaryButton {
+        text "Submit"
+        style when $loading = LoadingButton
+      }
+    }
+  }
+}

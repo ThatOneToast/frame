@@ -1,0 +1,7 @@
+component SimpleApp {
+  view {
+    screen Main {
+      text "Hello World"
+    }
+  }
+}

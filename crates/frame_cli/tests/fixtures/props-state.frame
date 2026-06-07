@@ -1,0 +1,19 @@
+component PropsStateApp {
+  props {
+    title text
+    count number
+  }
+
+  state {
+    message text = "Hello"
+    active bool = false
+    items list = []
+  }
+
+  view {
+    screen Main {
+      text $title
+      text $message
+    }
+  }
+}
