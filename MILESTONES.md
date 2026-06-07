@@ -234,7 +234,7 @@ Success criteria:
 
 Goal: redesign Frame's authoring model around UI intent, semantics, accessibility, and developer goals instead of browser implementation details.
 
-Status: **Phase 1 implementation in progress. Runtime feature work paused.**
+Status: **Phase 1 implementation complete. Runtime feature work paused.**
 
 Out of scope:
 
@@ -266,6 +266,8 @@ Deliverables:
 - [x] Zed grammar/highlighting updates.
 - [x] Semantic examples.
 - [x] `docs/semantic-lowering.md`.
+- [x] Primitive-specific property validation with teacher-like diagnostics.
+- [x] Generated IR golden fixtures and cross-language structural tests.
 - [ ] Update `TODO-DOM.md` after any DOM coverage changes are implemented.
 - [ ] Update `TODO-CSS.md` after any styling coverage changes are implemented.
 
@@ -325,16 +327,19 @@ Goal: make Frame's editor support teach the semantic UI language.
 
 Deliverables:
 
-- [ ] UI syntax highlighting.
-- [ ] Semantic primitive completions before DOM element completions.
-- [ ] Intent-based property completions before raw attribute completions.
-- [ ] Event completions.
-- [ ] State/prop/handler completions.
-- [ ] Hover docs for UI intent and accessibility behavior.
-- [ ] Go-to-definition for handlers and styles.
+- [x] UI syntax highlighting.
+- [x] Semantic primitive completions before DOM element completions.
+- [x] Intent-based property completions before raw attribute completions.
+- [x] Event completions.
+- [x] State/prop/handler completions.
+- [x] Hover docs for UI intent and accessibility behavior.
+- [x] Go-to-definition for handlers and styles.
 - [x] Code action for missing same-file style skeletons.
-- [ ] Multi-file code actions for missing handler skeletons.
-- [ ] Diagnostics for unsafe/invalid DOM usage.
+- [x] Multi-file code actions for missing handler, state, and prop skeletons.
+- [x] Workspace edits that create symbols in included files.
+- [x] Find All References across includes.
+- [x] Cross-file diagnostics for unresolved components, duplicate symbols, and shadowed imports.
+- [x] Diagnostics for unsafe/invalid DOM usage.
 
 Success criteria:
 

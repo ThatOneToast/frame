@@ -249,6 +249,33 @@ UiNode {
 
 The IR should preserve the primitive even when a renderer maps it to HTML. This lets LSP, diagnostics, tests, and non-DOM renderers reason about author intent.
 
+## Primitive-Specific Property Validation
+
+The Frame compiler validates properties against the primitive they are used on. This catches intent mismatches early with teacher-like diagnostics.
+
+### Valid properties by primitive category
+
+- **Text-like** (`text`, `title`, `label`, `badge`): `value` (shorthand content), `style`, `show`, `hidden`
+- **Input-like** (`input`, `editor`): `value bind`, `placeholder`, `label`, `disabled`, `readonly`, `style`, `show`, `hidden`
+- **Selection** (`toggle`, `choice`, `select`): `checked bind` / `selected bind`, `options`, `label`, `disabled`, `style`, `show`, `hidden`
+- **Field** (`field`): `label`, `description`, `hint`, `style`, `show`, `hidden`
+- **Action-like** (`action`, `link`): `text`, `label`, `goto`, `disabled`, `style`, `show`, `hidden`, `new-window`
+- **Composer** (`composer`): `label`, `draft bind`, `send`, `disabled`, `style`, `show`, `hidden`
+- **Media-like** (`image`, `avatar`, `media`): `source`, `sources`, `alt`, `description`, `decorative`, `poster`, `style`, `show`, `hidden`
+- **Collection** (`list`, `feed`, `data`): `source`, `style`, `show`, `hidden`
+- **Container** (`panel`, `stack`, `row`, `screen`, `section`, `card`, `dialog`, `popover`, `grid`, `split`, `dock`, `overlay`, `scroll`, `menu`, `toolbar`, `tabs`): `style`, `show`, `hidden`
+- **Icon** (`icon`): `label`, `decorative`, `style`, `show`, `hidden`
+- **Item** (`item`, `empty`): `style`, `show`, `hidden`
+
+### Common invalid property diagnostics
+
+- `value bind` on `text` → "`text`-like primitives display content. They do not own editable state. Use `field` when the user should edit a value."
+- `placeholder` on `action` → "Action-like primitives do not accept placeholder text. Use `text` or `label` for the visible command name."
+- `source` on `panel` → "Container primitives group children. They do not own media destinations. Place `source` on an `image`, `avatar`, or `media` child instead."
+- `value bind` on `field` → "`field` groups a label and a control. It does not own state directly. Place `value bind` on the `input`, `editor`, or `toggle` child instead."
+
+These diagnostics are produced by the semantic validator and surfaced through both `frame check` and the LSP.
+
 ## Custom Renderer Overrides
 
 Renderer targets may override mappings through a capability table:

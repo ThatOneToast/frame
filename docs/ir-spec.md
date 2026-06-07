@@ -172,3 +172,17 @@ Capability flags serialize as strings such as `"EventBinding"` and `"Conditional
 ## Runtime Diagnostics
 
 IR `source` spans are used by the DOM runtime for contextual `FrameDomError` messages. Runtime diagnostics currently cover invalid component lookup, invalid state access, invalid list sources, missing handlers, handler exceptions, unsafe URL updates, and patch failures. These diagnostics do not add new IR node types; they consume existing `source` metadata.
+
+## Golden Fixture Tests
+
+The compiler maintains golden IR fixtures in `crates/frame_cli/tests/fixtures/` to prevent accidental IR drift. Each fixture is a `.frame` source file compiled to IR, and the test suite asserts structural properties such as:
+
+- Primitive `kind`, `semantic_kind`, and `render_kind` per node
+- Node `name` and `style` bindings
+- Event `event` names and `handler` references
+- State `value_type` and prop `binding` modes
+- Two-way binding `path` expressions
+- Conditional rendering `Show` branches and `Style` conditions
+- Keyed list `key` expressions and `collection` references
+
+These tests do not require exact JSON string snapshots. They assert the IR structure through typed fields, so formatting or field-order changes do not break tests. Add a new fixture when a new IR feature is introduced.

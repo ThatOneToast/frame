@@ -19,6 +19,18 @@ Current actions include:
 
 These actions are intentionally design-intent-first. They create Frame concepts like grids, areas, surfaces, and effects rather than raw CSS properties.
 
-## Cross-File Limitations
+## Cross-File Workspace Edits
 
-If a missing symbol belongs in another file, the LSP currently creates the edit in the current file or generates a companion file. Workspace edits that create symbols in arbitrary imported files are not yet supported. This limitation is documented so users understand when to move generated skeletons manually.
+When a missing symbol is defined in an included file, the LSP creates a workspace edit that targets the correct file. This works for:
+
+- **Styles** in `styles.frame` — when a style binding is unresolved in a component, the skeleton is added to the first included file that contains style declarations.
+- **Handlers** in `handlers.ts` — when an event references an undefined handler, the skeleton is added to the first included file that contains handler declarations.
+- **State** in any included `.frame` file — when a state reference is undefined, the entry is added to the first included file that contains state declarations.
+- **Props** in any included `.frame` file — when a prop reference is undefined, the entry is added to the first included file that contains prop declarations.
+
+The LSP uses `DocumentChanges::Operations` with `TextDocumentEdit` so the editor applies the edit atomically across files. If no appropriate included file exists, the LSP falls back to the current file or a companion file.
+
+## Current Limitations
+
+- Component creation across files is not yet supported. If you reference an undefined component, you must create it manually.
+- The LSP does not yet suggest import restructuring when a symbol exists in an un-included file.

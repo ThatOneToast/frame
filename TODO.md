@@ -44,7 +44,7 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Create `docs/layout-system.md`.
 - [x] Create `docs/forms.md`.
 - [x] Create `docs/accessibility-model.md`.
-- [ ] Decide the first implemented semantic primitive set.
+- [x] Decide the first implemented semantic primitive set.
 - [x] Decide compatibility rules for existing HTML-like element syntax: no author-facing compatibility in `view`; browser words are internal lowering targets only.
 - [x] Define parser changes for semantic primitives.
 - [x] Define semantic model changes for primitive intent.
@@ -80,7 +80,7 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Validate automatic style lookup.
 - [x] Validate explicit style references in-file with soft missing-style diagnostics.
 - [x] Validate initial UI element names.
-- [ ] Validate known attributes per element where practical.
+- [x] Validate known attributes per element where practical. (Implemented as primitive-specific property validation)
 - [x] Validate initial event names and event modifiers.
 - [x] Validate accessibility requirements for common controls.
 - [x] Validate unsafe raw HTML usage.
@@ -98,6 +98,7 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Add JSON serialization for runtime consumption.
 - [x] Add stable IR serialization tests.
 - [x] Document IR versioning.
+- [x] Add golden fixture tests for IR structure across common patterns.
 
 ## Phase 5 — TypeScript Contracts
 
@@ -178,6 +179,8 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Add migration code actions from common browser words to Frame semantic primitives.
 - [x] Add go-to-definition for styles, state, props, and handlers.
 - [x] Add go-to-definition for imported styles, components, and grids.
+- [x] Add Find All References for styles, handlers, state, props, and declarations across includes.
+- [x] Add workspace edits that create missing symbols in included files.
 
 ## Phase 10 — Web App Target
 
