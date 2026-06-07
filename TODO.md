@@ -51,7 +51,7 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Define IR changes that preserve primitive kind separately from DOM mapping.
 - [x] Define codegen and TypeScript contract changes for intent-based events such as `on press`.
 - [x] Define LSP hover/completion wording for semantic primitives.
-- [ ] Add migration diagnostics and code actions after implementation begins.
+- [x] Add migration diagnostics and initial code actions for common HTML-like syntax.
 - [x] Update examples to prefer semantic primitives after implementation exists.
 - [x] Add `docs/semantic-lowering.md`.
 
@@ -169,6 +169,7 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Add diagnostics for unsafe DOM sinks.
 - [ ] Add code actions to create missing handler skeletons. (Deferred to Phase 6 — DOM Runtime)
 - [ ] Add code actions to create missing style declarations.
+- [x] Add migration code actions from common browser words to Frame semantic primitives.
 - [x] Add go-to-definition for styles, state, props, and handlers.
 
 ## Phase 10 — Web App Target

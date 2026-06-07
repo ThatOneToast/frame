@@ -27,6 +27,24 @@ pub fn code_actions_for_source(source: &str, uri: &Url) -> Vec<CodeActionOrComma
         &mut actions,
     );
 
+    for replacement in browser_primitive_replacements(source) {
+        actions.push(edit_action(
+            &format!("Convert `{}` to `{}`", replacement.from, replacement.to),
+            uri,
+            replacement.range,
+            replacement.to.to_string(),
+        ));
+    }
+
+    for replacement in browser_event_replacements(source) {
+        actions.push(edit_action(
+            "Replace `onclick` with `on press`",
+            uri,
+            replacement.range,
+            replacement.new_text,
+        ));
+    }
+
     for missing_grid in missing_grid_references(source) {
         actions.push(edit_action(
             "Create grid",
@@ -100,6 +118,82 @@ pub fn code_actions_for_source(source: &str, uri: &Url) -> Vec<CodeActionOrComma
 struct AdvancedReplacement {
     range: Range,
     frame: String,
+}
+
+struct WordReplacement {
+    range: Range,
+    from: String,
+    to: &'static str,
+}
+
+struct EventReplacement {
+    range: Range,
+    new_text: String,
+}
+
+fn browser_primitive_replacements(source: &str) -> Vec<WordReplacement> {
+    let mut replacements = Vec::new();
+    let mut offset = 0usize;
+
+    for line in source.lines() {
+        let leading = line.len() - line.trim_start().len();
+        let trimmed = line.trim_start();
+        let Some(first) = trimmed.split_whitespace().next() else {
+            offset += line.len() + 1;
+            continue;
+        };
+        let Some(to) = browser_primitive_replacement(first) else {
+            offset += line.len() + 1;
+            continue;
+        };
+        replacements.push(WordReplacement {
+            range: Range {
+                start: position_for_offset(source, offset + leading),
+                end: position_for_offset(source, offset + leading + first.len()),
+            },
+            from: first.to_string(),
+            to,
+        });
+        offset += line.len() + 1;
+    }
+
+    replacements
+}
+
+fn browser_primitive_replacement(word: &str) -> Option<&'static str> {
+    match word {
+        "button" => Some("action"),
+        "a" => Some("link"),
+        "div" => Some("panel"),
+        "main" => Some("screen"),
+        "aside" => Some("dock"),
+        "textarea" => Some("editor"),
+        "h1" | "h2" | "h3" | "h4" | "h5" | "h6" => Some("title"),
+        "ul" | "ol" => Some("list"),
+        _ => None,
+    }
+}
+
+fn browser_event_replacements(source: &str) -> Vec<EventReplacement> {
+    let mut replacements = Vec::new();
+    let mut offset = 0usize;
+
+    for line in source.lines() {
+        let leading = line.len() - line.trim_start().len();
+        let trimmed = line.trim_start();
+        if let Some(handler) = trimmed.strip_prefix("onclick ") {
+            replacements.push(EventReplacement {
+                range: Range {
+                    start: position_for_offset(source, offset + leading),
+                    end: position_for_offset(source, offset + line.len()),
+                },
+                new_text: format!("{}on press {}", " ".repeat(leading), handler.trim()),
+            });
+        }
+        offset += line.len() + 1;
+    }
+
+    replacements
 }
 
 fn advanced_css_replacements(source: &str) -> Vec<AdvancedReplacement> {
@@ -449,5 +543,23 @@ mod tests {
         assert!(titles.contains(&"Replace advanced CSS with `interactive`"));
         assert!(titles.contains(&"Replace advanced CSS with `scroll y`"));
         assert!(titles.contains(&"Replace advanced CSS with `border right terminal-border`"));
+    }
+
+    #[test]
+    fn offers_browser_to_semantic_ui_migrations() {
+        let source = "component Demo {\n  view {\n    button Send {\n      onclick @sendMessage\n    }\n    div Sidebar {\n    }\n  }\n}\n";
+        let uri = Url::parse("file:///demo.frame").unwrap();
+        let actions = code_actions_for_source(source, &uri);
+        let titles = actions
+            .iter()
+            .filter_map(|action| match action {
+                CodeActionOrCommand::CodeAction(action) => Some(action.title.as_str()),
+                CodeActionOrCommand::Command(_) => None,
+            })
+            .collect::<Vec<_>>();
+
+        assert!(titles.contains(&"Convert `button` to `action`"));
+        assert!(titles.contains(&"Convert `div` to `panel`"));
+        assert!(titles.contains(&"Replace `onclick` with `on press`"));
     }
 }
