@@ -20,58 +20,52 @@ component ChatApp {
   }
 
   slot Footer {
-    button Send {
+    action Send {
       text "Send"
-      on click @send
+      on press @send
     }
   }
 
   view {
     panel Shell {
-      id "chat-shell"
-      class "app-shell"
-      role "region"
-      aria-label "Chat"
       show when $loggedIn
       hidden when $collapsed
 
-      nav Navigation {
-        aria-label "Primary"
+      menu Navigation {
+        label "Primary"
 
-        a DocsLink {
-          href "https://example.com/docs"
-          target "_blank"
-          rel "noopener"
+        link DocsLink {
+          goto "https://example.com/docs"
           text "Docs"
         }
       }
 
-      form Composer {
-        on submit.prevent @send
+      composer Composer {
+        on submit @send
         on reset @clear
 
-        textarea Draft {
-          aria-label "Message"
+        editor Draft {
+          label "Message"
           value bind $draft
-          on keydown.enter.prevent @send
+          on keydown.enter @send
         }
 
-        button SendButton {
-          type "submit"
+        action SendButton {
           disabled when $sending
           text "Send"
+          on press @send
         }
       }
 
-      table Messages {
-        caption MessageCaption {
+      data Messages {
+        title MessageCaption {
           text "Messages"
         }
 
-        tbody MessageBody {
+        list MessageBody {
           for message in $messages key $message.id {
-            tr MessageRow {
-              td MessageCell {
+            row MessageRow {
+              item MessageCell {
                 text $message.text
               }
             }

@@ -1861,6 +1861,10 @@
     "named": false
   },
   {
+    "type": "media",
+    "named": false
+  },
+  {
     "type": "menu",
     "named": false
   },

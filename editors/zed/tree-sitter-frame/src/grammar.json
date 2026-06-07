@@ -1700,6 +1700,14 @@
         },
         {
           "type": "STRING",
+          "value": "image"
+        },
+        {
+          "type": "STRING",
+          "value": "media"
+        },
+        {
+          "type": "STRING",
           "value": "list"
         },
         {

@@ -1,10 +1,10 @@
-button PrimaryButton {
+card PrimaryButton {
   surface panel
   padding medium
   radius medium
 }
 
-button LoadingButton {
+card LoadingButton {
   surface panel
   padding medium
   radius medium
@@ -24,10 +24,10 @@ component ChatInput {
       on keydown.enter @sendMessage
     }
 
-    button Send:PrimaryButton {
+    action Send:PrimaryButton {
       text "Send"
       disabled when $sending
-      on click @sendMessage
+      on press @sendMessage
       style when $sending = LoadingButton
     }
   }

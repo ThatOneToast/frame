@@ -5,8 +5,8 @@ card QuickLinkCard {
   shadow medium
 }
 
-button PrimaryButton {
-  surface gradient accent
+card PrimaryButton {
+  surface panel
   padding medium
   radius small
   shadow small

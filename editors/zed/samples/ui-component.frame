@@ -15,10 +15,10 @@ component ChatInput {
       on keydown.enter @sendMessage
     }
 
-    button Send:PrimaryButton {
+    action Send:PrimaryButton {
       text "Send"
       disabled when $sending
-      on click @sendMessage
+      on press @sendMessage
       style when $sending = LoadingButton
     }
   }
@@ -35,8 +35,19 @@ component ChatApp {
   }
 
   view {
-    ChannelSidebar()
-    ChatPanel(channel: $activeChannel)
-    MessageComposer(draft bind $draft)
+    panel Sidebar {
+      list Channels {
+        text "Channel list placeholder"
+      }
+    }
+
+    panel ChatPanel {
+      text $activeChannel
+    }
+
+    composer MessageComposer {
+      draft bind $draft
+      on send @sendMessage
+    }
   }
 }

@@ -47,6 +47,8 @@ const UI_ELEMENT_KEYWORDS = [
   "badge",
   "avatar",
   "icon",
+  "image",
+  "media",
   "list",
   "feed",
   "data",

@@ -4,7 +4,7 @@ component MessageItem {
   }
 
   view {
-    article Message {
+    card Message {
       text $title
     }
   }
@@ -16,7 +16,7 @@ component ChatApp {
   }
 
   view {
-    main ChatMain {
+    screen ChatMain {
       for message in $messages key $message.id {
         MessageItem(title: $message.text)
       }

@@ -1,7 +1,3 @@
-#include base
-#include dashboard
-#include ./styles/cards.frame
-
 tokens Brand {
   color brand #7c3aed
   color brand-muted #a78bfa
@@ -11,7 +7,7 @@ tokens Brand {
 style-order reset, base, components, utilities
 
 style-group components {
-  button PrimaryButton {
+  card PrimaryButton {
     surface panel
     radius medium
   }
@@ -149,9 +145,20 @@ component ChatInput {
   }
 
   view {
-    ChannelSidebar()
-    ChatPanel(channel: $draft)
-    MessageComposer(draft bind $draft)
+    panel Sidebar {
+      list Channels {
+        text "Channels"
+      }
+    }
+
+    panel ChatPanel {
+      text $draft
+    }
+
+    composer MessageComposer {
+      draft bind $draft
+      on send @sendMessage
+    }
 
     input MessageBox {
       value bind $draft
@@ -159,10 +166,10 @@ component ChatInput {
       on keydown.ctrl.enter @sendMessage
     }
 
-    button Send:PrimaryButton {
+    action Send:PrimaryButton {
       text "Send"
       disabled when $sending
-      on click @sendMessage
+      on press @sendMessage
       style when $sending = LoadingButton
     }
   }

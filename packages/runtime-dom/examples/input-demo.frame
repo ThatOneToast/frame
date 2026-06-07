@@ -13,7 +13,7 @@ component InputDemo {
       placeholder "Type a message"
     }
 
-    span Preview {
+    label Preview {
       text $draft
     }
   }

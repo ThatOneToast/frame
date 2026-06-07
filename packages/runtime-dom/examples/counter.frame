@@ -4,9 +4,9 @@ component Counter {
   }
 
   view {
-    button Increment:PrimaryButton {
+    action Increment:PrimaryButton {
       text $count
-      on click @increment
+      on press @increment
     }
   }
 }

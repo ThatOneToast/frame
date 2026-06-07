@@ -5,22 +5,22 @@ component ChatComposer {
   }
 
   view {
-    form ComposerForm {
-      aria-label "Message composer"
-      on submit.prevent @send
+    composer ComposerForm {
+      label "Message composer"
+      on submit @send
       on reset @clear
 
-      textarea DraftInput {
-        aria-label "Message"
+      editor DraftInput {
+        label "Message"
         value bind $draft
         on input @updateDraft
-        on keydown.enter.prevent @send
+        on keydown.enter @send
       }
 
-      button SendButton {
-        type "submit"
+      action SendButton {
         disabled when $sending
         text "Send"
+        on press @send
       }
     }
   }

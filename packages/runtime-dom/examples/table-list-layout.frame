@@ -4,33 +4,31 @@ component TableListLayout {
   }
 
   view {
-    table InvoiceTable {
-      caption InvoiceCaption {
+    data InvoiceTable {
+      title InvoiceCaption {
         text "Invoices"
       }
 
-      thead InvoiceHead {
-        tr HeaderRow {
-          th NumberHeader {
-            scope "col"
+      toolbar InvoiceHead {
+        row HeaderRow {
+          title NumberHeader {
             text "Number"
           }
 
-          th StatusHeader {
-            scope "col"
+          title StatusHeader {
             text "Status"
           }
         }
       }
 
-      tbody InvoiceBody {
+      list InvoiceBody {
         for row in $rows key $row.id {
-          tr InvoiceRow {
-            td NumberCell {
+          row InvoiceRow {
+            item NumberCell {
               text $row.number
             }
 
-            td StatusCell {
+            item StatusCell {
               text $row.status
             }
           }

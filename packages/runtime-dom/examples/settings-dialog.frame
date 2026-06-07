@@ -6,29 +6,23 @@ component SettingsDialog {
 
   view {
     dialog SettingsModal {
-      aria-labelledby "settings-title"
       show when $open
 
-      h2 SettingsTitle {
-        id "settings-title"
+      title SettingsTitle {
         text "Settings"
       }
 
-      form SettingsForm {
-        on submit.prevent @save
+      composer SettingsForm {
+        on submit @save
 
-        label CompactLabel {
-          text "Compact mode"
-        }
-
-        input CompactToggle {
-          type "checkbox"
+        toggle CompactToggle {
+          label "Compact mode"
           checked bind $compact
         }
 
-        button SaveButton {
-          type "submit"
+        action SaveButton {
           text "Save"
+          on press @save
         }
       }
     }

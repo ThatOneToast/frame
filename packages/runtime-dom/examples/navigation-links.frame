@@ -1,21 +1,19 @@
 component NavigationLinks {
   view {
-    nav MainNav {
-      aria-label "Primary"
+    menu MainNav {
+      label "Primary"
 
-      ul NavList {
-        li HomeItem {
-          a HomeLink {
-            href "/"
+      list NavList {
+        item HomeItem {
+          link HomeLink {
+            goto "/"
             text "Home"
           }
         }
 
-        li DocsItem {
-          a DocsLink {
-            href "https://example.com/docs"
-            target "_blank"
-            rel "noopener"
+        item DocsItem {
+          link DocsLink {
+            goto "https://example.com/docs"
             text "Docs"
           }
         }
