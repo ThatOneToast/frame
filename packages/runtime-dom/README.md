@@ -76,7 +76,14 @@ Missing handlers are warned at mount time in debug mode. Invalid prop types thro
 
 ## IR Generation
 
-`frame build` writes both `app.ir.json` and `app.ir.ts`. The JSON file is the stable serialized IR artifact. The TS module imports `defineFrameIrDocument` and checks the same IR object as a literal, which keeps TypeScript enum fields such as `value_type: "Text"` aligned with the runtime types.
+`frame build` writes:
+
+- `app.ir.json` — stable serialized IR artifact
+- `app.ir.ts` — typed IR module with `defineFrameIrDocument(... as const)`
+- `frame.types.ts` — generated TypeScript contracts including `FrameEventContext`, `FramePressEvent`, `FrameInputEvent`, component `State`/`Props`/`Handlers` types
+- `frame.handlers.ts` — non-destructive handler skeletons with TODO comments (only written if missing)
+
+The generated types keep TypeScript enum fields such as `value_type: "Text"` aligned with the runtime types.
 
 ## Examples
 

@@ -134,9 +134,10 @@ Deliverables:
 - [x] Generated state types.
 - [x] Generated handler interfaces.
 - [x] Generated event context types.
-- [ ] Generated skeleton files. (Deferred to Milestone 6 — DOM Runtime MVP)
-- [x] Non-destructive file update strategy.
-- [x] Tests for generated contracts.
+- [x] Generated handler skeleton files with TODO comments.
+- [x] Event-specific handler type aliases (FramePressEvent, FrameInputEvent, etc.).
+- [x] Non-destructive file update strategy (skeletons only written if missing).
+- [x] Tests for generated contracts and skeletons.
 
 Success criteria:
 
@@ -359,7 +360,7 @@ Success criteria:
 
 ## Milestone 13 — Web App Target
 
-Status: **Scaffolding complete. Runtime feature work paused.**
+Status: **Scaffolding complete with generated types, skeletons, and standalone example app.**
 
 Goal: make Frame usable as a standalone web UI language.
 
@@ -367,10 +368,14 @@ Deliverables:
 
 - [x] `frame init web`.
 - [x] `frame new` with web and svelte templates.
-- [ ] Dev server or Vite-compatible runtime flow.
-- [ ] Browser example app.
-- [ ] Build output docs.
-- [ ] Debugging docs.
+- [x] Vite-compatible runtime flow (`npm run dev` / `npm run build`).
+- [x] `frame build` generates typed IR, CSS, contracts, and non-destructive handler skeletons.
+- [x] Event-specific handler type aliases in generated contracts.
+- [x] Browser example app (`implementations/frame-web-app`) demonstrating semantic layout, input binding, actions, lists, and handlers.
+- [x] Build output docs in web template README.
+- [x] Debugging docs explaining runtime debug mode and generated files.
+- [ ] Hot reload during dev.
+- [ ] Production build optimization docs.
 
 Success criteria:
 

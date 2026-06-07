@@ -16,6 +16,18 @@ Last verified: 2026-06-07 milestone continuation sweep — Phase 1-4 complete
 | Subscription cleanup | No duplicate subscriptions after rerender | Conditional render cleanup unsubscribes and re-subscribes correctly | Subscription test |
 | Debug stats | Counters accurately reflect mounts, listeners, subscriptions, disposals | `getDebugStats` returns counters verified against actual behavior | Stats test |
 
+## Skeleton and Web App Sweep Status
+
+| Area | Expected | Implemented | Tests |
+| --- | --- | --- | --- |
+| Clippy CI fix | Resolve `collapsible_match` failures in `semantic/ui.rs` | Converted two inner `if` statements to match guards on `"dialog"` and `"source"` arms | `cargo clippy --workspace --all-targets -- -D warnings` passes |
+| Generated contracts | TypeScript contracts for props, state, handlers | `generate_contracts` produces `frame.types.ts` with `FrameEventContext`, component types, and handler interfaces | 3 existing + 2 new tests |
+| Event-specific types | Semantic handler aliases per event kind | `FramePressEvent`, `FrameInputEvent`, `FrameToggleEvent`, `FrameKeyboardEvent`, `FrameFormEvent` generated in contracts | CLI test verifies `FramePressEvent` in output |
+| Handler skeletons | Non-destructive implementation stubs | `generate_skeletons` produces `frame.handlers.ts` with `export function` stubs and TODO comments; only written if missing | 2 new tests |
+| Build command | Emit contracts and skeletons alongside IR/CSS | `frame build` now writes `frame.types.ts` and `frame.handlers.ts` (if missing) | CLI `new_web_generates_typed_runtime_project` test |
+| Web app template | Runnable standalone project with Vite | `frame new --template web` creates HTML, Vite config, TypeScript config, entry, handlers, and Frame source | CLI test |
+| Standalone example | Real browser app without Svelte/React | `implementations/frame-web-app` todo app with semantic layout, input binding, actions, lists, and handlers; builds with `npm run build` | Manual build verified |
+
 ## Validation Commands
 
 This file should be updated with exact validation results after each sweep. The required full suite remains:
@@ -146,8 +158,8 @@ npm test
 
 All commands passed.
 
-- Rust: 71 LSP tests, 46 `frame_core` tests, 18 parser tests, 17 CLI tests (including 20 golden fixture assertions)
-- TypeScript: 47 `runtime-dom` tests, 9 `frame-svelte` tests
-- End-to-end: all 10 runtime examples verified with `frame check`; all examples build
+- Rust: 85 LSP tests, 46 `frame_core` tests, 18 parser tests, 17 CLI tests (including 20 golden fixture assertions), 32 `frame_codegen` tests (including 5 contract/skeleton tests)
+- TypeScript: 71 `runtime-dom` tests, 9 `frame-svelte` tests
+- End-to-end: all 10 runtime examples verified with `frame check`; all examples build; `implementations/frame-web-app` builds with Vite
 - Tree-sitter: `generate`, `parse`, and highlight tests pass
 - Zed extension: `cargo test` passes

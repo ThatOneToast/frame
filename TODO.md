@@ -137,8 +137,9 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Add `label` → `aria-label` mapping.
 - [x] Add debug output for queued and flushed patches with component context.
 - [x] Expand runtime tests for accessibility, events, input behavior, lifecycle, and diagnostics.
-- [ ] Generate skeleton implementation files.
-- [ ] Generate DOM event-specific handler signatures.
+- [x] Generate skeleton implementation files (non-destructive handler skeletons with TODO comments).
+- [x] Generate DOM event-specific handler signatures (FramePressEvent, FrameInputEvent, FrameKeyboardEvent, FrameFormEvent).
+- [x] `frame build` emits contracts and skeletons into generated directory.
 
 ## Phase 7 — CSS Integration
 

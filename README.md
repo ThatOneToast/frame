@@ -81,7 +81,9 @@ implementations/
   chat-app/        rough reference implementation experiments
 ```
 
-The compiler outputs CSS and TypeScript class exports for styling declarations. For UI declarations, it produces Frame IR and TypeScript contracts. The DOM runtime can consume Frame IR for mounting, disposal, elements, text, nested components, props, state, events, bindings, conditions, style classes, keyed or positional list reconciliation, common HTML elements, global attributes, safe URL attributes, form controls, scheduled updates, runtime diagnostics, accessibility defaults, handler/prop validation, and cleanup accounting.
+The compiler outputs CSS and TypeScript class exports for styling declarations. For UI declarations, it produces Frame IR and TypeScript contracts. `frame build` also emits non-destructive handler skeletons and event-specific type aliases so developers can write Frame UI first, then fill in generated TypeScript.
+
+The DOM runtime can consume Frame IR for mounting, disposal, elements, text, nested components, props, state, events, bindings, conditions, style classes, keyed or positional list reconciliation, common HTML elements, global attributes, safe URL attributes, form controls, scheduled updates, runtime diagnostics, accessibility defaults, handler/prop validation, and cleanup accounting.
 
 ## Direction
 

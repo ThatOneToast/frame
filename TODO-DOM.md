@@ -20,7 +20,7 @@ Current status: UI syntax including `component`, `props`, `state`, `view`, `slot
 - [x] Unmount and clean up listeners/effects.
 - [x] Create elements.
 - [x] Create text nodes.
-- [ ] Create comments where needed for anchors.
+- [x] Create comments where needed for anchors.
 - [x] Set attributes.
 - [x] Set DOM properties.
 - [x] Remove attributes/properties.
@@ -31,6 +31,9 @@ Current status: UI syntax including `component`, `props`, `state`, `view`, `slot
 - [x] Apply patches deterministically.
 - [x] Batch updates.
 - [x] Preserve source maps for runtime diagnostics.
+- [x] Mount-time handler validation (debug warnings).
+- [x] Mount-time prop type validation.
+- [x] Debug output for queued and flushed patches.
 
 ## Frame UI Syntax
 
@@ -219,6 +222,7 @@ Current status: UI syntax including `component`, `props`, `state`, `view`, `slot
 - [ ] custom events
 - [x] event modifiers: `prevent`, `stop`, `once`, `capture`, `passive`
 - [x] key filters: `enter`, `escape`, `tab`, arrows, modifiers
+- [x] generated event-specific handler type aliases (FramePressEvent, FrameInputEvent, FrameKeyboardEvent, FrameFormEvent)
 
 ## Accessibility
 
@@ -228,6 +232,8 @@ Current status: UI syntax including `component`, `props`, `state`, `view`, `slot
 - [x] button accessible name diagnostics
 - [x] link accessible name diagnostics
 - [x] heading order diagnostics
+- [x] runtime accessibility defaults for semantic primitives (action, toggle, image, avatar, icon, field, media, composer)
+- [x] keyboard activation for action-like controls
 - [ ] dialog focus diagnostics
 - [ ] keyboard interaction diagnostics
 - [ ] ARIA role validation
