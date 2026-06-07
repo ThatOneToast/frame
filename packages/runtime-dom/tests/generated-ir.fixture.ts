@@ -5,7 +5,15 @@ export const generatedIr = defineFrameIrDocument({
   components: [
     {
       name: 'TypedFixture',
-      props: [],
+      props: [
+        {
+          name: 'title',
+          value_type: 'Text',
+          readonly: true,
+          binding: 'Input',
+          source: { start: 0, end: 1 }
+        }
+      ],
       state: [
         {
           name: 'draft',
@@ -36,42 +44,186 @@ export const generatedIr = defineFrameIrDocument({
       nodes: [
         {
           Element: {
-            kind: 'action',
-            semantic_kind: 'action',
-            render_kind: 'button',
-            name: 'Send',
+            kind: 'field',
+            semantic_kind: 'field',
+            render_kind: 'div',
+            name: 'MessageField',
             style: {
               Explicit: {
-                style: 'PrimaryAction',
+                style: 'MessageFieldStyle',
                 source: { start: 4, end: 5 }
               }
             },
             attributes: [],
-            bindings: [],
-            events: [
+            bindings: [
               {
-                event: 'press',
-                modifiers: [],
-                handler: 'sendMessage',
+                property: 'value',
+                state: 'draft',
                 source: { start: 5, end: 6 }
               }
             ],
             conditions: [
               {
+                Show: {
+                  state: 'title',
+                  source: { start: 6, end: 7 }
+                }
+              },
+              {
+                Hidden: {
+                  state: 'sending',
+                  source: { start: 7, end: 8 }
+                }
+              },
+              {
+                Property: {
+                  property: 'disabled',
+                  state: 'sending',
+                  source: { start: 8, end: 9 }
+                }
+              },
+              {
                 Style: {
                   state: 'sending',
                   style: 'SendingAction',
-                  source: { start: 6, end: 7 }
+                  source: { start: 9, end: 10 }
                 }
               }
             ],
-            children: [],
-            source: { start: 4, end: 7 }
+            events: [
+              {
+                event: 'press',
+                modifiers: ['prevent'],
+                handler: 'sendMessage',
+                source: { start: 10, end: 11 }
+              }
+            ],
+            children: [
+              {
+                Text: {
+                  value: { DataRef: 'draft' },
+                  source: { start: 11, end: 12 }
+                }
+              },
+              {
+                Component: {
+                  name: 'NestedBadge',
+                  arguments: [
+                    {
+                      name: 'label',
+                      value: { DataRef: 'title' },
+                      source: { start: 12, end: 13 }
+                    },
+                    {
+                      name: 'active',
+                      value: { Bind: 'sending' },
+                      source: { start: 13, end: 14 }
+                    }
+                  ],
+                  source: { start: 12, end: 14 }
+                }
+              },
+              {
+                List: {
+                  item: 'message',
+                  collection: 'messages',
+                  key: 'message.id',
+                  children: [
+                    {
+                      Element: {
+                        kind: 'item',
+                        semantic_kind: 'item',
+                        render_kind: 'div',
+                        name: 'MessageItem',
+                        style: {
+                          Automatic: {
+                            style: 'MessageItem',
+                            source: { start: 14, end: 15 }
+                          }
+                        },
+                        attributes: [
+                          {
+                            name: 'value',
+                            value: { DataRef: 'message.text' },
+                            source: { start: 15, end: 16 }
+                          }
+                        ],
+                        bindings: [],
+                        events: [],
+                        conditions: [],
+                        children: [],
+                        source: { start: 14, end: 16 }
+                      }
+                    }
+                  ],
+                  source: { start: 14, end: 17 }
+                }
+              }
+            ],
+            source: { start: 4, end: 17 }
           }
         }
       ],
-      capabilities: ['EventBinding', 'ConditionalStyles'],
-      source: { start: 0, end: 7 }
+      capabilities: [
+        'ComponentComposition',
+        'ConditionalRendering',
+        'ConditionalStyles',
+        'EventBinding',
+        'ListRendering',
+        'TwoWayBinding'
+      ],
+      source: { start: 0, end: 17 }
+    },
+    {
+      name: 'NestedBadge',
+      props: [
+        {
+          name: 'label',
+          value_type: 'Text',
+          readonly: true,
+          binding: 'Input',
+          source: { start: 17, end: 18 }
+        },
+        {
+          name: 'active',
+          value_type: 'Bool',
+          readonly: false,
+          binding: 'TwoWayAllowed',
+          source: { start: 18, end: 19 }
+        }
+      ],
+      state: [],
+      slots: [],
+      nodes: [
+        {
+          Element: {
+            kind: 'badge',
+            semantic_kind: 'badge',
+            render_kind: 'span',
+            name: 'Badge',
+            style: {
+              Automatic: {
+                style: 'Badge',
+                source: { start: 19, end: 20 }
+              }
+            },
+            attributes: [
+              {
+                name: 'value',
+                value: { DataRef: 'label' },
+                source: { start: 20, end: 21 }
+              }
+            ],
+            bindings: [],
+            events: [],
+            conditions: [],
+            children: [],
+            source: { start: 19, end: 21 }
+          }
+        }
+      ],
+      capabilities: [],
+      source: { start: 17, end: 21 }
     }
   ]
 } as const) satisfies FrameIrDocument;
