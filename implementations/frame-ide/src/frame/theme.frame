@@ -5,103 +5,95 @@ tokens IdeTheme {
   color ide-text #c8c8d0
   color ide-muted #6e6e7a
   color ide-accent #8ab4ff
-  color ide-accent-glow rgba(120, 160, 255, 0.12)
-  color ide-selection rgba(120, 160, 255, 0.18)
-  color ide-line-highlight rgba(255, 255, 255, 0.03)
   color ide-error #f87171
   color ide-warning #fbbf24
 }
 
-screen IdeApp {
-  surface ide-bg
+// Root app container - full viewport flex column
+stack Root {
+  surface main
+  width fill
   height screen
-}
-
-dock Toolbar {
-  position fixed top
-  surface ide-panel
-  border bottom ide-border
-  height small
-  align center
-  justify between
-  padding horizontal medium
-}
-
-area Logo {
-  in IdeApp
-  place logo
-  align center
-}
-
-area MainSplit {
-  in IdeApp
-  place main
-  surface ide-bg
-}
-
-panel Sidebar {
-  surface ide-panel
-  border right ide-border
-  padding small
-}
-
-panel EditorPane {
-  surface ide-bg
   padding none
 }
 
-panel StatusBar {
-  surface ide-panel
-  border top ide-border
+// Top toolbar - horizontal flex row
+row Toolbar {
+  surface panel
+  padding small
+  gap small
   align center
-  justify between
-  padding horizontal medium
-  text ide-muted
 }
 
-card FileItem {
-  surface transparent
-  padding horizontal small
-  padding vertical tiny
+// Main split area - sidebar + editor, grows to fill remaining space
+split MainSplit {
+  flex grow 1
+}
+
+// Left sidebar - fixed width, scrollable file list
+stack Sidebar {
+  surface panel
+  width sidebar
+  padding small
+  scroll y
+  scrollbar dense
+}
+
+// Editor container - fills remaining space
+stack Editor {
+  surface main
+  padding medium
+  height fill
+}
+
+// The actual code editor textarea
+card CodeEditor {
+  width fill
+  height fill
+  surface inset
+  padding medium
+  text ide-text
   radius small
+  font mono
+}
+
+// Bottom status bar - stays in flex flow
+row StatusBar {
+  surface panel
+  padding small
+  gap small
+  align center
+}
+
+// Toolbar action buttons
+card ToolbarButton {
+  surface panel
+  padding small
+  radius small
+  text ide-text
 
   hover {
-    background ide-accent-glow
     brighten subtle
   }
 
   active {
-    background ide-selection
-    color ide-accent
+    dim subtle
   }
 }
 
-card EditorLine {
-  surface transparent
-  padding horizontal small
+// File tree items
+card FileItem {
+  surface panel
+  padding small
+  radius small
   text ide-text
 
-  selected {
-    background ide-line-highlight
+  hover {
+    brighten subtle
   }
 }
 
-card KeywordToken {
-  text ide-accent
-}
-
-card StringToken {
-  text ide-warning
-}
-
-card NumberToken {
-  text ide-error
-}
-
-card CommentToken {
+// Status bar label
+card StatusText {
   text ide-muted
-}
-
-card PropertyToken {
-  text ide-text
 }

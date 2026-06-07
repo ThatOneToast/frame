@@ -1,6 +1,6 @@
 {
   "name": "frame-ide",
   "version": "0.1.0",
-  "source": "src/frame/app.frame",
+  "entry": "src/frame/app.frame",
   "outDir": "src/generated"
 }

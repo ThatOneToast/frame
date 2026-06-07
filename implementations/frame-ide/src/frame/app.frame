@@ -1,5 +1,4 @@
 #include theme
-
 component IdeApp {
   state {
     files list = []
@@ -8,39 +7,34 @@ component IdeApp {
     status text = "Frame IDE — Ready"
     lspConnected bool = false
   }
-
   view {
-    screen IdeRoot {
+    panel Root {
       title "Frame IDE"
-
       toolbar Toolbar {
-        action NewFile {
+        action NewFile:ToolbarButton {
           label "New"
           on press @newFile
         }
-        action OpenFile {
+        action OpenFile:ToolbarButton {
           label "Open"
           on press @openFile
         }
-        action SaveFile {
+        action SaveFile:ToolbarButton {
           label "Save"
           on press @saveFile
         }
       }
-
       split MainSplit {
         panel Sidebar {
           title "Explorer"
-          list FileTree {
-            source $files
-            item {
-              text $file.name
+          for file in $files {
+            card FileItem {
+              text $file
               on press @openFileByPath
             }
           }
         }
-
-        panel EditorPane {
+        panel Editor {
           editor CodeEditor {
             label "Editor"
             value bind $currentContent
@@ -49,10 +43,9 @@ component IdeApp {
           }
         }
       }
-
       dock StatusBar {
-        text $status
-        action LspToggle {
+        label $status
+        action LspToggle:ToolbarButton {
           label "LSP"
           on press @toggleLsp
         }
