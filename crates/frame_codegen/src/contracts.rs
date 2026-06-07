@@ -15,7 +15,7 @@ pub fn generate_contracts(document: &Document) -> String {
 
 fn generate_contracts_from_components(components: &[FrameIrComponent]) -> String {
     let mut output = String::from(
-        "export type FrameEventContext<TState, TProps> = {\n  state: TState;\n  props: TProps;\n  event: Event;\n};\n\n",
+        "import type { FrameStateController } from '@frame/runtime-dom';\n\nexport type FrameEventContext<TState, TProps> = {\n  state: FrameStateController;\n  props: Readonly<TProps>;\n  event: Event;\n  readonly stateShape?: TState;\n};\n\n",
     );
 
     // Event-specific context aliases for semantic primitives
@@ -262,8 +262,15 @@ pub fn generate_skeletons(document: &Document) -> String {
 
 fn generate_skeletons_from_components(components: &[FrameIrComponent]) -> String {
     let mut output = String::from(
-        "// Frame generated handler skeletons.\n// This file is generated non-destructively.\n// Copy functions into your own handlers.ts and implement them.\n\n",
+        "import type { FrameEventContext, FrameFormEvent, FrameInputEvent, FrameKeyboardEvent, FramePressEvent, FrameToggleEvent",
     );
+    for component in components {
+        output.push_str(&format!(", {}State", component.name));
+        if !component.props.is_empty() {
+            output.push_str(&format!(", {}Props", component.name));
+        }
+    }
+    output.push_str(" } from './frame.types';\n\n");
 
     #[derive(Debug, Clone)]
     struct ComponentHandler {
@@ -355,6 +362,7 @@ mod tests {
         let ts = generate_contracts(&document);
 
         assert!(ts.contains("export type FrameEventContext<TState, TProps>"));
+        assert!(ts.contains("state: FrameStateController;"));
         assert!(ts.contains("export type ChatInputState = {"));
         assert!(ts.contains("  draft: string;"));
         assert!(ts.contains("  sending: boolean;"));
@@ -479,6 +487,7 @@ mod tests {
         )]);
 
         let skeletons = generate_skeletons(&document);
+        assert!(skeletons.contains("import type { FrameEventContext"));
         assert!(skeletons.contains("export function sendMessage"));
         assert!(skeletons.contains("TODO: implement sendMessage"));
         assert!(skeletons.contains("ChatInputState"));
