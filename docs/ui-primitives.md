@@ -123,6 +123,25 @@ Default DOM mapping: `input`.
 
 Accessibility: requires label. Type is semantic, such as `email`, `search`, `password`, `number`, not raw DOM-only unless needed.
 
+### `field`
+
+Meaning: a labeled data-entry group with help, description, validation, and one or more controls.
+
+Default DOM mapping: neutral container. Renderers may add label/control relationships from `label`, `hint`, `description`, and child controls.
+
+Accessibility: should provide a label and connect helper/error text to the contained control when renderer support exists.
+
+```frame
+field EmailField {
+  label "Email"
+  hint "Use the address where updates should arrive."
+
+  input EmailInput {
+    value bind $email
+  }
+}
+```
+
 ### `editor`
 
 Meaning: multi-line text editing.

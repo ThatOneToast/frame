@@ -37,7 +37,7 @@ Deliverables:
 - [x] `$value` references (state and props).
 - [x] `@handler` references.
 - [x] `Name:StyleName` style binding syntax.
-- [x] Initial `style when` reactive style syntax.
+- [x] Initial reactive style syntax: `style when $state = StyleName` and `style StyleName when $state`.
 - [x] `show when`, `disabled when`, and similar condition helpers.
 - [x] Clear unsafe/raw escape hatch syntax.
 
@@ -332,7 +332,8 @@ Deliverables:
 - [ ] State/prop/handler completions.
 - [ ] Hover docs for UI intent and accessibility behavior.
 - [ ] Go-to-definition for handlers and styles.
-- [ ] Code actions for missing handlers and styles.
+- [x] Code action for missing same-file style skeletons.
+- [ ] Multi-file code actions for missing handler skeletons.
 - [ ] Diagnostics for unsafe/invalid DOM usage.
 
 Success criteria:

@@ -2,7 +2,7 @@
 
 Frame source stores semantic UI intent first. Renderer targets lower that intent into platform details.
 
-The compiler does not treat `action`, `editor`, `composer`, `list`, or `data` as browser tags. It records:
+The compiler does not treat `action`, `field`, `editor`, `composer`, `list`, or `data` as browser tags. It records:
 
 - `semantic_kind`: the Frame primitive the author wrote
 - `render_kind`: the default renderer mapping for the selected target
@@ -18,7 +18,7 @@ The compiler does not treat `action`, `editor`, `composer`, `list`, or `data` as
 | `action` | `button type="button"` |
 | `link` | `a` with `goto` lowered to `href` |
 | `menu` | navigation/container structure |
-| `toolbar`, `tabs` | structural container with accessibility metadata |
+| `toolbar`, `tabs`, `field` | structural container with accessibility metadata |
 | `input` | `input` |
 | `editor`, `composer` | `textarea` |
 | `toggle` | `input type="checkbox"` |

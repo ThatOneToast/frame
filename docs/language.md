@@ -132,16 +132,19 @@ component ChatInput {
   }
 
   view {
-    editor Message {
+    field MessageField {
       label "Message"
-      bind $draft
-      on keydown.ctrl.enter @sendMessage
+
+      editor Message {
+        value bind $draft
+        on keydown.ctrl.enter @sendMessage
+      }
     }
 
     action Send:PrimaryButton {
       disabled when $sending
       on press @sendMessage
-      style when $sending = LoadingButton
+      style LoadingButton when $sending
     }
   }
 }
@@ -185,6 +188,7 @@ panel Messages
 action Send
 link Documentation
 input Username
+field EmailField
 editor Draft
 toggle Notifications
 composer ChatBox
@@ -231,7 +235,7 @@ Conditional style switching:
 
 ```frame
 action Send:PrimaryButton {
-  style when $sending = LoadingButton
+  style LoadingButton when $sending
 }
 ```
 

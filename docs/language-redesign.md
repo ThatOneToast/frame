@@ -207,7 +207,7 @@ Frame currently exposes raw HTML elements, DOM attributes, ARIA attributes, tabl
 
 ### Proposed UI Primitives
 
-Use primitives such as `action`, `link`, `menu`, `sidebar`, `panel`, `editor`, `input`, `dialog`, `card`, `list`, `feed`, `data`, `toolbar`, `tabs`, `stack`, `dock`, `grid`, `scroll`, `choice`, `select`, and `toggle`. Each primitive should define meaning, accessibility behavior, compiler IR, and default renderer mappings.
+Use primitives such as `action`, `link`, `menu`, `panel`, `field`, `editor`, `input`, `dialog`, `card`, `list`, `feed`, `data`, `toolbar`, `tabs`, `stack`, `dock`, `grid`, `scroll`, `choice`, `select`, and `toggle`. Each primitive should define meaning, accessibility behavior, compiler IR, and default renderer mappings.
 
 ### Proposed Layout System
 
@@ -215,7 +215,7 @@ Use `dock`, `stack`, `flow`, `grid`, `overlay`, `scroll`, and `split` as intent-
 
 ### Proposed Form System
 
-Use intent-based controls: `input`, `editor`, `toggle`, `choice`, `select`, and `action`. Labels, hints, descriptions, validation messages, required state, disabled state, and bindings should be first-class and accessible by default.
+Use intent-based controls and groups: `field`, `input`, `editor`, `toggle`, `choice`, `select`, and `action`. Labels, hints, descriptions, validation messages, required state, disabled state, and bindings should be first-class and accessible by default.
 
 ### Migration Strategy
 

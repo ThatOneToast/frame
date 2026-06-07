@@ -44,7 +44,7 @@ Raw HTML requires a future explicit unsafe capability. It must not be smuggled t
 Frame event syntax uses typed handler references:
 
 ```frame
-on click @submit
+on press @submit
 ```
 
 Inline event attributes such as JavaScript source bodies are not part of Frame UI syntax. Properties that look like inline event attributes, such as `onclick`, are semantic errors.

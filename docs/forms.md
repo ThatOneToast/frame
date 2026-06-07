@@ -22,7 +22,7 @@ Single-line value entry.
 ```frame
 input Name {
   label "Name"
-  bind $name
+  value bind $name
   required
 }
 ```
@@ -33,17 +33,34 @@ Kinds:
 input Email {
   kind email
   label "Email"
-  bind $email
+  value bind $email
 }
 
 input Search {
   kind search
   label "Search"
-  bind $query
+  value bind $query
 }
 ```
 
 Default DOM mapping: `input` with safe type mapping.
+
+### `field`
+
+Labeled control group.
+
+```frame
+field EmailField {
+  label "Email"
+  hint "Use the address where updates should arrive."
+
+  input EmailInput {
+    value bind $email
+  }
+}
+```
+
+Default DOM mapping: neutral container. Renderers should connect labels, hints, descriptions, and validation metadata to the contained control when supported.
 
 ### `editor`
 
@@ -52,7 +69,7 @@ Multi-line text entry.
 ```frame
 editor Message {
   label "Message"
-  bind $message
+  value bind $message
   min-lines 4
 }
 ```
@@ -66,7 +83,7 @@ Binary setting.
 ```frame
 toggle Enabled {
   label "Enabled"
-  bind $enabled
+  checked bind $enabled
 }
 ```
 

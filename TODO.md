@@ -168,7 +168,8 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Add diagnostics for unresolved handlers.
 - [x] Add diagnostics for unsafe DOM sinks.
 - [ ] Add code actions to create missing handler skeletons. (Deferred to Phase 6 — DOM Runtime)
-- [ ] Add code actions to create missing style declarations.
+- [x] Add code actions to create missing style declarations.
+- [ ] Add multi-file code actions to create missing state and prop declarations.
 - [x] Add migration code actions from common browser words to Frame semantic primitives.
 - [x] Add go-to-definition for styles, state, props, and handlers.
 

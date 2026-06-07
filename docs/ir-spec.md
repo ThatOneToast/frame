@@ -88,7 +88,7 @@ Slots are metadata until a renderer implements projection.
 - `children`: child nodes
 - `source`
 
-Current Frame author-facing primitives in IR version `1`: `screen`, `panel`, `section`, `stack`, `row`, `grid`, `split`, `dock`, `overlay`, `scroll`, `action`, `link`, `menu`, `toolbar`, `tabs`, `input`, `editor`, `toggle`, `choice`, `select`, `composer`, `title`, `text`, `label`, `badge`, `avatar`, `icon`, `image`, `media`, `list`, `feed`, `data`, `item`, `empty`, `card`, `dialog`, and `popover`.
+Current Frame author-facing primitives in IR version `1`: `screen`, `panel`, `section`, `stack`, `row`, `grid`, `split`, `dock`, `overlay`, `scroll`, `action`, `link`, `menu`, `toolbar`, `tabs`, `field`, `input`, `editor`, `toggle`, `choice`, `select`, `composer`, `title`, `text`, `label`, `badge`, `avatar`, `icon`, `image`, `media`, `list`, `feed`, `data`, `item`, `empty`, `card`, `dialog`, and `popover`.
 
 Browser element names are renderer lowering details. Author-facing `view` syntax diagnoses browser words such as `button`, `div`, and `a` and suggests semantic primitives such as `action`, `panel`, and `link`.
 

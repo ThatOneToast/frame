@@ -92,48 +92,31 @@ component ChatInput {
   }
 
   view {
-    input MessageBox {
-      value bind $draft
-      placeholder "Message #general"
-      on keydown.enter @sendMessage
-    }
-
-    button Send:PrimaryButton {
-      text "Send"
-      disabled when $sending
-      on click @sendMessage
-      style when $sending = LoadingButton
-    }
-  }
-}
-```
-
-The redesign direction is intent-first:
-
-```frame
-component ChatInput {
-  state {
-    draft text = ""
-    sending bool = false
-  }
-
-  view {
-    composer ChatBox {
+    composer ChatBox:ComposerShell {
       label "Message"
       draft bind $draft
       send @sendMessage
+
+      field MessageField {
+        input MessageBox {
+          value bind $draft
+          placeholder "Message #general"
+          on keydown.enter @sendMessage
+        }
+      }
     }
 
     action Send:PrimaryButton {
+      text "Send"
       disabled when $sending
       on press @sendMessage
-      style when $sending = LoadingButton
+      style LoadingButton when $sending
     }
   }
 }
 ```
 
-`action`, `link`, `editor`, `toggle`, `choice`, `composer`, `panel`, `menu`, `tabs`, `data`, and layout primitives such as `screen`, `stack`, `row`, `grid`, `dock`, `scroll`, and `split` describe user intent. DOM elements such as `button`, `a`, `textarea`, `div`, `span`, `form`, `table`, `tr`, and `td` are internal lowering targets, not author-facing UI syntax.
+Frame source is intent-first. `action`, `link`, `field`, `input`, `editor`, `toggle`, `choice`, `composer`, `panel`, `menu`, `tabs`, `data`, and layout primitives such as `screen`, `stack`, `row`, `grid`, `dock`, `scroll`, and `split` describe user intent. DOM elements such as `button`, `a`, `textarea`, `div`, `span`, `form`, `table`, `tr`, and `td` are internal lowering targets, not author-facing UI syntax.
 
 ## Frame IR
 
