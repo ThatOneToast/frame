@@ -4,7 +4,10 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use frame_core::{symbols::index_document, Document, Span};
+use frame_core::{
+    symbols::index_document, Document, Node, Span, TextValue, UiComponentArgumentValue, UiNode,
+    UiPropertyValue,
+};
 use frame_parser::parse;
 use tower_lsp::lsp_types::{Location, Url};
 
@@ -58,6 +61,57 @@ fn collect_includes(
             results.push((canonical, include_source, document, symbols));
         }
     }
+}
+
+/// Returns files that are plausible targets for a given symbol kind based on include names/paths.
+pub fn include_files_for_symbol(
+    current_path: &Path,
+    source: &str,
+    _symbol_name: &str,
+    symbol_kind_hint: &str,
+) -> Vec<PathBuf> {
+    let mut candidates = Vec::new();
+    let Some(parent) = current_path.parent() else {
+        return candidates;
+    };
+
+    for line in source.lines() {
+        let trimmed = line.trim_start();
+        if !trimmed.starts_with("#include") {
+            continue;
+        }
+        let Some(target) = trimmed.split_whitespace().nth(1) else {
+            continue;
+        };
+        let mut path = parent.join(target);
+        if path.extension().is_none() {
+            path = path.with_extension("frame");
+        }
+
+        let path_str = path.to_string_lossy().to_lowercase();
+        let include_name = path
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_lowercase())
+            .unwrap_or_default();
+
+        let is_match = match symbol_kind_hint {
+            "style" | "theme" => {
+                path_str.contains("style")
+                    || path_str.contains("theme")
+                    || include_name.contains("style")
+                    || include_name.contains("theme")
+            }
+            "component" => path_str.contains("component") || include_name.contains("component"),
+            "handler" => path_str.contains("handler") || include_name.contains("handler"),
+            _ => false,
+        };
+
+        if is_match {
+            candidates.push(path);
+        }
+    }
+
+    candidates
 }
 
 /// Build a merged symbol index from the current source plus all included files.
@@ -283,4 +337,219 @@ pub fn shadowed_symbols(current_path: &Path, source: &str) -> Vec<(String, PathB
     }
 
     shadowed
+}
+
+/// Collect all AST-aware reference spans for a given word in a Frame source string.
+///
+/// This walks the parsed AST and finds declarations, component names, style bindings,
+/// handler references, data references (state/prop), component invocations, and
+/// statement usages that match the word.
+pub fn collect_references_in_source(source: &str, word: &str) -> Vec<Span> {
+    let Ok(document) = parse(source) else {
+        return Vec::new();
+    };
+    let mut spans = Vec::new();
+
+    // Declarations and their statement bodies
+    for decl in &document.declarations {
+        if decl.name.text == word {
+            spans.push(decl.name.span);
+        }
+        for node in &decl.body {
+            match node {
+                Node::Statement(statement) => {
+                    for w in &statement.words {
+                        if w == word {
+                            if let Some(span) = word_span_in_source(source, statement.span, word) {
+                                if !spans.contains(&span) {
+                                    spans.push(span);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                Node::Block(block) => {
+                    for inner in &block.body {
+                        if let Node::Statement(statement) = inner {
+                            for w in &statement.words {
+                                if w == word {
+                                    if let Some(span) =
+                                        word_span_in_source(source, statement.span, word)
+                                    {
+                                        if !spans.contains(&span) {
+                                            spans.push(span);
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Components
+    for component in &document.components {
+        if component.name.text == word {
+            spans.push(component.name.span);
+        }
+        if let Some(props) = &component.props {
+            for prop in &props.values {
+                if prop.name.text == word {
+                    spans.push(prop.name.span);
+                }
+            }
+        }
+        if let Some(state) = &component.state {
+            for value in &state.values {
+                if value.name.text == word {
+                    spans.push(value.name.span);
+                }
+            }
+        }
+        if let Some(view) = &component.view {
+            collect_ui_node_references(&view.nodes, word, &mut spans);
+        }
+        for slot in &component.slots {
+            collect_ui_node_references(&slot.nodes, word, &mut spans);
+        }
+    }
+
+    spans.sort_by_key(|s| s.start);
+    spans.dedup();
+    spans
+}
+
+fn collect_ui_node_references(nodes: &[UiNode], word: &str, spans: &mut Vec<Span>) {
+    for node in nodes {
+        match node {
+            UiNode::Element(element) => {
+                if element.name.text == word {
+                    spans.push(element.name.span);
+                }
+                if let Some(style) = &element.style {
+                    if style.name.text == word {
+                        spans.push(style.span);
+                    }
+                }
+                for prop in &element.properties {
+                    if prop.name.text == word {
+                        spans.push(prop.name.span);
+                    }
+                    collect_property_value_references(&prop.value, word, spans);
+                }
+                for event in &element.events {
+                    if event.handler.name.text == word {
+                        spans.push(event.handler.span);
+                    }
+                    for modifier in &event.modifiers {
+                        if modifier.text == word {
+                            spans.push(modifier.span);
+                        }
+                    }
+                }
+                collect_ui_node_references(&element.children, word, spans);
+            }
+            UiNode::Text(text) => {
+                if let TextValue::Data(data_ref) = &text.value {
+                    if data_ref.name.text == word {
+                        spans.push(data_ref.span);
+                    }
+                }
+            }
+            UiNode::Component(invocation) => {
+                if invocation.name.text == word {
+                    spans.push(invocation.name.span);
+                }
+                for arg in &invocation.arguments {
+                    if arg.name.text == word {
+                        spans.push(arg.name.span);
+                    }
+                    collect_argument_value_references(&arg.value, word, spans);
+                }
+            }
+            UiNode::Loop(loop_node) => {
+                if loop_node.item.text == word {
+                    spans.push(loop_node.item.span);
+                }
+                if loop_node.collection.name.text == word {
+                    spans.push(loop_node.collection.span);
+                }
+                if let Some(key) = &loop_node.key {
+                    if key.name.text == word {
+                        spans.push(key.span);
+                    }
+                }
+                collect_ui_node_references(&loop_node.children, word, spans);
+            }
+        }
+    }
+}
+
+fn collect_property_value_references(value: &UiPropertyValue, word: &str, spans: &mut Vec<Span>) {
+    match value {
+        UiPropertyValue::Data(data_ref) => {
+            if data_ref.name.text == word {
+                spans.push(data_ref.span);
+            }
+        }
+        UiPropertyValue::Bind(data_ref) => {
+            if data_ref.name.text == word {
+                spans.push(data_ref.span);
+            }
+        }
+        UiPropertyValue::Handler(handler_ref) => {
+            if handler_ref.name.text == word {
+                spans.push(handler_ref.span);
+            }
+        }
+        UiPropertyValue::Conditional(binding) => {
+            if binding.condition.name.text == word {
+                spans.push(binding.condition.span);
+            }
+        }
+        UiPropertyValue::StyleWhen { condition, style } => {
+            if condition.name.text == word {
+                spans.push(condition.span);
+            }
+            if style.name.text == word {
+                spans.push(style.span);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn collect_argument_value_references(
+    value: &UiComponentArgumentValue,
+    word: &str,
+    spans: &mut Vec<Span>,
+) {
+    match value {
+        UiComponentArgumentValue::Data(data_ref) => {
+            if data_ref.name.text == word {
+                spans.push(data_ref.span);
+            }
+        }
+        UiComponentArgumentValue::Bind(data_ref) => {
+            if data_ref.name.text == word {
+                spans.push(data_ref.span);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn word_span_in_source(source: &str, span: Span, word: &str) -> Option<Span> {
+    if source.is_empty() || span.end > source.len() || span.start > span.end {
+        return None;
+    }
+    let relative = source[span.start..span.end].find(word)?;
+    Some(Span {
+        start: span.start + relative,
+        end: span.start + relative + word.len(),
+    })
 }

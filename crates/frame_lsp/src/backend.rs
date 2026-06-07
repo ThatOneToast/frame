@@ -266,16 +266,39 @@ impl LanguageServer for Backend {
             return Ok(None);
         };
         let offset = diagnostics::offset_for_position(source, position);
-        let mut locations = navigation::references_at(source, offset)
+
+        // Pre-load included sources so we can compute ranges for cross-file references.
+        let mut included_sources: std::collections::HashMap<std::path::PathBuf, String> =
+            std::collections::HashMap::new();
+        if let Ok(current_path) = uri.to_file_path() {
+            for (path, include_source, _, _) in
+                crate::project::resolve_includes(&current_path, source)
+            {
+                included_sources.insert(path, include_source);
+            }
+        }
+
+        let locations = navigation::references_at(source, offset, &uri)
             .into_iter()
-            .map(|target| Location {
-                uri: uri.clone(),
-                range: diagnostics::range_for_span(source, target.span),
+            .map(|target| {
+                let target_uri = if let Some(path) = &target.path {
+                    Url::from_file_path(path)
+                        .ok()
+                        .unwrap_or_else(|| uri.clone())
+                } else {
+                    uri.clone()
+                };
+                let target_source = if let Some(path) = &target.path {
+                    included_sources.get(path).map(|s| s.as_str()).unwrap_or("")
+                } else {
+                    source
+                };
+                Location {
+                    uri: target_uri,
+                    range: diagnostics::range_for_span(target_source, target.span),
+                }
             })
-            .collect::<Vec<_>>();
-        locations.extend(support::imported_symbol_reference_locations(
-            source, offset, &uri,
-        ));
+            .collect();
 
         Ok(Some(locations))
     }

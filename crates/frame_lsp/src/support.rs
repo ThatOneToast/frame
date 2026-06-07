@@ -110,6 +110,7 @@ pub fn imported_symbol_definition_location(
     None
 }
 
+#[allow(dead_code)]
 pub fn imported_symbol_reference_locations(
     source: &str,
     offset: usize,
@@ -127,13 +128,15 @@ pub fn imported_symbol_reference_locations(
     let mut seen = HashSet::new();
     let mut locations = Vec::new();
 
+    let clean_word = clean_word_for_references(word);
+
     for (path, include_source) in included_sources_for_path(&current_path, frame_source, &mut seen)
     {
         let Ok(target_uri) = Url::from_file_path(path) else {
             continue;
         };
         locations.extend(
-            word_occurrences(&include_source, word)
+            crate::project::collect_references_in_source(&include_source, clean_word)
                 .into_iter()
                 .map(|span| Location {
                     uri: target_uri.clone(),
@@ -145,28 +148,18 @@ pub fn imported_symbol_reference_locations(
     locations
 }
 
-pub fn word_occurrences(source: &str, word: &str) -> Vec<frame_core::Span> {
-    let mut spans = Vec::new();
-    let mut search_start = 0usize;
-    while let Some(relative) = source[search_start..].find(word) {
-        let start = search_start + relative;
-        let end = start + word.len();
-        if is_word_boundary(source, start, end) {
-            spans.push(frame_core::Span { start, end });
-        }
-        search_start = end;
+#[allow(dead_code)]
+fn clean_word_for_references(word: &str) -> &str {
+    let word = word.split('(').next().unwrap_or(word);
+    if let Some(pos) = word.find(':') {
+        &word[pos + 1..]
+    } else if let Some(stripped) = word.strip_prefix('$') {
+        stripped
+    } else if let Some(stripped) = word.strip_prefix('@') {
+        stripped
+    } else {
+        word
     }
-    spans
-}
-
-pub fn is_word_boundary(source: &str, start: usize, end: usize) -> bool {
-    let before = source[..start].chars().next_back();
-    let after = source[end..].chars().next();
-    !before.is_some_and(is_identifier_character) && !after.is_some_and(is_identifier_character)
-}
-
-pub fn is_identifier_character(character: char) -> bool {
-    character.is_ascii_alphanumeric() || character == '-' || character == '_'
 }
 
 pub fn included_sources_for_path(

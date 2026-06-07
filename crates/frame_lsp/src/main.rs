@@ -185,4 +185,128 @@ mod tests {
             .unwrap()
             .ends_with("layout.frame"));
     }
+
+    #[test]
+    fn lsp_cross_file_references_find_token_usages() {
+        let root = std::env::temp_dir().join(format!("frame-lsp-ref-token-{}", std::process::id()));
+        std::fs::create_dir_all(&root).expect("temp dir should be writable");
+        let app = root.join("app.frame");
+        let theme = root.join("theme.frame");
+
+        std::fs::write(
+            &theme,
+            "tokens Brand {\n  color brand-panel #181820\n}\ncard Imported {\n  background brand-panel\n}\n",
+        )
+        .expect("theme should be writable");
+
+        let source = "#include theme\n\ncard Hero {\n  background brand-panel\n}\n";
+        std::fs::write(&app, source).expect("app should be writable");
+
+        let uri = Url::from_file_path(&app).expect("file uri should build");
+        let offset = source.rfind("brand-panel").unwrap() + 2;
+
+        let references = navigation::references_at(source, offset, &uri);
+
+        // 1 local + 2 in theme.frame
+        assert_eq!(references.len(), 3);
+
+        let local = references.iter().filter(|r| r.path.is_none()).count();
+        let cross = references.iter().filter(|r| r.path.is_some()).count();
+
+        assert_eq!(local, 1);
+        assert_eq!(cross, 2);
+    }
+
+    #[test]
+    fn lsp_cross_file_references_find_component_declarations_and_invocations() {
+        let root = std::env::temp_dir().join(format!("frame-lsp-ref-comp-{}", std::process::id()));
+        std::fs::create_dir_all(&root).expect("temp dir should be writable");
+        let app = root.join("app.frame");
+        let components = root.join("components.frame");
+
+        std::fs::write(
+            &components,
+            "component MessageItem {\n  view {\n    text \"Hello\"\n  }\n}\n",
+        )
+        .expect("components should be writable");
+
+        let source =
+            "#include components\n\ncomponent ChatApp {\n  view {\n    MessageItem()\n  }\n}\n";
+        std::fs::write(&app, source).expect("app should be writable");
+
+        let uri = Url::from_file_path(&app).expect("file uri should build");
+        let offset = source.find("MessageItem()").unwrap() + 2;
+
+        let references = navigation::references_at(source, offset, &uri);
+
+        assert_eq!(references.len(), 2);
+
+        let local = references.iter().filter(|r| r.path.is_none()).count();
+        let cross = references.iter().filter(|r| r.path.is_some()).count();
+
+        assert_eq!(local, 1);
+        assert_eq!(cross, 1);
+    }
+
+    #[test]
+    fn lsp_cross_file_references_find_handler_refs() {
+        let root =
+            std::env::temp_dir().join(format!("frame-lsp-ref-handler-{}", std::process::id()));
+        std::fs::create_dir_all(&root).expect("temp dir should be writable");
+        let app = root.join("app.frame");
+        let handlers = root.join("handlers.frame");
+
+        std::fs::write(
+            &handlers,
+            "component ButtonPanel {\n  view {\n    action Send {\n      on press @sendMessage\n    }\n  }\n}\n",
+        )
+        .expect("handlers should be writable");
+
+        let source = "#include handlers\n\ncomponent ChatApp {\n  view {\n    button Cancel {\n      on click @sendMessage\n    }\n  }\n}\n";
+        std::fs::write(&app, source).expect("app should be writable");
+
+        let uri = Url::from_file_path(&app).expect("file uri should build");
+        let offset = source.find("@sendMessage").unwrap() + 2;
+
+        let references = navigation::references_at(source, offset, &uri);
+
+        assert_eq!(references.len(), 2);
+
+        let local = references.iter().filter(|r| r.path.is_none()).count();
+        let cross = references.iter().filter(|r| r.path.is_some()).count();
+
+        assert_eq!(local, 1);
+        assert_eq!(cross, 1);
+    }
+
+    #[test]
+    fn lsp_cross_file_references_find_state_refs() {
+        let root = std::env::temp_dir().join(format!("frame-lsp-ref-state-{}", std::process::id()));
+        std::fs::create_dir_all(&root).expect("temp dir should be writable");
+        let app = root.join("app.frame");
+        let state_file = root.join("state.frame");
+
+        std::fs::write(
+            &state_file,
+            "component InputPanel {\n  state {\n    draft text = \"\"\n  }\n  view {\n    input Box {\n      value bind $draft\n    }\n  }\n}\n",
+        )
+        .expect("state should be writable");
+
+        let source = "#include state\n\ncomponent ChatApp {\n  view {\n    text $draft\n  }\n}\n";
+        std::fs::write(&app, source).expect("app should be writable");
+
+        let uri = Url::from_file_path(&app).expect("file uri should build");
+        let offset = source.rfind("$draft").unwrap() + 2;
+
+        let references = navigation::references_at(source, offset, &uri);
+
+        // state decl + bind ref in state.frame + text ref in app.frame
+        assert_eq!(references.len(), 3);
+
+        let local = references.iter().filter(|r| r.path.is_none()).count();
+        let cross = references.iter().filter(|r| r.path.is_some()).count();
+
+        assert_eq!(local, 1);
+        assert_eq!(cross, 2);
+    }
 }
