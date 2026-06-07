@@ -12,6 +12,13 @@ Current actions include:
 - Add hover lift/glow effects to a card.
 - Convert common browser primitives such as `button`, `div`, and `a` to Frame primitives such as `action`, `panel`, and `link`.
 - Convert browser event attributes such as `onclick` and `onchange` to Frame event bindings such as `on press @handler`.
-- Create a missing same-file style skeleton for unresolved style bindings.
+- Create a missing same-file style skeleton for unresolved style bindings (automatic lookup, explicit binding, and conditional aliases).
+- Create a missing handler skeleton in a companion `handlers.ts` file.
+- Create a missing state entry with inferred type (`text`, `bool`, `number`, or `list`).
+- Create a missing prop entry with inferred type.
 
 These actions are intentionally design-intent-first. They create Frame concepts like grids, areas, surfaces, and effects rather than raw CSS properties.
+
+## Cross-File Limitations
+
+If a missing symbol belongs in another file, the LSP currently creates the edit in the current file or generates a companion file. Workspace edits that create symbols in arbitrary imported files are not yet supported. This limitation is documented so users understand when to move generated skeletons manually.

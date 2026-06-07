@@ -51,6 +51,11 @@ The repository contains three distinct layers:
 2. **UI compiler foundation: implemented** — parses, validates, and lowers UI components to Frame IR; generates TypeScript contracts.
 3. **DOM runtime: Phase 4 implemented** — `@frame/runtime-dom` can mount Frame IR into browser DOM nodes, schedule batched dependency-aware patches, reconcile lists, clean up listeners/subscriptions, and cover practical HTML/forms/attribute behavior.
 
+The LSP now understands project-level Frame code through `#include`:
+- imported styles, components, and declarations resolve for completions, hover, go-to-definition, and diagnostics
+- `frame check` validates multi-file projects including cross-file component references
+- missing handler, state, prop, and style code actions generate skeletons
+
 The active milestone is semantic UI syntax. Runtime, SSR, hydration, routing, portals, suspense, transition runtime, animation runtime, and async component work are intentionally paused while Frame's author-facing language moves away from HTML-like UI syntax.
 
 Existing pieces:

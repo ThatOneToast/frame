@@ -163,15 +163,21 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Add completions for initial events and modifiers.
 - [x] Add completions for `$state`, `$props`, and `@handlers`.
 - [x] Add completions for same-file component invocations.
+- [x] Add completions for imported component invocations through `#include`.
 - [x] Add hover docs for initial UI concepts.
+- [x] Add hover docs for imported declarations and components.
 - [x] Add diagnostics for unresolved style bindings.
 - [x] Add diagnostics for unresolved handlers.
 - [x] Add diagnostics for unsafe DOM sinks.
-- [ ] Add code actions to create missing handler skeletons. (Deferred to Phase 6 — DOM Runtime)
+- [x] Add diagnostics for unresolved imported components.
+- [x] Add diagnostics for duplicate symbols across includes.
+- [x] Add diagnostics for imported symbols shadowing local symbols.
+- [x] Add code actions to create missing handler skeletons.
 - [x] Add code actions to create missing style declarations.
-- [ ] Add multi-file code actions to create missing state and prop declarations.
+- [x] Add multi-file code actions to create missing state and prop declarations.
 - [x] Add migration code actions from common browser words to Frame semantic primitives.
 - [x] Add go-to-definition for styles, state, props, and handlers.
+- [x] Add go-to-definition for imported styles, components, and grids.
 
 ## Phase 10 — Web App Target
 

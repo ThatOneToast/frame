@@ -9,13 +9,13 @@ This tracker records the follow-up sweep after the compiler/LSP/Zed/CLI organiza
 | Area | Expected | Implemented | Missing before this pass | Fixed in this pass | Remaining TODO |
 | --- | --- | --- | --- | --- | --- |
 | Large file refactors | Split oversized compiler, parser, CSS, CLI, LSP modules | Compiler semantic/CSS/parser and LSP completion/hover modules are split | None found in the audited paths | No refactor needed | Continue keeping new modules small |
-| CLI organization | `check`, `compile`, `build`, `dev`, `watch`, `format`, `emit-ir`, `emit-contracts`, `init`, `new`, `doctor` | Commands are present and routed through modular command files | `new web` built from the caller cwd; web starter imported JSON directly | `new web` now builds inside the new project root; `build` emits typed `app.ir.ts` | `dev` remains a watch-style command, not a full Vite launcher |
+| CLI organization | `check`, `compile`, `build`, `dev`, `watch`, `format`, `emit-ir`, `emit-contracts`, `init`, `new`, `doctor` | Commands are present and routed through modular command files | `new web` built from the caller cwd; web starter imported JSON directly | `new web` now builds inside the new project root; `build` emits typed `app.ir.ts`; `check` validates multi-file projects | `dev` remains a watch-style command, not a full Vite launcher |
 | CLI project setup | Starters use Frame-native UI syntax | Web starter uses `screen`, `card`, and `action`; Svelte starter keeps style-declaration flow | Runnable web starter had no typed IR module | Web starter imports `./generated/app.ir` | Add richer starter handler skeleton generation later |
-| Compiler diagnostics | Source-mapped diagnostics teach Frame syntax | Browser words, unsafe sinks, URL attributes, missing styles, handlers, and accessibility cases diagnose | No critical compiler gap found | No compiler diagnostic change needed | Attribute-by-primitive validation is still partial |
-| LSP diagnostics | Match compiler diagnostics | LSP returns parser and semantic diagnostics | Migration quick fixes lagged diagnostics | Added code actions for browser primitive/event migration and missing style skeletons | Handler/state/prop skeleton actions still need multi-file design |
-| LSP completions | UI primitives, events, refs, style words | Semantic primitive/event/ref completions exist | Primitive bodies returned broad view completions | Added primitive-aware body completions for `action`, `field`, inputs, and collections | Add imported symbol completions through include graphs |
+| Compiler diagnostics | Source-mapped diagnostics teach Frame syntax | Browser words, unsafe sinks, URL attributes, missing styles, handlers, and accessibility cases diagnose | No critical compiler gap found | Added cross-file component validation, duplicate symbol, and shadow diagnostics | Attribute-by-primitive validation is still partial |
+| LSP diagnostics | Match compiler diagnostics | LSP returns parser and semantic diagnostics | Migration quick fixes lagged diagnostics | Added code actions for browser primitive/event migration, missing style skeletons, handler, state, and prop creation | Continue improving diagnostic actionability |
+| LSP completions | UI primitives, events, refs, style words | Semantic primitive/event/ref completions exist | Primitive bodies returned broad view completions | Added primitive-aware body completions for `action`, `field`, inputs, and collections | Add more contextual cross-file completions |
 | LSP hover docs | Explain Frame meaning | Hover docs cover primitives, events, unsafe sinks, style concepts | Some native concepts were shadowed by older knowledge docs | Added native-first hover docs for structural concepts and semantic primitives | Continue replacing old HTML/Svelte examples in secondary docs tables |
-| LSP navigation | Definitions/references for styles and symbols | Same-file navigation exists for style, state, props, handlers | Cross-file include awareness remains limited | No navigation change in this pass | Extend cross-file style/component awareness |
+| LSP navigation | Definitions/references for styles and symbols | Same-file navigation exists for style, state, props, handlers | Cross-file include awareness remains limited | Added imported declaration, component, and grid navigation | Extend references across files |
 | Zed grammar/highlights | Match current syntax | Grammar and sample set cover semantic syntax, refs, events, style bindings, advanced CSS | `field` and `style Style when $state` were not in grammar | Added `field` and conditional style alias grammar support | Add focused composer/feed/accessibility/unsafe samples |
 | Markdown docs | Reflect current architecture | Core language, primitives, lowering, runtime, IR docs exist | IR docs did not explain typed TS module path | Updated IR spec and runtime README | Keep docs synchronized with implementation status |
 | Tests | Rust and TS coverage for changed behavior | Existing Rust/TS tests cover parser, semantic, CLI, runtime | TypeScript drift fixture was narrow | Expanded runtime typed IR fixture; added parser/completion/hover/code-action coverage | Add generated schema/golden tests across more examples |
@@ -62,8 +62,8 @@ Implemented:
 Remaining TODO:
 
 - Make property validation primitive-specific instead of mostly global.
-- Add cross-file style completion/navigation through include graphs.
-- Add multi-file code actions for handler, state, and prop skeletons.
+- Continue improving diagnostic actionability for cross-file errors.
+- Extend references (Find All References) across included files.
 
 ## Runtime Examples
 
@@ -73,6 +73,7 @@ Fixed in this pass:
 - Renamed browser-shaped examples to `accessible-composer.frame`, `field-input.frame`, and `data-list.frame`.
 - Added examples for `field`, keyed lists, nested components, automatic style lookup, explicit style binding, conditional style aliases, conditional rendering, bindings, and semantic action events.
 - Verified every runtime example with `frame check`.
+- Added regression tests that compile each example to IR and validate with `frame check`.
 
 ## Validation Commands
 
