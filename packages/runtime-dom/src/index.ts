@@ -123,7 +123,7 @@ class FrameScheduler {
       this.#queue.set(patch.id, patch);
       this.counters.queuedPatches += 1;
       if (this.debug) {
-        console.debug(`[Frame Runtime] queued ${patch.label}`);
+        console.debug(`[Frame Runtime] queued ${patch.label} (${patch.component})`);
       }
     }
     this.#schedule();
@@ -146,6 +146,9 @@ class FrameScheduler {
         this.#queue.clear();
         for (const patch of patches) {
           try {
+            if (this.debug) {
+              console.debug(`[Frame Runtime] flushing ${patch.label} (${patch.component})`);
+            }
             patch.run();
             this.counters.flushedPatches += 1;
           } catch (error) {
@@ -386,6 +389,9 @@ export function mount(ir: FrameIrDocument, options: MountOptions): MountedFrameA
     throw new FrameDomError(`Unknown component \`${options.component}\`.`);
   }
 
+  validateHandlers(component, options.handlers ?? {}, options.debug ?? false);
+  validateProps(component, options.props ?? {});
+
   const cleanup: Array<() => void> = [];
   const counters = emptyCounters();
   counters.mounts += 1;
@@ -554,7 +560,8 @@ function applySemanticDefaults(dom: Element, element: FrameIrElement): void {
     dom.setAttribute('type', 'checkbox');
   }
   if ((semanticKind === 'image' || semanticKind === 'avatar') && !dom.hasAttribute('alt')) {
-    dom.setAttribute('alt', '');
+    const altProp = element.attributes.find((a) => a.name === 'alt');
+    dom.setAttribute('alt', altProp && 'Literal' in altProp.value ? String(altProp.value.Literal) : '');
   }
   if (semanticKind === 'editor' && dom.tagName.toLowerCase() === 'textarea' && !dom.hasAttribute('rows')) {
     dom.setAttribute('rows', '4');
@@ -566,10 +573,26 @@ function applySemanticDefaults(dom: Element, element: FrameIrElement): void {
     // single-select by default
   }
   if (semanticKind === 'icon' && dom.tagName.toLowerCase() === 'span' && !dom.hasAttribute('aria-hidden')) {
-    dom.setAttribute('aria-hidden', 'true');
+    const decorative = element.attributes.find((a) => a.name === 'decorative');
+    if (decorative && 'Literal' in decorative.value && decorative.value.Literal === 'true') {
+      dom.setAttribute('aria-hidden', 'true');
+    }
   }
   if (semanticKind === 'media' && dom.tagName.toLowerCase() === 'video' && !dom.hasAttribute('controls')) {
     dom.setAttribute('controls', '');
+  }
+  if ((semanticKind === 'image' || semanticKind === 'avatar' || semanticKind === 'media') && !dom.hasAttribute('decoding')) {
+    dom.setAttribute('decoding', 'async');
+  }
+  if (semanticKind === 'list' && dom.tagName.toLowerCase() === 'ul' && !dom.hasAttribute('role')) {
+    // Native ul has implicit list role; avoid redundant role
+  }
+  if (semanticKind === 'field' && dom.tagName.toLowerCase() === 'div' && !dom.hasAttribute('role')) {
+    // Field is a neutral wrapper; if it has a label, expose it as group
+    const label = element.attributes.find((a) => a.name === 'label');
+    if (label) {
+      dom.setAttribute('role', 'group');
+    }
   }
 }
 
@@ -845,7 +868,7 @@ function applyConditionalProperties(
     }
     if ('Property' in condition) {
       const patch = () => {
-        setDomValue(dom, condition.Property.property, Boolean(readValue(condition.Property.state, context)), true);
+        setBooleanProperty(dom, booleanPropertyName(condition.Property.property), Boolean(readValue(condition.Property.state, context)));
         count(context, 'patchedAttributes', 'patched attribute');
       };
       patchWithoutCount(patch);
@@ -1014,6 +1037,31 @@ function setDomValue(dom: Element, name: string, value: FrameRuntimeValue, prope
     }
     restoreSelection(dom, selection);
   }
+}
+
+function setBooleanProperty(dom: Element, name: string, value: FrameRuntimeValue): void {
+  const bool = Boolean(value);
+  (dom as unknown as Record<string, boolean>)[name] = bool;
+  if (bool) {
+    dom.setAttribute(name, '');
+  } else {
+    dom.removeAttribute(name);
+  }
+}
+
+function booleanPropertyName(name: string): string {
+  if (name === 'readonly') return 'readOnly';
+  if (name === 'disabled') return 'disabled';
+  if (name === 'required') return 'required';
+  if (name === 'checked') return 'checked';
+  if (name === 'selected') return 'selected';
+  if (name === 'multiple') return 'multiple';
+  if (name === 'autofocus') return 'autofocus';
+  if (name === 'autoplay') return 'autoplay';
+  if (name === 'loop') return 'loop';
+  if (name === 'muted') return 'muted';
+  if (name === 'hidden') return 'hidden';
+  return name;
 }
 
 function domAttributeName(dom: Element, name: string): string {
@@ -1242,6 +1290,65 @@ function recordRuntimeError(context: RenderContext, error: FrameDomError): void 
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function validateHandlers(component: FrameIrComponent, handlers: FrameHandlerMap, debug: boolean): void {
+  const required = new Set<string>();
+  collectHandlerRefs(component.nodes, required);
+  for (const handler of required) {
+    if (!handlers[handler]) {
+      if (debug) {
+        console.debug(`[Frame Runtime] Warning: missing handler \`@${handler}\` for component \`${component.name}\`.`);
+      }
+    }
+  }
+}
+
+function collectHandlerRefs(nodes: readonly FrameIrNode[], refs: Set<string>): void {
+  for (const node of nodes) {
+    if ('Element' in node) {
+      for (const event of node.Element.events) {
+        refs.add(event.handler);
+      }
+      collectHandlerRefs(node.Element.children, refs);
+    }
+    if ('Component' in node) {
+      // Component invocations do not declare handlers in the parent;
+      // the child component defines its own handler references.
+    }
+    if ('List' in node) {
+      collectHandlerRefs(node.List.children, refs);
+    }
+  }
+}
+
+function validateProps(component: FrameIrComponent, props: Record<string, FrameRuntimeValue>): void {
+  for (const descriptor of component.props) {
+    const value = props[descriptor.name];
+    if (value === undefined || value === null) {
+      continue;
+    }
+    const expected = descriptor.value_type;
+    const actual = typeof value;
+    if (expected === 'Bool' && actual !== 'boolean') {
+      throw new FrameDomError(
+        `Prop \`${descriptor.name}\` expects Bool but received ${actual}.`,
+        { component: component.name }
+      );
+    }
+    if (expected === 'Number' && actual !== 'number') {
+      throw new FrameDomError(
+        `Prop \`${descriptor.name}\` expects Number but received ${actual}.`,
+        { component: component.name }
+      );
+    }
+    if (expected === 'Text' && actual !== 'string') {
+      throw new FrameDomError(
+        `Prop \`${descriptor.name}\` expects Text but received ${actual}.`,
+        { component: component.name }
+      );
+    }
+  }
 }
 
 function emptyCounters(): FrameRuntimeCounters {
