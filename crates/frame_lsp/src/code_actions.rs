@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use frame_core::symbols::index_document;
+use frame_parser::parse;
 use tower_lsp::lsp_types::{
     CodeAction, CodeActionKind, CodeActionOrCommand, Position, Range, TextEdit, Url, WorkspaceEdit,
 };
@@ -38,10 +40,19 @@ pub fn code_actions_for_source(source: &str, uri: &Url) -> Vec<CodeActionOrComma
 
     for replacement in browser_event_replacements(source) {
         actions.push(edit_action(
-            "Replace `onclick` with `on press`",
+            &format!("Replace browser event with `on {}`", replacement.event),
             uri,
             replacement.range,
             replacement.new_text,
+        ));
+    }
+
+    for style in missing_style_references(source) {
+        actions.push(edit_action(
+            &format!("Create style `{style}`"),
+            uri,
+            insertion_at_end(source),
+            format!("\ncard {style} {{\n  padding medium\n}}\n"),
         ));
     }
 
@@ -128,6 +139,7 @@ struct WordReplacement {
 
 struct EventReplacement {
     range: Range,
+    event: &'static str,
     new_text: String,
 }
 
@@ -181,19 +193,63 @@ fn browser_event_replacements(source: &str) -> Vec<EventReplacement> {
     for line in source.lines() {
         let leading = line.len() - line.trim_start().len();
         let trimmed = line.trim_start();
-        if let Some(handler) = trimmed.strip_prefix("onclick ") {
+        if let Some((event, handler)) = browser_event_replacement(trimmed) {
             replacements.push(EventReplacement {
                 range: Range {
                     start: position_for_offset(source, offset + leading),
                     end: position_for_offset(source, offset + line.len()),
                 },
-                new_text: format!("{}on press {}", " ".repeat(leading), handler.trim()),
+                event,
+                new_text: format!("{}on {} {}", " ".repeat(leading), event, handler.trim()),
             });
         }
         offset += line.len() + 1;
     }
 
     replacements
+}
+
+fn browser_event_replacement(line: &str) -> Option<(&'static str, &str)> {
+    let (browser_event, handler) = line.split_once(' ')?;
+    let event = match browser_event {
+        "onclick" => "press",
+        "onchange" => "change",
+        "oninput" => "input",
+        "onkeydown" => "keydown",
+        "onkeyup" => "keyup",
+        _ => return None,
+    };
+    Some((event, handler))
+}
+
+fn missing_style_references(source: &str) -> Vec<String> {
+    let Ok(document) = parse(source) else {
+        return Vec::new();
+    };
+    let symbols = index_document(source, &document);
+    let mut refs = Vec::new();
+    for line in source.lines() {
+        let trimmed = line.trim();
+        if let Some(header) = trimmed.strip_suffix('{') {
+            if let Some(style) = header.split_whitespace().nth(1).and_then(|name| {
+                name.split_once(':')
+                    .map(|(_, style)| style.trim().to_string())
+            }) {
+                refs.push(style);
+            }
+        }
+        let words = trimmed.split_whitespace().collect::<Vec<_>>();
+        match words.as_slice() {
+            ["style", "when", _, "=", style] => refs.push((*style).to_string()),
+            ["style", style, "when", _] => refs.push((*style).to_string()),
+            _ => {}
+        }
+    }
+    refs.sort();
+    refs.dedup();
+    refs.into_iter()
+        .filter(|style| !symbols.declarations.contains_key(style))
+        .collect()
 }
 
 fn advanced_css_replacements(source: &str) -> Vec<AdvancedReplacement> {
@@ -474,6 +530,14 @@ fn insertion_at_start() -> Range {
     }
 }
 
+fn insertion_at_end(source: &str) -> Range {
+    let line = source.lines().count() as u32;
+    Range {
+        start: Position { line, character: 0 },
+        end: Position { line, character: 0 },
+    }
+}
+
 fn edit_action(title: &str, uri: &Url, range: Range, new_text: String) -> CodeActionOrCommand {
     let mut changes = HashMap::new();
     changes.insert(uri.clone(), vec![TextEdit { range, new_text }]);
@@ -547,7 +611,7 @@ mod tests {
 
     #[test]
     fn offers_browser_to_semantic_ui_migrations() {
-        let source = "component Demo {\n  view {\n    button Send {\n      onclick @sendMessage\n    }\n    div Sidebar {\n    }\n  }\n}\n";
+        let source = "component Demo {\n  view {\n    button Send:PrimaryAction {\n      onclick @sendMessage\n      onchange @changeMessage\n    }\n    div Sidebar {\n    }\n  }\n}\n";
         let uri = Url::parse("file:///demo.frame").unwrap();
         let actions = code_actions_for_source(source, &uri);
         let titles = actions
@@ -560,6 +624,8 @@ mod tests {
 
         assert!(titles.contains(&"Convert `button` to `action`"));
         assert!(titles.contains(&"Convert `div` to `panel`"));
-        assert!(titles.contains(&"Replace `onclick` with `on press`"));
+        assert!(titles.contains(&"Replace browser event with `on press`"));
+        assert!(titles.contains(&"Replace browser event with `on change`"));
+        assert!(titles.contains(&"Create style `PrimaryAction`"));
     }
 }

@@ -87,15 +87,15 @@ pub fn hover_doc_at_with_symbols(
 }
 
 pub fn hover_doc(word: &str) -> Option<String> {
+    if let Some(doc) = native_hover_doc(word) {
+        return Some(doc.to_string());
+    }
+
     if let Some(doc) = knowledge::completion_doc(word) {
         return Some(doc);
     }
 
     Some(match word {
-        "component" => "Defines an experimental Frame UI component.\nComponents may contain typed `props`, `state`, `view`, and `slot` declarations.\n\nProps are passed from parent components. State is local and mutable. View describes the UI tree. Slots define composable content regions.",
-        "props" => "Declares typed component props.\nSupported types are `text`, `string`, `bool`, `number`, and `list`. `string` lowers to the same IR type as `text`. Props do not have defaults; they are provided by the parent component.\n\nExample:\n\nprops {\n  title string\n  active bool\n}",
-        "state" => "Declares typed component state for experimental UI syntax.\nSupported types are `text`, `string`, `bool`, `number`, and `list` with matching literal defaults. `string` lowers to `Text`; lists use `[]` as the initial default.",
-        "view" => "Declares the component UI tree.\nView nodes use semantic Frame primitives such as `action`, `editor`, `panel`, `list`, and `data`. Renderers lower those primitives to their target platform.",
         "slot" => "Defines a named content region inside a component.\nSlots allow parent components to inject content. The default slot is named `Default`.\n\nExample:\n\nslot Default {\n  text \"Fallback content\"\n}",
         "for" => "Starts renderer-neutral list rendering.\n\nUse `for item in $items { ... }` for positional lists or `for item in $items key $id { ... }` when stable identity is available. The compiler lowers this to Frame IR list metadata; renderers decide how to realize updates.",
         "key" => "Declares stable identity for a Frame list.\n\nKeyed lists allow renderers to reuse item instances by identity. Non-keyed lists use positional update behavior.",
@@ -122,34 +122,7 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "$value" => "$value reads typed component state or props. Text insertion is escaped by default in future renderers.",
         "@handler" => "@handler references an external handler. Frame does not store script bodies inside UI declarations.",
         "tokens" => "Defines reusable design tokens for a Frame file.\nUse tokens to name shared visual decisions before applying them to components.",
-        "screen" => "Represents a full UI surface. Renderers choose the appropriate root container.",
-        "grid" => "Represents two-dimensional layout intent without requiring authors to name CSS Grid mechanics.",
         "area" => "Defines a child region inside a named grid.\nUse `in` to reference the parent grid and `place` to claim a named grid column or area.\n\nExample:\n\narea Sidebar {\n  in AppShell\n  place sidebar\n}",
-        "card" => "Represents grouped content or an object preview. Renderers preserve the grouping intent.",
-        "stack" => "Represents ordered one-direction layout without exposing flexbox.",
-        "row" => "Represents horizontal grouping intent without exposing flexbox.",
-        "action" => "Represents a user-triggered action.\n\nAutomatically lowers to the renderer's preferred accessible action control.",
-        "link" => "Represents navigation intent.\nUse `goto` for the destination. Renderers decide the platform-specific link implementation.",
-        "menu" => "Represents navigation or command choices.",
-        "toolbar" => "Represents a compact group of related actions.",
-        "tabs" => "Represents switching between related panels with generated accessibility relationships.",
-        "editor" => "Represents multi-line text entry. Use `bind $state` for its value.",
-        "toggle" => "Represents a binary setting. Use `bind $state` for checked state.",
-        "choice" => "Represents choosing from a small set of options.",
-        "select" => "Represents choosing from a larger or dynamic option source.",
-        "composer" => "Represents message composition. Use `draft bind $state` and `send @handler`.",
-        "title" => "Represents a semantic title, not a raw heading level.",
-        "label" => "Represents visible label text or a label relationship for a control.",
-        "badge" => "Represents compact status or metadata.",
-        "avatar" => "Represents a person or entity image and requires alternate text unless decorative.",
-        "icon" => "Represents symbolic visual content.",
-        "image" => "Represents meaningful imagery and requires alternate text unless decorative.",
-        "list" => "Represents repeated items from `source $items` without exposing list tags.",
-        "feed" => "Represents chronological or activity-stream content.",
-        "data" => "Represents structured records without exposing table rows or cells.",
-        "item" => "Defines the repeated item body inside `list`, `feed`, or `data`.",
-        "empty" => "Defines fallback content when repeated data has no items.",
-        "popover" => "Represents a lightweight contextual surface.",
         "text" => "Defines reusable typography intent.\nUse size, weight, font, and color tokens instead of raw font CSS.",
         "center" => "Defines a container that centers its content.\nUse it for empty states, loading states, and focused prompts.",
         "split" => SPLIT_DOC,
@@ -275,6 +248,50 @@ pub fn hover_doc(word: &str) -> Option<String> {
     }.to_string())
 }
 
+fn native_hover_doc(word: &str) -> Option<&'static str> {
+    Some(match word {
+        "component" => "## `component`\n\nDefines a Frame UI component.\n\nUse it for reusable interface units with typed inputs, local state, and a semantic view tree. Components may contain `props`, `state`, `view`, and `slot` blocks.\n\nProduces compiler AST, Frame IR component metadata, TypeScript contracts, and runtime mount targets.\n\n```frame\ncomponent Counter {\n  state { count number = 0 }\n  view { action Increment { on press @increment } }\n}\n```",
+        "props" => "## `props`\n\nDeclares typed inputs accepted by a component.\n\nUse props for data supplied by a parent component. Props are read by `$name` references and lower to IR prop descriptors plus TypeScript prop contracts.\n\n```frame\nprops {\n  title text\n  selected bool\n}\n```",
+        "state" => "## `state`\n\nDeclares local mutable component data.\n\nUse state for values changed by handlers or bindings. State lowers to IR state descriptors with serialized defaults and runtime state slots.\n\n```frame\nstate {\n  draft text = \"\"\n  sending bool = false\n}\n```",
+        "view" => "## `view`\n\nDeclares the component UI tree with Frame primitives.\n\nUse semantic primitives such as `screen`, `panel`, `stack`, `field`, `input`, `list`, and `action`. Renderers lower that intent to their target platform.\n\n```frame\nview {\n  stack Content {\n    text $title\n    action Save { on press @save }\n  }\n}\n```",
+        "style" => "## `style`\n\nApplies state-driven style switching inside a UI node.\n\nUse it when a node should gain a style class while state is true. It lowers to an IR conditional style and the DOM runtime patches classes.\n\n```frame\naction Send:PrimaryAction {\n  style SendingAction when $sending\n}\n```",
+        "style-group" => "## `style-group`\n\nGroups style declarations into named cascade layers.\n\nUse it to keep Frame styles ordered without writing raw CSS layers. Generated CSS emits the corresponding layer wrapper.\n\n```frame\nstyle-group components {\n  stack ComposerShell { gap tight }\n}\n```",
+        "screen" => "## `screen`\n\nRepresents a full UI surface.\n\nUse it as a view root for pages, tools, and app screens. It lowers to renderer root/container metadata and defaults to a DOM container in the DOM runtime.\n\n```frame\nscreen AppScreen:AppShell {\n  stack Content { text \"Hello\" }\n}\n```",
+        "panel" => "## `panel`\n\nRepresents a named region of interface content.\n\nUse it for sidebars, panes, inspectors, and grouped app regions. It lowers to a neutral container while preserving semantic region intent.\n\n```frame\npanel Sidebar {\n  title \"Channels\"\n}\n```",
+        "stack" => "## `stack`\n\nRepresents ordered one-direction layout.\n\nUse it for vertical or grouped content flow without naming flexbox. Style declarations define spacing and alignment.\n\n```frame\nstack MessageBody {\n  text $author\n  text $body\n}\n```",
+        "row" => "## `row`\n\nRepresents horizontal grouping intent.\n\nUse it for toolbar rows, message rows, and compact control groups. Renderers choose the target layout implementation.\n\n```frame\nrow MessageRow {\n  avatar AuthorAvatar { source $avatar alt $author }\n  stack Body { text $body }\n}\n```",
+        "grid" => "## `grid`\n\nRepresents two-dimensional layout intent.\n\nUse it for app shells and dashboards. It produces structured layout metadata and generated CSS for DOM targets.\n\n```frame\ngrid AppShell {\n  columns sidebar content\n  gap medium\n}\n```",
+        "field" => "## `field`\n\nGroups a label, help text, validation state, and one control.\n\nUse it around `input`, `editor`, `toggle`, `choice`, or `select` so accessibility and layout stay semantic. It lowers to a neutral field container.\n\n```frame\nfield EmailField {\n  label \"Email\"\n  input EmailInput { value bind $email }\n}\n```",
+        "input" => "## `input`\n\nRepresents single-value text entry.\n\nUse `value bind $state` to connect it to component state. It lowers to the renderer's text-input control.\n\n```frame\ninput MessageInput {\n  value bind $draft\n  placeholder \"Message\"\n}\n```",
+        "editor" => "## `editor`\n\nRepresents multi-line text editing.\n\nUse it for comments, messages, and document text. It lowers to a multi-line editing control in DOM.\n\n```frame\neditor BodyEditor {\n  value bind $body\n  on keydown.ctrl.enter @save\n}\n```",
+        "action" => "## `action`\n\nRepresents a user-triggered command.\n\nUse `on press @handler` for activation instead of browser event attributes. It lowers to an accessible action control.\n\n```frame\naction Send:PrimaryAction {\n  text \"Send\"\n  on press @sendMessage\n}\n```",
+        "link" => "## `link`\n\nRepresents navigation intent.\n\nUse `goto` for the destination. Renderers validate the target and lower to platform navigation.\n\n```frame\nlink Docs {\n  goto \"/docs\"\n  text \"Docs\"\n}\n```",
+        "menu" => "## `menu`\n\nRepresents navigation or command choices.\n\nUse it for app navigation and command groups. It lowers to renderer navigation/menu structures.\n\n```frame\nmenu MainNav {\n  link Docs { goto \"/docs\" text \"Docs\" }\n}\n```",
+        "toolbar" => "## `toolbar`\n\nRepresents a compact group of related actions.\n\nUse it for editor commands and app chrome. It lowers to a command region with grouped actions.\n\n```frame\ntoolbar EditorTools {\n  action Save { on press @save }\n}\n```",
+        "tabs" => "## `tabs`\n\nRepresents switching between related panels.\n\nUse it when the user selects one visible panel from a small set. It records tab intent for renderer accessibility behavior.\n\n```frame\ntabs SettingsTabs {\n  action General { on press @openGeneral }\n}\n```",
+        "toggle" => "## `toggle`\n\nRepresents a binary setting.\n\nUse `checked bind $state` for two-way boolean state. It lowers to a checkable control.\n\n```frame\ntoggle CompactMode {\n  label \"Compact mode\"\n  checked bind $compact\n}\n```",
+        "choice" => "## `choice`\n\nRepresents a small option choice.\n\nUse it for radio-like or segmented choices. Renderers decide the exact control shape.\n\n```frame\nchoice ThemeChoice {\n  selected bind $theme\n}\n```",
+        "select" => "## `select`\n\nRepresents selection from a larger or dynamic option set.\n\nUse `selected bind $state` and `options $items`. It lowers to a selection control.\n\n```frame\nselect ChannelSelect {\n  selected bind $channel\n  options $channels\n}\n```",
+        "composer" => "## `composer`\n\nRepresents input collection and submission intent.\n\nUse it for message composers, forms, and submit flows without writing browser form syntax.\n\n```frame\ncomposer MessageComposer {\n  draft bind $draft\n  send @sendMessage\n}\n```",
+        "title" => "## `title`\n\nRepresents semantic title text.\n\nUse it for headings without choosing a browser heading level. Renderers choose the appropriate output.\n\n```frame\ntitle \"Settings\"\n```",
+        "label" => "## `label`\n\nRepresents visible naming text or a control label.\n\nUse it inside fields and controls so renderers can preserve accessibility relationships.\n\n```frame\nlabel \"Email\"\n```",
+        "badge" => "## `badge`\n\nRepresents compact status or metadata.\n\nUse it for counts, states, and short labels.\n\n```frame\nbadge Status { text \"New\" }\n```",
+        "avatar" => "## `avatar`\n\nRepresents a person or entity image.\n\nUse `source` and `alt` unless the image is decorative. It lowers to image-like renderer output.\n\n```frame\navatar AuthorAvatar { source $avatar alt $author }\n```",
+        "icon" => "## `icon`\n\nRepresents symbolic visual content.\n\nUse it for decorative or named symbols. Decorative icons lower with hidden accessibility metadata.\n\n```frame\nicon SearchIcon { label \"Search\" }\n```",
+        "image" => "## `image`\n\nRepresents meaningful imagery.\n\nUse `source` or `sources` and `alt`. Renderers validate URL-like sinks.\n\n```frame\nimage Cover { source $cover alt \"Cover\" }\n```",
+        "media" => "## `media`\n\nRepresents audio or video playback intent.\n\nUse `sources`, `poster`, and labels. The DOM runtime lowers it to media controls.\n\n```frame\nmedia Preview { sources $video poster $poster }\n```",
+        "list" => "## `list`\n\nRepresents repeated content.\n\nUse `for item in $items key $item.id` for stable identity and `empty` for fallback content.\n\n```frame\nlist Messages {\n  for message in $messages key $message.id {\n    item Message { text $message.body }\n  }\n}\n```",
+        "feed" => "## `feed`\n\nRepresents chronological or activity-stream content.\n\nUse it for messages, events, and updates where order matters.\n\n```frame\nfeed Activity {\n  for event in $events key $event.id { item Event { text $event.title } }\n}\n```",
+        "data" => "## `data`\n\nRepresents structured records.\n\nUse it for rows and fields without exposing table syntax in Frame source.\n\n```frame\ndata Invoices {\n  for invoice in $invoices key $invoice.id { row Invoice { text $invoice.total } }\n}\n```",
+        "item" => "## `item`\n\nRepresents one repeated collection entry.\n\nUse it inside `list`, `feed`, or `data` loops.\n\n```frame\nitem Message { text $message.body }\n```",
+        "empty" => "## `empty`\n\nRepresents fallback content for an empty collection.\n\nUse it inside collection primitives.\n\n```frame\nempty NoMessages { text \"No messages yet\" }\n```",
+        "card" => "## `card`\n\nRepresents grouped object or preview content.\n\nUse it for repeated records, summaries, and selectable objects. It is fully styleable.\n\n```frame\ncard ProjectCard:SelectableCard { text $project.name }\n```",
+        "dialog" => "## `dialog`\n\nRepresents a modal or attention surface.\n\nUse `show when $state` and explicit close actions. Renderers handle focus and modal behavior as support matures.\n\n```frame\ndialog SettingsDialog { show when $open }\n```",
+        "popover" => "## `popover`\n\nRepresents lightweight contextual content.\n\nUse it for small overlays tied to another interaction.\n\n```frame\npopover HelpPopover { text \"More detail\" }\n```",
+        _ => return None,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -283,12 +300,18 @@ mod tests {
     fn returns_hover_docs_for_concepts() {
         let doc = hover_doc("grid").expect("grid should have docs");
 
-        assert!(doc.contains("layout container"));
-        assert!(doc.contains("<style lang=\"frame\">"));
+        assert!(doc.contains("two-dimensional layout intent"));
+        assert!(doc.contains("```frame"));
 
         assert!(hover_doc("component")
             .expect("component docs")
-            .contains("typed `props`"));
+            .contains("Frame UI component"));
+        assert!(hover_doc("field")
+            .expect("field docs")
+            .contains("Groups a label"));
+        assert!(hover_doc("action")
+            .expect("action docs")
+            .contains("on press @handler"));
         assert!(hover_doc("$draft")
             .expect("data ref docs")
             .contains("escaped by default"));
@@ -311,8 +334,8 @@ mod tests {
         let offset = source.find("panel").unwrap() + 1;
         let doc = hover_doc_at(source, offset).expect("panel should have docs");
 
-        assert!(doc.contains("Svelte example"));
-        assert!(doc.contains("fr-Sidebar"));
+        assert!(doc.contains("surface"));
+        assert!(doc.contains("panel"));
     }
 
     #[test]

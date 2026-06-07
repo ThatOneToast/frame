@@ -25,7 +25,6 @@ const DECLARATIONS: &[&str] = &[
     "card",
     "stack",
     "row",
-    "button",
     "text",
     "center",
     "split",
@@ -40,9 +39,9 @@ const DECLARATIONS: &[&str] = &[
 
 const UI_ELEMENT_KINDS: &[&str] = &[
     "screen", "panel", "section", "stack", "row", "grid", "split", "dock", "overlay", "scroll",
-    "action", "link", "menu", "toolbar", "tabs", "input", "editor", "toggle", "choice", "select",
-    "composer", "title", "text", "label", "badge", "avatar", "icon", "image", "list", "feed",
-    "data", "item", "empty", "card", "dialog", "popover",
+    "action", "link", "menu", "toolbar", "tabs", "field", "input", "editor", "toggle", "choice",
+    "select", "composer", "title", "text", "label", "badge", "avatar", "icon", "image", "media",
+    "list", "feed", "data", "item", "empty", "card", "dialog", "popover",
 ];
 
 const UI_KEYWORDS: &[&str] = &[
@@ -93,6 +92,41 @@ const UI_EVENTS: &[&str] = &[
 const UI_MODIFIERS: &[&str] = &[
     "enter", "escape", "ctrl", "shift", "alt", "meta", "prevent", "stop", "once", "capture",
     "passive",
+];
+
+const ACTION_BODY_COMPLETIONS: &[&str] = &[
+    "on press @handler",
+    "label \"Label\"",
+    "text \"Label\"",
+    "disabled when $state",
+    "style StyleName when $state",
+];
+
+const FIELD_BODY_COMPLETIONS: &[&str] = &[
+    "label \"Label\"",
+    "description \"Help text\"",
+    "hint \"Helper text\"",
+    "input ValueInput",
+    "editor TextEditor",
+    "toggle Enabled",
+    "value bind $state",
+];
+
+const INPUT_BODY_COMPLETIONS: &[&str] = &[
+    "value bind $state",
+    "placeholder \"Text\"",
+    "label \"Label\"",
+    "on input @handler",
+    "disabled when $state",
+    "style StyleName when $state",
+];
+
+const LIST_BODY_COMPLETIONS: &[&str] = &[
+    "source $items",
+    "for item in $items {",
+    "for item in $items key $item.id {",
+    "item Item",
+    "empty Empty",
 ];
 
 const GRID_PROPERTIES: &[&str] = &[
@@ -357,6 +391,38 @@ pub fn completions_at_with_includes(
             ));
             return items;
         }
+        if line_words.is_empty() || line.trim().is_empty() {
+            if let Some(kind) = nearest_ui_element_kind(source, offset) {
+                let items = match kind.as_str() {
+                    "action" => Some(primitive_body_completions(
+                        ACTION_BODY_COMPLETIONS,
+                        "action body",
+                        "Intent-first action syntax. Prefer `on press @handler` over browser event attributes.",
+                    )),
+                    "field" => Some(primitive_body_completions(
+                        FIELD_BODY_COMPLETIONS,
+                        "field body",
+                        "Field structure and control binding suggestions.",
+                    )),
+                    "input" | "editor" | "toggle" | "choice" | "select" => Some(
+                        primitive_body_completions(
+                            INPUT_BODY_COMPLETIONS,
+                            "input body",
+                            "Input binding and state-driven control suggestions.",
+                        ),
+                    ),
+                    "list" | "feed" | "data" => Some(primitive_body_completions(
+                        LIST_BODY_COMPLETIONS,
+                        "collection body",
+                        "Collection rendering suggestions with keyed identity and empty states.",
+                    )),
+                    _ => None,
+                };
+                if let Some(items) = items {
+                    return items;
+                }
+            }
+        }
         let mut items = suggestions_with_category(
             UI_ELEMENT_KINDS,
             "ui primitive",
@@ -553,6 +619,45 @@ pub fn completions_at_with_includes(
     }
 }
 
+fn primitive_body_completions(
+    labels: &[&str],
+    detail: &'static str,
+    documentation: &'static str,
+) -> Vec<CompletionSuggestion> {
+    labels
+        .iter()
+        .map(|label| CompletionSuggestion {
+            label: (*label).to_string(),
+            detail,
+            documentation: documentation.to_string(),
+            insert_text: Some((*label).to_string()),
+            is_snippet: false,
+            category: CompletionCategory::Value,
+        })
+        .collect()
+}
+
+fn nearest_ui_element_kind(source: &str, offset: usize) -> Option<String> {
+    let mut stack = Vec::new();
+    let prefix = &source[..offset.min(source.len())];
+    for line in prefix.lines() {
+        let trimmed = line.trim();
+        if trimmed == "}" {
+            stack.pop();
+            continue;
+        }
+        if trimmed.ends_with('{') {
+            let first = trimmed.split_whitespace().next().unwrap_or_default();
+            if UI_ELEMENT_KINDS.contains(&first) {
+                stack.push(first.to_string());
+            } else if matches!(first, "component" | "props" | "state" | "view" | "for") {
+                stack.push(String::new());
+            }
+        }
+    }
+    stack.into_iter().rev().find(|kind| !kind.is_empty())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -593,6 +698,7 @@ mod tests {
         let labels = labels_for("component ChatInput {\n  view {\n    ");
 
         assert!(labels.contains(&"action".to_string()));
+        assert!(labels.contains(&"field".to_string()));
         assert!(labels.contains(&"composer".to_string()));
         assert!(labels.contains(&"input".to_string()));
         assert!(labels.contains(&"on".to_string()));
@@ -620,6 +726,22 @@ mod tests {
         assert!(labels.contains(&"keydown".to_string()));
         assert!(labels.contains(&"enter".to_string()));
         assert!(labels.contains(&"ctrl".to_string()));
+    }
+
+    #[test]
+    fn primitive_bodies_prioritize_contextual_completions() {
+        let labels = labels_for("component Demo {\n  view {\n    action Send {\n      ");
+        assert!(labels.contains(&"on press @handler".to_string()));
+        assert!(labels.contains(&"disabled when $state".to_string()));
+        assert!(!labels.contains(&"screen".to_string()));
+
+        let labels = labels_for("component Demo {\n  view {\n    field EmailField {\n      ");
+        assert!(labels.contains(&"input ValueInput".to_string()));
+        assert!(labels.contains(&"value bind $state".to_string()));
+
+        let labels = labels_for("component Demo {\n  view {\n    list Messages {\n      ");
+        assert!(labels.contains(&"for item in $items key $item.id {".to_string()));
+        assert!(labels.contains(&"empty Empty".to_string()));
     }
 
     #[test]

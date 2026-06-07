@@ -16,31 +16,31 @@ const SNIPPETS: &[FrameSnippet] = &[
     FrameSnippet {
         label: "dashboard",
         body: "grid Dashboard {\n  columns sidebar content inspector\n  gap medium\n  height screen\n}\n\narea Sidebar {\n  in Dashboard\n  place sidebar\n  surface panel\n  padding medium\n}\n\narea Content {\n  in Dashboard\n  place content\n  surface main\n  padding large\n}\n\narea Inspector {\n  in Dashboard\n  place inspector\n  surface panel\n  padding medium\n}",
-        documentation: "Creates a named dashboard grid with sidebar, content, and inspector areas.\n\nSvelte:\n\n```svelte\n<div class=\"fr-Dashboard\">\n  <aside class=\"fr-Sidebar\">Channels</aside>\n  <main class=\"fr-Content\">Messages</main>\n  <section class=\"fr-Inspector\">Details</section>\n</div>\n```",
+        documentation: "Creates a named dashboard grid with sidebar, content, and inspector areas.\n\nFrame:\n\n```frame\ngrid Dashboard {\n  columns sidebar content inspector\n}\n```",
         scopes: &[SnippetScope::Root],
     },
     FrameSnippet {
         label: "dashboard-percent",
         body: "grid Dashboard {\n  columns 25% 50% 25%\n  gap medium\n  height screen\n}\n\narea Sidebar {\n  in Dashboard\n  col 1\n  surface panel\n  padding medium\n}\n\narea Content {\n  in Dashboard\n  col 2\n  surface main\n  padding large\n}\n\narea Inspector {\n  in Dashboard\n  col 3\n  surface panel\n  padding medium\n}",
-        documentation: "Creates a dashboard grid with explicit percentage columns.\n\nSvelte:\n\n```svelte\n<div class=\"fr-Dashboard\">\n  <aside class=\"fr-Sidebar\">Channels</aside>\n  <main class=\"fr-Content\">Messages</main>\n  <section class=\"fr-Inspector\">Details</section>\n</div>\n```",
+        documentation: "Creates a dashboard grid with explicit percentage columns.\n\nFrame:\n\n```frame\ngrid Dashboard {\n  columns 25% 50% 25%\n}\n```",
         scopes: &[SnippetScope::Root],
     },
     FrameSnippet {
         label: "hover-card",
         body: "card HoverCard {\n  surface gradient dusk\n  padding large\n  radius large\n  shadow medium\n  text bright\n\n  hover {\n    lift small\n    glow accent\n    brighten subtle\n  }\n}",
-        documentation: "Creates an interactive card with a gradient surface and hover effects.\n\nSvelte:\n\n```svelte\n<a class=\"fr-HoverCard\">Docs</a>\n```",
+        documentation: "Creates an interactive card with a gradient surface and hover effects.\n\nFrame:\n\n```frame\ncard HoverCard {\n  surface gradient dusk\n  hover { lift small }\n}\n```",
         scopes: &[SnippetScope::Root],
     },
     FrameSnippet {
         label: "toolbar",
         body: "row Toolbar {\n  align center\n  justify between\n  gap small\n  padding medium\n  surface panel\n}",
-        documentation: "Creates a horizontal toolbar layout.\n\nSvelte:\n\n```svelte\n<div class=\"fr-Toolbar\">\n  <button>Back</button>\n  <button>Save</button>\n</div>\n```",
+        documentation: "Creates a horizontal toolbar layout.\n\nFrame:\n\n```frame\nrow Toolbar {\n  align center\n  justify between\n}\n```",
         scopes: &[SnippetScope::Root],
     },
     FrameSnippet {
         label: "empty-state",
         body: "center EmptyState {\n  height screen\n  surface main\n  text muted\n}",
-        documentation: "Creates a centered empty state.\n\nSvelte:\n\n```svelte\n<section class=\"fr-EmptyState\">\n  <h2>No messages yet</h2>\n  <p>Select a channel to begin.</p>\n</section>\n```",
+        documentation: "Creates a centered empty state.\n\nFrame:\n\n```frame\ncenter EmptyState {\n  height screen\n  text muted\n}\n```",
         scopes: &[SnippetScope::Root],
     },
     FrameSnippet {
