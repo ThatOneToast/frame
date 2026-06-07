@@ -1,0 +1,55 @@
+component TodoApp {
+  state {
+    items list = []
+    draft text = ""
+    nextId number = 1
+  }
+
+  view {
+    stack MainPanel {
+      title "Frame Todo"
+
+      field NewTask {
+        label "What needs to be done?"
+
+        input TaskInput {
+          value bind $draft
+          placeholder "Buy groceries..."
+          on keydown.enter @addTask
+        }
+      }
+
+      action AddTask:PrimaryButton {
+        text "Add task"
+        on press @addTask
+      }
+
+      list TaskList {
+        source $items
+
+        for item in $items key $item.id {
+          row TaskRow {
+            action Complete {
+              text "Done"
+              on press @toggleTask
+            }
+
+            text $item.label
+          }
+        }
+      }
+    }
+  }
+}
+
+stack MainPanel {
+  gap medium
+  padding large
+  surface panel
+}
+
+card PrimaryButton {
+  background accent
+  padding medium
+  radius medium
+}
