@@ -1,0 +1,18 @@
+component NavigationExample {
+  view {
+    menu Main {
+      link Documentation {
+        goto "https://frame-lang.dev"
+      }
+
+      link Examples {
+        goto "/examples"
+      }
+
+      toolbar Account {
+        action Search
+        action Settings
+      }
+    }
+  }
+}

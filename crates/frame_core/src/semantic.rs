@@ -5,7 +5,7 @@ use crate::{
     symbols::{index_document, SymbolIndex},
     tokens, ComponentDecl, DataRef, Declaration, DeclarationKind, Diagnostic, Document,
     EventBinding, Identifier, Node, PropType, Span, StateDefault, StateType, Statement, TextValue,
-    UiComponentArgumentValue, UiNode, UiProperty, UiPropertyValue,
+    UiComponentArgumentValue, UiElement, UiNode, UiProperty, UiPropertyValue,
 };
 
 pub fn validate(document: &Document) -> Vec<Diagnostic> {
@@ -135,7 +135,7 @@ fn validate_component(
             if let PropType::Unknown(kind) = &value.value_type {
                 diagnostics.push(Diagnostic::error(
                     format!(
-                        "Unknown prop type `{kind}`.\n\nSupported prop types are `text`, `bool`, and `number`."
+                        "Unknown prop type `{kind}`.\n\nSupported prop types are `text`, `string`, `bool`, `number`, and `list`."
                     ),
                     value.span,
                 ));
@@ -196,6 +196,15 @@ fn validate_component(
     }
 
     for slot in &component.slots {
+        if !is_valid_style_identifier(&slot.name.text) {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "Invalid slot name `{}`.\n\nUse a simple identifier such as `Header`, `Content`, or `Footer`.",
+                    slot.name.text
+                ),
+                slot.name.span,
+            ));
+        }
         for node in &slot.nodes {
             validate_ui_node(
                 node,
@@ -213,10 +222,11 @@ fn validate_state_default(value: &crate::StateValue, diagnostics: &mut Vec<Diagn
     match (&value.value_type, &value.default) {
         (StateType::Text, StateDefault::Text(_))
         | (StateType::Bool, StateDefault::Bool(_))
-        | (StateType::Number, StateDefault::Number(_)) => {}
+        | (StateType::Number, StateDefault::Number(_))
+        | (StateType::List, StateDefault::List) => {}
         (StateType::Unknown(kind), _) => diagnostics.push(Diagnostic::error(
             format!(
-                "Unknown state type `{kind}`.\n\nSupported state types are `text`, `bool`, and `number`."
+                "Unknown state type `{kind}`.\n\nSupported state types are `text`, `string`, `bool`, `number`, and `list`."
             ),
             value.span,
         )),
@@ -274,42 +284,57 @@ fn validate_ui_node(
                 }
             }
         }
-        UiNode::Element(element) => {
-            if !UI_ELEMENT_KINDS.contains(&element.kind.text.as_str()) {
+        UiNode::Loop(loop_node) => {
+            validate_data_ref(&loop_node.collection, all_names, prop_names, diagnostics);
+            if !is_valid_style_identifier(&loop_node.item.text) {
                 diagnostics.push(Diagnostic::error(
                     format!(
-                        "Unknown UI element `{}`.\n\nSupported UI elements are: {}.",
+                        "Invalid loop item `{}`.\n\nUse a simple identifier such as `message`, `item`, or `user`.",
+                        loop_node.item.text
+                    ),
+                    loop_node.item.span,
+                ));
+            }
+            let mut scoped_names = all_names.clone();
+            scoped_names.insert(loop_node.item.text.clone());
+            if let Some(key) = &loop_node.key {
+                validate_data_ref(key, &scoped_names, prop_names, diagnostics);
+            }
+            for child in &loop_node.children {
+                validate_ui_node(
+                    child,
+                    &scoped_names,
+                    component_names,
+                    symbols,
+                    diagnostics,
+                    prop_names,
+                );
+            }
+        }
+        UiNode::Element(element) => {
+            if !SEMANTIC_UI_PRIMITIVES.contains(&element.kind.text.as_str()) {
+                if BROWSER_UI_WORDS.contains(&element.kind.text.as_str()) {
+                    diagnostics.push(Diagnostic::error(
+                        format!(
+                            "`{}` is a browser implementation word, not author-facing Frame UI syntax.\n\nUse semantic primitives such as `action`, `link`, `editor`, `panel`, `list`, or `data` so Frame can preserve intent before renderer lowering.",
+                            element.kind.text
+                        ),
+                        element.kind.span,
+                    ));
+                    return;
+                }
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Unknown UI primitive `{}`.\n\nSupported semantic primitives are: {}.",
                         element.kind.text,
-                        UI_ELEMENT_KINDS.join(", ")
+                        SEMANTIC_UI_PRIMITIVES.join(", ")
                     ),
                     element.kind.span,
                 ));
             }
 
-            // Accessibility diagnostics
-            if let Some((_, required)) = ACCESSIBLE_REQUIRED_PROPERTIES
-                .iter()
-                .find(|(kind, _)| *kind == element.kind.text.as_str())
-            {
-                let has_accessible_text = element
-                    .children
-                    .iter()
-                    .any(|child| matches!(child, UiNode::Text(_)))
-                    || element
-                        .properties
-                        .iter()
-                        .any(|prop| required.contains(&prop.name.text.as_str()));
-                if !has_accessible_text {
-                    let required_list = required.join(", ");
-                    diagnostics.push(Diagnostic::warning(
-                        format!(
-                            "`{}` needs accessible text or a label.\n\nAdd a text child or one of: {required_list}.",
-                            element.kind.text
-                        ),
-                        element.kind.span,
-                    ));
-                }
-            }
+            validate_element_accessibility(element, diagnostics);
+            validate_element_security(element, diagnostics);
 
             if let Some(style) = &element.style {
                 validate_style_ref(&style.name, symbols, diagnostics);
@@ -324,45 +349,236 @@ fn validate_ui_node(
             }
 
             for property in &element.properties {
-                validate_ui_property(property, all_names, prop_names, symbols, diagnostics);
+                validate_ui_property(
+                    property,
+                    element.kind.text.as_str(),
+                    all_names,
+                    prop_names,
+                    symbols,
+                    diagnostics,
+                );
             }
 
             for event in &element.events {
                 validate_event_binding(event, diagnostics);
             }
 
-            for child in &element.children {
-                validate_ui_node(
-                    child,
-                    all_names,
-                    component_names,
-                    symbols,
-                    diagnostics,
-                    prop_names,
-                );
-            }
+            validate_element_children(
+                element,
+                all_names,
+                component_names,
+                symbols,
+                diagnostics,
+                prop_names,
+            );
         }
     }
 }
 
+fn validate_element_children(
+    element: &UiElement,
+    all_names: &HashSet<String>,
+    component_names: &HashSet<String>,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+    prop_names: &HashSet<String>,
+) {
+    let mut child_names = all_names.clone();
+    if matches!(element.kind.text.as_str(), "list" | "feed" | "data") {
+        let item_name = singular_item_name(&element.name.text);
+        child_names.insert(item_name);
+    }
+    for child in &element.children {
+        validate_ui_node(
+            child,
+            &child_names,
+            component_names,
+            symbols,
+            diagnostics,
+            prop_names,
+        );
+    }
+}
+
+fn singular_item_name(name: &str) -> String {
+    let lower = name.to_ascii_lowercase();
+    lower
+        .strip_suffix("ies")
+        .map(|prefix| format!("{prefix}y"))
+        .or_else(|| lower.strip_suffix('s').map(ToOwned::to_owned))
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| "item".to_string())
+}
+
+fn validate_element_accessibility(element: &UiElement, diagnostics: &mut Vec<Diagnostic>) {
+    let kind = element.kind.text.as_str();
+    match kind {
+        "image" | "avatar" => {
+            if !has_property(element, &["alt", "description"]) && !has_decorative_true(element) {
+                diagnostics.push(Diagnostic::warning(
+                    "`image` requires alternate text through `alt` or `description`, or `decorative true` when the image is only visual."
+                        .to_string(),
+                    element.kind.span,
+                ));
+            }
+        }
+        "action" => {
+            if !has_accessible_name(element) {
+                diagnostics.push(Diagnostic::warning(
+                    "`action` requires a user-facing name.\n\nUse the node name, visible text, or `label` to describe the command."
+                        .to_string(),
+                    element.kind.span,
+                ));
+            }
+        }
+        "link" => {
+            if !has_accessible_name(element) {
+                diagnostics.push(Diagnostic::warning(
+                    "`link` requires a user-facing name.\n\nUse the node name, visible text, or `label` to describe the destination."
+                        .to_string(),
+                    element.kind.span,
+                ));
+            }
+            if !has_property(element, &["goto"]) {
+                diagnostics.push(Diagnostic::warning(
+                    "`link` should include `goto` so renderers know the navigation destination."
+                        .to_string(),
+                    element.kind.span,
+                ));
+            }
+        }
+        "input" | "editor" | "toggle" | "choice" | "select" | "composer" => {
+            if !has_accessible_name(element) {
+                diagnostics.push(Diagnostic::warning(
+                    format!("`{kind}` requires a Frame label or visible name."),
+                    element.kind.span,
+                ));
+            }
+        }
+        "data" => {
+            if !has_property(element, &["source"]) {
+                diagnostics.push(Diagnostic::warning(
+                    "`data` should declare `source $items` so renderers know the records being presented."
+                        .to_string(),
+                    element.kind.span,
+                ));
+            }
+        }
+        "list" | "feed" => {
+            if !has_property(element, &["source"]) {
+                diagnostics.push(Diagnostic::warning(
+                    format!("`{kind}` should declare `source $items`."),
+                    element.kind.span,
+                ));
+            }
+        }
+        "dialog" => {
+            if !has_accessible_name(element) {
+                diagnostics.push(Diagnostic::warning(
+                    "`dialog` requires a Frame label, title, or visible text so assistive technology can name it."
+                        .to_string(),
+                    element.kind.span,
+                ));
+            }
+        }
+        _ => {}
+    }
+}
+
+fn validate_element_security(element: &UiElement, diagnostics: &mut Vec<Diagnostic>) {
+    if property_literal(element, "new-window")
+        .is_some_and(|value| value.eq_ignore_ascii_case("true"))
+    {
+        diagnostics.push(Diagnostic::info(
+            "`new-window true` records navigation intent. DOM lowering must apply safe external-link behavior."
+                .to_string(),
+            element.kind.span,
+        ));
+    }
+}
+
+fn has_accessible_name(element: &UiElement) -> bool {
+    has_property(element, &["label", "title", "text", "value"])
+        || !matches!(
+            element.name.text.as_str(),
+            "action"
+                | "link"
+                | "input"
+                | "editor"
+                | "toggle"
+                | "choice"
+                | "select"
+                | "composer"
+                | "dialog"
+                | "image"
+                | "avatar"
+        )
+        || element.children.iter().any(|child| {
+            matches!(child, UiNode::Text(_))
+                || matches!(
+                    child,
+                    UiNode::Element(child)
+                        if matches!(child.kind.text.as_str(), "label" | "title" | "text")
+                )
+        })
+}
+
+fn has_decorative_true(element: &UiElement) -> bool {
+    property_literal(element, "decorative").is_some_and(|value| value.eq_ignore_ascii_case("true"))
+}
+
+fn has_property(element: &UiElement, names: &[&str]) -> bool {
+    element
+        .properties
+        .iter()
+        .any(|property| names.contains(&property.name.text.as_str()))
+}
+
+fn property_literal<'a>(element: &'a UiElement, name: &str) -> Option<&'a str> {
+    element.properties.iter().find_map(|property| {
+        if property.name.text == name {
+            if let UiPropertyValue::Literal(value) = &property.value {
+                return Some(value.as_str());
+            }
+        }
+        None
+    })
+}
+
+fn has_unsafe_url_scheme(value: &str) -> bool {
+    value.split(',').any(|candidate| {
+        candidate
+            .split_whitespace()
+            .next()
+            .is_some_and(|url| url.to_ascii_lowercase().starts_with("javascript:"))
+    })
+}
+
 fn validate_ui_property(
     property: &UiProperty,
+    element_kind: &str,
     all_names: &HashSet<String>,
     prop_names: &HashSet<String>,
     symbols: &SymbolIndex,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     match &property.value {
-        UiPropertyValue::Data(reference)
-        | UiPropertyValue::Bind(reference) => {
+        UiPropertyValue::Data(reference) | UiPropertyValue::Bind(reference) => {
             validate_data_ref(reference, all_names, prop_names, diagnostics)
         }
+        UiPropertyValue::Handler(handler) => diagnostics.push(Diagnostic::info(
+            format!(
+                "@{} references an external handler. Frame does not store script bodies inside UI declarations.",
+                handler.name.text
+            ),
+            handler.span,
+        )),
         UiPropertyValue::Conditional(binding) => {
             validate_data_ref(&binding.condition, all_names, prop_names, diagnostics);
             // Accessibility: flag common properties that should have conditions
             if property.name.text == "show" {
                 diagnostics.push(Diagnostic::info(
-                    "`show when` records conditional rendering intent. The DOM runtime will mount/unmount this node based on the condition.".to_string(),
+                    "`show when` records conditional rendering intent. The DOM runtime patches this node's visibility based on the condition.".to_string(),
                     property.span,
                 ));
             }
@@ -373,7 +589,7 @@ fn validate_ui_property(
         }
         UiPropertyValue::Unknown(_) => diagnostics.push(Diagnostic::error(
             format!(
-                "Unknown UI property syntax for `{}`.\n\nSupported forms include `placeholder \"Text\"`, `value bind $state`, `disabled when $state`, and `style when $state = StyleName`.",
+                "Unknown UI property syntax for `{}`.\n\nSupported forms include `label \"Text\"`, `bind $state`, `disabled when $state`, `send @handler`, and `style when $state = StyleName`.",
                 property.name.text
             ),
             property.span,
@@ -381,16 +597,63 @@ fn validate_ui_property(
         UiPropertyValue::Literal(_) => {}
     }
 
-    // URL-bearing attribute detection
-    if URL_ATTRIBUTES.contains(&property.name.text.as_str()) {
-        diagnostics.push(Diagnostic::info(
+    if property.name.text.starts_with("on") {
+        diagnostics.push(Diagnostic::error(
             format!(
-                "`{}` is a URL-bearing attribute. Frame will validate and classify URLs in a future security pass.",
+                "`{}` looks like an inline event attribute.\n\nUse `on event @handler` so Frame can type and clean up event bindings.",
                 property.name.text
             ),
             property.span,
         ));
     }
+
+    if REMOVED_HTML_ATTRIBUTES.contains(&property.name.text.as_str()) {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "`{}` is browser-centric author-facing syntax.\n\nUse Frame intent properties such as `goto`, `source`, `label`, `description`, or semantic primitives instead.",
+                property.name.text
+            ),
+            property.span,
+        ));
+    }
+
+    // URL-bearing intent detection
+    if is_url_intent_property(property.name.text.as_str(), element_kind) {
+        diagnostics.push(Diagnostic::warning(
+            format!(
+                "`{}` is a navigation or media destination.\n\nRenderers must validate and classify this value before it reaches a URL sink.",
+                property.name.text
+            ),
+            property.span,
+        ));
+
+        if let UiPropertyValue::Literal(value) = &property.value {
+            if has_unsafe_url_scheme(value) {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "`{}` uses an unsafe URL scheme.\n\n`javascript:` URLs are rejected by default; use a safe http, https, mailto, tel, relative, or fragment URL.",
+                        property.name.text
+                    ),
+                    property.span,
+                ));
+            }
+        }
+    }
+
+    if UNSAFE_HTML_ATTRIBUTES.contains(&property.name.text.as_str()) {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "`{}` is an unsafe HTML injection sink.\n\nFrame text escapes by default. Raw HTML must use an explicit unsafe capability before any renderer may consume it.",
+                property.name.text
+            ),
+            property.span,
+        ));
+    }
+}
+
+fn is_url_intent_property(property: &str, element_kind: &str) -> bool {
+    URL_ATTRIBUTES.contains(&property)
+        || (property == "source" && matches!(element_kind, "image" | "avatar" | "video" | "audio"))
 }
 
 fn validate_event_binding(event: &EventBinding, diagnostics: &mut Vec<Diagnostic>) {
@@ -431,9 +694,15 @@ fn validate_data_ref(
     prop_names: &HashSet<String>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    if all_names.contains(&reference.name.text) {
+    let root = reference
+        .name
+        .text
+        .split('.')
+        .next()
+        .unwrap_or(&reference.name.text);
+    if all_names.contains(&reference.name.text) || all_names.contains(root) {
         // If it's a prop, add a soft note for clarity
-        if prop_names.contains(&reference.name.text) {
+        if prop_names.contains(&reference.name.text) || prop_names.contains(root) {
             diagnostics.push(Diagnostic::info(
                 format!(
                     "`${}` references a prop. Props are passed from the parent component.",
@@ -450,7 +719,7 @@ fn validate_data_ref(
         .unwrap_or_default();
     diagnostics.push(Diagnostic::error(
         format!(
-            "Unknown reference `${}`.{suggestion}\n\nDeclare it in the component `props` or `state` block before using it in `view`.",
+            "Unknown reference `${}`.{suggestion}\n\nDeclare it in the component `props`, `state`, or an enclosing `for` item before using it in `view`.",
             reference.name.text
         ),
         reference.span,
@@ -479,6 +748,7 @@ fn state_type_label(value_type: &StateType) -> &'static str {
         StateType::Text => "text",
         StateType::Bool => "bool",
         StateType::Number => "number",
+        StateType::List => "list",
         StateType::Unknown(_) => "unknown",
     }
 }
@@ -488,20 +758,37 @@ fn state_default_label(default: &StateDefault) -> &'static str {
         StateDefault::Text(_) => "a text literal",
         StateDefault::Bool(_) => "a bool literal",
         StateDefault::Number(_) => "a number literal",
+        StateDefault::List => "an empty list literal",
         StateDefault::Invalid(_) => "an unsupported literal",
     }
 }
 
-const UI_ELEMENT_KINDS: &[&str] = &[
-    "button", "input", "text", "card", "panel", "row", "stack", "grid", "area", "image", "link",
-    "form",
+const SEMANTIC_UI_PRIMITIVES: &[&str] = &[
+    "screen", "panel", "section", "stack", "row", "grid", "split", "dock", "overlay", "scroll",
+    "action", "link", "menu", "toolbar", "tabs", "input", "editor", "toggle", "choice", "select",
+    "composer", "title", "text", "label", "badge", "avatar", "icon", "image", "list", "feed",
+    "data", "item", "empty", "card", "dialog", "popover",
+];
+
+const BROWSER_UI_WORDS: &[&str] = &[
+    "a", "article", "audio", "button", "canvas", "caption", "col", "colgroup", "dd", "details",
+    "div", "dl", "dt", "fieldset", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header",
+    "img", "legend", "li", "main", "meter", "nav", "ol", "optgroup", "option", "output", "p",
+    "path", "picture", "progress", "source", "span", "summary", "svg", "table", "tbody", "td",
+    "textarea", "tfoot", "th", "thead", "tr", "track", "ul", "video", "area",
 ];
 
 const UI_EVENTS: &[&str] = &[
+    "press",
+    "send",
+    "open",
+    "close",
+    "select",
     "click",
     "input",
     "change",
     "submit",
+    "reset",
     "keydown",
     "keyup",
     "focus",
@@ -515,17 +802,25 @@ const UI_EVENTS: &[&str] = &[
 
 const UI_EVENT_MODIFIERS: &[&str] = &[
     "enter", "escape", "tab", "space", "ctrl", "shift", "alt", "meta", "left", "right", "up",
-    "down",
+    "down", "prevent", "stop", "once", "capture", "passive",
 ];
 
-const URL_ATTRIBUTES: &[&str] = &["href", "src", "action", "formaction"];
-
-const ACCESSIBLE_REQUIRED_PROPERTIES: &[(&str, &[&str])] = &[
-    ("image", &["alt", "aria-label"]),
-    ("button", &["text", "aria-label"]),
-    ("input", &["placeholder", "aria-label", "label"]),
-    ("link", &["text", "aria-label"]),
+const URL_ATTRIBUTES: &[&str] = &["goto", "sources", "poster"];
+const REMOVED_HTML_ATTRIBUTES: &[&str] = &[
+    "href",
+    "src",
+    "srcset",
+    "action",
+    "formaction",
+    "target",
+    "rel",
+    "role",
+    "aria-label",
+    "aria-labelledby",
+    "aria-hidden",
+    "aria-describedby",
 ];
+const UNSAFE_HTML_ATTRIBUTES: &[&str] = &["innerHTML", "outerHTML", "html"];
 
 fn validate_supports_declaration(
     declaration: &Declaration,
@@ -2328,7 +2623,7 @@ fn edit_distance(left: &str, right: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Identifier, Span};
+    use crate::{Identifier, PropValue, PropsDecl, Span, UiElement, UiForLoop, UiText, ViewDecl};
 
     use super::*;
 
@@ -2445,6 +2740,198 @@ mod tests {
         };
 
         assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn validates_loop_collection_and_scoped_item_references() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("MessageList", Span::default()),
+                props: Some(PropsDecl {
+                    values: vec![PropValue {
+                        name: Identifier::new("messages", Span::default()),
+                        value_type: PropType::List,
+                        span: Span::default(),
+                    }],
+                    span: Span::default(),
+                }),
+                state: None,
+                view: Some(ViewDecl {
+                    nodes: vec![UiNode::Loop(UiForLoop {
+                        item: Identifier::new("message", Span::default()),
+                        collection: DataRef {
+                            name: Identifier::new("messages", Span::default()),
+                            span: Span::default(),
+                        },
+                        key: None,
+                        children: vec![UiNode::Text(UiText {
+                            value: TextValue::Data(DataRef {
+                                name: Identifier::new("message", Span::default()),
+                                span: Span::default(),
+                            }),
+                            span: Span::default(),
+                        })],
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| { !diagnostic.message.contains("Unknown reference `$message`") }));
+    }
+
+    #[test]
+    fn rejects_unsafe_html_attributes_and_warns_about_url_sinks() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("UnsafePanel", Span::default()),
+                props: None,
+                state: None,
+                view: Some(ViewDecl {
+                    nodes: vec![UiNode::Element(UiElement {
+                        kind: Identifier::new("link", Span::default()),
+                        name: Identifier::new("DocsLink", Span::default()),
+                        style: None,
+                        properties: vec![
+                            UiProperty {
+                                name: Identifier::new("href", Span::default()),
+                                value: UiPropertyValue::Literal("https://example.com".to_string()),
+                                span: Span::default(),
+                            },
+                            UiProperty {
+                                name: Identifier::new("html", Span::default()),
+                                value: UiPropertyValue::Literal("<b>unsafe</b>".to_string()),
+                                span: Span::default(),
+                            },
+                        ],
+                        events: Vec::new(),
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("browser-centric")));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("unsafe HTML injection sink")));
+    }
+
+    #[test]
+    fn diagnoses_accessibility_and_security_for_phase_three_dom_nodes() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("DiagnosticsDemo", Span::default()),
+                props: None,
+                state: None,
+                view: Some(ViewDecl {
+                    nodes: vec![
+                        UiNode::Element(UiElement {
+                            kind: Identifier::new("image", Span::default()),
+                            name: Identifier::new("Avatar", Span::default()),
+                            style: None,
+                            properties: vec![UiProperty {
+                                name: Identifier::new("source", Span::default()),
+                                value: UiPropertyValue::Literal("javascript:alert(1)".to_string()),
+                                span: Span::default(),
+                            }],
+                            events: Vec::new(),
+                            children: Vec::new(),
+                            span: Span::default(),
+                        }),
+                        UiNode::Element(UiElement {
+                            kind: Identifier::new("link", Span::default()),
+                            name: Identifier::new("External", Span::default()),
+                            style: None,
+                            properties: vec![
+                                UiProperty {
+                                    name: Identifier::new("href", Span::default()),
+                                    value: UiPropertyValue::Literal(
+                                        "https://example.com".to_string(),
+                                    ),
+                                    span: Span::default(),
+                                },
+                                UiProperty {
+                                    name: Identifier::new("target", Span::default()),
+                                    value: UiPropertyValue::Literal("_blank".to_string()),
+                                    span: Span::default(),
+                                },
+                            ],
+                            events: Vec::new(),
+                            children: Vec::new(),
+                            span: Span::default(),
+                        }),
+                        UiNode::Element(UiElement {
+                            kind: Identifier::new("input", Span::default()),
+                            name: Identifier::new("input", Span::default()),
+                            style: None,
+                            properties: vec![UiProperty {
+                                name: Identifier::new("onclick", Span::default()),
+                                value: UiPropertyValue::Literal("alert(1)".to_string()),
+                                span: Span::default(),
+                            }],
+                            events: Vec::new(),
+                            children: Vec::new(),
+                            span: Span::default(),
+                        }),
+                        UiNode::Element(UiElement {
+                            kind: Identifier::new("dialog", Span::default()),
+                            name: Identifier::new("dialog", Span::default()),
+                            style: None,
+                            properties: Vec::new(),
+                            events: Vec::new(),
+                            children: Vec::new(),
+                            span: Span::default(),
+                        }),
+                    ],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("requires alternate text")));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("unsafe URL scheme")));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("browser-centric")));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.message.contains("inline event attribute")));
+        assert!(diagnostics.iter().any(|diagnostic| diagnostic
+            .message
+            .contains("`input` requires a Frame label")));
+        assert!(diagnostics.iter().any(|diagnostic| diagnostic
+            .message
+            .contains("`dialog` requires a Frame label")));
     }
 
     #[test]
@@ -3274,7 +3761,7 @@ mod tests {
                 }),
                 view: Some(crate::ViewDecl {
                     nodes: vec![UiNode::Element(crate::UiElement {
-                        kind: Identifier::new("button", Span::default()),
+                        kind: Identifier::new("action", Span::default()),
                         name: Identifier::new("Send", Span::default()),
                         style: Some(crate::StyleBinding {
                             name: Identifier::new("MissingButton", Span::default()),
@@ -3342,7 +3829,7 @@ mod tests {
             .any(|diagnostic| diagnostic.message.contains("Unknown reference `$message`")));
         assert!(diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.message.contains("Unknown event `press`")));
+            .all(|diagnostic| !diagnostic.message.contains("Unknown event `press`")));
         assert!(diagnostics.iter().any(|diagnostic| diagnostic
             .message
             .contains("Unknown event modifier `magic`")));

@@ -1,0 +1,12 @@
+component Counter {
+  state {
+    count number = 0
+  }
+
+  view {
+    button Increment:PrimaryButton {
+      text $count
+      on click @increment
+    }
+  }
+}

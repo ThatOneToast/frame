@@ -4,6 +4,7 @@ members = [
   "crates/frame_core",
   "crates/frame_parser",
   "crates/frame_codegen",
+  "crates/frame_runtime",
   "crates/frame_cli",
   "crates/frame_lsp",
 ]

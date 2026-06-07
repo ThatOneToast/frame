@@ -1,0 +1,28 @@
+component MediaCard {
+  view {
+    article MediaCard {
+      picture CoverPicture {
+        source CoverAvif {
+          srcset "/media/cover.avif"
+          type "image/avif"
+        }
+
+        img CoverImage {
+          src "/media/cover.jpg"
+          alt "Product preview"
+        }
+      }
+
+      video PreviewVideo {
+        src "/media/preview.mp4"
+        poster "/media/poster.jpg"
+        controls true
+      }
+
+      p Caption {
+        text "A media card with safe URL attributes."
+      }
+      
+    }
+  }
+}

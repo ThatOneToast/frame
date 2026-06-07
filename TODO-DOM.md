@@ -4,7 +4,7 @@ Frame's UI layer should be able to represent the full capability of HTML and the
 
 Do not mark an item complete until Frame syntax, AST/IR representation, semantic validation, runtime behavior, docs, and tests exist.
 
-Current status: UI syntax including `component`, `props`, `state`, `view`, `slot`, element, text, event, data reference, handler reference, binding, conditional rendering, conditional style, and component invocation is parsed, validated, lowered to Frame IR, and can generate TypeScript contracts. Items below remain unchecked until DOM runtime behavior exists.
+Current status: UI syntax including `component`, `props`, `state`, `view`, `slot`, element, text, event, data reference, handler reference, binding, conditional rendering, conditional style, loop metadata, and component invocation is parsed, validated, lowered to Frame IR, and can generate TypeScript contracts. `packages/runtime-dom` implements a Phase 4 browser renderer with scheduled dependency-aware patching, hardened list reconciliation, practical HTML coverage, forms, global attributes, URL safety checks, cleanup counters, and accessibility/security diagnostics. SSR, hydration, routing, portals, suspense, async components, and transition/animation runtimes remain open.
 
 ## Design Goals
 
@@ -16,39 +16,39 @@ Current status: UI syntax including `component`, `props`, `state`, `view`, `slot
 
 ## Core Runtime Capabilities
 
-- [ ] Mount a Frame component into a DOM container.
-- [ ] Unmount and clean up listeners/effects.
-- [ ] Create elements.
-- [ ] Create text nodes.
+- [x] Mount a Frame component into a DOM container.
+- [x] Unmount and clean up listeners/effects.
+- [x] Create elements.
+- [x] Create text nodes.
 - [ ] Create comments where needed for anchors.
-- [ ] Set attributes.
-- [ ] Set DOM properties.
-- [ ] Remove attributes/properties.
-- [ ] Apply classes.
-- [ ] Apply reactive classes/styles.
-- [ ] Attach event listeners.
-- [ ] Remove event listeners.
-- [ ] Apply patches deterministically.
-- [ ] Batch updates.
-- [ ] Preserve source maps for runtime diagnostics.
+- [x] Set attributes.
+- [x] Set DOM properties.
+- [x] Remove attributes/properties.
+- [x] Apply classes.
+- [x] Apply reactive classes/styles.
+- [x] Attach event listeners.
+- [x] Remove event listeners.
+- [x] Apply patches deterministically.
+- [x] Batch updates.
+- [x] Preserve source maps for runtime diagnostics.
 
 ## Frame UI Syntax
 
-- [ ] `component Name { ... }`
-- [ ] `props { ... }`
-- [ ] `state { ... }`
-- [ ] `view { ... }`
+- [x] `component Name { ... }`
+- [x] `props { ... }`
+- [x] `state { ... }`
+- [x] `view { ... }`
 - [ ] `slot Default { ... }`
-- [ ] `button Send { ... }`
-- [ ] `button Send:PrimaryButton { ... }`
-- [ ] `text "literal"`
-- [ ] `text $value`
-- [ ] `on click @handler`
-- [ ] `on keydown.enter @handler`
-- [ ] `show when $condition`
-- [ ] `disabled when $condition`
-- [ ] `style when $condition = StyleName`
-- [ ] `repeat item in $items keyed item.id { ... }`
+- [x] `button Send { ... }`
+- [x] `button Send:PrimaryButton { ... }`
+- [x] `text "literal"`
+- [x] `text $value`
+- [x] `on click @handler`
+- [x] `on keydown.enter @handler`
+- [x] `show when $condition`
+- [x] `disabled when $condition`
+- [x] `style when $condition = StyleName`
+- [x] `for item in $items key $item.id { ... }`
 - [ ] `if $condition { ... } else { ... }`
 
 ## HTML Document Structure
@@ -68,18 +68,18 @@ Current status: UI syntax including `component`, `props`, `state`, `view`, `slot
 
 ## Sectioning and Text Elements
 
-- [ ] `main`
-- [ ] `section`
-- [ ] `nav`
-- [ ] `article`
+- [x] `main`
+- [x] `section`
+- [x] `nav`
+- [x] `article`
 - [ ] `aside`
-- [ ] `header`
-- [ ] `footer`
+- [x] `header`
+- [x] `footer`
 - [ ] `address`
-- [ ] `h1` through `h6`
-- [ ] `p`
-- [ ] `span`
-- [ ] `div`
+- [x] `h1` through `h6`
+- [x] `p`
+- [x] `span`
+- [x] `div`
 - [ ] `blockquote`
 - [ ] `pre`
 - [ ] `code`
@@ -94,36 +94,36 @@ Current status: UI syntax including `component`, `props`, `state`, `view`, `slot
 
 ## Lists
 
-- [ ] `ul`
-- [ ] `ol`
-- [ ] `li`
-- [ ] `dl`
-- [ ] `dt`
-- [ ] `dd`
+- [x] `ul`
+- [x] `ol`
+- [x] `li`
+- [x] `dl`
+- [x] `dt`
+- [x] `dd`
 
 ## Links and Navigation
 
-- [ ] `a`
-- [ ] `href` URL validation/classification
-- [ ] `target`
-- [ ] `rel`
-- [ ] download behavior
+- [x] `a`
+- [x] `href` URL validation/classification
+- [x] `target`
+- [x] `rel`
+- [x] download behavior
 - [ ] router/link abstraction research
 
 ## Media
 
-- [ ] `img`
-- [ ] `picture`
-- [ ] `source`
-- [ ] `video`
-- [ ] `audio`
-- [ ] `track`
-- [ ] `canvas`
-- [ ] `svg`
+- [x] `img`
+- [x] `picture`
+- [x] `source`
+- [x] `video`
+- [x] `audio`
+- [x] `track`
+- [x] `canvas`
+- [x] `svg`
 - [ ] `math`
 - [ ] lazy loading helpers
 - [ ] responsive image helpers
-- [ ] alt text diagnostics
+- [x] alt text diagnostics
 
 ## Embedded Content
 
@@ -135,78 +135,78 @@ Current status: UI syntax including `component`, `props`, `state`, `view`, `slot
 
 ## Tables
 
-- [ ] `table`
-- [ ] `caption`
-- [ ] `thead`
-- [ ] `tbody`
-- [ ] `tfoot`
-- [ ] `tr`
-- [ ] `th`
-- [ ] `td`
-- [ ] `colgroup`
-- [ ] `col`
-- [ ] table accessibility diagnostics
+- [x] `table`
+- [x] `caption`
+- [x] `thead`
+- [x] `tbody`
+- [x] `tfoot`
+- [x] `tr`
+- [x] `th`
+- [x] `td`
+- [x] `colgroup`
+- [x] `col`
+- [x] table accessibility diagnostics
 
 ## Forms
 
-- [ ] `form`
-- [ ] `label`
-- [ ] `input`
-- [ ] `button`
-- [ ] `select`
-- [ ] `option`
-- [ ] `optgroup`
-- [ ] `textarea`
-- [ ] `fieldset`
-- [ ] `legend`
+- [x] `form`
+- [x] `label`
+- [x] `input`
+- [x] `button`
+- [x] `select`
+- [x] `option`
+- [x] `optgroup`
+- [x] `textarea`
+- [x] `fieldset`
+- [x] `legend`
 - [ ] `datalist`
-- [ ] `output`
-- [ ] `progress`
-- [ ] `meter`
-- [ ] form submission handling
+- [x] `output`
+- [x] `progress`
+- [x] `meter`
+- [x] form submission handling
 - [ ] validation state
-- [ ] `bind value`
-- [ ] `bind checked`
+- [x] `bind value`
+- [x] `bind checked`
 - [ ] `bind files`
-- [ ] `bind selected`
+- [x] `bind selected`
 - [ ] `bind group`
 
 ## Interactive Elements
 
-- [ ] `details`
-- [ ] `summary`
-- [ ] `dialog`
+- [x] `details`
+- [x] `summary`
+- [x] `dialog`
 - [ ] popover API research
 - [ ] focus management helpers
 - [ ] inert handling
 
 ## Global Attributes
 
-- [ ] `id`
-- [ ] `class`
+- [x] `id`
+- [x] `class`
 - [ ] `style` policy
-- [ ] `title`
-- [ ] `hidden`
-- [ ] `tabindex`
-- [ ] `role`
-- [ ] `part`
-- [ ] `slot`
-- [ ] `contenteditable`
-- [ ] `draggable`
-- [ ] `spellcheck`
-- [ ] `translate`
-- [ ] `dir`
-- [ ] `lang`
-- [ ] `data-*`
-- [ ] `aria-*`
+- [x] `title`
+- [x] `hidden`
+- [x] `tabindex`
+- [x] `role`
+- [x] `part`
+- [x] `slot`
+- [x] `contenteditable`
+- [x] `draggable`
+- [x] `spellcheck`
+- [x] `translate`
+- [x] `dir`
+- [x] `lang`
+- [x] `data-*`
+- [x] `aria-*`
 
 ## Events
 
-- [ ] mouse events
+- [x] mouse events
 - [ ] pointer events
-- [ ] keyboard events
-- [ ] input/change events
-- [ ] form submit/reset events
+- [x] keyboard events
+- [x] input/change events
+- [x] form submit/reset events
 - [ ] focus/blur events
 - [ ] drag/drop events
 - [ ] clipboard events
@@ -217,17 +217,17 @@ Current status: UI syntax including `component`, `props`, `state`, `view`, `slot
 - [ ] scroll events
 - [ ] beforeinput
 - [ ] custom events
-- [ ] event modifiers: `prevent`, `stop`, `once`, `capture`, `passive`
-- [ ] key filters: `enter`, `escape`, `tab`, arrows, modifiers
+- [x] event modifiers: `prevent`, `stop`, `once`, `capture`, `passive`
+- [x] key filters: `enter`, `escape`, `tab`, arrows, modifiers
 
 ## Accessibility
 
-- [ ] semantic element diagnostics
-- [ ] alt text diagnostics
-- [ ] label/input association diagnostics
-- [ ] button accessible name diagnostics
-- [ ] link accessible name diagnostics
-- [ ] heading order diagnostics
+- [x] semantic element diagnostics
+- [x] alt text diagnostics
+- [x] label/input association diagnostics
+- [x] button accessible name diagnostics
+- [x] link accessible name diagnostics
+- [x] heading order diagnostics
 - [ ] dialog focus diagnostics
 - [ ] keyboard interaction diagnostics
 - [ ] ARIA role validation
@@ -236,11 +236,11 @@ Current status: UI syntax including `component`, `props`, `state`, `view`, `slot
 
 ## Security-Sensitive DOM Areas
 
-- [ ] raw HTML insertion marked unsafe
-- [ ] URL attribute validation
-- [ ] JavaScript URL rejection by default
+- [x] raw HTML insertion marked unsafe
+- [x] URL attribute validation
+- [x] JavaScript URL rejection by default
 - [ ] iframe sandbox diagnostics
-- [ ] external link `rel` diagnostics
+- [x] external link `rel` diagnostics
 - [ ] CSP documentation
 - [ ] script execution policy
 - [ ] Trusted Types research

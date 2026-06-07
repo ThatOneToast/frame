@@ -1,0 +1,20 @@
+component InputDemo {
+  state {
+    draft string = ""
+  }
+
+  view {
+    label DraftLabel {
+      text "Draft"
+    }
+
+    input DraftInput {
+      value bind $draft
+      placeholder "Type a message"
+    }
+
+    span Preview {
+      text $draft
+    }
+  }
+}

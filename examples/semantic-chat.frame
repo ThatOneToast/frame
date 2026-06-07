@@ -1,0 +1,42 @@
+component ChatExample {
+  state {
+    draft text = ""
+    messages list = []
+  }
+
+  view {
+    screen Chat {
+      split Main {
+        panel Sidebar {
+          title "Channels"
+          menu Channels {
+            action General
+            action Support
+          }
+        }
+
+        panel Messages {
+          title "Messages"
+
+          list Messages {
+            source $messages
+
+            item {
+              text $message.text
+            }
+
+            empty {
+              text "No messages"
+            }
+          }
+
+          composer ChatBox {
+            label "Message"
+            draft bind $draft
+            send @sendMessage
+          }
+        }
+      }
+    }
+  }
+}

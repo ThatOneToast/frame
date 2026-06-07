@@ -1,0 +1,27 @@
+component ChatComposer {
+  state {
+    draft string = ""
+    sending bool = false
+  }
+
+  view {
+    form ComposerForm {
+      aria-label "Message composer"
+      on submit.prevent @send
+      on reset @clear
+
+      textarea DraftInput {
+        aria-label "Message"
+        value bind $draft
+        on input @updateDraft
+        on keydown.enter.prevent @send
+      }
+
+      button SendButton {
+        type "submit"
+        disabled when $sending
+        text "Send"
+      }
+    }
+  }
+}

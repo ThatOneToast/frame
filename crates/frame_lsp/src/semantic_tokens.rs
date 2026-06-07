@@ -47,6 +47,33 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                 | "image"
                 | "link"
                 | "form"
+                | "screen"
+                | "section"
+                | "split"
+                | "dock"
+                | "overlay"
+                | "scroll"
+                | "action"
+                | "menu"
+                | "toolbar"
+                | "tabs"
+                | "editor"
+                | "toggle"
+                | "choice"
+                | "select"
+                | "composer"
+                | "title"
+                | "label"
+                | "badge"
+                | "avatar"
+                | "icon"
+                | "list"
+                | "feed"
+                | "data"
+                | "item"
+                | "empty"
+                | "dialog"
+                | "popover"
         ) && words.get(1).is_some_and(|word| word.ends_with('{'))
         {
             push_word(line, line_index, first, 0, &mut raw);
@@ -104,7 +131,35 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                     }
                 }
             }
-        } else if matches!(first, "value" | "placeholder" | "disabled" | "style") {
+        } else if is_semantic_ui_primitive(first) && words.get(1).is_some() {
+            push_word(line, line_index, first, 0, &mut raw);
+            if let Some(name) = words.get(1) {
+                let name = name.trim_end_matches('{');
+                if name.starts_with('"') || name.starts_with('$') {
+                    push_word(line, line_index, name, 4, &mut raw);
+                } else if let Some((node, style)) = name.split_once(':') {
+                    push_word(line, line_index, node, 1, &mut raw);
+                    push_word(line, line_index, style, 3, &mut raw);
+                } else {
+                    push_word(line, line_index, name, 1, &mut raw);
+                }
+            }
+        } else if matches!(
+            first,
+            "value"
+                | "bind"
+                | "draft"
+                | "send"
+                | "source"
+                | "goto"
+                | "label"
+                | "description"
+                | "hint"
+                | "options"
+                | "placeholder"
+                | "disabled"
+                | "style"
+        ) {
             push_word(line, line_index, first, 2, &mut raw);
             for value in words.iter().skip(1) {
                 let value = value.trim_end_matches('{');
@@ -240,6 +295,48 @@ fn looks_like_component_invocation(content: &str) -> bool {
             .chars()
             .next()
             .is_some_and(|character| character.is_ascii_uppercase())
+}
+
+fn is_semantic_ui_primitive(kind: &str) -> bool {
+    matches!(
+        kind,
+        "screen"
+            | "panel"
+            | "section"
+            | "stack"
+            | "row"
+            | "grid"
+            | "split"
+            | "dock"
+            | "overlay"
+            | "scroll"
+            | "action"
+            | "link"
+            | "menu"
+            | "toolbar"
+            | "tabs"
+            | "input"
+            | "editor"
+            | "toggle"
+            | "choice"
+            | "select"
+            | "composer"
+            | "title"
+            | "text"
+            | "label"
+            | "badge"
+            | "avatar"
+            | "icon"
+            | "image"
+            | "list"
+            | "feed"
+            | "data"
+            | "item"
+            | "empty"
+            | "card"
+            | "dialog"
+            | "popover"
+    )
 }
 
 fn is_known_value(value: &str) -> bool {

@@ -1,0 +1,25 @@
+component NavigationLinks {
+  view {
+    nav MainNav {
+      aria-label "Primary"
+
+      ul NavList {
+        li HomeItem {
+          a HomeLink {
+            href "/"
+            text "Home"
+          }
+        }
+
+        li DocsItem {
+          a DocsLink {
+            href "https://example.com/docs"
+            target "_blank"
+            rel "noopener"
+            text "Docs"
+          }
+        }
+      }
+    }
+  }
+}

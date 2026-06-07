@@ -1,0 +1,41 @@
+component TableListLayout {
+  state {
+    rows list = []
+  }
+
+  view {
+    table InvoiceTable {
+      caption InvoiceCaption {
+        text "Invoices"
+      }
+
+      thead InvoiceHead {
+        tr HeaderRow {
+          th NumberHeader {
+            scope "col"
+            text "Number"
+          }
+
+          th StatusHeader {
+            scope "col"
+            text "Status"
+          }
+        }
+      }
+
+      tbody InvoiceBody {
+        for row in $rows key $row.id {
+          tr InvoiceRow {
+            td NumberCell {
+              text $row.number
+            }
+
+            td StatusCell {
+              text $row.status
+            }
+          }
+        }
+      }
+    }
+  }
+}

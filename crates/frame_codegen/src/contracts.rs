@@ -69,6 +69,11 @@ fn component_handlers(component: &FrameIrComponent) -> Vec<String> {
     for node in &component.nodes {
         collect_handlers(node, &mut handlers);
     }
+    for slot in &component.slots {
+        for node in &slot.fallback {
+            collect_handlers(node, &mut handlers);
+        }
+    }
     handlers.into_iter().collect()
 }
 
@@ -82,6 +87,11 @@ fn collect_handlers(node: &FrameIrNode, handlers: &mut BTreeSet<String>) {
                 collect_handlers(child, handlers);
             }
         }
+        FrameIrNode::List(list) => {
+            for child in &list.children {
+                collect_handlers(child, handlers);
+            }
+        }
         FrameIrNode::Text(_) | FrameIrNode::Component(_) => {}
     }
 }
@@ -91,6 +101,7 @@ fn ts_state_type(value_type: &FrameIrStateType) -> &'static str {
         FrameIrStateType::Text => "string",
         FrameIrStateType::Bool => "boolean",
         FrameIrStateType::Number => "number",
+        FrameIrStateType::List => "unknown[]",
         FrameIrStateType::Unknown(_) => "unknown",
     }
 }
@@ -100,6 +111,7 @@ fn ts_prop_type(value_type: &FrameIrPropType) -> &'static str {
         FrameIrPropType::Text => "string",
         FrameIrPropType::Bool => "boolean",
         FrameIrPropType::Number => "number",
+        FrameIrPropType::List => "unknown[]",
         FrameIrPropType::Unknown(_) => "unknown",
     }
 }
@@ -128,6 +140,7 @@ fn default_type(default: &FrameIrStateDefault) -> &'static str {
         FrameIrStateDefault::Text(_) => "string",
         FrameIrStateDefault::Bool(_) => "boolean",
         FrameIrStateDefault::Number(_) => "number",
+        FrameIrStateDefault::List => "unknown[]",
         FrameIrStateDefault::Invalid(_) => "unknown",
     }
 }

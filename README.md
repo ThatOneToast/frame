@@ -28,7 +28,8 @@ Frame should be:
 
 - concise enough to read quickly
 - structured enough for strong editor tooling
-- explicit about events, state, styling, and DOM behavior
+- explicit about events, state, styling, and renderer behavior
+- centered on semantic UI intent instead of browser tags
 - capable of representing everything the DOM and HTML can do
 - renderer-independent at the compiler layer
 - safe by default, with unsafe escape hatches clearly marked
@@ -38,6 +39,7 @@ Frame should not become:
 - raw HTML with different brackets
 - raw CSS with different punctuation
 - React or Svelte syntax rewritten with new keywords
+- a direct mirror of browser implementation details
 - a language that hides security-sensitive behavior
 - a UI framework that can only target one renderer
 
@@ -47,7 +49,9 @@ The repository contains three distinct layers:
 
 1. **Styling compiler: usable** — generates CSS and TypeScript class exports from structured styling declarations.
 2. **UI compiler foundation: implemented** — parses, validates, and lowers UI components to Frame IR; generates TypeScript contracts.
-3. **DOM runtime: not implemented** — the next major phase.
+3. **DOM runtime: Phase 4 implemented** — `@frame/runtime-dom` can mount Frame IR into browser DOM nodes, schedule batched dependency-aware patches, reconcile lists, clean up listeners/subscriptions, and cover practical HTML/forms/attribute behavior.
+
+The active milestone is semantic UI syntax. Runtime, SSR, hydration, routing, portals, suspense, transition runtime, animation runtime, and async component work are intentionally paused while Frame's author-facing language moves away from HTML-like UI syntax.
 
 Existing pieces:
 
@@ -61,6 +65,7 @@ crates/
 
 packages/
   frame-svelte/    current Svelte/Vite integration
+  runtime-dom/     minimal browser DOM renderer for Frame IR
 
 editors/
   zed/             Zed extension with syntax support
@@ -69,7 +74,7 @@ implementations/
   chat-app/        rough reference implementation experiments
 ```
 
-The compiler outputs CSS and TypeScript class exports for styling declarations. For UI declarations, it produces Frame IR and TypeScript contracts. DOM runtime rendering and user handler implementation binding are not implemented yet.
+The compiler outputs CSS and TypeScript class exports for styling declarations. For UI declarations, it produces Frame IR and TypeScript contracts. The DOM runtime can consume Frame IR for mounting, disposal, elements, text, nested components, props, state, events, bindings, conditions, style classes, keyed or positional list reconciliation, common HTML elements, global attributes, safe URL attributes, form controls, scheduled updates, runtime diagnostics, and cleanup accounting.
 
 ## Direction
 
@@ -77,7 +82,7 @@ Frame should own the UI model.
 
 A Frame file should be able to describe structure, style, state references, event bindings, accessibility, attributes, DOM behavior, and renderer intent without writing inline JavaScript inside the UI declaration.
 
-Example direction:
+Semantic UI syntax uses Frame primitives:
 
 ```frame
 component ChatInput {
@@ -103,32 +108,32 @@ component ChatInput {
 }
 ```
 
-Important syntax ideas:
+The redesign direction is intent-first:
 
 ```frame
-button Send {
-  on click @sendMessage
-  on keydown.enter @submitMessage
+component ChatInput {
+  state {
+    draft text = ""
+    sending bool = false
+  }
+
+  view {
+    composer ChatBox {
+      label "Message"
+      draft bind $draft
+      send @sendMessage
+    }
+
+    action Send:PrimaryButton {
+      disabled when $sending
+      on press @sendMessage
+      style when $sending = LoadingButton
+    }
+  }
 }
 ```
 
-`button Send` creates a named UI node. By default Frame should look for a matching style named `Send` and inherit it automatically.
-
-```frame
-button Send:PrimaryButton {
-  text "Send"
-}
-```
-
-The name before `:` is the semantic UI node identity. The name after `:` is the explicit style binding.
-
-```frame
-button Send:PrimaryButton {
-  style when $sending = LoadingButton
-}
-```
-
-Style reactivity should be first-class. The compiler should understand the state dependency and the runtime should apply the correct style patch.
+`action`, `link`, `editor`, `toggle`, `choice`, `composer`, `panel`, `menu`, `tabs`, `data`, and layout primitives such as `screen`, `stack`, `row`, `grid`, `dock`, `scroll`, and `split` describe user intent. DOM elements such as `button`, `a`, `textarea`, `div`, `span`, `form`, `table`, `tr`, and `td` are internal lowering targets, not author-facing UI syntax.
 
 ## Frame IR
 
@@ -168,7 +173,13 @@ Frame source
   -> browser DOM
 ```
 
-The DOM runtime should be small and explicit. It should create nodes, bind attributes, attach event listeners, apply style classes, update text, manage reactive state patches, and preserve security defaults.
+The first DOM runtime lives in `packages/runtime-dom`. It is small and explicit: it creates nodes, binds attributes, attaches event listeners once, applies style classes, and patches affected text, properties, attributes, conditions, styles, and list blocks when state changes.
+
+The runtime intentionally does not implement SSR, hydration, routing, transitions, portals, suspense, async components, or advanced reconciliation.
+
+Phase 4 hardening adds a DOM update scheduler, deterministic patch flushing, duplicate patch coalescing, list move/reuse/create/remove counters, nested list and component-in-list reconciliation, explicit listener/subscription cleanup, runtime error diagnostics with component/source context, and immediate `flush()` support for tests.
+
+Further runtime feature work is paused during the language redesign milestone.
 
 This runtime should also be usable inside Tauri because Tauri already hosts a WebView.
 
@@ -236,9 +247,16 @@ Start here:
 - `AGENTS.md` — contributor and automation guidance
 - `TODO.md` — overhaul checklist
 - `MILESTONES.md` — staged implementation plan
+- `docs/language-redesign.md` — current semantic language redesign report
+- `docs/ui-primitives.md` — proposed intent-first UI primitive catalog
+- `docs/layout-system.md` — proposed layout primitives
+- `docs/forms.md` — proposed form control model
+- `docs/accessibility-model.md` — accessibility-first compiler and renderer model
+- `docs/semantic-lowering.md` — semantic primitive to renderer-target lowering strategy
 - `TODO-CSS.md` — structured CSS coverage tracker
 - `TODO-DOM.md` — HTML, DOM, events, accessibility, and runtime coverage tracker
 - `research/` — architecture notes for the Frame IR and DOM runtime direction
+- `examples/semantic-*.frame` — semantic UI examples
 
 ## Commands
 

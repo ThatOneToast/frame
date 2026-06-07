@@ -2,7 +2,9 @@
 
 ## Current Goal
 
-Prepare Frame for the `Frame -> Frame IR -> DOM runtime` overhaul.
+Design Frame's next language layer around semantic UI intent, accessibility, and renderer-independent primitives instead of exposing HTML and DOM concepts as the default authoring model.
+
+Runtime work is paused. Do not implement SSR, hydration, routing, portals, suspense, async components, or further runtime rendering features during this milestone.
 
 This file tracks the implementation path. Unchecked implementation items should remain unchecked until code and tests exist.
 
@@ -28,9 +30,30 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Define handler reference syntax using `@name`.
 - [x] Define binding syntax such as `value bind $draft`.
 - [x] Define condition syntax such as `show when $loggedIn`.
-- [ ] Define loop syntax for list rendering. (Deferred to Phase 6 — DOM Runtime)
+- [x] Define loop syntax for list rendering.
 - [x] Define initial zero-arg and named-argument component invocation syntax.
 - [x] Define escape hatches and mark unsafe forms explicitly.
+
+## Phase 1B — Language Redesign Milestone
+
+- [x] Research lessons from HTML, JSX, React, Vue, Svelte, SwiftUI, Jetpack Compose, Flutter, Slint, and Figma concepts.
+- [x] Document HTML leakage in the current Frame language.
+- [x] Categorize leaked browser concepts as must remain, can be abstracted, or should be redesigned.
+- [x] Create `docs/language-redesign.md`.
+- [x] Create `docs/ui-primitives.md`.
+- [x] Create `docs/layout-system.md`.
+- [x] Create `docs/forms.md`.
+- [x] Create `docs/accessibility-model.md`.
+- [ ] Decide the first implemented semantic primitive set.
+- [x] Decide compatibility rules for existing HTML-like element syntax: no author-facing compatibility in `view`; browser words are internal lowering targets only.
+- [x] Define parser changes for semantic primitives.
+- [x] Define semantic model changes for primitive intent.
+- [x] Define IR changes that preserve primitive kind separately from DOM mapping.
+- [x] Define codegen and TypeScript contract changes for intent-based events such as `on press`.
+- [x] Define LSP hover/completion wording for semantic primitives.
+- [ ] Add migration diagnostics and code actions after implementation begins.
+- [x] Update examples to prefer semantic primitives after implementation exists.
+- [x] Add `docs/semantic-lowering.md`.
 
 ## Phase 2 — Parser Upgrade Plan
 
@@ -68,7 +91,7 @@ This file tracks the implementation path. Unchecked implementation items should 
 
 - [x] Add initial renderer-neutral IR types.
 - [x] Add IR nodes for elements, text, component invocations, conditions, and style rules.
-- [x] Add IR nodes for fragments, slots, full conditions, and loops. (Slots implemented; loops deferred to DOM phase)
+- [x] Add IR nodes for fragments, slots, full conditions, and loops.
 - [x] Add IR structures for attributes, properties, events, bindings, style bindings, and reactive rules.
 - [x] Add source mapping from initial IR nodes back to Frame source.
 - [x] Add capability flags for renderer support.
@@ -89,20 +112,23 @@ This file tracks the implementation path. Unchecked implementation items should 
 
 ## Phase 6 — DOM Runtime
 
-- [ ] Create a DOM runtime package.
-- [ ] Mount Frame IR into a DOM container.
-- [ ] Create DOM elements from IR nodes.
-- [ ] Create text nodes from escaped values.
-- [ ] Apply attributes and properties safely.
-- [ ] Attach event listeners from handler references.
-- [ ] Support event filters and modifiers.
-- [ ] Support state updates and patch scheduling.
-- [ ] Support style class changes.
-- [ ] Support conditional rendering.
-- [ ] Support keyed list rendering.
-- [ ] Support form bindings.
-- [ ] Support cleanup on unmount.
-- [ ] Add runtime tests.
+- [x] Create a DOM runtime package.
+- [x] Mount Frame IR into a DOM container.
+- [x] Create DOM elements from IR nodes.
+- [x] Create text nodes from escaped values.
+- [x] Apply attributes and properties safely.
+- [x] Attach event listeners from handler references.
+- [x] Support event filters and modifiers.
+- [x] Support state updates with simple re-rendering.
+- [x] Support style class changes.
+- [x] Support conditional rendering.
+- [x] Support keyed list rendering.
+- [x] Support basic `value` and `checked` bindings.
+- [x] Support cleanup on unmount.
+- [x] Support scheduled batched updates.
+- [x] Support hardened list reconciliation and cleanup.
+- [x] Support runtime diagnostics with component/source context.
+- [x] Add runtime tests.
 - [ ] Generate skeleton implementation files.
 - [ ] Generate DOM event-specific handler signatures.
 
@@ -112,7 +138,7 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Connect UI node style bindings to generated classes.
 - [x] Support automatic style inheritance by node name.
 - [x] Support explicit style override with `Name:StyleName`.
-- [ ] Support reactive style patches. (Deferred to Phase 6 — DOM Runtime)
+- [x] Support reactive style patches.
 - [x] Track remaining CSS coverage in `TODO-CSS.md`.
 - [x] Add CSS output tests for new style binding behavior.
 
@@ -167,5 +193,5 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] `cargo fmt`
 - [x] `cargo clippy --workspace --all-targets -- -D warnings`
 - [x] `cargo test --workspace`
-- [ ] Runtime package tests when package exists.
+- [x] Runtime package tests when package exists.
 - [x] Documentation examples compile or are clearly marked conceptual.

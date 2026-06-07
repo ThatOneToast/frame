@@ -1,0 +1,29 @@
+component SettingsExample {
+  state {
+    notifications bool = true
+    displayName text = ""
+  }
+
+  view {
+    dialog Settings {
+      title "Settings"
+
+      input DisplayName {
+        label "Display name"
+        bind $displayName
+      }
+
+      toggle Notifications {
+        label "Notifications"
+        bind $notifications
+      }
+
+      toolbar Actions {
+        action Cancel
+        action Save {
+          on press @saveSettings
+        }
+      }
+    }
+  }
+}

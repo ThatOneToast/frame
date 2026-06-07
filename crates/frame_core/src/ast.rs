@@ -50,6 +50,7 @@ pub enum PropType {
     Text,
     Bool,
     Number,
+    List,
     Unknown(String),
 }
 
@@ -79,6 +80,7 @@ pub enum StateType {
     Text,
     Bool,
     Number,
+    List,
     Unknown(String),
 }
 
@@ -87,6 +89,7 @@ pub enum StateDefault {
     Text(String),
     Bool(bool),
     Number(String),
+    List,
     Invalid(String),
 }
 
@@ -101,6 +104,7 @@ pub enum UiNode {
     Element(UiElement),
     Text(UiText),
     Component(UiComponentInvocation),
+    Loop(UiForLoop),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -135,6 +139,15 @@ pub struct UiComponentArgument {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UiForLoop {
+    pub item: Identifier,
+    pub collection: DataRef,
+    pub key: Option<DataRef>,
+    pub children: Vec<UiNode>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum UiComponentArgumentValue {
     Data(DataRef),
     Bind(DataRef),
@@ -159,6 +172,7 @@ pub enum UiPropertyValue {
     Literal(String),
     Data(DataRef),
     Bind(DataRef),
+    Handler(HandlerRef),
     Conditional(ConditionalBinding),
     StyleWhen {
         condition: DataRef,

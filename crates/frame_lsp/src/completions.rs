@@ -108,8 +108,10 @@ const DECLARATIONS: &[&str] = &[
 ];
 
 const UI_ELEMENT_KINDS: &[&str] = &[
-    "button", "input", "text", "card", "panel", "row", "stack", "grid", "area", "image", "link",
-    "form",
+    "screen", "panel", "section", "stack", "row", "grid", "split", "dock", "overlay", "scroll",
+    "action", "link", "menu", "toolbar", "tabs", "input", "editor", "toggle", "choice", "select",
+    "composer", "title", "text", "label", "badge", "avatar", "icon", "image", "list", "feed",
+    "data", "item", "empty", "card", "dialog", "popover",
 ];
 
 const UI_KEYWORDS: &[&str] = &[
@@ -117,22 +119,50 @@ const UI_KEYWORDS: &[&str] = &[
     "state",
     "view",
     "slot",
+    "for",
+    "in",
+    "key",
     "on",
     "bind",
     "when",
     "style",
     "disabled",
+    "label",
+    "hint",
+    "description",
     "placeholder",
+    "checked",
+    "selected",
+    "kind",
     "value",
+    "source",
+    "goto",
+    "send",
+    "draft",
+    "options",
+    "required",
+    "decorative",
     "show",
     "hidden",
+    "alt",
+    "id",
+    "class",
+    "title",
+    "data-test-id",
+    "poster",
+    "download",
+    "new-window",
 ];
 
 const UI_EVENTS: &[&str] = &[
-    "click", "keydown", "keyup", "input", "change", "submit", "focus", "blur",
+    "press", "send", "open", "close", "select", "keydown", "keyup", "input", "change", "focus",
+    "blur",
 ];
 
-const UI_MODIFIERS: &[&str] = &["enter", "escape", "ctrl", "shift", "alt", "meta"];
+const UI_MODIFIERS: &[&str] = &[
+    "enter", "escape", "ctrl", "shift", "alt", "meta", "prevent", "stop", "once", "capture",
+    "passive",
+];
 
 struct FrameSnippet {
     label: &'static str,
@@ -558,8 +588,8 @@ pub fn completions_at_with_includes(
         }
         let mut items = suggestions_with_category(
             UI_ELEMENT_KINDS,
-            "ui element",
-            "Element node in an experimental Frame component view.",
+            "ui primitive",
+            "Semantic Frame UI primitive. Renderers lower the intent to their target platform.",
             CompletionCategory::Declaration,
         );
         items.extend(suggestions_with_category(
@@ -1527,10 +1557,29 @@ fn completion_documentation(label: &str) -> Option<String> {
         "grid" => "Defines a layout container. Use `columns`, `rows`, `gap`, and child `area` declarations.",
         "area" => "Defines a child region inside a grid. Usually includes `in GridName` and `place name` or `col 1`.",
         "card" => "Defines a reusable content surface. Good for panels, links, tiles, and settings sections.",
-        "stack" => "Defines a vertical flex layout. Use `gap` and `align` for spacing and cross-axis placement.",
+        "screen" => "Defines a full interface surface. Renderers choose the platform container.",
+        "stack" => "Arranges children in one ordered direction without exposing flexbox.",
         "row" => "As a declaration, creates a horizontal layout for NavBars and toolbars. As a property, places an area in a grid row.",
-        "button" => "Defines an interactive control surface with focus, active, and disabled states.",
-        "text" => "Defines reusable typography or text color intent.",
+        "action" => "Represents a user-triggered command. Renderers lower it to their preferred accessible action control.",
+        "link" => "Represents navigation intent. Use `goto` for the destination.",
+        "editor" => "Represents multi-line text entry. Use `bind $state` for the edited value.",
+        "toggle" => "Represents a binary setting. Use `bind $state` for checked state.",
+        "choice" => "Represents choosing from a small set of options.",
+        "composer" => "Represents message composition. Use `draft bind $state` and `send @handler`.",
+        "menu" => "Represents navigation or command choices.",
+        "toolbar" => "Represents a compact group of related actions.",
+        "tabs" => "Represents switching between related panels.",
+        "list" => "Represents repeated items from `source $items`.",
+        "feed" => "Represents chronological or activity-stream content.",
+        "data" => "Represents structured records without exposing table rows and cells.",
+        "item" => "Defines the repeated item body inside `list`, `feed`, or `data`.",
+        "empty" => "Defines fallback content when a list/feed/data source has no items.",
+        "popover" => "Represents a lightweight contextual surface.",
+        "badge" => "Represents compact status or metadata.",
+        "avatar" => "Represents a person or entity image and requires alternate text unless decorative.",
+        "icon" => "Represents symbolic visual content.",
+        "image" => "Represents meaningful imagery and requires alternate text unless decorative.",
+        "text" => "Defines visible text content or reusable typography intent.",
         "center" => "Centers content. Good for empty states and loading states.",
         "split" => "Defines a two-region layout. For exact horizontal ratios, use `grid` with percentage `columns`.",
         "overlay" => "Defines a fixed layer above the page. Use for modals, command palettes, and blocking dialogs.",
@@ -1695,7 +1744,8 @@ mod tests {
     fn view_scope_suggests_ui_syntax() {
         let labels = labels_for("component ChatInput {\n  view {\n    ");
 
-        assert!(labels.contains(&"button".to_string()));
+        assert!(labels.contains(&"action".to_string()));
+        assert!(labels.contains(&"composer".to_string()));
         assert!(labels.contains(&"input".to_string()));
         assert!(labels.contains(&"on".to_string()));
         assert!(labels.contains(&"bind".to_string()));
@@ -1716,9 +1766,9 @@ mod tests {
 
     #[test]
     fn event_lines_suggest_events_and_modifiers() {
-        let labels = labels_for("component ChatInput {\n  view {\n    button Send {\n      on ");
+        let labels = labels_for("component ChatInput {\n  view {\n    action Send {\n      on ");
 
-        assert!(labels.contains(&"click".to_string()));
+        assert!(labels.contains(&"press".to_string()));
         assert!(labels.contains(&"keydown".to_string()));
         assert!(labels.contains(&"enter".to_string()));
         assert!(labels.contains(&"ctrl".to_string()));

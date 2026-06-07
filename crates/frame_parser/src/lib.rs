@@ -279,9 +279,10 @@ impl<'a> Parser<'a> {
         Ok(StateValue {
             name: Identifier::new(name_text, name_span),
             value_type: match type_text.as_str() {
-                "text" => StateType::Text,
+                "text" | "string" => StateType::Text,
                 "bool" => StateType::Bool,
                 "number" => StateType::Number,
+                "list" => StateType::List,
                 other => StateType::Unknown(other.to_string()),
             },
             default: parse_state_default(default_text),
@@ -342,9 +343,10 @@ impl<'a> Parser<'a> {
         Ok(PropValue {
             name: Identifier::new(name_text, name_span),
             value_type: match type_text.as_str() {
-                "text" => PropType::Text,
+                "text" | "string" => PropType::Text,
                 "bool" => PropType::Bool,
                 "number" => PropType::Number,
+                "list" => PropType::List,
                 other => PropType::Unknown(other.to_string()),
             },
             span: Span {
@@ -430,20 +432,29 @@ impl<'a> Parser<'a> {
                 self.advance();
                 return Ok(nodes);
             }
+            if content.starts_with("for ") && content.ends_with('{') {
+                nodes.push(UiNode::Loop(self.parse_ui_for_loop()?));
+                continue;
+            }
+            let words = split_frame_words(content);
+            if words.first().map(String::as_str) == Some("text") {
+                nodes.push(UiNode::Text(parse_ui_text(line, &words)?));
+                self.advance();
+                continue;
+            }
             if content.ends_with('{') {
                 nodes.push(UiNode::Element(self.parse_ui_element()?));
+                continue;
+            }
+            if looks_like_semantic_shorthand(content) {
+                nodes.push(UiNode::Element(parse_ui_element_shorthand(line, content)?));
+                self.advance();
                 continue;
             }
             if looks_like_component_invocation(content) {
                 nodes.push(UiNode::Component(parse_component_invocation(
                     line, content,
                 )?));
-                self.advance();
-                continue;
-            }
-            let words = split_frame_words(content);
-            if words.first().map(String::as_str) == Some("text") {
-                nodes.push(UiNode::Text(parse_ui_text(line, &words)?));
                 self.advance();
                 continue;
             }
@@ -471,9 +482,9 @@ impl<'a> Parser<'a> {
         let content = content_without_comment(line.text);
         let header = content.trim_end_matches('{').trim();
         let parts = split_frame_words(header);
-        if parts.len() != 2 {
+        if parts.len() > 2 || parts.is_empty() {
             return Err(ParseError::one(
-                "UI elements use `element NodeName {` or `element NodeName:StyleName {`",
+                "UI primitives use `primitive Name {`, `primitive Name:StyleName {`, or `item {`",
                 Span {
                     start: line.start,
                     end: line.end,
@@ -481,11 +492,12 @@ impl<'a> Parser<'a> {
             ));
         }
         let kind_text = &parts[0];
-        let name_and_style = &parts[1];
+        let default_name = default_ui_node_name(kind_text);
+        let name_and_style = parts.get(1).map_or(default_name, String::as_str);
         let (name_text, style) = name_and_style
             .split_once(':')
             .map(|(name, style)| (name, Some(style)))
-            .unwrap_or((name_and_style.as_str(), None));
+            .unwrap_or((name_and_style, None));
         let kind_span = word_span_in_line(line, kind_text);
         let name_span = word_span_in_line(line, name_text);
         let style_binding = style.map(|style_name| {
@@ -525,21 +537,29 @@ impl<'a> Parser<'a> {
                     },
                 });
             }
-            if child.ends_with('{') {
-                children.push(UiNode::Element(self.parse_ui_element()?));
-                continue;
-            }
-            if looks_like_component_invocation(child) {
-                children.push(UiNode::Component(parse_component_invocation(
-                    child_line, child,
-                )?));
-                self.advance();
+            if child.starts_with("for ") && child.ends_with('{') {
+                children.push(UiNode::Loop(self.parse_ui_for_loop()?));
                 continue;
             }
             let words = split_frame_words(child);
             match words.first().map(String::as_str) {
                 Some("text") => {
                     children.push(UiNode::Text(parse_ui_text(child_line, &words)?));
+                    self.advance();
+                }
+                _ if child.ends_with('{') => {
+                    children.push(UiNode::Element(self.parse_ui_element()?));
+                }
+                _ if looks_like_semantic_shorthand(child) => {
+                    children.push(UiNode::Element(parse_ui_element_shorthand(
+                        child_line, child,
+                    )?));
+                    self.advance();
+                }
+                _ if looks_like_component_invocation(child) => {
+                    children.push(UiNode::Component(parse_component_invocation(
+                        child_line, child,
+                    )?));
                     self.advance();
                 }
                 Some("on") => {
@@ -557,6 +577,65 @@ impl<'a> Parser<'a> {
             "missing closing `}`",
             start_line_span(line),
         ))
+    }
+
+    fn parse_ui_for_loop(&mut self) -> Result<frame_core::UiForLoop, ParseError> {
+        let line = self.current_line().expect("parse_ui_for_loop needs a line");
+        let content = content_without_comment(line.text);
+        let header = content.trim_end_matches('{').trim();
+        let words = split_frame_words(header);
+        let valid_unkeyed =
+            words.len() == 4 && words[0] == "for" && words[2] == "in" && words[3].starts_with('$');
+        let valid_keyed = words.len() == 6
+            && words[0] == "for"
+            && words[2] == "in"
+            && words[3].starts_with('$')
+            && words[4] == "key"
+            && words[5].starts_with('$');
+        if !valid_unkeyed && !valid_keyed {
+            return Err(ParseError::one(
+                "for loops use `for item in $items {` or `for item in $items key $key {`",
+                Span {
+                    start: line.start,
+                    end: line.end,
+                },
+            ));
+        }
+
+        let item_text = &words[1];
+        let collection_text = words[3].trim_start_matches('$');
+        let item_span = word_span_in_line(line, item_text);
+        let collection_span = word_span_in_line(line, &words[3]);
+        let key = if valid_keyed {
+            let key_text = words[5].trim_start_matches('$');
+            let key_span = word_span_in_line(line, &words[5]);
+            Some(DataRef {
+                name: Identifier::new(key_text, key_span),
+                span: key_span,
+            })
+        } else {
+            None
+        };
+
+        self.advance();
+        let children = self.parse_ui_nodes_until_close()?;
+        let end = self
+            .previous_line()
+            .map(|line| line.end)
+            .unwrap_or(line.end);
+        Ok(frame_core::UiForLoop {
+            item: Identifier::new(item_text, item_span),
+            collection: DataRef {
+                name: Identifier::new(collection_text, collection_span),
+                span: collection_span,
+            },
+            key,
+            children,
+            span: Span {
+                start: line.start,
+                end,
+            },
+        })
     }
 
     fn parse_include(&mut self) -> Result<Include, ParseError> {
@@ -959,6 +1038,64 @@ fn parse_ui_text(line: Line<'_>, words: &[String]) -> Result<UiText, ParseError>
     })
 }
 
+fn parse_ui_element_shorthand(line: Line<'_>, content: &str) -> Result<UiElement, ParseError> {
+    let parts = split_frame_words(content);
+    if parts.len() != 2 {
+        return Err(ParseError::one(
+            "semantic UI shorthand uses `primitive Name` or `title \"Text\"`",
+            start_line_span(line),
+        ));
+    }
+
+    let kind_text = &parts[0];
+    let name_token = &parts[1];
+    let (name_text, style) = name_token
+        .split_once(':')
+        .map(|(name, style)| (name, Some(style)))
+        .unwrap_or((name_token.as_str(), None));
+    let kind_span = word_span_in_line(line, kind_text);
+    let name_span = word_span_in_line(line, name_text);
+    let mut properties = Vec::new();
+    let name = if name_token.starts_with('"') || name_token.starts_with('$') {
+        properties.push(UiProperty {
+            name: Identifier::new("value", name_span),
+            value: if let Some(reference) = name_token.strip_prefix('$') {
+                UiPropertyValue::Data(data_ref(line, name_token, reference))
+            } else {
+                UiPropertyValue::Literal(unquote(name_token))
+            },
+            span: Span {
+                start: line.start,
+                end: line.end,
+            },
+        });
+        default_ui_node_name(kind_text)
+    } else {
+        name_text
+    };
+
+    let style_binding = style.map(|style_name| {
+        let span = word_span_in_line(line, style_name);
+        StyleBinding {
+            name: Identifier::new(style_name, span),
+            span,
+        }
+    });
+
+    Ok(UiElement {
+        kind: Identifier::new(kind_text, kind_span),
+        name: Identifier::new(name, word_span_in_line(line, name)),
+        style: style_binding,
+        properties,
+        events: Vec::new(),
+        children: Vec::new(),
+        span: Span {
+            start: line.start,
+            end: line.end,
+        },
+    })
+}
+
 fn parse_component_invocation(
     line: Line<'_>,
     content: &str,
@@ -1052,6 +1189,11 @@ fn looks_like_component_invocation(content: &str) -> bool {
             .is_some_and(|character| character.is_ascii_uppercase())
 }
 
+fn looks_like_semantic_shorthand(content: &str) -> bool {
+    let words = split_frame_words(content);
+    words.len() == 2 && is_semantic_ui_primitive(&words[0])
+}
+
 fn parse_event_binding(line: Line<'_>, words: &[String]) -> Result<EventBinding, ParseError> {
     if words.len() != 3 || !words[2].starts_with('@') {
         return Err(ParseError::one(
@@ -1089,41 +1231,71 @@ fn parse_ui_property(line: Line<'_>, words: &[String]) -> Result<UiProperty, Par
     let Some(name) = words.first() else {
         return Err(ParseError::one("missing property", start_line_span(line)));
     };
-    let value = match words {
+    let (name, value) = match words {
+        [bind, value] if bind == "bind" && value.starts_with('$') => {
+            let state = value.trim_start_matches('$');
+            ("value", UiPropertyValue::Bind(data_ref(line, value, state)))
+        }
         [_, value] if value.starts_with('$') => {
             let state = value.trim_start_matches('$');
-            UiPropertyValue::Data(data_ref(line, value, state))
+            (
+                name.as_str(),
+                UiPropertyValue::Data(data_ref(line, value, state)),
+            )
         }
-        [_, value] => UiPropertyValue::Literal(unquote(value)),
+        [_, value] if value.starts_with('@') => {
+            let handler_name = value.trim_start_matches('@');
+            let handler_span = word_span_in_line(line, value);
+            (
+                name.as_str(),
+                UiPropertyValue::Handler(HandlerRef {
+                    name: Identifier::new(handler_name, word_span_in_line(line, handler_name)),
+                    span: handler_span,
+                }),
+            )
+        }
+        [_, value] => (name.as_str(), UiPropertyValue::Literal(unquote(value))),
         [_, bind, value] if bind == "bind" && value.starts_with('$') => {
             let state = value.trim_start_matches('$');
-            UiPropertyValue::Bind(data_ref(line, value, state))
+            (
+                name.as_str(),
+                UiPropertyValue::Bind(data_ref(line, value, state)),
+            )
         }
         [_, when, value] if when == "when" && value.starts_with('$') => {
             let state = value.trim_start_matches('$');
             let reference = data_ref(line, value, state);
-            UiPropertyValue::Conditional(ConditionalBinding {
-                condition: reference,
-                span: Span {
-                    start: line.start,
-                    end: line.end,
-                },
-            })
+            (
+                name.as_str(),
+                UiPropertyValue::Conditional(ConditionalBinding {
+                    condition: reference,
+                    span: Span {
+                        start: line.start,
+                        end: line.end,
+                    },
+                }),
+            )
         }
         [property, when, value, equals, style]
             if property == "style" && when == "when" && value.starts_with('$') && equals == "=" =>
         {
             let state = value.trim_start_matches('$');
             let style_span = word_span_in_line(line, style);
-            UiPropertyValue::StyleWhen {
-                condition: data_ref(line, value, state),
-                style: StyleBinding {
-                    name: Identifier::new(style, style_span),
-                    span: style_span,
+            (
+                name.as_str(),
+                UiPropertyValue::StyleWhen {
+                    condition: data_ref(line, value, state),
+                    style: StyleBinding {
+                        name: Identifier::new(style, style_span),
+                        span: style_span,
+                    },
                 },
-            }
+            )
         }
-        _ => UiPropertyValue::Unknown(words.iter().skip(1).cloned().collect()),
+        _ => (
+            name.as_str(),
+            UiPropertyValue::Unknown(words.iter().skip(1).cloned().collect()),
+        ),
     };
     Ok(UiProperty {
         name: Identifier::new(name, word_span_in_line(line, name)),
@@ -1135,6 +1307,59 @@ fn parse_ui_property(line: Line<'_>, words: &[String]) -> Result<UiProperty, Par
     })
 }
 
+fn is_semantic_ui_primitive(kind: &str) -> bool {
+    matches!(
+        kind,
+        "screen"
+            | "panel"
+            | "section"
+            | "stack"
+            | "row"
+            | "grid"
+            | "split"
+            | "dock"
+            | "overlay"
+            | "scroll"
+            | "action"
+            | "link"
+            | "menu"
+            | "toolbar"
+            | "tabs"
+            | "input"
+            | "editor"
+            | "toggle"
+            | "choice"
+            | "select"
+            | "composer"
+            | "title"
+            | "text"
+            | "label"
+            | "badge"
+            | "avatar"
+            | "icon"
+            | "image"
+            | "list"
+            | "feed"
+            | "data"
+            | "item"
+            | "empty"
+            | "card"
+            | "dialog"
+            | "popover"
+    )
+}
+
+fn default_ui_node_name(kind: &str) -> &str {
+    match kind {
+        "item" => "Item",
+        "empty" => "Empty",
+        "title" => "Title",
+        "text" => "Text",
+        "label" => "Label",
+        _ => kind,
+    }
+}
+
 fn parse_state_default(value: &str) -> StateDefault {
     if value.starts_with('"') && value.ends_with('"') {
         StateDefault::Text(unquote(value))
@@ -1144,6 +1369,8 @@ fn parse_state_default(value: &str) -> StateDefault {
         StateDefault::Bool(false)
     } else if is_number_literal(value) {
         StateDefault::Number(value.to_string())
+    } else if value == "[]" {
+        StateDefault::List
     } else {
         StateDefault::Invalid(value.to_string())
     }
@@ -1301,6 +1528,115 @@ keyframes FloatIn {
         assert_eq!(document.includes[0].target, "base");
         assert_eq!(document.includes[1].target, "./styles/cards.frame");
         assert_eq!(document.declarations.len(), 1);
+    }
+
+    #[test]
+    fn parses_component_loops_with_optional_keys() {
+        let source = r#"
+component MessageList {
+  props {
+    messages list
+    selectedId text
+  }
+
+  view {
+    for message in $messages {
+      text $message
+    }
+    for selected in $messages key $selectedId {
+      MessageItem(text: $selected)
+    }
+  }
+}
+"#;
+
+        let document = parse(source).expect("parse should succeed");
+        let nodes = &document.components[0].view.as_ref().expect("view").nodes;
+
+        assert!(matches!(
+            nodes[0],
+            UiNode::Loop(ref loop_node)
+                if loop_node.item.text == "message"
+                    && loop_node.collection.name.text == "messages"
+                    && loop_node.key.is_none()
+        ));
+        assert!(matches!(
+            nodes[1],
+            UiNode::Loop(ref loop_node)
+                if loop_node.item.text == "selected"
+                    && loop_node.key.as_ref().map(|key| key.name.text.as_str()) == Some("selectedId")
+        ));
+    }
+
+    #[test]
+    fn parses_semantic_ui_primitives_and_shorthand() {
+        let source = r#"
+component Chat {
+  state {
+    draft text = ""
+    messages list = []
+  }
+
+  view {
+    screen Chat {
+      title "Messages"
+
+      list Messages {
+        source $messages
+
+        item {
+          text $message.text
+        }
+
+        empty {
+          text "No messages"
+        }
+      }
+
+      composer ChatBox {
+        label "Message"
+        draft bind $draft
+        send @sendMessage
+      }
+
+      action Save
+    }
+  }
+}
+"#;
+
+        let document = parse(source).expect("semantic UI should parse");
+        let screen = match &document.components[0].view.as_ref().unwrap().nodes[0] {
+            UiNode::Element(element) => element,
+            _ => panic!("expected screen"),
+        };
+
+        assert_eq!(screen.kind.text, "screen");
+        assert_eq!(screen.children.len(), 4);
+        assert!(matches!(
+            screen.children[0],
+            UiNode::Element(ref element)
+                if element.kind.text == "title"
+                    && matches!(element.properties[0].value, UiPropertyValue::Literal(ref value) if value == "Messages")
+        ));
+        assert!(matches!(
+            screen.children[1],
+            UiNode::Element(ref element)
+                if element.kind.text == "list"
+                    && matches!(element.children[0], UiNode::Element(ref child) if child.kind.text == "item")
+        ));
+        assert!(matches!(
+            screen.children[2],
+            UiNode::Element(ref element)
+                if element.kind.text == "composer"
+                    && matches!(element.properties[0].value, UiPropertyValue::Bind(ref reference) if reference.name.text == "draft")
+                    && matches!(element.properties[1].value, UiPropertyValue::Handler(ref handler) if handler.name.text == "sendMessage")
+        ));
+        assert!(matches!(
+            screen.children[3],
+            UiNode::Element(ref element)
+                if element.kind.text == "action" && element.name.text == "Save"
+        ));
     }
 
     #[test]
@@ -1661,10 +1997,10 @@ component ChannelButton {
   }
 
   view {
-    button Channel {
+    action Channel {
       text $channel
       disabled when $active
-      on click @selectChannel
+      on press @selectChannel
     }
   }
 
@@ -1688,7 +2024,7 @@ component ChannelButton {
         let view = component.view.as_ref().unwrap();
         let button = match &view.nodes[0] {
             UiNode::Element(element) => element,
-            _ => panic!("expected button element"),
+            _ => panic!("expected action element"),
         };
         // text $channel is parsed as a child text node, not a property
         assert!(matches!(

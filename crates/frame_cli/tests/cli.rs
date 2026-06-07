@@ -142,7 +142,7 @@ fn emits_initial_ui_typescript_contracts() {
     let file = root.join("chat-input.frame");
     fs::write(
         &file,
-        "component ChatInput {\n  state {\n    draft text = \"\"\n    sending bool = false\n  }\n\n  view {\n    button Send {\n      on click @sendMessage\n      on keydown.enter @sendMessage\n    }\n  }\n}\n",
+        "component ChatInput {\n  state {\n    draft text = \"\"\n    sending bool = false\n  }\n\n  view {\n    action Send {\n      on press @sendMessage\n      on keydown.enter @sendMessage\n    }\n  }\n}\n",
     )
     .expect("app should be writable");
 

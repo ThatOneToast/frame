@@ -60,6 +60,7 @@ Deliverables:
 - [x] Parser support for event filters and modifiers.
 - [x] Parser support for explicit style bindings.
 - [x] Parser support for initial reactive style rules.
+- [x] Parser support for keyed and non-keyed list syntax.
 - [ ] Comment preservation for formatter work.
 - [x] Parser tests for all supported UI syntax.
 
@@ -143,46 +144,85 @@ Success criteria:
 
 ---
 
-## Milestone 6 — DOM Runtime MVP
+## Milestone 6 — Runtime Architecture Preparation
 
-Goal: render Frame IR directly to the browser DOM.
+Goal: freeze renderer-neutral runtime architecture before DOM rendering begins.
 
-Status: **Next open milestone.** All pre-DOM compiler work is complete.
+Status: **Complete when tests pass.**
 
 Deliverables:
 
-- [ ] Runtime package scaffold.
-- [ ] Mount/unmount API.
-- [ ] Element creation.
-- [ ] Text node creation.
-- [ ] Attribute/property application.
-- [ ] Event listener binding.
-- [ ] Escaped text insertion.
-- [ ] Style class application.
-- [ ] Basic state updates.
-- [ ] Patch application.
-- [ ] Runtime tests.
+- [x] Runtime architecture document.
+- [x] Renderer-neutral runtime crate.
+- [x] Component runtime model.
+- [x] Reactive state store with dependency tracking, dirty tracking, subscriptions, and batching.
+- [x] Runtime prop model.
+- [x] Slot IR and runtime metadata.
+- [x] Conditional rendering metadata.
+- [x] Keyed and non-keyed list IR/runtime metadata.
+- [x] Runtime-neutral event descriptors and handler lookup metadata.
+- [x] Accessibility architecture document and diagnostics.
+- [x] Security architecture document and diagnostics.
+- [x] IR spec document.
+- [x] Runtime tests.
+- [x] LSP hover/completion updates for new syntax and diagnostics.
+- [x] Zed grammar, highlighting, and sample updates.
 
 Success criteria:
 
-- A small Frame component renders in a browser without Svelte or React.
+- Renderer work can begin without changing the IR/runtime boundaries.
+- No DOM element creation, browser node creation, document access, mounting, patching, or hydration exists.
 
 ---
 
-## Milestone 7 — Reactive Runtime
+## Milestone 7 — DOM Runtime MVP
+
+Goal: render Frame IR directly to the browser DOM.
+
+Status: **Phase 4 implemented.** Broader platform features remain open.
+
+Deliverables:
+
+- [x] Runtime package scaffold.
+- [x] Mount/unmount API.
+- [x] Element creation.
+- [x] Text node creation.
+- [x] Attribute/property application.
+- [x] Event listener binding.
+- [x] Escaped text insertion.
+- [x] Style class application.
+- [x] Basic state updates.
+- [x] Patch application.
+- [x] Runtime tests.
+- [x] Practical HTML element coverage.
+- [x] Global attributes, `data-*`, and `aria-*`.
+- [x] URL safety checks and diagnostics.
+- [x] Form controls, submit/reset events, and `selected` binding.
+- [x] Batched scheduler with deterministic flush order.
+- [x] Hardened keyed/non-keyed list reconciliation.
+- [x] Nested component and list cleanup accounting.
+- [x] Runtime diagnostics with component/source context.
+
+Success criteria:
+
+- Frame components render practical browser UI screens without Svelte or React.
+
+---
+
+## Milestone 8 — Reactive Runtime
 
 Goal: support practical UI updates.
 
 Deliverables:
 
-- [ ] State dependency tracking.
-- [ ] Conditional rendering.
-- [ ] Keyed list rendering.
-- [ ] Form bindings.
-- [ ] Reactive styles.
-- [ ] Batched updates.
-- [ ] Cleanup lifecycle.
-- [ ] Error boundaries or runtime error reporting plan.
+- [x] State dependency tracking.
+- [x] Conditional rendering.
+- [x] Keyed list rendering.
+- [x] Form bindings.
+- [x] Reactive styles.
+- [x] Batched updates.
+- [x] Cleanup lifecycle.
+- [x] Error boundaries or runtime error reporting plan.
 
 Success criteria:
 
@@ -190,7 +230,56 @@ Success criteria:
 
 ---
 
-## Milestone 8 — Full DOM Coverage Expansion
+## Milestone 9 — Semantic Language Redesign
+
+Goal: redesign Frame's authoring model around UI intent, semantics, accessibility, and developer goals instead of browser implementation details.
+
+Status: **Phase 1 implementation in progress. Runtime feature work paused.**
+
+Out of scope:
+
+- SSR
+- hydration
+- routing
+- portals
+- suspense
+- async components
+- further runtime rendering work
+
+Deliverables:
+
+- [x] Existing syntax research across HTML, JSX, React, Vue, Svelte, SwiftUI, Jetpack Compose, Flutter, Slint, and Figma concepts.
+- [x] HTML leakage analysis.
+- [x] Semantic UI primitive proposal.
+- [x] Intent-based API proposal.
+- [x] Layout system proposal.
+- [x] Form system proposal.
+- [x] Accessibility-first model proposal.
+- [x] Compiler mapping strategy.
+- [x] LSP teaching requirements.
+- [x] Finalize first implementation slice.
+- [x] Finalize compatibility and migration policy: no legacy author-facing HTML-like UI syntax.
+- [x] Parser support for semantic primitives.
+- [x] Semantic validation for semantic primitives and removed browser words.
+- [x] IR support for `semantic_kind` and `render_kind`.
+- [x] LSP hover/completion/semantic token updates.
+- [x] Zed grammar/highlighting updates.
+- [x] Semantic examples.
+- [x] `docs/semantic-lowering.md`.
+- [ ] Update `TODO-DOM.md` after any DOM coverage changes are implemented.
+- [ ] Update `TODO-CSS.md` after any styling coverage changes are implemented.
+
+Success criteria:
+
+- Frame has a documented semantic vocabulary that can express common app UI without raw HTML tags as the primary syntax.
+- DOM mappings are explicit and renderer-overridable.
+- Accessibility defaults are documented before parser, semantic, IR, or runtime changes begin.
+
+---
+
+## Milestone 10 — Full DOM Coverage Expansion
+
+Status: **Paused until the semantic language redesign milestone is resolved.**
 
 Goal: expand toward complete HTML and DOM capability.
 
@@ -210,7 +299,7 @@ Success criteria:
 
 ---
 
-## Milestone 9 — CSS Coverage Expansion
+## Milestone 11 — CSS Coverage Expansion
 
 Goal: continue evolving Frame styling toward complete CSS capability through structured syntax.
 
@@ -230,18 +319,18 @@ Success criteria:
 
 ---
 
-## Milestone 10 — LSP Teacher Experience for UI
+## Milestone 12 — LSP Teacher Experience for UI
 
-Goal: make Frame's editor support teach the full UI language.
+Goal: make Frame's editor support teach the semantic UI language.
 
 Deliverables:
 
 - [ ] UI syntax highlighting.
-- [ ] DOM element completions.
-- [ ] Attribute completions.
+- [ ] Semantic primitive completions before DOM element completions.
+- [ ] Intent-based property completions before raw attribute completions.
 - [ ] Event completions.
 - [ ] State/prop/handler completions.
-- [ ] Hover docs for UI syntax.
+- [ ] Hover docs for UI intent and accessibility behavior.
 - [ ] Go-to-definition for handlers and styles.
 - [ ] Code actions for missing handlers and styles.
 - [ ] Diagnostics for unsafe/invalid DOM usage.
@@ -252,7 +341,9 @@ Success criteria:
 
 ---
 
-## Milestone 11 — Web App Target
+## Milestone 13 — Web App Target
+
+Status: **Paused until the semantic language redesign milestone is resolved.**
 
 Goal: make Frame usable as a standalone web UI language.
 
@@ -270,7 +361,9 @@ Success criteria:
 
 ---
 
-## Milestone 12 — Tauri/WebView Target
+## Milestone 14 — Tauri/WebView Target
+
+Status: **Paused until the semantic language redesign milestone is resolved.**
 
 Goal: use the DOM runtime inside desktop apps.
 
@@ -288,7 +381,9 @@ Success criteria:
 
 ---
 
-## Milestone 13 — Native Renderer Research
+## Milestone 15 — Native Renderer Research
+
+Status: **Paused until the semantic language redesign milestone is resolved.**
 
 Goal: evaluate future renderers after the IR has proven itself.
 

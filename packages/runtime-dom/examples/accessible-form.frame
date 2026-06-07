@@ -1,0 +1,44 @@
+component AccessibleForm {
+  props {
+    label string
+  }
+
+  state {
+    email string = ""
+    subscribed bool = false
+  }
+
+  view {
+    form SignupForm {
+      action "/signup"
+      on submit.prevent @submit
+      on reset @reset
+
+      label EmailLabel {
+        id "email-label"
+        for "email"
+        text $label
+      }
+
+      input EmailInput {
+        id "email"
+        type "email"
+        aria-labelledby "email-label"
+        value bind $email
+        on input @updateEmail
+      }
+
+      input SubscribeInput {
+        type "checkbox"
+        aria-label "Subscribe to updates"
+        checked bind $subscribed
+        on change @toggleSubscribed
+      }
+
+      button SubmitButton {
+        type "submit"
+        text "Join"
+      }
+    }
+  }
+}

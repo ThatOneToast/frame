@@ -2,8 +2,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     ComponentDecl, DataRef, Document, EventBinding, Identifier, PropType, Span, StateDefault,
-    StateType, TextValue, UiComponentArgumentValue, UiComponentInvocation, UiElement, UiNode,
-    UiProperty, UiPropertyValue, UiText,
+    StateType, TextValue, UiComponentArgumentValue, UiComponentInvocation, UiElement, UiForLoop,
+    UiNode, UiProperty, UiPropertyValue, UiText,
 };
 
 pub const FRAME_IR_VERSION: u32 = 1;
@@ -19,6 +19,7 @@ pub struct FrameIrComponent {
     pub name: String,
     pub props: Vec<FrameIrProp>,
     pub state: Vec<FrameIrState>,
+    pub slots: Vec<FrameIrSlot>,
     pub nodes: Vec<FrameIrNode>,
     pub capabilities: Vec<FrameIrCapability>,
     pub source: FrameIrSourceSpan,
@@ -28,7 +29,15 @@ pub struct FrameIrComponent {
 pub struct FrameIrProp {
     pub name: String,
     pub value_type: FrameIrPropType,
+    pub readonly: bool,
+    pub binding: FrameIrPropBinding,
     pub source: FrameIrSourceSpan,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FrameIrPropBinding {
+    Input,
+    TwoWayAllowed,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -36,6 +45,7 @@ pub enum FrameIrPropType {
     Text,
     Bool,
     Number,
+    List,
     Unknown(String),
 }
 
@@ -47,6 +57,7 @@ pub enum FrameIrCapability {
     TwoWayBinding,
     ComponentComposition,
     SlotContent,
+    ListRendering,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -62,6 +73,7 @@ pub enum FrameIrStateType {
     Text,
     Bool,
     Number,
+    List,
     Unknown(String),
 }
 
@@ -70,6 +82,7 @@ pub enum FrameIrStateDefault {
     Text(String),
     Bool(bool),
     Number(String),
+    List,
     Invalid(String),
 }
 
@@ -78,12 +91,29 @@ pub enum FrameIrNode {
     Element(FrameIrElement),
     Text(FrameIrText),
     Component(FrameIrComponentInvocation),
+    List(FrameIrList),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FrameIrSlot {
+    pub name: String,
+    pub fallback: Vec<FrameIrNode>,
+    pub source: FrameIrSourceSpan,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FrameIrComponentInvocation {
     pub name: String,
     pub arguments: Vec<FrameIrComponentArgument>,
+    pub source: FrameIrSourceSpan,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FrameIrList {
+    pub item: String,
+    pub collection: String,
+    pub key: Option<String>,
+    pub children: Vec<FrameIrNode>,
     pub source: FrameIrSourceSpan,
 }
 
@@ -104,6 +134,8 @@ pub enum FrameIrComponentArgumentValue {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FrameIrElement {
     pub kind: String,
+    pub semantic_kind: String,
+    pub render_kind: String,
     pub name: String,
     pub style: FrameIrStyleBinding,
     pub attributes: Vec<FrameIrAttribute>,
@@ -168,7 +200,15 @@ pub enum FrameIrStyleBinding {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum FrameIrCondition {
-    Flag {
+    Show {
+        state: String,
+        source: FrameIrSourceSpan,
+    },
+    Hidden {
+        state: String,
+        source: FrameIrSourceSpan,
+    },
+    Property {
         property: String,
         state: String,
         source: FrameIrSourceSpan,
@@ -210,10 +250,22 @@ fn lower_component(component: &ComponentDecl) -> FrameIrComponent {
         .as_ref()
         .map(|state| state.values.iter().map(lower_state).collect())
         .unwrap_or_default();
+    let slots: Vec<FrameIrSlot> = component
+        .slots
+        .iter()
+        .map(|slot| FrameIrSlot {
+            name: slot.name.text.clone(),
+            fallback: slot.nodes.iter().map(lower_node).collect(),
+            source: span(slot.span),
+        })
+        .collect();
 
     // Collect capabilities from nodes
     collect_capabilities(&nodes, &mut capabilities);
-    if component.slots.iter().any(|slot| !slot.nodes.is_empty()) {
+    for slot in &slots {
+        collect_capabilities(&slot.fallback, &mut capabilities);
+    }
+    if !slots.is_empty() {
         capabilities.push(FrameIrCapability::SlotContent);
     }
     if !props.is_empty() {
@@ -224,6 +276,7 @@ fn lower_component(component: &ComponentDecl) -> FrameIrComponent {
         name: component.name.text.clone(),
         props,
         state,
+        slots,
         nodes,
         capabilities,
         source: span(component.span),
@@ -237,8 +290,11 @@ fn lower_prop(prop: &crate::PropValue) -> FrameIrProp {
             PropType::Text => FrameIrPropType::Text,
             PropType::Bool => FrameIrPropType::Bool,
             PropType::Number => FrameIrPropType::Number,
+            PropType::List => FrameIrPropType::List,
             PropType::Unknown(value) => FrameIrPropType::Unknown(value.clone()),
         },
+        readonly: true,
+        binding: FrameIrPropBinding::Input,
         source: span(prop.span),
     }
 }
@@ -260,7 +316,9 @@ fn collect_capabilities(nodes: &[FrameIrNode], capabilities: &mut Vec<FrameIrCap
                 if !element.conditions.is_empty() {
                     for condition in &element.conditions {
                         match condition {
-                            FrameIrCondition::Flag { .. } => {
+                            FrameIrCondition::Show { .. }
+                            | FrameIrCondition::Hidden { .. }
+                            | FrameIrCondition::Property { .. } => {
                                 if !capabilities.contains(&FrameIrCapability::ConditionalRendering)
                                 {
                                     capabilities.push(FrameIrCapability::ConditionalRendering);
@@ -281,6 +339,12 @@ fn collect_capabilities(nodes: &[FrameIrNode], capabilities: &mut Vec<FrameIrCap
                     capabilities.push(FrameIrCapability::ComponentComposition);
                 }
             }
+            FrameIrNode::List(list) => {
+                if !capabilities.contains(&FrameIrCapability::ListRendering) {
+                    capabilities.push(FrameIrCapability::ListRendering);
+                }
+                collect_capabilities(&list.children, capabilities);
+            }
             FrameIrNode::Text(_) => {}
         }
     }
@@ -293,12 +357,14 @@ fn lower_state(state: &crate::StateValue) -> FrameIrState {
             StateType::Text => FrameIrStateType::Text,
             StateType::Bool => FrameIrStateType::Bool,
             StateType::Number => FrameIrStateType::Number,
+            StateType::List => FrameIrStateType::List,
             StateType::Unknown(value) => FrameIrStateType::Unknown(value.clone()),
         },
         default: match &state.default {
             StateDefault::Text(value) => FrameIrStateDefault::Text(value.clone()),
             StateDefault::Bool(value) => FrameIrStateDefault::Bool(*value),
             StateDefault::Number(value) => FrameIrStateDefault::Number(value.clone()),
+            StateDefault::List => FrameIrStateDefault::List,
             StateDefault::Invalid(value) => FrameIrStateDefault::Invalid(value.clone()),
         },
         source: span(state.span),
@@ -312,6 +378,17 @@ fn lower_node(node: &UiNode) -> FrameIrNode {
         UiNode::Component(invocation) => {
             FrameIrNode::Component(lower_component_invocation(invocation))
         }
+        UiNode::Loop(loop_node) => FrameIrNode::List(lower_list(loop_node)),
+    }
+}
+
+fn lower_list(loop_node: &UiForLoop) -> FrameIrList {
+    FrameIrList {
+        item: loop_node.item.text.clone(),
+        collection: reference_name(&loop_node.collection),
+        key: loop_node.key.as_ref().map(reference_name),
+        children: loop_node.children.iter().map(lower_node).collect(),
+        source: span(loop_node.span),
     }
 }
 
@@ -345,13 +422,22 @@ fn lower_element(element: &UiElement) -> FrameIrElement {
     let mut attributes = Vec::new();
     let mut bindings = Vec::new();
     let mut conditions = Vec::new();
+    let mut events: Vec<FrameIrEvent> = element.events.iter().map(lower_event).collect();
 
     for property in &element.properties {
-        lower_property(property, &mut attributes, &mut bindings, &mut conditions);
+        lower_property(
+            property,
+            &mut attributes,
+            &mut bindings,
+            &mut conditions,
+            &mut events,
+        );
     }
 
     FrameIrElement {
         kind: element.kind.text.clone(),
+        semantic_kind: element.kind.text.clone(),
+        render_kind: default_render_kind(&element.kind.text).to_string(),
         name: element.name.text.clone(),
         style: element.style.as_ref().map_or_else(
             || FrameIrStyleBinding::Automatic {
@@ -365,7 +451,7 @@ fn lower_element(element: &UiElement) -> FrameIrElement {
         ),
         attributes,
         bindings,
-        events: element.events.iter().map(lower_event).collect(),
+        events,
         conditions,
         children: element.children.iter().map(lower_node).collect(),
         source: span(element.span),
@@ -377,6 +463,7 @@ fn lower_property(
     attributes: &mut Vec<FrameIrAttribute>,
     bindings: &mut Vec<FrameIrBinding>,
     conditions: &mut Vec<FrameIrCondition>,
+    events: &mut Vec<FrameIrEvent>,
 ) {
     match &property.value {
         UiPropertyValue::Literal(value) => attributes.push(FrameIrAttribute {
@@ -389,16 +476,37 @@ fn lower_property(
             value: FrameIrAttributeValue::DataRef(reference_name(reference)),
             source: span(property.span),
         }),
-        UiPropertyValue::Bind(reference) => bindings.push(FrameIrBinding {
-            property: property.name.text.clone(),
-            state: reference_name(reference),
+        UiPropertyValue::Bind(reference) => {
+            let property_name = if property.name.text == "bind" {
+                "value"
+            } else {
+                property.name.text.as_str()
+            };
+            bindings.push(FrameIrBinding {
+                property: property_name.to_string(),
+                state: reference_name(reference),
+                source: span(property.span),
+            })
+        }
+        UiPropertyValue::Handler(handler) => events.push(FrameIrEvent {
+            event: property.name.text.clone(),
+            modifiers: Vec::new(),
+            handler: handler.name.text.clone(),
             source: span(property.span),
         }),
-        UiPropertyValue::Conditional(binding) => conditions.push(FrameIrCondition::Flag {
-            property: property.name.text.clone(),
-            state: reference_name(&binding.condition),
-            source: span(binding.span),
-        }),
+        UiPropertyValue::Conditional(binding) => {
+            let state = reference_name(&binding.condition);
+            let source = span(binding.span);
+            match property.name.text.as_str() {
+                "show" => conditions.push(FrameIrCondition::Show { state, source }),
+                "hidden" => conditions.push(FrameIrCondition::Hidden { state, source }),
+                _ => conditions.push(FrameIrCondition::Property {
+                    property: property.name.text.clone(),
+                    state,
+                    source,
+                }),
+            }
+        }
         UiPropertyValue::StyleWhen { condition, style } => {
             conditions.push(FrameIrCondition::Style {
                 state: reference_name(condition),
@@ -407,6 +515,27 @@ fn lower_property(
             })
         }
         UiPropertyValue::Unknown(_) => {}
+    }
+}
+
+fn default_render_kind(kind: &str) -> &str {
+    match kind {
+        "screen" | "panel" | "section" | "stack" | "row" | "grid" | "split" | "dock"
+        | "overlay" | "scroll" | "toolbar" | "tabs" | "card" | "popover" | "item" | "empty"
+        | "data" => "div",
+        "action" => "button",
+        "link" => "a",
+        "menu" => "nav",
+        "input" => "input",
+        "editor" | "composer" => "textarea",
+        "toggle" => "input",
+        "choice" | "select" => "select",
+        "title" => "h2",
+        "text" | "label" | "badge" | "icon" => "span",
+        "avatar" | "image" => "img",
+        "list" | "feed" => "ul",
+        "dialog" => "dialog",
+        other => other,
     }
 }
 
@@ -509,7 +638,7 @@ mod tests {
         ));
         assert!(matches!(
             button.conditions[0],
-            FrameIrCondition::Flag {
+            FrameIrCondition::Property {
                 ref property,
                 ref state,
                 ..
@@ -534,6 +663,77 @@ mod tests {
             invocation.arguments[0].value,
             FrameIrComponentArgumentValue::Bind("draft".to_string())
         );
+    }
+
+    #[test]
+    fn lowers_slots_and_lists_to_renderer_neutral_ir() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: ident("MessageList"),
+                props: None,
+                state: Some(StateDecl {
+                    values: vec![
+                        StateValue {
+                            name: ident("messages"),
+                            value_type: StateType::List,
+                            default: StateDefault::List,
+                            span: Span::default(),
+                        },
+                        StateValue {
+                            name: ident("messageId"),
+                            value_type: StateType::Text,
+                            default: StateDefault::Text(String::new()),
+                            span: Span::default(),
+                        },
+                    ],
+                    span: Span::default(),
+                }),
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Loop(crate::UiForLoop {
+                        item: ident("message"),
+                        collection: data_ref("messages"),
+                        key: Some(data_ref("messageId")),
+                        children: vec![UiNode::Text(UiText {
+                            value: TextValue::Data(data_ref("message")),
+                            span: Span::default(),
+                        })],
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: vec![crate::SlotDecl {
+                    name: ident("Header"),
+                    nodes: vec![UiNode::Text(UiText {
+                        value: TextValue::Literal("Fallback".to_string()),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }],
+                span: Span::default(),
+            }],
+        };
+
+        let ir = lower_document_to_ir(&document);
+        let component = &ir.components[0];
+
+        assert!(component
+            .capabilities
+            .contains(&FrameIrCapability::ListRendering));
+        assert!(component
+            .capabilities
+            .contains(&FrameIrCapability::SlotContent));
+        assert_eq!(component.slots[0].name, "Header");
+        assert!(matches!(
+            component.nodes[0],
+            FrameIrNode::List(FrameIrList {
+                ref item,
+                ref collection,
+                ref key,
+                ..
+            }) if item == "message" && collection == "messages" && key.as_deref() == Some("messageId")
+        ));
     }
 
     fn document_fixture() -> Document {

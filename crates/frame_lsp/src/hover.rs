@@ -84,24 +84,63 @@ pub fn hover_doc(word: &str) -> Option<String> {
 
     Some(match word {
         "component" => "Defines an experimental Frame UI component.\nComponents may contain typed `props`, `state`, `view`, and `slot` declarations.\n\nProps are passed from parent components. State is local and mutable. View describes the UI tree. Slots define composable content regions.",
-        "props" => "Declares typed component props.\nSupported types are `text`, `bool`, and `number`. Props do not have defaults; they are provided by the parent component.\n\nExample:\n\nprops {\n  title text\n  active bool\n}",
-        "state" => "Declares typed component state for experimental UI syntax.\nSupported types are `text`, `bool`, and `number` with matching literal defaults.",
-        "view" => "Declares the component UI tree.\nView nodes are validated, lowered to Frame IR, and can generate TypeScript contracts. DOM runtime rendering is the next major phase.",
+        "props" => "Declares typed component props.\nSupported types are `text`, `string`, `bool`, `number`, and `list`. `string` lowers to the same IR type as `text`. Props do not have defaults; they are provided by the parent component.\n\nExample:\n\nprops {\n  title string\n  active bool\n}",
+        "state" => "Declares typed component state for experimental UI syntax.\nSupported types are `text`, `string`, `bool`, `number`, and `list` with matching literal defaults. `string` lowers to `Text`; lists use `[]` as the initial default.",
+        "view" => "Declares the component UI tree.\nView nodes use semantic Frame primitives such as `action`, `editor`, `panel`, `list`, and `data`. Renderers lower those primitives to their target platform.",
         "slot" => "Defines a named content region inside a component.\nSlots allow parent components to inject content. The default slot is named `Default`.\n\nExample:\n\nslot Default {\n  text \"Fallback content\"\n}",
+        "for" => "Starts renderer-neutral list rendering.\n\nUse `for item in $items { ... }` for positional lists or `for item in $items key $id { ... }` when stable identity is available. The compiler lowers this to Frame IR list metadata; renderers decide how to realize updates.",
+        "key" => "Declares stable identity for a Frame list.\n\nKeyed lists allow renderers to reuse item instances by identity. Non-keyed lists use positional update behavior.",
         "on" => "Binds a UI event to an external handler reference.\nFrame stores `@handlerName`, not inline JavaScript or TypeScript bodies.",
-        "bind" => "`value bind $state` records a two-way state binding intent for a future renderer contract.",
+        "bind" => "`bind $state`, `draft bind $state`, and similar forms record two-way state binding intent without exposing browser form controls.",
         "when" => "Introduces a state-driven condition such as `disabled when $sending` or `style when $sending = LoadingButton`.",
-        "value" => "`value bind $state` connects an input-like element to typed component state.",
+        "value" => "Stores a visible value for content primitives or a value binding target for input-like primitives.",
+        "goto" => "Declares navigation intent for `link`. Renderers validate the destination and lower it to their platform.",
+        "source" => "Declares data or media source intent. Lists use `source $items`; images use `source $image`.",
+        "send" => "References the external handler that sends or submits a composer-like primitive.",
+        "draft" => "Binds composer draft text to component state.",
+        "selected" => "`selected bind $state` connects select-like controls to typed component state.",
         "style" => "`style when $state = StyleName` records conditional style switching for a UI node.",
+        "show" => "`show when $state` records conditional rendering intent. The runtime tracks the dependency; renderers decide whether to create, skip, or serialize the node.",
+        "hidden" => "`hidden when $state` records visibility intent without requiring a specific renderer mechanism.",
+        "alt" => "Provides alternate text for image-like primitives. Prefer Frame image semantics; renderers generate accessibility metadata.",
+        "description" => "Adds descriptive accessibility metadata without manual ARIA wiring.",
+        "hint" => "Adds helper text for form-like primitives without manual ARIA wiring.",
+        "decorative" => "Marks image-like content as visual-only when set to `true`.",
+        "poster" => "Media destination. Renderers validate URL-like values before writing platform sinks.",
+        "aria-label" | "aria-labelledby" | "aria-hidden" | "role" | "href" | "src" | "srcset" | "rel" => "Browser-centric syntax. Frame authoring should use semantic properties such as `label`, `description`, `decorative`, `goto`, and `source`.",
+        "data-test-id" => "Example `data-*` attribute. Frame preserves `data-*` attributes for application metadata and tests.",
+        "html" | "innerHTML" | "outerHTML" => "Unsafe HTML injection sink. Frame text escapes by default; raw HTML requires an explicit unsafe capability before renderer consumption.",
         "$value" => "$value reads typed component state or props. Text insertion is escaped by default in future renderers.",
         "@handler" => "@handler references an external handler. Frame does not store script bodies inside UI declarations.",
         "tokens" => "Defines reusable design tokens for a Frame file.\nUse tokens to name shared visual decisions before applying them to components.",
-        "grid" => GRID_DOC,
+        "screen" => "Represents a full UI surface. Renderers choose the appropriate root container.",
+        "grid" => "Represents two-dimensional layout intent without requiring authors to name CSS Grid mechanics.",
         "area" => "Defines a child region inside a named grid.\nUse `in` to reference the parent grid and `place` to claim a named grid column or area.\n\nExample:\n\narea Sidebar {\n  in AppShell\n  place sidebar\n}",
-        "card" => "Defines a reusable content surface.\nCards commonly combine surface, padding, radius, shadow, and hover effects.\n\nExample:\n\ncard ProjectCard {\n  surface gradient dusk\n  padding large\n  radius large\n  shadow medium\n}",
-        "stack" => "Defines a vertical layout group.\nUse `gap` and `align` to control spacing and cross-axis alignment.",
-        "row" => ROW_DOC,
-        "button" => "Defines an interactive control surface.\nUse surface, padding, radius, focus, active, and disabled states.",
+        "card" => "Represents grouped content or an object preview. Renderers preserve the grouping intent.",
+        "stack" => "Represents ordered one-direction layout without exposing flexbox.",
+        "row" => "Represents horizontal grouping intent without exposing flexbox.",
+        "action" => "Represents a user-triggered action.\n\nAutomatically lowers to the renderer's preferred accessible action control.",
+        "link" => "Represents navigation intent.\nUse `goto` for the destination. Renderers decide the platform-specific link implementation.",
+        "menu" => "Represents navigation or command choices.",
+        "toolbar" => "Represents a compact group of related actions.",
+        "tabs" => "Represents switching between related panels with generated accessibility relationships.",
+        "editor" => "Represents multi-line text entry. Use `bind $state` for its value.",
+        "toggle" => "Represents a binary setting. Use `bind $state` for checked state.",
+        "choice" => "Represents choosing from a small set of options.",
+        "select" => "Represents choosing from a larger or dynamic option source.",
+        "composer" => "Represents message composition. Use `draft bind $state` and `send @handler`.",
+        "title" => "Represents a semantic title, not a raw heading level.",
+        "label" => "Represents visible label text or a label relationship for a control.",
+        "badge" => "Represents compact status or metadata.",
+        "avatar" => "Represents a person or entity image and requires alternate text unless decorative.",
+        "icon" => "Represents symbolic visual content.",
+        "image" => "Represents meaningful imagery and requires alternate text unless decorative.",
+        "list" => "Represents repeated items from `source $items` without exposing list tags.",
+        "feed" => "Represents chronological or activity-stream content.",
+        "data" => "Represents structured records without exposing table rows or cells.",
+        "item" => "Defines the repeated item body inside `list`, `feed`, or `data`.",
+        "empty" => "Defines fallback content when repeated data has no items.",
+        "popover" => "Represents a lightweight contextual surface.",
         "text" => "Defines reusable typography intent.\nUse size, weight, font, and color tokens instead of raw font CSS.",
         "center" => "Defines a container that centers its content.\nUse it for empty states, loading states, and focused prompts.",
         "split" => SPLIT_DOC,
@@ -189,7 +228,7 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "checked" => "Defines effects applied to checked controls.\n\nGenerated CSS emits `:checked`.",
         "invalid" => "Defines effects applied to invalid form controls.\n\nGenerated CSS emits `:invalid`.",
         "required" => "Defines effects applied to required form controls.\n\nGenerated CSS emits `:required`.",
-        "target" => "Defines effects applied when this element matches the URL fragment target.\n\nGenerated CSS emits `:target`.",
+        "target" => "In UI attributes, controls where a link or form opens. Use `rel \"noopener\"` or `rel \"noreferrer\"` with `target \"_blank\"`.\n\nIn style declarations, defines effects applied when this element matches the URL fragment target and emits `:target`.",
         "lift" => "Moves a component upward to express elevation.\n\nUse movement amounts `tiny`, `small`, `medium`, `large`, or `huge`. Add `%0` through `%100` to tune toward the next stronger amount, for example `lift small%44`.\n\nGenerated CSS composes this into `transform: translateY(...)`.",
         "sink" => "Moves a component downward.\n\nUse movement amounts like `small` or tuned values like `small%44`. Generated CSS composes this into `transform: translateY(...)`.",
         "shift" => "Moves a component in a direction.\n\nUse `shift left small`, `shift right small`, `shift up small`, or `shift down small`. Movement amounts can use percent tuning.",
@@ -206,7 +245,6 @@ pub fn hover_doc(word: &str) -> Option<String> {
         "smooth" => "Expresses smooth transition intent for interaction effects.",
         "responsive" => "Requests viewport-aware behavior, such as responsive card grids.",
         "cards" => "Used with `columns responsive` to create an auto-fitting card grid.",
-        "screen" => "Sizes an element to the viewport in the relevant axis.",
         "fill" => "Sizes an element to fill available space. Inside an `animation` block, `fill` sets animation fill mode such as `both`.",
         "panel" => SURFACE_PANEL_DOC,
         "main" => SURFACE_MAIN_DOC,
@@ -628,81 +666,6 @@ grid Cards {
 }
 
 Generated CSS emits an `@container` rule."#;
-
-const GRID_DOC: &str = r#"grid
-
-Defines a layout container using Frame's grid system.
-Use `columns`, `rows`, `gap`, and child `area` declarations to place content.
-
-Generated CSS: `display: grid` plus grid-template properties.
-
-Svelte example:
-
-<div class="fr-Dashboard">
-  <aside class="fr-Sidebar">Channels</aside>
-  <main class="fr-Content">Chat</main>
-  <section class="fr-Inspector">Details</section>
-</div>
-
-<style lang="frame">
-  grid Dashboard {
-    columns 25% 50% 25%
-    gap medium
-    height screen
-  }
-
-  area Sidebar {
-    in Dashboard
-    col 1
-    surface panel
-    padding medium
-  }
-
-  area Content {
-    in Dashboard
-    col 2
-    surface main
-    padding large
-  }
-
-  area Inspector {
-    in Dashboard
-    col 3
-    surface panel
-    padding medium
-  }
-</style>"#;
-
-const ROW_DOC: &str = r#"row
-
-Defines a horizontal layout group.
-Use it for NavBars, toolbars, button groups, and header rows.
-
-Generated CSS: `display: flex; flex-direction: row;`
-
-NavBar example:
-
-row NavBar {
-  align center
-  justify between
-  gap medium
-  padding medium
-  surface panel
-}
-
-button NavAction {
-  surface flat
-  text accent
-  padding small
-  radius pill
-}
-
-Svelte:
-
-<nav class="fr-NavBar">
-  <a class="fr-NavAction">Home</a>
-  <a class="fr-NavAction">Docs</a>
-</nav>"#;
 
 const SPLIT_DOC: &str = r#"split
 

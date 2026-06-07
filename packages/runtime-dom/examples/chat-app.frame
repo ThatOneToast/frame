@@ -1,0 +1,25 @@
+component MessageItem {
+  props {
+    title string
+  }
+
+  view {
+    article Message {
+      text $title
+    }
+  }
+}
+
+component ChatApp {
+  state {
+    messages list = []
+  }
+
+  view {
+    main ChatMain {
+      for message in $messages key $message.id {
+        MessageItem(title: $message.text)
+      }
+    }
+  }
+}

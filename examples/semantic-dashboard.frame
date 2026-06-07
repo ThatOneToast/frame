@@ -1,0 +1,29 @@
+component DashboardExample {
+  state {
+    projects list = []
+  }
+
+  view {
+    grid Dashboard {
+      panel Summary {
+        title "Overview"
+        badge Online
+      }
+
+      data Projects {
+        source $projects
+
+        item {
+          card Project {
+            title $project.name
+            text $project.status
+          }
+        }
+
+        empty {
+          text "No projects"
+        }
+      }
+    }
+  }
+}

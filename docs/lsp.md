@@ -306,13 +306,14 @@ The extension resolves the LSP command in this order:
 The LSP now provides completions, hover docs, and diagnostics for UI syntax:
 
 - Completions for `component`, `props`, `state`, `view`, `slot`, and UI element kinds.
+- Completions for current DOM element kinds, common global attributes, `aria-*` examples, `data-*` examples, form attributes, URL attributes, and event modifiers.
 - Completions for `$state` and `$prop` references.
 - Completions for `@handler` references.
 - Completions for same-file component invocations.
 - Completions for event names and modifiers.
 - Hover docs for `component`, `props`, `state`, `view`, `slot`, `$value`, `@handler`, and UI keywords.
 - Diagnostics for unresolved state/prop references, unknown events, unknown modifiers, and missing accessible text.
-- Diagnostics for URL-bearing attributes and unsafe DOM usage.
+- Diagnostics for URL-bearing attributes, `javascript:` URLs, unsafe DOM usage, inline event attributes, and unsafe blank-target links.
 
 ## Known Limitations
 

@@ -118,7 +118,7 @@ Generated CSS uses `@layer`, but Frame keeps the source syntax focused on named 
 
 ## UI Syntax
 
-Frame parses, validates, and lowers UI declarations into renderer-neutral Frame IR. TypeScript contracts and IR JSON are generated from the same AST. DOM runtime rendering is the next major phase.
+Frame parses, validates, and lowers semantic UI declarations into renderer-neutral Frame IR. TypeScript contracts and IR JSON are generated from the same AST. The DOM runtime consumes that IR for browser rendering; SSR and hydration are not implemented.
 
 ```frame
 component ChatInput {
@@ -132,16 +132,15 @@ component ChatInput {
   }
 
   view {
-    input MessageBox {
-      value bind $draft
-      placeholder $placeholder
+    editor Message {
+      label "Message"
+      bind $draft
       on keydown.ctrl.enter @sendMessage
     }
 
-    button Send:PrimaryButton {
-      text "Send"
+    action Send:PrimaryButton {
       disabled when $sending
-      on click @sendMessage
+      on press @sendMessage
       style when $sending = LoadingButton
     }
   }
@@ -160,7 +159,7 @@ props {
 }
 ```
 
-Props do not have defaults; they are provided by the parent component. Supported types are `text`, `bool`, and `number`.
+Props do not have defaults; they are provided by the parent component. Supported types are `text`, `string`, `bool`, `number`, and `list`.
 
 ### State
 
@@ -176,9 +175,27 @@ state {
 
 ### View
 
-View blocks support element nodes, text nodes, component invocations, and slots.
+View blocks support semantic primitives, text nodes, component invocations, loops, and slots.
 
-Element names such as `button`, `input`, `text`, `card`, `panel`, `row`, `stack`, `grid`, `area`, `image`, `link`, and `form` are supported. Element names such as `Send` record automatic style lookup intent. Explicit style binding uses `ElementName:StyleName`.
+Author-facing UI syntax uses intent-first primitives:
+
+```frame
+screen Chat
+panel Messages
+action Send
+link Documentation
+input Username
+editor Draft
+toggle Notifications
+composer ChatBox
+list Messages
+data Projects
+dialog Settings
+```
+
+Browser-centric words such as `button`, `div`, `span`, `a`, `textarea`, `form`, `table`, `tr`, and `td` are not valid author-facing UI primitives. They may still appear internally as renderer lowering targets.
+
+Node names such as `Send` record semantic identity and automatic style lookup intent. Explicit style binding uses `NodeName:StyleName`.
 
 Text nodes support literal text and data references:
 
@@ -192,7 +209,7 @@ Data references use `$valueName` and are validated against component props and s
 Events validate the event name and modifiers:
 
 ```frame
-on click @sendMessage
+on press @sendMessage
 on keydown.enter @submitMessage
 on keydown.ctrl.enter @submitMessage
 ```
@@ -205,7 +222,7 @@ panel Main {
   text "Welcome"
 }
 
-button Send {
+action Send {
   disabled when $sending
 }
 ```
@@ -213,8 +230,33 @@ button Send {
 Conditional style switching:
 
 ```frame
-button Send:PrimaryButton {
+action Send:PrimaryButton {
   style when $sending = LoadingButton
+}
+```
+
+Form bindings support `value`, `checked`, and `selected`:
+
+```frame
+input Draft {
+  bind $draft
+}
+
+toggle Enabled {
+  bind $enabled
+}
+
+select Choice {
+  selected bind $choice
+}
+```
+
+Composer primitives support intent handlers:
+
+```frame
+composer ChatBox {
+  draft bind $draft
+  send @sendMessage
 }
 ```
 
@@ -267,7 +309,7 @@ Generated contracts define `ComponentProps`, `ComponentState`, `ComponentHandler
 
 ### Runtime status
 
-DOM runtime rendering is not implemented yet. The compiler produces IR and contracts; a future runtime will consume the IR to create and update DOM nodes.
+The DOM runtime currently supports mounting, disposal, element/text creation, nested components, props, state, events, bindings, conditions, style classes, dependency-aware patches, keyed and positional lists, common HTML elements, global attributes, URL safety checks, and form controls. It does not implement SSR, hydration, routing, portals, suspense, or async components.
 
 # Frame Language
 

@@ -1,0 +1,14 @@
+component TogglePanel {
+  state {
+    loggedIn bool = false
+    collapsed bool = false
+  }
+
+  view {
+    section AccountPanel {
+      show when $loggedIn
+      hidden when $collapsed
+      text "Account details"
+    }
+  }
+}

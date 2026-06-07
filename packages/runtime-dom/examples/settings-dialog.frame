@@ -1,0 +1,36 @@
+component SettingsDialog {
+  state {
+    open bool = true
+    compact bool = false
+  }
+
+  view {
+    dialog SettingsModal {
+      aria-labelledby "settings-title"
+      show when $open
+
+      h2 SettingsTitle {
+        id "settings-title"
+        text "Settings"
+      }
+
+      form SettingsForm {
+        on submit.prevent @save
+
+        label CompactLabel {
+          text "Compact mode"
+        }
+
+        input CompactToggle {
+          type "checkbox"
+          checked bind $compact
+        }
+
+        button SaveButton {
+          type "submit"
+          text "Save"
+        }
+      }
+    }
+  }
+}
