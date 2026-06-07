@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "frame build && vite build",
+    "frame:build": "frame build",
+    "dev": "npm run frame:build && vite",
+    "build": "npm run frame:build && vite build",
+    "check": "npm run frame:build && tsc --noEmit",
     "preview": "vite preview"
   },
   "devDependencies": {

@@ -8,12 +8,14 @@ export const handlers: TodoAppHandlers = {
     const items = ctx.state.get('items') as Array<{ id: number; label: string; done: boolean }>;
     const nextId = Number(ctx.state.get('nextId'));
 
+    ctx.state.set('saving', true);
     ctx.state.set('items', [
       ...items,
       { id: nextId, label: draft.trim(), done: false }
     ]);
     ctx.state.set('draft', '');
     ctx.state.set('nextId', nextId + 1);
+    ctx.state.set('saving', false);
   },
 
   toggleTask(ctx) {
@@ -25,5 +27,10 @@ export const handlers: TodoAppHandlers = {
       items[index] = { ...items[index], done: true };
       ctx.state.set('items', items);
     }
+  },
+
+  clearCompleted(ctx) {
+    const items = ctx.state.get('items') as Array<{ id: number; label: string; done: boolean }>;
+    ctx.state.set('items', items.filter((item) => !item.done));
   }
 };

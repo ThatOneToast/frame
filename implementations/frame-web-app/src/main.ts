@@ -5,7 +5,14 @@ import { handlers } from './handlers';
 const app = mount(appIr, {
   component: 'TodoApp',
   target: document.getElementById('app')!,
-  handlers
+  handlers,
+  debug: new URLSearchParams(window.location.search).has('debug')
 });
 
-(window as any).frameApp = app;
+declare global {
+  interface Window {
+    frameApp?: typeof app;
+  }
+}
+
+window.frameApp = app;

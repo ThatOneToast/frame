@@ -1,3 +1,7 @@
+// Generated typed Frame IR. Do not edit; regenerate with `frame build`.
+// Source: src/app.frame
+// Ownership: generated-only
+
 import { defineFrameIrDocument } from '@frame/runtime-dom';
 
 const ir = defineFrameIrDocument({
@@ -37,22 +41,33 @@ const ir = defineFrameIrDocument({
             "start": 70,
             "end": 91
           }
+        },
+        {
+          "name": "saving",
+          "value_type": "Bool",
+          "default": {
+            "Bool": false
+          },
+          "source": {
+            "start": 92,
+            "end": 115
+          }
         }
       ],
       "slots": [],
       "nodes": [
         {
           "Element": {
-            "kind": "stack",
-            "semantic_kind": "stack",
+            "kind": "screen",
+            "semantic_kind": "screen",
             "render_kind": "div",
-            "name": "MainPanel",
+            "name": "TodoScreen",
             "style": {
-              "Automatic": {
-                "style": "MainPanel",
+              "Explicit": {
+                "style": "AppShell",
                 "source": {
-                  "start": 116,
-                  "end": 125
+                  "start": 151,
+                  "end": 159
                 }
               }
             },
@@ -63,53 +78,16 @@ const ir = defineFrameIrDocument({
             "children": [
               {
                 "Element": {
-                  "kind": "title",
-                  "semantic_kind": "title",
-                  "render_kind": "h2",
-                  "name": "Title",
-                  "style": {
-                    "Automatic": {
-                      "style": "Title",
-                      "source": {
-                        "start": 128,
-                        "end": 133
-                      }
-                    }
-                  },
-                  "attributes": [
-                    {
-                      "name": "value",
-                      "value": {
-                        "Literal": "Frame Todo"
-                      },
-                      "source": {
-                        "start": 128,
-                        "end": 152
-                      }
-                    }
-                  ],
-                  "bindings": [],
-                  "events": [],
-                  "conditions": [],
-                  "children": [],
-                  "source": {
-                    "start": 128,
-                    "end": 152
-                  }
-                }
-              },
-              {
-                "Element": {
-                  "kind": "field",
-                  "semantic_kind": "field",
+                  "kind": "stack",
+                  "semantic_kind": "stack",
                   "render_kind": "div",
-                  "name": "NewTask",
+                  "name": "MainPanel",
                   "style": {
                     "Automatic": {
-                      "style": "NewTask",
+                      "style": "MainPanel",
                       "source": {
-                        "start": 166,
-                        "end": 173
+                        "start": 174,
+                        "end": 183
                       }
                     }
                   },
@@ -120,16 +98,16 @@ const ir = defineFrameIrDocument({
                   "children": [
                     {
                       "Element": {
-                        "kind": "label",
-                        "semantic_kind": "label",
-                        "render_kind": "span",
-                        "name": "Label",
+                        "kind": "title",
+                        "semantic_kind": "title",
+                        "render_kind": "h2",
+                        "name": "Title",
                         "style": {
                           "Automatic": {
-                            "style": "Label",
+                            "style": "Title",
                             "source": {
-                              "start": 176,
-                              "end": 181
+                              "start": 186,
+                              "end": 191
                             }
                           }
                         },
@@ -137,11 +115,11 @@ const ir = defineFrameIrDocument({
                           {
                             "name": "value",
                             "value": {
-                              "Literal": "What needs to be done?"
+                              "Literal": "Frame Todo"
                             },
                             "source": {
-                              "start": 176,
-                              "end": 214
+                              "start": 186,
+                              "end": 212
                             }
                           }
                         ],
@@ -150,173 +128,430 @@ const ir = defineFrameIrDocument({
                         "conditions": [],
                         "children": [],
                         "source": {
-                          "start": 176,
-                          "end": 214
+                          "start": 186,
+                          "end": 212
                         }
                       }
                     },
                     {
                       "Element": {
-                        "kind": "input",
-                        "semantic_kind": "input",
-                        "render_kind": "input",
-                        "name": "TaskInput",
+                        "kind": "field",
+                        "semantic_kind": "field",
+                        "render_kind": "div",
+                        "name": "NewTask",
                         "style": {
                           "Automatic": {
-                            "style": "TaskInput",
+                            "style": "NewTask",
                             "source": {
-                              "start": 230,
-                              "end": 239
+                              "start": 227,
+                              "end": 234
+                            }
+                          }
+                        },
+                        "attributes": [],
+                        "bindings": [],
+                        "events": [],
+                        "conditions": [],
+                        "children": [
+                          {
+                            "Element": {
+                              "kind": "label",
+                              "semantic_kind": "label",
+                              "render_kind": "span",
+                              "name": "Label",
+                              "style": {
+                                "Automatic": {
+                                  "style": "Label",
+                                  "source": {
+                                    "start": 237,
+                                    "end": 242
+                                  }
+                                }
+                              },
+                              "attributes": [
+                                {
+                                  "name": "value",
+                                  "value": {
+                                    "Literal": "What needs to be done?"
+                                  },
+                                  "source": {
+                                    "start": 237,
+                                    "end": 277
+                                  }
+                                }
+                              ],
+                              "bindings": [],
+                              "events": [],
+                              "conditions": [],
+                              "children": [],
+                              "source": {
+                                "start": 237,
+                                "end": 277
+                              }
+                            }
+                          },
+                          {
+                            "Element": {
+                              "kind": "input",
+                              "semantic_kind": "input",
+                              "render_kind": "input",
+                              "name": "TaskInput",
+                              "style": {
+                                "Automatic": {
+                                  "style": "TaskInput",
+                                  "source": {
+                                    "start": 294,
+                                    "end": 303
+                                  }
+                                }
+                              },
+                              "attributes": [
+                                {
+                                  "name": "placeholder",
+                                  "value": {
+                                    "Literal": "Buy groceries..."
+                                  },
+                                  "source": {
+                                    "start": 336,
+                                    "end": 378
+                                  }
+                                }
+                              ],
+                              "bindings": [
+                                {
+                                  "property": "value",
+                                  "state": "draft",
+                                  "source": {
+                                    "start": 306,
+                                    "end": 335
+                                  }
+                                }
+                              ],
+                              "events": [
+                                {
+                                  "event": "keydown",
+                                  "modifiers": [
+                                    "enter"
+                                  ],
+                                  "handler": "addTask",
+                                  "source": {
+                                    "start": 379,
+                                    "end": 416
+                                  }
+                                }
+                              ],
+                              "conditions": [],
+                              "children": [],
+                              "source": {
+                                "start": 278,
+                                "end": 428
+                              }
+                            }
+                          }
+                        ],
+                        "source": {
+                          "start": 213,
+                          "end": 438
+                        }
+                      }
+                    },
+                    {
+                      "Element": {
+                        "kind": "row",
+                        "semantic_kind": "row",
+                        "render_kind": "div",
+                        "name": "Actions",
+                        "style": {
+                          "Automatic": {
+                            "style": "Actions",
+                            "source": {
+                              "start": 451,
+                              "end": 458
+                            }
+                          }
+                        },
+                        "attributes": [],
+                        "bindings": [],
+                        "events": [],
+                        "conditions": [],
+                        "children": [
+                          {
+                            "Element": {
+                              "kind": "action",
+                              "semantic_kind": "action",
+                              "render_kind": "button",
+                              "name": "AddTask",
+                              "style": {
+                                "Explicit": {
+                                  "style": "PrimaryButton",
+                                  "source": {
+                                    "start": 486,
+                                    "end": 499
+                                  }
+                                }
+                              },
+                              "attributes": [],
+                              "bindings": [],
+                              "events": [
+                                {
+                                  "event": "press",
+                                  "modifiers": [],
+                                  "handler": "addTask",
+                                  "source": {
+                                    "start": 610,
+                                    "end": 639
+                                  }
+                                }
+                              ],
+                              "conditions": [
+                                {
+                                  "Property": {
+                                    "property": "disabled",
+                                    "state": "saving",
+                                    "source": {
+                                      "start": 530,
+                                      "end": 563
+                                    }
+                                  }
+                                },
+                                {
+                                  "Style": {
+                                    "state": "saving",
+                                    "style": "DisabledButton",
+                                    "source": {
+                                      "start": 582,
+                                      "end": 596
+                                    }
+                                  }
+                                }
+                              ],
+                              "children": [
+                                {
+                                  "Text": {
+                                    "value": {
+                                      "Literal": "Add task"
+                                    },
+                                    "source": {
+                                      "start": 502,
+                                      "end": 529
+                                    }
+                                  }
+                                }
+                              ],
+                              "source": {
+                                "start": 461,
+                                "end": 651
+                              }
+                            }
+                          },
+                          {
+                            "Element": {
+                              "kind": "action",
+                              "semantic_kind": "action",
+                              "render_kind": "button",
+                              "name": "ClearCompleted",
+                              "style": {
+                                "Explicit": {
+                                  "style": "SecondaryButton",
+                                  "source": {
+                                    "start": 684,
+                                    "end": 699
+                                  }
+                                }
+                              },
+                              "attributes": [],
+                              "bindings": [],
+                              "events": [
+                                {
+                                  "event": "press",
+                                  "modifiers": [],
+                                  "handler": "clearCompleted",
+                                  "source": {
+                                    "start": 737,
+                                    "end": 773
+                                  }
+                                }
+                              ],
+                              "conditions": [],
+                              "children": [
+                                {
+                                  "Text": {
+                                    "value": {
+                                      "Literal": "Clear completed"
+                                    },
+                                    "source": {
+                                      "start": 702,
+                                      "end": 736
+                                    }
+                                  }
+                                }
+                              ],
+                              "source": {
+                                "start": 652,
+                                "end": 785
+                              }
+                            }
+                          }
+                        ],
+                        "source": {
+                          "start": 439,
+                          "end": 795
+                        }
+                      }
+                    },
+                    {
+                      "Element": {
+                        "kind": "list",
+                        "semantic_kind": "list",
+                        "render_kind": "ul",
+                        "name": "TaskList",
+                        "style": {
+                          "Automatic": {
+                            "style": "TaskList",
+                            "source": {
+                              "start": 809,
+                              "end": 817
                             }
                           }
                         },
                         "attributes": [
                           {
-                            "name": "placeholder",
+                            "name": "source",
                             "value": {
-                              "Literal": "Buy groceries..."
+                              "DataRef": "items"
                             },
                             "source": {
-                              "start": 270,
-                              "end": 310
+                              "start": 820,
+                              "end": 843
                             }
                           }
                         ],
-                        "bindings": [
-                          {
-                            "property": "value",
-                            "state": "draft",
-                            "source": {
-                              "start": 242,
-                              "end": 269
-                            }
-                          }
-                        ],
-                        "events": [
-                          {
-                            "event": "keydown",
-                            "modifiers": [
-                              "enter"
-                            ],
-                            "handler": "addTask",
-                            "source": {
-                              "start": 311,
-                              "end": 346
-                            }
-                          }
-                        ],
+                        "bindings": [],
+                        "events": [],
                         "conditions": [],
-                        "children": [],
-                        "source": {
-                          "start": 216,
-                          "end": 356
-                        }
-                      }
-                    }
-                  ],
-                  "source": {
-                    "start": 154,
-                    "end": 364
-                  }
-                }
-              },
-              {
-                "Element": {
-                  "kind": "action",
-                  "semantic_kind": "action",
-                  "render_kind": "button",
-                  "name": "AddTask",
-                  "style": {
-                    "Explicit": {
-                      "style": "PrimaryButton",
-                      "source": {
-                        "start": 387,
-                        "end": 400
-                      }
-                    }
-                  },
-                  "attributes": [],
-                  "bindings": [],
-                  "events": [
-                    {
-                      "event": "press",
-                      "modifiers": [],
-                      "handler": "addTask",
-                      "source": {
-                        "start": 427,
-                        "end": 452
-                      }
-                    }
-                  ],
-                  "conditions": [],
-                  "children": [
-                    {
-                      "Text": {
-                        "value": {
-                          "Literal": "Add task"
-                        },
-                        "source": {
-                          "start": 403,
-                          "end": 426
-                        }
-                      }
-                    }
-                  ],
-                  "source": {
-                    "start": 366,
-                    "end": 460
-                  }
-                }
-              },
-              {
-                "Element": {
-                  "kind": "list",
-                  "semantic_kind": "list",
-                  "render_kind": "ul",
-                  "name": "TaskList",
-                  "style": {
-                    "Automatic": {
-                      "style": "TaskList",
-                      "source": {
-                        "start": 473,
-                        "end": 481
-                      }
-                    }
-                  },
-                  "attributes": [
-                    {
-                      "name": "source",
-                      "value": {
-                        "DataRef": "items"
-                      },
-                      "source": {
-                        "start": 484,
-                        "end": 505
-                      }
-                    }
-                  ],
-                  "bindings": [],
-                  "events": [],
-                  "conditions": [],
-                  "children": [
-                    {
-                      "List": {
-                        "item": "item",
-                        "collection": "items",
-                        "key": "item.id",
                         "children": [
                           {
+                            "List": {
+                              "item": "item",
+                              "collection": "items",
+                              "key": "item.id",
+                              "children": [
+                                {
+                                  "Element": {
+                                    "kind": "row",
+                                    "semantic_kind": "row",
+                                    "render_kind": "div",
+                                    "name": "TaskRow",
+                                    "style": {
+                                      "Automatic": {
+                                        "style": "TaskRow",
+                                        "source": {
+                                          "start": 904,
+                                          "end": 911
+                                        }
+                                      }
+                                    },
+                                    "attributes": [],
+                                    "bindings": [],
+                                    "events": [],
+                                    "conditions": [
+                                      {
+                                        "Style": {
+                                          "state": "item.done",
+                                          "style": "CompletedTask",
+                                          "source": {
+                                            "start": 934,
+                                            "end": 947
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "children": [
+                                      {
+                                        "Element": {
+                                          "kind": "action",
+                                          "semantic_kind": "action",
+                                          "render_kind": "button",
+                                          "name": "Complete",
+                                          "style": {
+                                            "Explicit": {
+                                              "style": "SecondaryButton",
+                                              "source": {
+                                                "start": 994,
+                                                "end": 1009
+                                              }
+                                            }
+                                          },
+                                          "attributes": [],
+                                          "bindings": [],
+                                          "events": [
+                                            {
+                                              "event": "press",
+                                              "modifiers": [],
+                                              "handler": "toggleTask",
+                                              "source": {
+                                                "start": 1040,
+                                                "end": 1076
+                                              }
+                                            }
+                                          ],
+                                          "conditions": [],
+                                          "children": [
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "Done"
+                                                },
+                                                "source": {
+                                                  "start": 1012,
+                                                  "end": 1039
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "source": {
+                                            "start": 964,
+                                            "end": 1092
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "Text": {
+                                          "value": {
+                                            "DataRef": "item.label"
+                                          },
+                                          "source": {
+                                            "start": 1093,
+                                            "end": 1123
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "source": {
+                                      "start": 888,
+                                      "end": 1137
+                                    }
+                                  }
+                                }
+                              ],
+                              "source": {
+                                "start": 844,
+                                "end": 1149
+                              }
+                            }
+                          },
+                          {
                             "Element": {
-                              "kind": "row",
-                              "semantic_kind": "row",
+                              "kind": "empty",
+                              "semantic_kind": "empty",
                               "render_kind": "div",
-                              "name": "TaskRow",
+                              "name": "EmptyTasks",
                               "style": {
                                 "Automatic": {
-                                  "style": "TaskRow",
+                                  "style": "EmptyTasks",
                                   "source": {
-                                    "start": 563,
-                                    "end": 570
+                                    "start": 1166,
+                                    "end": 1176
                                   }
                                 }
                               },
@@ -326,89 +561,41 @@ const ir = defineFrameIrDocument({
                               "conditions": [],
                               "children": [
                                 {
-                                  "Element": {
-                                    "kind": "action",
-                                    "semantic_kind": "action",
-                                    "render_kind": "button",
-                                    "name": "Complete",
-                                    "style": {
-                                      "Automatic": {
-                                        "style": "Complete",
-                                        "source": {
-                                          "start": 592,
-                                          "end": 600
-                                        }
-                                      }
-                                    },
-                                    "attributes": [],
-                                    "bindings": [],
-                                    "events": [
-                                      {
-                                        "event": "press",
-                                        "modifiers": [],
-                                        "handler": "toggleTask",
-                                        "source": {
-                                          "start": 629,
-                                          "end": 663
-                                        }
-                                      }
-                                    ],
-                                    "conditions": [],
-                                    "children": [
-                                      {
-                                        "Text": {
-                                          "value": {
-                                            "Literal": "Done"
-                                          },
-                                          "source": {
-                                            "start": 603,
-                                            "end": 628
-                                          }
-                                        }
-                                      }
-                                    ],
-                                    "source": {
-                                      "start": 573,
-                                      "end": 677
-                                    }
-                                  }
-                                },
-                                {
                                   "Text": {
                                     "value": {
-                                      "DataRef": "item.label"
+                                      "Literal": "No tasks yet"
                                     },
                                     "source": {
-                                      "start": 679,
-                                      "end": 707
+                                      "start": 1179,
+                                      "end": 1210
                                     }
                                   }
                                 }
                               ],
                               "source": {
-                                "start": 549,
-                                "end": 719
+                                "start": 1150,
+                                "end": 1222
                               }
                             }
                           }
                         ],
                         "source": {
-                          "start": 507,
-                          "end": 729
+                          "start": 796,
+                          "end": 1232
                         }
                       }
                     }
                   ],
                   "source": {
-                    "start": 462,
-                    "end": 737
+                    "start": 162,
+                    "end": 1240
                   }
                 }
               }
             ],
             "source": {
-              "start": 106,
-              "end": 743
+              "start": 129,
+              "end": 1246
             }
           }
         }
@@ -416,11 +603,13 @@ const ir = defineFrameIrDocument({
       "capabilities": [
         "EventBinding",
         "TwoWayBinding",
+        "ConditionalRendering",
+        "ConditionalStyles",
         "ListRendering"
       ],
       "source": {
         "start": 0,
-        "end": 749
+        "end": 1252
       }
     }
   ]

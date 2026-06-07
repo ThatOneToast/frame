@@ -8,11 +8,13 @@ This app demonstrates:
 - Accessible actions (`action` with label and disabled state)
 - Input field binding (`value bind`)
 - Keypress event handling (`keydown.enter`)
-- List rendering with `list` and `item`
+- Keyed list rendering with empty fallback content
 - State updates from handlers
 - Conditional disabled state (`disabled when`)
+- Conditional style switching (`style DisabledButton when $saving`)
 - Generated typed IR consumed by TypeScript
 - Handler implementations using generated types
+- Runtime debug mode with `?debug`
 
 ## Files
 
@@ -29,7 +31,8 @@ This app demonstrates:
 
 Build:
 ```bash
-frame build
+npm run frame:build
+npm run check
 npm run build
 ```
 
@@ -39,14 +42,21 @@ npm install
 npm run dev
 ```
 
+`npm run dev`, `npm run check`, and `npm run build` regenerate Frame output before running Vite or TypeScript.
+
 ## Runtime Debug
 
 Enable debug mode to see queued and flushed patches:
+```bash
+npm run dev -- --open '/?debug'
+```
+
+The entry point passes `debug: true` when the URL contains `?debug`:
 ```ts
 const app = mount(appIr, {
   component: 'TodoApp',
   target: document.getElementById('app')!,
   handlers,
-  debug: true
+  debug: new URLSearchParams(window.location.search).has('debug')
 });
 ```

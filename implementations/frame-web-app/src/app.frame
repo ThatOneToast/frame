@@ -3,38 +3,46 @@ component TodoApp {
     items list = []
     draft text = ""
     nextId number = 1
+    saving bool = false
   }
-
   view {
-    stack MainPanel {
-      title "Frame Todo"
-
-      field NewTask {
-        label "What needs to be done?"
-
-        input TaskInput {
-          value bind $draft
-          placeholder "Buy groceries..."
-          on keydown.enter @addTask
+    screen TodoScreen:AppShell {
+      stack MainPanel {
+        title "Frame Todo"
+        field NewTask {
+          label "What needs to be done?"
+          input TaskInput {
+            value bind $draft
+            placeholder "Buy groceries..."
+            on keydown.enter @addTask
+          }
         }
-      }
-
-      action AddTask:PrimaryButton {
-        text "Add task"
-        on press @addTask
-      }
-
-      list TaskList {
-        source $items
-
-        for item in $items key $item.id {
-          row TaskRow {
-            action Complete {
-              text "Done"
-              on press @toggleTask
+        row Actions {
+          action AddTask:PrimaryButton {
+            text "Add task"
+            disabled when $saving
+            style DisabledButton when $saving
+            on press @addTask
+          }
+          action ClearCompleted:SecondaryButton {
+            text "Clear completed"
+            on press @clearCompleted
+          }
+        }
+        list TaskList {
+          source $items
+          for item in $items key $item.id {
+            row TaskRow {
+              style CompletedTask when $item.done
+              action Complete:SecondaryButton {
+                text "Done"
+                on press @toggleTask
+              }
+              text $item.label
             }
-
-            text $item.label
+          }
+          empty EmptyTasks {
+            text "No tasks yet"
           }
         }
       }
@@ -48,8 +56,35 @@ stack MainPanel {
   surface panel
 }
 
+grid AppShell {
+  columns content
+  height screen
+  padding large
+}
+
+card TaskRow {
+  padding small
+  gap medium
+  surface main
+}
+
 card PrimaryButton {
   background accent
   padding medium
   radius medium
+}
+
+card SecondaryButton {
+  surface main
+  padding small
+  radius medium
+  background yellow
+}
+
+card DisabledButton {
+  opacity muted
+}
+
+card CompletedTask {
+  opacity muted
 }

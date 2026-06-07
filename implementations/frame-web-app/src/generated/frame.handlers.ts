@@ -1,6 +1,8 @@
-// Frame generated handler skeletons.
-// This file is generated non-destructively.
-// Copy functions into your own handlers.ts and implement them.
+// Generated handler skeletons. Safe to copy into src/handlers.ts; `frame build` only appends missing stubs.
+// Source: src/app.frame
+// Ownership: generated reference; user code belongs in src/handlers.ts
+
+import type { FrameEventContext, FrameFormEvent, FrameInputEvent, FrameKeyboardEvent, FramePressEvent, FrameToggleEvent, TodoAppState } from './frame.types';
 
 // Component: TodoApp
 export function addTask(ctx: FrameKeyboardEvent<TodoAppState, {}>): void {
@@ -11,3 +13,6 @@ export function toggleTask(ctx: FramePressEvent<TodoAppState, {}>): void {
   // TODO: implement toggleTask
 }
 
+export function clearCompleted(ctx: FramePressEvent<TodoAppState, {}>): void {
+  // TODO: implement clearCompleted
+}
