@@ -458,3 +458,112 @@ fn init_svelte_creates_frame_files_and_updates_configs() {
 
     fs::remove_dir_all(root).expect("temporary project should be removable");
 }
+
+#[test]
+fn check_valid_multi_file_project_with_components() {
+    let root = temp_out_dir();
+    fs::create_dir_all(&root).expect("temporary input should be creatable");
+    fs::write(
+        root.join("messages.frame"),
+        "component MessageItem {\n  props {\n    author text\n    body text\n  }\n\n  view {\n    row MessageRow {\n      text $author\n      text $body\n    }\n  }\n}\n",
+    )
+    .expect("messages should be writable");
+    fs::write(
+        root.join("app.frame"),
+        "#include messages\n\ncomponent ChatApp {\n  view {\n    screen ChatScreen {\n      MessageItem(author: \"System\", body: \"Hello\")\n    }\n  }\n}\n",
+    )
+    .expect("app should be writable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("check")
+        .arg(root.join("app.frame"))
+        .output()
+        .expect("frame check should run");
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    fs::remove_dir_all(root).expect("temporary output should be removable");
+}
+
+#[test]
+fn check_reports_unresolved_imported_component() {
+    let root = temp_out_dir();
+    fs::create_dir_all(&root).expect("temporary input should be creatable");
+    fs::write(
+        root.join("app.frame"),
+        "component ChatApp {\n  view {\n    screen ChatScreen {\n      MissingComponent()\n    }\n  }\n}\n",
+    )
+    .expect("app should be writable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("check")
+        .arg(root.join("app.frame"))
+        .output()
+        .expect("frame check should run");
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("Unknown component `MissingComponent`"));
+
+    fs::remove_dir_all(root).expect("temporary output should be removable");
+}
+
+#[test]
+fn check_reports_duplicate_symbol_across_includes() {
+    let root = temp_out_dir();
+    fs::create_dir_all(&root).expect("temporary input should be creatable");
+    fs::write(
+        root.join("base.frame"),
+        "card Panel {\n  surface panel\n}\n",
+    )
+    .expect("base should be writable");
+    fs::write(
+        root.join("theme.frame"),
+        "card Panel {\n  surface main\n}\n",
+    )
+    .expect("theme should be writable");
+    fs::write(
+        root.join("app.frame"),
+        "#include base\n#include theme\n\narea Sidebar {\n  in Panel\n}\n",
+    )
+    .expect("app should be writable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("check")
+        .arg(root.join("app.frame"))
+        .output()
+        .expect("frame check should run");
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("Duplicate declaration `Panel`"));
+
+    fs::remove_dir_all(root).expect("temporary output should be removable");
+}
+
+#[test]
+fn check_preserves_intentional_url_sink_warning() {
+    let root = temp_out_dir();
+    fs::create_dir_all(&root).expect("temporary input should be creatable");
+    fs::write(
+        root.join("app.frame"),
+        "component MediaApp {\n  view {\n    media Preview {\n      source \"https://example.com/video.mp4\"\n    }\n  }\n}\n",
+    )
+    .expect("app should be writable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("check")
+        .arg(root.join("app.frame"))
+        .output()
+        .expect("frame check should run");
+
+    assert!(output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("navigation or media destination"));
+
+    fs::remove_dir_all(root).expect("temporary output should be removable");
+}

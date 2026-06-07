@@ -51,6 +51,7 @@ pub fn load_frame_document(
 
     stack.push(file.clone());
     let mut declarations = Vec::new();
+    let mut components = Vec::new();
     for include in &document.includes {
         let candidates = include_candidates(&file, &include.target, include_paths);
         let Some(target) = candidates.iter().find(|candidate| candidate.exists()) else {
@@ -67,14 +68,16 @@ pub fn load_frame_document(
         };
         let included = load_frame_document(target, include_paths, stack, seen)?;
         declarations.extend(included.declarations);
+        components.extend(included.components);
     }
     stack.pop();
 
     declarations.extend(document.declarations);
+    components.extend(document.components);
     Ok(Document {
         includes: document.includes,
         declarations,
-        components: document.components,
+        components,
     })
 }
 

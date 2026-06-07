@@ -423,7 +423,11 @@ pub(crate) fn validate_ui_property(
 
 pub(crate) fn is_url_intent_property(property: &str, element_kind: &str) -> bool {
     URL_ATTRIBUTES.contains(&property)
-        || (property == "source" && matches!(element_kind, "image" | "avatar" | "video" | "audio"))
+        || (property == "source"
+            && matches!(
+                element_kind,
+                "image" | "avatar" | "video" | "audio" | "media"
+            ))
 }
 
 pub(crate) fn validate_event_binding(event: &EventBinding, diagnostics: &mut Vec<Diagnostic>) {
