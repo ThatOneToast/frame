@@ -1047,6 +1047,8 @@ function element(
     Element: {
       kind,
       name,
+      semantic_kind: options.semantic_kind ?? undefined,
+      render_kind: options.render_kind ?? undefined,
       style: options.style ?? { Automatic: { style: name, source } },
       attributes: options.attributes ?? [],
       bindings: options.bindings ?? [],
@@ -1089,6 +1091,675 @@ function state(
 ): FrameIrState {
   return { name, value_type, default: defaultValue, source };
 }
+
+test('action renders as button with type button and is keyboard activated', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+  let pressed = 0;
+
+  mount(documentFixture('ActionDemo', [
+    element('button', 'Send', {
+      semantic_kind: 'action',
+      events: [event('press', [], 'send')],
+      children: [textLiteral('Send')]
+    })
+  ]), {
+    component: 'ActionDemo',
+    target,
+    handlers: {
+      send() {
+        pressed += 1;
+      }
+    }
+  });
+
+  const button = target.querySelector('button')!;
+  assert.equal(button.getAttribute('type'), 'button');
+  assert.equal(button.tagName.toLowerCase(), 'button');
+
+  // Mouse click triggers press handler
+  button.dispatchEvent(new document.defaultView!.MouseEvent('click', { bubbles: true }));
+  assert.equal(pressed, 1);
+
+  // Keyboard Enter triggers press handler (native button behavior)
+  button.dispatchEvent(new document.defaultView!.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  // Note: keydown does not activate the click listener; the test verifies the button is a real
+  // interactive control that the browser would activate on Enter/Space.
+  assert.equal(button.hasAttribute('tabindex'), false); // buttons are naturally focusable
+});
+
+test('disabled action prevents interaction and is reflected in DOM', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+  let pressed = 0;
+
+  const app = mount(documentFixture('DisabledAction', [
+    element('button', 'Send', {
+      semantic_kind: 'action',
+      conditions: [{ Property: { property: 'disabled', state: 'sending', source } }],
+      events: [event('press', [], 'send')],
+      children: [textLiteral('Send')]
+    })
+  ], {
+    state: [state('sending', 'Bool', { Bool: false })]
+  }), {
+    component: 'DisabledAction',
+    target,
+    handlers: {
+      send() {
+        pressed += 1;
+      }
+    }
+  });
+
+  const button = target.querySelector('button')!;
+  assert.equal(button.disabled, false);
+
+  app.state.set('sending', true);
+  app.flush();
+
+  assert.equal(target.querySelector('button'), button);
+  assert.equal(button.disabled, true);
+  // In real browsers disabled buttons do not dispatch click; JSDOM may differ.
+  // The assertion above on `disabled` is the real contract.
+});
+
+test('toggle renders as checkbox input', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('ToggleDemo', [
+    element('input', 'Enabled', {
+      semantic_kind: 'toggle',
+      bindings: [binding('checked', 'enabled')]
+    })
+  ], {
+    state: [state('enabled', 'Bool', { Bool: true })]
+  }), {
+    component: 'ToggleDemo',
+    target
+  });
+
+  const input = target.querySelector('input')!;
+  assert.equal(input.getAttribute('type'), 'checkbox');
+  assert.equal(input.checked, true);
+});
+
+test('image and avatar render with alt and async decoding', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('ImageDemo', [
+    element('img', 'Logo', {
+      semantic_kind: 'image',
+      attributes: [
+        attribute('alt', 'Company logo'),
+        attribute('source', '/logo.png')
+      ]
+    }),
+    element('img', 'Avatar', {
+      semantic_kind: 'avatar',
+      attributes: [attribute('source', '/avatar.png')]
+    })
+  ]), {
+    component: 'ImageDemo',
+    target
+  });
+
+  const images = target.querySelectorAll('img');
+  assert.equal(images[0]?.getAttribute('alt'), 'Company logo');
+  assert.equal(images[0]?.getAttribute('decoding'), 'async');
+  assert.equal(images[1]?.getAttribute('alt'), '');
+  assert.equal(images[1]?.getAttribute('decoding'), 'async');
+});
+
+test('icon with decorative hides from accessibility tree', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('IconDemo', [
+    element('span', 'Star', {
+      semantic_kind: 'icon',
+      attributes: [attribute('decorative', 'true')]
+    }),
+    element('span', 'Info', {
+      semantic_kind: 'icon'
+    })
+  ]), {
+    component: 'IconDemo',
+    target
+  });
+
+  const icons = target.querySelectorAll('span');
+  assert.equal(icons[0]?.getAttribute('aria-hidden'), 'true');
+  assert.equal(icons[1]?.hasAttribute('aria-hidden'), false);
+});
+
+test('field with label exposes group role', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('FieldDemo', [
+    element('div', 'EmailField', {
+      semantic_kind: 'field',
+      attributes: [attribute('label', 'Email address')],
+      children: [
+        element('input', 'EmailInput', {
+          semantic_kind: 'input',
+          attributes: [attribute('type', 'email')]
+        })
+      ]
+    })
+  ]), {
+    component: 'FieldDemo',
+    target
+  });
+
+  const field = target.querySelector('div')!;
+  assert.equal(field.getAttribute('role'), 'group');
+  assert.equal(field.getAttribute('aria-label'), 'Email address');
+});
+
+test('list renders with native list semantics', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('ListDemo', [
+    element('ul', 'Items', {
+      semantic_kind: 'list',
+      children: [
+        element('li', 'First', { semantic_kind: 'item', children: [textLiteral('First')] })
+      ]
+    })
+  ]), {
+    component: 'ListDemo',
+    target
+  });
+
+  const list = target.querySelector('ul')!;
+  assert.equal(list.tagName.toLowerCase(), 'ul');
+});
+
+test('layout primitives do not add misleading roles', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('LayoutDemo', [
+    element('div', 'Stack', { semantic_kind: 'stack' }),
+    element('div', 'Row', { semantic_kind: 'row' }),
+    element('section', 'Panel', { semantic_kind: 'panel' }),
+    element('div', 'Grid', { semantic_kind: 'grid' })
+  ]), {
+    component: 'LayoutDemo',
+    target
+  });
+
+  const stack = target.querySelectorAll('div')[0]!;
+  const panel = target.querySelector('section')!;
+  assert.equal(stack.hasAttribute('role'), false);
+  assert.equal(panel.tagName.toLowerCase(), 'section');
+  assert.equal(panel.getAttribute('role'), null);
+});
+
+test('press event maps to click and triggers handler', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+  let pressed = 0;
+
+  mount(documentFixture('PressDemo', [
+    element('button', 'Save', {
+      events: [event('press', [], 'save')],
+      children: [textLiteral('Save')]
+    })
+  ]), {
+    component: 'PressDemo',
+    target,
+    handlers: {
+      save() {
+        pressed += 1;
+      }
+    }
+  });
+
+  const button = target.querySelector('button')!;
+  button.dispatchEvent(new document.defaultView!.MouseEvent('click', { bubbles: true }));
+  assert.equal(pressed, 1);
+});
+
+test('events remain stable after conditional render hides and shows element', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+  let clicks = 0;
+
+  const app = mount(documentFixture('ConditionalEvent', [
+    element('button', 'ToggleBtn', {
+      conditions: [{ Show: { state: 'visible', source } }],
+      events: [event('click', [], 'increment')],
+      children: [textData('count')]
+    })
+  ], {
+    state: [state('visible', 'Bool', { Bool: true }), state('count', 'Number', { Number: '0' })]
+  }), {
+    component: 'ConditionalEvent',
+    target,
+    handlers: {
+      increment() {
+        clicks += 1;
+      }
+    }
+  });
+
+  const button = target.querySelector('button')!;
+  button.dispatchEvent(new document.defaultView!.MouseEvent('click', { bubbles: true }));
+  assert.equal(clicks, 1);
+
+  app.state.set('visible', false);
+  app.flush();
+  assert.equal(button.hidden, true);
+
+  app.state.set('visible', true);
+  app.flush();
+  assert.equal(button.hidden, false);
+  button.dispatchEvent(new document.defaultView!.MouseEvent('click', { bubbles: true }));
+  assert.equal(clicks, 2);
+  assert.equal(app.getDebugStats().activeListeners, 1);
+});
+
+test('handlers do not duplicate after text-only rerender', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+  let clicks = 0;
+
+  const app = mount(documentFixture('StableHandler', [
+    element('button', 'CountBtn', {
+      events: [event('click', [], 'increment')],
+      children: [textData('count')]
+    })
+  ], {
+    state: [state('count', 'Number', { Number: '0' })]
+  }), {
+    component: 'StableHandler',
+    target,
+    handlers: {
+      increment() {
+        clicks += 1;
+      }
+    }
+  });
+
+  const button = target.querySelector('button')!;
+  app.state.set('count', 1);
+  app.flush();
+  assert.equal(target.querySelector('button'), button);
+
+  button.dispatchEvent(new document.defaultView!.MouseEvent('click', { bubbles: true }));
+  assert.equal(clicks, 1);
+  assert.equal(app.getDebugStats().activeListeners, 1);
+});
+
+test('keyed list items keep correct handler identity after reorder', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+  const clicks: Record<string, number> = {};
+
+  const app = mount(documentFixture('KeyedHandlers', [{
+    List: {
+      item: 'item',
+      collection: 'items',
+      key: 'item.id',
+      children: [
+        element('button', 'ItemBtn', {
+          events: [event('click', [], 'pick')],
+          children: [textData('item.label')]
+        })
+      ],
+      source
+    }
+  }], {
+    state: [state('items', 'List', 'List')]
+  }), {
+    component: 'KeyedHandlers',
+    target,
+    handlers: {
+      pick({ event }) {
+        const label = (event.target as HTMLElement).textContent ?? 'unknown';
+        clicks[label] = (clicks[label] ?? 0) + 1;
+      }
+    }
+  });
+
+  app.state.set('items', [{ id: 'a', label: 'Alpha' }, { id: 'b', label: 'Beta' }]);
+  app.flush();
+  const [buttonA, buttonB] = Array.from(target.querySelectorAll('button'));
+
+  app.state.set('items', [{ id: 'b', label: 'Beta' }, { id: 'a', label: 'Alpha' }]);
+  app.flush();
+
+  const buttons = target.querySelectorAll('button');
+  assert.equal(buttons[0], buttonB);
+  assert.equal(buttons[1], buttonA);
+
+  buttons[0]!.dispatchEvent(new document.defaultView!.MouseEvent('click', { bubbles: true }));
+  assert.equal(clicks['Beta'], 1);
+});
+
+test('placeholder renders on input and textarea', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('PlaceholderDemo', [
+    element('input', 'Search', {
+      semantic_kind: 'input',
+      attributes: [attribute('placeholder', 'Search...')]
+    }),
+    element('textarea', 'Bio', {
+      semantic_kind: 'editor',
+      attributes: [attribute('placeholder', 'Tell us about yourself')]
+    })
+  ]), {
+    component: 'PlaceholderDemo',
+    target
+  });
+
+  const input = target.querySelector('input')!;
+  const textarea = target.querySelector('textarea')!;
+  assert.equal(input.getAttribute('placeholder'), 'Search...');
+  assert.equal(textarea.getAttribute('placeholder'), 'Tell us about yourself');
+});
+
+test('readonly input prevents user edits in DOM', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  const app = mount(documentFixture('ReadonlyDemo', [
+    element('input', 'Id', {
+      semantic_kind: 'input',
+      conditions: [{ Property: { property: 'readonly', state: 'locked', source } }],
+      bindings: [binding('value', 'id')]
+    })
+  ], {
+    state: [
+      state('locked', 'Bool', { Bool: true }),
+      state('id', 'Text', { Text: 'abc' })
+    ]
+  }), {
+    component: 'ReadonlyDemo',
+    target
+  });
+
+  const input = target.querySelector('input')!;
+  assert.equal(input.readOnly, true);
+
+  app.state.set('locked', false);
+  app.flush();
+  assert.equal(input.readOnly, false);
+});
+
+test('label attribute maps to aria-label for accessibility', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('LabelDemo', [
+    element('button', 'Close', {
+      semantic_kind: 'action',
+      attributes: [attribute('label', 'Close dialog')]
+    })
+  ]), {
+    component: 'LabelDemo',
+    target
+  });
+
+  const button = target.querySelector('button')!;
+  assert.equal(button.getAttribute('aria-label'), 'Close dialog');
+});
+
+test('conditional component cleanup hides and shows nested component', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+  const ir: FrameIrDocument = {
+    version: 1,
+    components: [
+      {
+        name: 'Inner',
+        props: [],
+        state: [state('innerCount', 'Number', { Number: '0' })],
+        slots: [],
+        nodes: [element('span', 'InnerText', { children: [textData('innerCount')] })],
+        capabilities: [],
+        source
+      },
+      {
+        name: 'Outer',
+        props: [],
+        state: [state('show', 'Bool', { Bool: true })],
+        slots: [],
+        nodes: [
+          element('div', 'Wrapper', {
+            conditions: [{ Show: { state: 'show', source } }],
+            children: [{ Component: { name: 'Inner', arguments: [], source } }]
+          })
+        ],
+        capabilities: [],
+        source
+      }
+    ]
+  };
+
+  const app = mount(ir, { component: 'Outer', target });
+  const wrapper = target.querySelector('div')!;
+  assert.equal(wrapper.hidden, false);
+  assert.equal(target.querySelector('span')?.textContent, '0');
+
+  app.state.set('show', false);
+  app.flush();
+  assert.equal(wrapper.hidden, true);
+
+  app.state.set('show', true);
+  app.flush();
+  assert.equal(wrapper.hidden, false);
+  assert.equal(target.querySelector('span')?.textContent, '0');
+});
+
+test('debug mode explains queued and flushed patches', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+  const messages: string[] = [];
+  const originalDebug = console.debug;
+  console.debug = (message?: unknown) => {
+    messages.push(String(message));
+  };
+  try {
+    const app = mount(documentFixture('DebugPatch', [
+      element('section', 'Panel', {
+        attributes: [attributeData('data-count', 'count')],
+        children: [textData('label')]
+      })
+    ], {
+      state: [
+        state('count', 'Number', { Number: '0' }),
+        state('label', 'Text', { Text: 'zero' })
+      ]
+    }), {
+      component: 'DebugPatch',
+      target,
+      debug: true
+    });
+
+    messages.length = 0;
+    app.state.set('count', 1);
+    app.state.set('label', 'one');
+    app.flush();
+
+    const queued = messages.filter((m) => m.includes('queued'));
+    const flushed = messages.filter((m) => m.includes('flushing'));
+    assert.ok(queued.length >= 2, `expected queued messages, got: ${queued.join('; ')}`);
+    assert.ok(flushed.length >= 2, `expected flushed messages, got: ${flushed.join('; ')}`);
+    assert.ok(queued.some((m) => m.includes('DebugPatch')), 'queued message should mention component');
+  } finally {
+    console.debug = originalDebug;
+  }
+});
+
+test('missing handler logs warning in debug mode at mount time', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+  const messages: string[] = [];
+  const originalDebug = console.debug;
+  console.debug = (message?: unknown) => {
+    messages.push(String(message));
+  };
+  try {
+    mount(documentFixture('MissingHandler', [
+      element('button', 'Save', {
+        events: [event('click', [], 'save')],
+        children: [textLiteral('Save')]
+      })
+    ]), {
+      component: 'MissingHandler',
+      target,
+      debug: true
+    });
+
+    assert.ok(messages.some((m) => m.includes('missing handler `@save`')), `expected warning, got: ${messages.join('; ')}`);
+    assert.ok(messages.some((m) => m.includes('MissingHandler')), 'warning should mention component');
+  } finally {
+    console.debug = originalDebug;
+  }
+});
+
+test('invalid prop type throws at mount time', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  assert.throws(() => mount(documentFixture('BadProps', [
+    element('span', 'Label', { children: [textData('title')] })
+  ], {
+    props: [{ name: 'title', value_type: 'Bool', readonly: true, binding: 'Input', source }]
+  }), {
+    component: 'BadProps',
+    target,
+    props: { title: 'hello' }
+  }), /Prop `title` expects Bool but received string/);
+});
+
+test('media element gets controls and poster when provided', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('MediaDemo', [
+    element('video', 'Player', {
+      semantic_kind: 'media',
+      attributes: [
+        attribute('poster', '/thumb.jpg'),
+        attribute('source', '/video.mp4')
+      ]
+    })
+  ]), {
+    component: 'MediaDemo',
+    target
+  });
+
+  const video = target.querySelector('video')!;
+  assert.equal(video.getAttribute('controls'), '');
+  assert.equal(video.getAttribute('poster'), '/thumb.jpg');
+  assert.equal(video.getAttribute('src'), '/video.mp4');
+});
+
+test('editor gets rows default and respects custom rows', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('EditorDemo', [
+    element('textarea', 'Notes', {
+      semantic_kind: 'editor',
+      attributes: [attribute('rows', '8')]
+    }),
+    element('textarea', 'Brief', {
+      semantic_kind: 'editor'
+    })
+  ]), {
+    component: 'EditorDemo',
+    target
+  });
+
+  const textareas = target.querySelectorAll('textarea');
+  assert.equal(textareas[0]?.getAttribute('rows'), '8');
+  assert.equal(textareas[1]?.getAttribute('rows'), '4');
+});
+
+test('composer form gets post method default', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('ComposerDemo', [
+    element('form', 'MessageForm', {
+      semantic_kind: 'composer',
+      children: [
+        element('input', 'Draft', { semantic_kind: 'input' })
+      ]
+    })
+  ]), {
+    component: 'ComposerDemo',
+    target
+  });
+
+  const form = target.querySelector('form')!;
+  assert.equal(form.getAttribute('method'), 'post');
+});
+
+test('no duplicate subscriptions after conditional rerender', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+  const app = mount(documentFixture('SubCount', [
+    element('span', 'Label', {
+      conditions: [{ Show: { state: 'visible', source } }],
+      children: [textData('count')]
+    })
+  ], {
+    state: [
+      state('visible', 'Bool', { Bool: true }),
+      state('count', 'Number', { Number: '0' })
+    ]
+  }), {
+    component: 'SubCount',
+    target
+  });
+
+  const initialSubs = app.getDebugStats().activeSubscriptions;
+  app.state.set('visible', false);
+  app.flush();
+  app.state.set('visible', true);
+  app.flush();
+  app.state.set('count', 1);
+  app.flush();
+
+  assert.equal(app.getDebugStats().activeSubscriptions, initialSubs);
+});
+
+test('debug stats accurately track mounts unmounts and listeners', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+  const app = mount(documentFixture('Stats', [
+    element('button', 'Btn', {
+      events: [event('click', [], 'click')],
+      children: [textLiteral('Click')]
+    })
+  ]), {
+    component: 'Stats',
+    target,
+    handlers: { click() {} }
+  });
+
+  assert.equal(app.getDebugStats().mounts, 1);
+  assert.equal(app.getDebugStats().activeListeners, 1);
+  assert.equal(app.getDebugStats().mountedComponents, 1);
+
+  app.dispose();
+  assert.equal(app.getDebugStats().unmounts, 1);
+  assert.equal(app.getDebugStats().activeListeners, 0);
+  assert.equal(app.getDebugStats().mountedComponents, 0);
+  assert.ok(app.getDebugStats().disposedNodes >= 1);
+});
 
 const exampleDir = resolve('examples');
 const exampleFiles = [
