@@ -10,6 +10,7 @@ path = "src/main.rs"
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
+serde_json.workspace = true
 frame_core = { path = "../frame_core" }
 frame_parser = { path = "../frame_parser" }
 frame_codegen = { path = "../frame_codegen" }
