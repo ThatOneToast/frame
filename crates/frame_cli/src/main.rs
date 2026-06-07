@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use clap::Parser;
 
 mod args;
@@ -5,6 +7,7 @@ mod commands;
 mod diagnostics;
 mod include;
 mod project;
+mod theme;
 
 fn main() -> anyhow::Result<()> {
     let cli = args::Cli::parse();
@@ -47,7 +50,13 @@ fn main() -> anyhow::Result<()> {
                 yes,
             } => commands::init::init_web(dry_run, force, yes),
         },
-        args::Command::Build => commands::build::build_project(),
+        args::Command::Build { watch } => {
+            if watch {
+                commands::watch::watch_project(Path::new("."))
+            } else {
+                commands::build::build_project()
+            }
+        }
         args::Command::Doctor => commands::doctor::doctor(),
         args::Command::New { name, template } => commands::new::new_project(&name, &template),
     }

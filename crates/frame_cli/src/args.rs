@@ -60,7 +60,10 @@ pub enum Command {
         #[command(subcommand)]
         target: InitTarget,
     },
-    Build,
+    Build {
+        #[arg(long)]
+        watch: bool,
+    },
     Doctor,
     New {
         name: String,
