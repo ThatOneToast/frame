@@ -1089,3 +1089,38 @@ function state(
 ): FrameIrState {
   return { name, value_type, default: defaultValue, source };
 }
+
+const exampleDir = resolve('examples');
+const exampleFiles = [
+  'chat-app.frame',
+  'chat-composer.frame',
+  'counter.frame',
+  'data-list.frame',
+  'field-input.frame',
+  'media-card.frame',
+  'navigation-links.frame',
+  'settings-dialog.frame',
+  'toggle-panel.frame',
+  'accessible-composer.frame',
+];
+
+for (const file of exampleFiles) {
+  test(`runtime example ${file} passes frame check`, async () => {
+    const input = join(exampleDir, file);
+    const { stdout, stderr } = await execFileAsync('cargo', ['run', '--quiet', '--bin', 'frame', '--', 'check', input], {
+      cwd: resolve('../..')
+    });
+    assert.ok(stdout.includes('ok') || stderr === '', `frame check failed for ${file}: ${stderr}`);
+  });
+
+  test(`runtime example ${file} compiles to IR`, async () => {
+    const input = join(exampleDir, file);
+    const output = join(tmpdir(), `frame-example-${file.replace('.frame', '')}.ir.json`);
+    await execFileAsync('cargo', ['run', '--quiet', '--bin', 'frame', '--', 'emit-ir', input, '--out', output], {
+      cwd: resolve('../..')
+    });
+    const ir = JSON.parse(await readFile(output, 'utf8')) as FrameIrDocument;
+    assert.equal(ir.version, 1);
+    assert.ok(ir.components.length > 0, `${file} should produce at least one component`);
+  });
+}
