@@ -179,7 +179,7 @@ Success criteria:
 
 Goal: render Frame IR directly to the browser DOM.
 
-Status: **Phase 4 implemented.** Broader platform features remain open.
+Status: **Phase 4 implemented with accessibility, event hardening, input behavior, lifecycle cleanup, and diagnostics maturity.** Broader platform features remain open.
 
 Deliverables:
 
@@ -202,10 +202,20 @@ Deliverables:
 - [x] Hardened keyed/non-keyed list reconciliation.
 - [x] Nested component and list cleanup accounting.
 - [x] Runtime diagnostics with component/source context.
+- [x] Accessibility defaults for semantic primitives.
+- [x] Keyboard activation for action-like controls.
+- [x] Disabled state reflected in DOM for interactive elements.
+- [x] `placeholder`, `readonly`, and `disabled` property support.
+- [x] `label` → `aria-label` attribute mapping.
+- [x] Mount-time handler validation with debug warnings.
+- [x] Mount-time prop type validation.
+- [x] Debug output explaining queued and flushed patches.
+- [x] Expanded runtime tests covering accessibility, events, input behavior, lifecycle, and diagnostics.
 
 Success criteria:
 
 - Frame components render practical browser UI screens without Svelte or React.
+- Runtime behaves predictably for accessibility, events, forms, and lifecycle.
 
 ---
 

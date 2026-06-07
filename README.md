@@ -49,14 +49,16 @@ The repository contains three distinct layers:
 
 1. **Styling compiler: usable** — generates CSS and TypeScript class exports from structured styling declarations.
 2. **UI compiler foundation: implemented** — parses, validates, and lowers UI components to Frame IR; generates TypeScript contracts.
-3. **DOM runtime: Phase 4 implemented** — `@frame/runtime-dom` can mount Frame IR into browser DOM nodes, schedule batched dependency-aware patches, reconcile lists, clean up listeners/subscriptions, and cover practical HTML/forms/attribute behavior.
+3. **DOM runtime: Phase 4 implemented with maturity** — `@frame/runtime-dom` mounts Frame IR into browser DOM nodes, schedules batched dependency-aware patches, reconciles lists, cleans up listeners/subscriptions, covers practical HTML/forms/attribute behavior, applies accessibility defaults for semantic primitives, validates handlers and props at mount time, and provides debug output for patches.
 
 The LSP now understands project-level Frame code through `#include`:
 - imported styles, components, and declarations resolve for completions, hover, go-to-definition, and diagnostics
 - `frame check` validates multi-file projects including cross-file component references
-- missing handler, state, prop, and style code actions generate skeletons
+- missing handler, state, prop, and style code actions generate skeletons in the correct included files
+- Find All References works across includes
+- primitive-specific property validation catches intent mismatches with teacher-like diagnostics
 
-The active milestone is semantic UI syntax. Runtime, SSR, hydration, routing, portals, suspense, transition runtime, animation runtime, and async component work are intentionally paused while Frame's author-facing language moves away from HTML-like UI syntax.
+The active milestone is semantic UI syntax. SSR, hydration, routing, portals, suspense, transition runtime, animation runtime, and async component work are intentionally paused while Frame's author-facing language moves away from HTML-like UI syntax.
 
 Existing pieces:
 
@@ -79,7 +81,7 @@ implementations/
   chat-app/        rough reference implementation experiments
 ```
 
-The compiler outputs CSS and TypeScript class exports for styling declarations. For UI declarations, it produces Frame IR and TypeScript contracts. The DOM runtime can consume Frame IR for mounting, disposal, elements, text, nested components, props, state, events, bindings, conditions, style classes, keyed or positional list reconciliation, common HTML elements, global attributes, safe URL attributes, form controls, scheduled updates, runtime diagnostics, and cleanup accounting.
+The compiler outputs CSS and TypeScript class exports for styling declarations. For UI declarations, it produces Frame IR and TypeScript contracts. The DOM runtime can consume Frame IR for mounting, disposal, elements, text, nested components, props, state, events, bindings, conditions, style classes, keyed or positional list reconciliation, common HTML elements, global attributes, safe URL attributes, form controls, scheduled updates, runtime diagnostics, accessibility defaults, handler/prop validation, and cleanup accounting.
 
 ## Direction
 

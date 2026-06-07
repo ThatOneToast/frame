@@ -2,6 +2,24 @@
 
 Last verified: 2026-06-07 milestone continuation sweep — Phase 1-4 complete
 
+## Runtime Maturity Sweep Status
+
+| Area | Expected | Implemented | Tests |
+| --- | --- | --- | --- |
+| Accessibility semantics | Semantic primitives render with correct roles and ARIA | `action`→`button[type=button]`, `toggle`→`checkbox`, `image`/`avatar`→`alt`+`decoding=async`, `icon`→`aria-hidden`, `field`→`role=group`, `media`→`controls`, `composer`→`form[method=post]`, `label`→`aria-label` | 7 runtime tests |
+| Keyboard activation | Interactive controls are keyboard reachable | `action` uses native `<button>` which supports Enter/Space activation | Button keyboard test |
+| Disabled behavior | Disabled actions are reflected in DOM | Conditional `Property: disabled` sets `dom.disabled` via `setBooleanProperty` | Disabled action test |
+| Event system | Events work correctly after conditional and list changes | Event listeners remain stable across text patches, conditional show/hide, and keyed list reorder | 4 runtime tests |
+| Input/form behavior | `placeholder`, `readonly`, `disabled`, `label` work | `placeholder` and `label` via attributes, `readonly`/`disabled` via `booleanPropertyName` mapping, bindings sync both ways | 4 runtime tests |
+| Component lifecycle | Mount, dispose, conditional show/hide, keyed reuse | `dispose` removes nodes/listeners, `Show` uses `hidden`, keyed lists preserve nodes/listeners | 3 runtime tests |
+| Runtime diagnostics | Mount-time warnings for missing handlers, prop validation, debug output | `validateHandlers` warns in debug mode, `validateProps` throws on type mismatch, scheduler logs patch labels with component names | 3 runtime tests |
+| Subscription cleanup | No duplicate subscriptions after rerender | Conditional render cleanup unsubscribes and re-subscribes correctly | Subscription test |
+| Debug stats | Counters accurately reflect mounts, listeners, subscriptions, disposals | `getDebugStats` returns counters verified against actual behavior | Stats test |
+
+## Validation Commands
+
+This file should be updated with exact validation results after each sweep. The required full suite remains:
+
 This tracker records the follow-up sweep after the compiler/LSP/Zed/CLI organization pass. Items are marked complete only when code and tests exist.
 
 ## Previous Sweep Status

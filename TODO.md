@@ -130,6 +130,13 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Support hardened list reconciliation and cleanup.
 - [x] Support runtime diagnostics with component/source context.
 - [x] Add runtime tests.
+- [x] Add accessibility defaults for semantic primitives.
+- [x] Add mount-time handler validation with debug warnings.
+- [x] Add mount-time prop type validation.
+- [x] Add `readonly`, `disabled`, and `placeholder` property support.
+- [x] Add `label` → `aria-label` mapping.
+- [x] Add debug output for queued and flushed patches with component context.
+- [x] Expand runtime tests for accessibility, events, input behavior, lifecycle, and diagnostics.
 - [ ] Generate skeleton implementation files.
 - [ ] Generate DOM event-specific handler signatures.
 
