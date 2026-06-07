@@ -1,0 +1,62 @@
+#include theme
+
+component IdeApp {
+  state {
+    files list = []
+    currentPath text = ""
+    currentContent text = ""
+    status text = "Frame IDE — Ready"
+    lspConnected bool = false
+  }
+
+  view {
+    screen IdeRoot {
+      title "Frame IDE"
+
+      toolbar Toolbar {
+        action NewFile {
+          label "New"
+          on press @newFile
+        }
+        action OpenFile {
+          label "Open"
+          on press @openFile
+        }
+        action SaveFile {
+          label "Save"
+          on press @saveFile
+        }
+      }
+
+      split MainSplit {
+        panel Sidebar {
+          title "Explorer"
+          list FileTree {
+            source $files
+            item {
+              text $file.name
+              on press @openFileByPath
+            }
+          }
+        }
+
+        panel EditorPane {
+          editor CodeEditor {
+            label "Editor"
+            value bind $currentContent
+            on input @editorChange
+            on keydown @editorKeydown
+          }
+        }
+      }
+
+      dock StatusBar {
+        text $status
+        action LspToggle {
+          label "LSP"
+          on press @toggleLsp
+        }
+      }
+    }
+  }
+}

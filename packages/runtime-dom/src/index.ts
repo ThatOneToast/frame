@@ -281,21 +281,31 @@ type RenderedBlock = {
 
 const ELEMENT_TAGS: Record<string, string> = {
   a: 'a',
+  action: 'button',
   area: 'div',
   article: 'article',
   audio: 'audio',
+  avatar: 'img',
+  badge: 'span',
   button: 'button',
   canvas: 'canvas',
   card: 'div',
   caption: 'caption',
+  choice: 'select',
   col: 'col',
   colgroup: 'colgroup',
+  composer: 'form',
+  data: 'table',
   dd: 'dd',
   details: 'details',
   dialog: 'dialog',
   div: 'div',
+  dock: 'div',
   dl: 'dl',
   dt: 'dt',
+  editor: 'textarea',
+  empty: 'div',
+  feed: 'div',
   fieldset: 'fieldset',
   footer: 'footer',
   form: 'form',
@@ -307,26 +317,35 @@ const ELEMENT_TAGS: Record<string, string> = {
   h5: 'h5',
   h6: 'h6',
   header: 'header',
+  icon: 'span',
   image: 'img',
   img: 'img',
   input: 'input',
+  item: 'li',
   label: 'label',
   legend: 'legend',
   link: 'a',
   li: 'li',
+  list: 'ul',
   main: 'main',
+  media: 'video',
+  menu: 'nav',
   meter: 'meter',
   nav: 'nav',
   ol: 'ol',
   optgroup: 'optgroup',
   option: 'option',
   output: 'output',
+  overlay: 'div',
   p: 'p',
-  path: 'path',
   panel: 'section',
+  path: 'path',
   picture: 'picture',
+  popover: 'div',
   progress: 'progress',
   row: 'div',
+  scroll: 'div',
+  screen: 'div',
   section: 'section',
   select: 'select',
   source: 'source',
@@ -335,6 +354,7 @@ const ELEMENT_TAGS: Record<string, string> = {
   summary: 'summary',
   svg: 'svg',
   table: 'table',
+  tabs: 'div',
   tbody: 'tbody',
   td: 'td',
   textarea: 'textarea',
@@ -342,8 +362,10 @@ const ELEMENT_TAGS: Record<string, string> = {
   tfoot: 'tfoot',
   th: 'th',
   thead: 'thead',
-  tr: 'tr',
+  toggle: 'input',
+  toolbar: 'div',
   track: 'track',
+  tr: 'tr',
   ul: 'ul',
   video: 'video'
 };
@@ -508,7 +530,7 @@ function renderElement(element: FrameIrElement, context: RenderContext): Rendere
 
 function appendSemanticContent(dom: Element, element: FrameIrElement, context: RenderContext): void {
   const semanticKind = element.semantic_kind ?? element.kind;
-  if (!['title', 'text', 'label', 'badge', 'icon'].includes(semanticKind)) {
+  if (!['title', 'text', 'label', 'badge', 'icon', 'action', 'link', 'menu', 'composer'].includes(semanticKind)) {
     return;
   }
   const value = element.attributes.find((attribute) => attribute.name === 'value');
@@ -528,6 +550,21 @@ function applySemanticDefaults(dom: Element, element: FrameIrElement): void {
   }
   if ((semanticKind === 'image' || semanticKind === 'avatar') && !dom.hasAttribute('alt')) {
     dom.setAttribute('alt', '');
+  }
+  if (semanticKind === 'editor' && dom.tagName.toLowerCase() === 'textarea' && !dom.hasAttribute('rows')) {
+    dom.setAttribute('rows', '4');
+  }
+  if (semanticKind === 'composer' && dom.tagName.toLowerCase() === 'form' && !dom.hasAttribute('method')) {
+    dom.setAttribute('method', 'post');
+  }
+  if (semanticKind === 'choice' && dom.tagName.toLowerCase() === 'select' && !dom.hasAttribute('multiple')) {
+    // single-select by default
+  }
+  if (semanticKind === 'icon' && dom.tagName.toLowerCase() === 'span' && !dom.hasAttribute('aria-hidden')) {
+    dom.setAttribute('aria-hidden', 'true');
+  }
+  if (semanticKind === 'media' && dom.tagName.toLowerCase() === 'video' && !dom.hasAttribute('controls')) {
+    dom.setAttribute('controls', '');
   }
 }
 

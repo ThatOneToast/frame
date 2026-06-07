@@ -267,31 +267,25 @@ card DemoCard {
 }
 "#;
 
-pub const INITIAL_WEB_FRAME_SOURCE: &str = r#"grid App {
-  columns sidebar content
-  gap medium
-  height screen
-}
+pub const INITIAL_WEB_FRAME_SOURCE: &str = r#"component App {
+  state {
+    count number = 0
+  }
 
-area Sidebar {
-  in App
-  place sidebar
-  surface panel
-  padding medium
-}
+  view {
+    screen Main {
+      title "Frame App"
 
-area Content {
-  in App
-  place content
-  surface main
-  padding large
-}
+      card CounterCard {
+        text $count
 
-card Welcome {
-  surface panel
-  padding large
-  radius large
-  shadow medium
+        action Increment {
+          text "Increment"
+          on press @increment
+        }
+      }
+    }
+  }
 }
 "#;
 

@@ -31,20 +31,19 @@ fn init_web_template(root: &Path) -> anyhow::Result<()> {
     fs::create_dir_all(&frame_dir)?;
 
     fs::write(root.join("frame.config.json"), WEB_CONFIG)?;
+    fs::write(root.join("package.json"), WEB_PACKAGE_JSON)?;
+    fs::write(root.join("tsconfig.json"), WEB_TSCONFIG)?;
     fs::write(
         frame_dir.join("app.frame"),
         crate::project::INITIAL_WEB_FRAME_SOURCE,
     )?;
     fs::write(root.join("index.html"), WEB_INDEX)?;
+    fs::write(root.join("src/main.ts"), WEB_MAIN_TS)?;
+    fs::write(root.join("src/handlers.ts"), WEB_HANDLERS_TS)?;
     fs::write(root.join("README.md"), WEB_README)?;
 
-    // Compile the initial source so generated files exist
-    let out = frame_dir.clone();
-    crate::commands::compile::compile_file(
-        &frame_dir.join("app.frame"),
-        &out,
-        std::slice::from_ref(&frame_dir),
-    )?;
+    // Build the initial source so generated files exist
+    crate::commands::build::build_project()?;
 
     Ok(())
 }
@@ -83,7 +82,41 @@ const WEB_CONFIG: &str = r#"{
   "name": "frame-web-app",
   "version": "0.1.0",
   "source": "src/frame/app.frame",
-  "outDir": "dist"
+  "outDir": "src/generated"
+}
+"#;
+
+const WEB_PACKAGE_JSON: &str = r#"{
+  "name": "frame-web-app",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@frame/runtime-dom": "workspace:*"
+  }
+}
+"#;
+
+const WEB_TSCONFIG: &str = r#"{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src"]
 }
 "#;
 
@@ -93,35 +126,77 @@ const WEB_INDEX: &str = r#"<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Frame App</title>
-  <link rel="stylesheet" href="src/frame/generated.css">
+  <link rel="stylesheet" href="src/generated/generated.css">
 </head>
 <body>
   <div id="app"></div>
-  <script type="module" src="src/frame/generated.ts"></script>
+  <script type="module" src="src/main.ts"></script>
 </body>
 </html>
 "#;
 
+const WEB_MAIN_TS: &str = r#"import { mount } from '@frame/runtime-dom';
+import appIr from './generated/app.ir.json';
+import { handlers } from './handlers';
+
+const app = mount(appIr, {
+  component: 'App',
+  target: document.getElementById('app')!,
+  handlers
+});
+
+// Expose for debugging
+(window as any).frameApp = app;
+"#;
+
+const WEB_HANDLERS_TS: &str = r#"import type { FrameHandler } from '@frame/runtime-dom';
+
+export const handlers: Record<string, FrameHandler> = {
+  increment({ state }) {
+    const current = state.get('count') as number;
+    state.set('count', current + 1);
+  }
+};
+"#;
+
 const WEB_README: &str = r#"# Frame Web Project
 
-This is a minimal Frame project.
+A standalone Frame UI project using the DOM runtime.
 
 ## Files
 
-- `src/frame/app.frame` — your Frame source
-- `src/frame/generated.css` — compiled CSS output
-- `src/frame/generated.ts` — generated TypeScript contracts
+- `src/frame/app.frame` — your Frame UI source
+- `src/generated/generated.css` — compiled CSS output
+- `src/generated/app.ir.json` — compiled Frame IR for the runtime
+- `src/main.ts` — app entry point (mounts the Frame runtime)
+- `src/handlers.ts` — your handler implementations
 
 ## Commands
 
-Compile:
+Build (CSS + IR):
 ```bash
-frame compile src/frame/app.frame --out dist/
+frame build
+```
+
+Compile CSS only:
+```bash
+frame compile src/frame/app.frame --out src/generated
+```
+
+Emit IR only:
+```bash
+frame emit-ir src/frame/app.frame --out src/generated/app.ir.json
 ```
 
 Watch:
 ```bash
-frame watch src/frame/app.frame --out dist/
+frame watch src/frame/app.frame --out src/generated
+```
+
+Dev server:
+```bash
+npm install
+npm run dev
 ```
 "#;
 

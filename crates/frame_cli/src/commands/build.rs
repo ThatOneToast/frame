@@ -29,6 +29,7 @@ pub fn build_project() -> anyhow::Result<()> {
     }
 
     crate::commands::compile::compile_file(entry_path, out_path, &[])?;
+    crate::commands::emit::emit_ir(entry_path, Some(&out_path.join("app.ir.json")), &[])?;
     println!("Frame build complete.");
     Ok(())
 }

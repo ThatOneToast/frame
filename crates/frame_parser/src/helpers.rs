@@ -37,6 +37,7 @@ pub fn is_allowed_nested_block(name: &str) -> bool {
             | "active"
             | "disabled"
             | "checked"
+            | "selected"
             | "invalid"
             | "required"
             | "target"
