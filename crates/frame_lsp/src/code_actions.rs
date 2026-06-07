@@ -1,10 +1,12 @@
 use std::collections::HashMap;
-
-use frame_core::symbols::index_document;
+use std::fs;
+use std::path::Path;
 
 use frame_parser::parse;
 use tower_lsp::lsp_types::{
-    CodeAction, CodeActionKind, CodeActionOrCommand, Position, Range, TextEdit, Url, WorkspaceEdit,
+    CodeAction, CodeActionKind, CodeActionOrCommand, DocumentChangeOperation, DocumentChanges,
+    OneOf, OptionalVersionedTextDocumentIdentifier, Position, Range, TextDocumentEdit, TextEdit,
+    Url, WorkspaceEdit,
 };
 
 use crate::diagnostics::position_for_offset;
@@ -48,13 +50,68 @@ pub fn code_actions_for_source(source: &str, uri: &Url) -> Vec<CodeActionOrComma
         ));
     }
 
-    for style in missing_style_references(source) {
-        actions.push(edit_action(
-            &format!("Create style `{style}`"),
-            uri,
-            insertion_at_end(source),
-            format!("\ncard {style} {{\n  padding medium\n}}\n"),
-        ));
+    let current_path = uri.to_file_path().unwrap_or_default();
+
+    for style in missing_style_references(source, &current_path) {
+        let targets =
+            crate::project::include_files_for_symbol(&current_path, source, &style, "style");
+        if targets.is_empty() {
+            actions.push(edit_action(
+                &format!("Create style `{style}`"),
+                uri,
+                insertion_at_end(source),
+                format!("\ncard {style} {{\n  padding medium\n}}\n"),
+            ));
+        } else {
+            for target in targets {
+                let target_uri = Url::from_file_path(&target).unwrap_or_else(|_| uri.clone());
+                let target_source = fs::read_to_string(&target).unwrap_or_default();
+                let title = format!(
+                    "Create style `{style}` in {}",
+                    target.file_name().unwrap_or_default().to_string_lossy()
+                );
+                actions.push(edit_in_file_action(
+                    &title,
+                    &target_uri,
+                    &target_source,
+                    format!("\ncard {style} {{\n  padding medium\n}}\n"),
+                ));
+            }
+        }
+    }
+
+    for component in missing_component_references(source, &current_path) {
+        let targets = crate::project::include_files_for_symbol(
+            &current_path,
+            source,
+            &component,
+            "component",
+        );
+        if targets.is_empty() {
+            actions.push(edit_action(
+                &format!("Create component `{component}`"),
+                uri,
+                insertion_at_end(source),
+                format!(
+                    "\ncomponent {component} {{\n  view {{\n    text \"{component}\"\n  }}\n}}\n"
+                ),
+            ));
+        } else {
+            for target in targets {
+                let target_uri = Url::from_file_path(&target).unwrap_or_else(|_| uri.clone());
+                let target_source = fs::read_to_string(&target).unwrap_or_default();
+                let title = format!(
+                    "Create component `{component}` in {}",
+                    target.file_name().unwrap_or_default().to_string_lossy()
+                );
+                actions.push(edit_in_file_action(
+                    &title,
+                    &target_uri,
+                    &target_source,
+                    format!("\ncomponent {component} {{\n  view {{\n    text \"{component}\"\n  }}\n}}\n"),
+                ));
+            }
+        }
     }
 
     for handler in missing_handler_references(source) {
@@ -245,11 +302,10 @@ fn browser_event_replacement(line: &str) -> Option<(&'static str, &str)> {
     Some((event, handler))
 }
 
-fn missing_style_references(source: &str) -> Vec<String> {
-    let Ok(document) = parse(source) else {
+fn missing_style_references(source: &str, current_path: &Path) -> Vec<String> {
+    if parse(source).is_err() {
         return Vec::new();
-    };
-    let symbols = index_document(source, &document);
+    }
     let mut refs = Vec::new();
     for line in source.lines() {
         let trimmed = line.trim();
@@ -271,8 +327,46 @@ fn missing_style_references(source: &str) -> Vec<String> {
     refs.sort();
     refs.dedup();
     refs.into_iter()
-        .filter(|style| !symbols.declarations.contains_key(style))
+        .filter(|style| !crate::project::style_exists_across_files(current_path, source, style))
         .collect()
+}
+
+fn missing_component_references(source: &str, current_path: &Path) -> Vec<String> {
+    let Ok(document) = parse(source) else {
+        return Vec::new();
+    };
+    let mut refs = Vec::new();
+    for component in &document.components {
+        if let Some(view) = &component.view {
+            collect_component_refs(&view.nodes, &mut refs);
+        }
+        for slot in &component.slots {
+            collect_component_refs(&slot.nodes, &mut refs);
+        }
+    }
+    refs.sort();
+    refs.dedup();
+    let known = crate::project::merged_component_names(current_path, source);
+    refs.into_iter()
+        .filter(|name| !known.contains(name))
+        .collect()
+}
+
+fn collect_component_refs(nodes: &[frame_core::UiNode], refs: &mut Vec<String>) {
+    for node in nodes {
+        match node {
+            frame_core::UiNode::Component(invocation) => {
+                refs.push(invocation.name.text.clone());
+            }
+            frame_core::UiNode::Element(element) => {
+                collect_component_refs(&element.children, refs);
+            }
+            frame_core::UiNode::Loop(loop_node) => {
+                collect_component_refs(&loop_node.children, refs);
+            }
+            _ => {}
+        }
+    }
 }
 
 fn advanced_css_replacements(source: &str) -> Vec<AdvancedReplacement> {
@@ -576,6 +670,34 @@ fn edit_action(title: &str, uri: &Url, range: Range, new_text: String) -> CodeAc
     })
 }
 
+fn edit_in_file_action(
+    title: &str,
+    uri: &Url,
+    source: &str,
+    new_text: String,
+) -> CodeActionOrCommand {
+    CodeActionOrCommand::CodeAction(CodeAction {
+        title: title.to_string(),
+        kind: Some(CodeActionKind::QUICKFIX),
+        edit: Some(WorkspaceEdit {
+            document_changes: Some(DocumentChanges::Operations(vec![
+                DocumentChangeOperation::Edit(TextDocumentEdit {
+                    text_document: OptionalVersionedTextDocumentIdentifier {
+                        uri: uri.clone(),
+                        version: None,
+                    },
+                    edits: vec![OneOf::Left(TextEdit {
+                        range: insertion_at_end(source),
+                        new_text,
+                    })],
+                }),
+            ])),
+            ..WorkspaceEdit::default()
+        }),
+        ..CodeAction::default()
+    })
+}
+
 fn missing_handler_references(source: &str) -> Vec<String> {
     let Ok(document) = parse(source) else {
         return Vec::new();
@@ -614,17 +736,31 @@ fn collect_handlers_from_nodes(
 
 fn create_handler_action(uri: &Url, handler: &str) -> CodeActionOrCommand {
     let ts_uri = handler_ts_uri(uri);
-    let document_changes = tower_lsp::lsp_types::DocumentChanges::Operations(vec![
-        tower_lsp::lsp_types::DocumentChangeOperation::Op(
-            tower_lsp::lsp_types::ResourceOp::Create(tower_lsp::lsp_types::CreateFile {
+    let handler_source =
+        fs::read_to_string(ts_uri.to_file_path().unwrap_or_default()).unwrap_or_default();
+    let document_changes = DocumentChanges::Operations(vec![
+        DocumentChangeOperation::Op(tower_lsp::lsp_types::ResourceOp::Create(
+            tower_lsp::lsp_types::CreateFile {
                 uri: ts_uri.clone(),
                 options: Some(tower_lsp::lsp_types::CreateFileOptions {
                     overwrite: Some(false),
                     ignore_if_exists: Some(true),
                 }),
                 annotation_id: None,
-            }),
-        ),
+            },
+        )),
+        DocumentChangeOperation::Edit(TextDocumentEdit {
+            text_document: OptionalVersionedTextDocumentIdentifier {
+                uri: ts_uri.clone(),
+                version: None,
+            },
+            edits: vec![OneOf::Left(TextEdit {
+                range: insertion_at_end(&handler_source),
+                new_text: format!(
+                    "\nexport function {handler}(event: Event): void {{\n  // TODO: implement\n}}\n"
+                ),
+            })],
+        }),
     ]);
 
     CodeActionOrCommand::CodeAction(CodeAction {
@@ -920,5 +1056,114 @@ mod tests {
             .collect::<Vec<_>>();
 
         assert!(titles.contains(&"Create style `LoadingButton`"));
+    }
+
+    #[test]
+    fn offers_create_missing_style_in_included_file() {
+        let temp_dir = std::env::temp_dir().join(format!(
+            "frame-lsp-test-style-include-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&temp_dir).unwrap();
+
+        let styles_path = temp_dir.join("styles.frame");
+        std::fs::write(&styles_path, "").unwrap();
+
+        let main_path = temp_dir.join("main.frame");
+        let source = "#include ./styles\n\ncomponent ChatInput {\n  view {\n    action Send:PrimaryAction {\n    }\n  }\n}\n";
+        std::fs::write(&main_path, source).unwrap();
+
+        let uri = Url::from_file_path(&main_path).unwrap();
+        let actions = code_actions_for_source(source, &uri);
+
+        let titles: Vec<_> = actions
+            .iter()
+            .filter_map(|action| match action {
+                CodeActionOrCommand::CodeAction(action) => Some(action.title.as_str()),
+                CodeActionOrCommand::Command(_) => None,
+            })
+            .collect();
+
+        assert!(titles.contains(&"Create style `PrimaryAction` in styles.frame"));
+    }
+
+    #[test]
+    fn offers_create_missing_component_in_included_file() {
+        let temp_dir = std::env::temp_dir().join(format!(
+            "frame-lsp-test-component-include-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&temp_dir).unwrap();
+
+        let components_path = temp_dir.join("components.frame");
+        std::fs::write(&components_path, "").unwrap();
+
+        let main_path = temp_dir.join("main.frame");
+        let source =
+            "#include ./components\n\ncomponent ChatApp {\n  view {\n    MessageItem()\n  }\n}\n";
+        std::fs::write(&main_path, source).unwrap();
+
+        let uri = Url::from_file_path(&main_path).unwrap();
+        let actions = code_actions_for_source(source, &uri);
+
+        let titles: Vec<_> = actions
+            .iter()
+            .filter_map(|action| match action {
+                CodeActionOrCommand::CodeAction(action) => Some(action.title.as_str()),
+                CodeActionOrCommand::Command(_) => None,
+            })
+            .collect();
+
+        assert!(titles.contains(&"Create component `MessageItem` in components.frame"));
+    }
+
+    #[test]
+    fn offers_fallback_create_in_current_file_when_no_include() {
+        let source =
+            "component ChatInput {\n  view {\n    action Send:PrimaryAction {\n    }\n  }\n}\n";
+        let uri = Url::parse("file:///demo.frame").unwrap();
+        let actions = code_actions_for_source(source, &uri);
+
+        let titles: Vec<_> = actions
+            .iter()
+            .filter_map(|action| match action {
+                CodeActionOrCommand::CodeAction(action) => Some(action.title.as_str()),
+                CodeActionOrCommand::Command(_) => None,
+            })
+            .collect();
+
+        assert!(titles.contains(&"Create style `PrimaryAction`"));
+    }
+
+    #[test]
+    fn offers_multiple_targets_when_multiple_includes_match() {
+        let temp_dir = std::env::temp_dir().join(format!(
+            "frame-lsp-test-multiple-includes-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&temp_dir).unwrap();
+
+        let styles_path = temp_dir.join("styles.frame");
+        std::fs::write(&styles_path, "").unwrap();
+        let themes_path = temp_dir.join("themes.frame");
+        std::fs::write(&themes_path, "").unwrap();
+
+        let main_path = temp_dir.join("main.frame");
+        let source = "#include ./styles\n#include ./themes\n\ncomponent ChatInput {\n  view {\n    action Send:PrimaryAction {\n    }\n  }\n}\n";
+        std::fs::write(&main_path, source).unwrap();
+
+        let uri = Url::from_file_path(&main_path).unwrap();
+        let actions = code_actions_for_source(source, &uri);
+
+        let titles: Vec<_> = actions
+            .iter()
+            .filter_map(|action| match action {
+                CodeActionOrCommand::CodeAction(action) => Some(action.title.as_str()),
+                CodeActionOrCommand::Command(_) => None,
+            })
+            .collect();
+
+        assert!(titles.contains(&"Create style `PrimaryAction` in styles.frame"));
+        assert!(titles.contains(&"Create style `PrimaryAction` in themes.frame"));
     }
 }
