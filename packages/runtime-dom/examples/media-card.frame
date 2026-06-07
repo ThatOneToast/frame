@@ -22,7 +22,6 @@ component MediaCard {
       p Caption {
         text "A media card with safe URL attributes."
       }
-      
     }
   }
 }

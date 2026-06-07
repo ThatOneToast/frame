@@ -80,10 +80,21 @@ pub(crate) fn validate_ui_node(
         UiNode::Element(element) => {
             if !SEMANTIC_UI_PRIMITIVES.contains(&element.kind.text.as_str()) {
                 if BROWSER_UI_WORDS.contains(&element.kind.text.as_str()) {
+                    let browser_word = element.kind.text.as_str();
+                    let suggestion = semantic_alternative_for(browser_word)
+                        .map(|(alt, explain)| {
+                            format!(
+                                "\n\nhelp: did you mean `{alt}`?\n\n  {explain}\n\n  ```frame\n  {alt} Name {{\n    ...\n  }}\n  ```",
+                                alt = alt,
+                                explain = explain
+                            )
+                        })
+                        .unwrap_or_else(|| {
+                            "\n\nhelp: use a Frame semantic primitive such as `action`, `link`, `editor`, `panel`, `list`, or `data` so Frame can preserve intent before renderer lowering.".to_string()
+                        });
                     diagnostics.push(Diagnostic::error(
                         format!(
-                            "`{}` is a browser implementation word, not author-facing Frame UI syntax.\n\nUse semantic primitives such as `action`, `link`, `editor`, `panel`, `list`, or `data` so Frame can preserve intent before renderer lowering.",
-                            element.kind.text
+                            "error: `{browser_word}` is a browser implementation word, not author-facing Frame UI syntax.{suggestion}\n\nnote: Frame separates UI intent from renderer targets. The compiler maps semantic primitives to the correct DOM element during lowering.\n\nFor example:\n  - `action`  -> `<button>`\n  - `link`    -> `<a>`\n  - `editor`  -> `<textarea>`\n  - `list`    -> `<ul>` / `<ol>`\n  - `title`   -> `<h1>` ... `<h6>`\n\nIf you need a DOM escape hatch, use the `advanced` block with `css` rules."
                         ),
                         element.kind.span,
                     ));

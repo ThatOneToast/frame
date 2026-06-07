@@ -192,6 +192,7 @@ dependencies = [
  "frame_codegen",
  "frame_core",
  "frame_parser",
+ "serde_json",
 ]
 
 [[package]]

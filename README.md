@@ -256,7 +256,7 @@ Start here:
 - `TODO-CSS.md` — structured CSS coverage tracker
 - `TODO-DOM.md` — HTML, DOM, events, accessibility, and runtime coverage tracker
 - `research/` — architecture notes for the Frame IR and DOM runtime direction
-- `examples/semantic-*.frame` — semantic UI examples
+- `editors/zed/samples/semantic-*.frame` — semantic UI examples
 
 ## Commands
 

@@ -20,10 +20,55 @@ fn temp_out_dir() -> std::path::PathBuf {
         .join(TEMP_COUNTER.fetch_add(1, Ordering::Relaxed).to_string())
 }
 
+fn example_source() -> &'static str {
+    r#"grid AppShell {
+  columns sidebar content inspector
+  gap medium
+  height screen
+}
+
+area Sidebar {
+  in AppShell
+  place sidebar
+  surface panel
+  padding small
+}
+
+area Content {
+  in AppShell
+  place content
+  surface main
+  padding large
+}
+
+area Inspector {
+  in AppShell
+  place inspector
+  surface panel
+  padding medium
+}
+
+card QuickLinkCard {
+  surface gradient dusk
+  padding large
+  radius large
+  shadow medium
+
+  hover {
+    lift small
+    glow accent
+    brighten subtle
+  }
+}
+"#
+}
+
 fn example_file() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join("examples/svelte/src/lib/frame/app.frame")
+    let root = temp_out_dir();
+    fs::create_dir_all(&root).expect("temporary dir should be creatable");
+    let path = root.join("app.frame");
+    fs::write(&path, example_source()).expect("example should be writable");
+    path
 }
 
 #[test]

@@ -1,0 +1,83 @@
+component ChatApp {
+  props {
+    title text
+  }
+
+  state {
+    loggedIn bool = false
+    collapsed bool = false
+    messages list = []
+    draft string = ""
+    sending bool = false
+  }
+
+  slot Header {
+    text $title
+  }
+
+  slot Content {
+    text "No messages"
+  }
+
+  slot Footer {
+    button Send {
+      text "Send"
+      on click @send
+    }
+  }
+
+  view {
+    panel Shell {
+      id "chat-shell"
+      class "app-shell"
+      role "region"
+      aria-label "Chat"
+      show when $loggedIn
+      hidden when $collapsed
+
+      nav Navigation {
+        aria-label "Primary"
+
+        a DocsLink {
+          href "https://example.com/docs"
+          target "_blank"
+          rel "noopener"
+          text "Docs"
+        }
+      }
+
+      form Composer {
+        on submit.prevent @send
+        on reset @clear
+
+        textarea Draft {
+          aria-label "Message"
+          value bind $draft
+          on keydown.enter.prevent @send
+        }
+
+        button SendButton {
+          type "submit"
+          disabled when $sending
+          text "Send"
+        }
+      }
+
+      table Messages {
+        caption MessageCaption {
+          text "Messages"
+        }
+
+        tbody MessageBody {
+          for message in $messages key $message.id {
+            tr MessageRow {
+              td MessageCell {
+                text $message.text
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

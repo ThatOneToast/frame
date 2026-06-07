@@ -33,6 +33,13 @@ pub(crate) fn edit_distance(left: &str, right: &str) -> usize {
     *costs.last().unwrap_or(&0)
 }
 
+pub(crate) fn semantic_alternative_for(browser_word: &str) -> Option<(&'static str, &'static str)> {
+    crate::semantic::constants::BROWSER_TO_SEMANTIC
+        .iter()
+        .find(|(word, _, _)| *word == browser_word)
+        .map(|(_, alt, explain)| (*alt, *explain))
+}
+
 pub(crate) fn is_valid_style_identifier(name: &str) -> bool {
     name.chars()
         .next()

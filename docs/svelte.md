@@ -59,10 +59,10 @@ Then use the generated class map from Svelte:
 
 The plugin compiles on dev server startup, build startup, and file changes.
 
-The CLI path still works:
+The CLI path still works inside an existing Svelte project:
 
 ```bash
-cargo run -p frame_cli -- compile examples/svelte/src/lib/frame/app.frame --out examples/svelte/src/lib/frame
+cargo run -p frame_cli -- compile src/lib/frame/app.frame --out src/lib/frame
 ```
 
 ## Inline style blocks

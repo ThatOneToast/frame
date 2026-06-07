@@ -22,12 +22,12 @@ Format a Frame file:
 frame format src/lib/frame/app.frame
 ```
 
-Local repository versions:
+Local repository versions (run from a project with a `.frame` file):
 
 ```bash
-cargo run -p frame_cli -- check examples/svelte/src/lib/frame/app.frame
-cargo run -p frame_cli -- compile examples/svelte/src/lib/frame/app.frame --out examples/svelte/src/lib/frame
-cargo run -p frame_cli -- format examples/svelte/src/lib/frame/app.frame
+cargo run -p frame_cli -- check src/lib/frame/app.frame
+cargo run -p frame_cli -- compile src/lib/frame/app.frame --out src/lib/frame
+cargo run -p frame_cli -- format src/lib/frame/app.frame
 ```
 
 ## Parser Rules
