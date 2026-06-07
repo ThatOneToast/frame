@@ -367,6 +367,7 @@ fn new_web_generates_typed_runtime_project() {
     assert!(project.join("src/generated/app.ir.ts").exists());
     assert!(project.join("src/generated/frame.types.ts").exists());
     assert!(project.join("src/generated/frame.handlers.ts").exists());
+    assert!(project.join("src/app-theme.frame").exists());
 
     let main_ts = fs::read_to_string(project.join("src/main.ts")).expect("main ts");
     let package_json = fs::read_to_string(project.join("package.json")).expect("package json");
@@ -379,7 +380,9 @@ fn new_web_generates_typed_runtime_project() {
     assert!(main_ts.contains("import appIr from './generated/app.ir';"));
     assert!(!main_ts.contains("as any"));
     assert!(package_json.contains("\"frame:build\": \"frame build\""));
-    assert!(package_json.contains("\"dev\": \"npm run frame:build && vite\""));
+    assert!(package_json.contains("\"frame:watch\": \"frame build --watch\""));
+    assert!(package_json.contains("\"dev\": \"run-p frame:watch vite:dev\""));
+    assert!(package_json.contains("\"vite:dev\": \"vite\""));
     assert!(package_json.contains("\"build\": \"npm run frame:build && vite build\""));
     assert!(package_json.contains("\"check\": \"npm run frame:build && tsc --noEmit\""));
     assert!(frame_source.contains("screen Main"));
@@ -416,6 +419,7 @@ fn init_web_scaffolds_empty_directory() {
     assert!(root.join("frame.config.json").exists());
     assert!(root.join("package.json").exists());
     assert!(root.join("src/app.frame").exists());
+    assert!(root.join("src/app-theme.frame").exists());
     assert!(root.join("src/main.ts").exists());
     assert!(root.join("src/handlers.ts").exists());
     assert!(root.join("src/generated/app.ir.ts").exists());
@@ -705,5 +709,109 @@ fn check_preserves_intentional_url_sink_warning() {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("navigation or media destination"));
 
+    fs::remove_dir_all(root).expect("temporary output should be removable");
+}
+
+#[test]
+fn theme_styles_resolve_without_explicit_include() {
+    let root = temp_out_dir();
+    fs::create_dir_all(root.join("src")).expect("temporary project should be creatable");
+    fs::write(
+        root.join("frame.config.json"),
+        r#"{"entry":"src/app.frame","outDir":"src/generated"}"#,
+    )
+    .expect("config should be writable");
+    fs::write(
+        root.join("src/app-theme.frame"),
+        "card PrimaryAction {\n  surface raised\n}\n",
+    )
+    .expect("theme should be writable");
+    fs::write(
+        root.join("src/app.frame"),
+        "component App {\n  view {\n    action Send:PrimaryAction {\n      text \"Send\"\n    }\n  }\n}\n",
+    )
+    .expect("frame source should be writable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("check")
+        .arg(root.join("src/app.frame"))
+        .output()
+        .expect("frame check should run");
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    // Theme styles should not produce "not declared" warnings
+    assert!(
+        !stderr.contains("not declared in this file"),
+        "theme style should be resolved: {stderr}"
+    );
+    fs::remove_dir_all(root).expect("temporary output should be removable");
+}
+
+#[test]
+fn local_style_overrides_theme_style() {
+    let root = temp_out_dir();
+    fs::create_dir_all(root.join("src")).expect("temporary project should be creatable");
+    fs::write(
+        root.join("frame.config.json"),
+        r#"{"entry":"src/app.frame","outDir":"src/generated"}"#,
+    )
+    .expect("config should be writable");
+    fs::write(
+        root.join("src/app-theme.frame"),
+        "card PrimaryAction {\n  surface raised\n}\n",
+    )
+    .expect("theme should be writable");
+    // Local file also defines PrimaryAction; the compiler should handle duplicates
+    fs::write(
+        root.join("src/app.frame"),
+        "card PrimaryAction {\n  surface panel\n}\n\ncomponent App {\n  view {\n    action Send:PrimaryAction {\n      text \"Send\"\n    }\n  }\n}\n",
+    )
+    .expect("frame source should be writable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("check")
+        .arg(root.join("src/app.frame"))
+        .output()
+        .expect("frame check should run");
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    // Duplicate declarations should be diagnosed
+    assert!(stderr.contains("Duplicate"));
+    fs::remove_dir_all(root).expect("temporary output should be removable");
+}
+
+#[test]
+fn check_passes_without_theme_file() {
+    let root = temp_out_dir();
+    fs::create_dir_all(root.join("src")).expect("temporary project should be creatable");
+    fs::write(
+        root.join("frame.config.json"),
+        r#"{"entry":"src/app.frame","outDir":"src/generated"}"#,
+    )
+    .expect("config should be writable");
+    fs::write(
+        root.join("src/app.frame"),
+        "component App {\n  view {\n    screen Main {\n      text \"Hello\"\n    }\n  }\n}\n",
+    )
+    .expect("frame source should be writable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("check")
+        .arg(root.join("src/app.frame"))
+        .output()
+        .expect("frame check should run");
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("theme: none"));
     fs::remove_dir_all(root).expect("temporary output should be removable");
 }
