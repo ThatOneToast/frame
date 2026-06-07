@@ -1,11 +1,28 @@
 component MessageItem {
   props {
-    title string
+    author text
+    body text
+    selected bool
   }
 
   view {
-    card Message {
-      text $title
+    row MessageRow:MessageShell {
+      style SelectedMessage when $selected
+
+      avatar AuthorAvatar {
+        label $author
+        alt $author
+      }
+
+      stack MessageBody {
+        text $author
+        text $body
+      }
+
+      action Reply:MessageAction {
+        text "Reply"
+        on press @replyToMessage
+      }
     }
   }
 }
@@ -13,13 +30,50 @@ component MessageItem {
 component ChatApp {
   state {
     messages list = []
+    selectedId text = ""
   }
 
   view {
-    screen ChatMain {
-      for message in $messages key $message.id {
-        MessageItem(title: $message.text)
+    screen ChatScreen:ChatShell {
+      panel ChannelPanel {
+        title "General"
+      }
+
+      stack Conversation {
+        feed Messages {
+          source $messages
+
+          for message in $messages key $message.id {
+            MessageItem(author: $message.author, body: $message.body, selected: $message.selected)
+          }
+
+          empty NoMessages {
+            text "No messages yet"
+          }
+        }
       }
     }
   }
+}
+
+grid ChatShell {
+  columns sidebar content
+  height screen
+  gap medium
+}
+
+card MessageShell {
+  padding medium
+  gap medium
+  surface panel
+}
+
+card SelectedMessage {
+  border accent
+  glow accent
+}
+
+card MessageAction {
+  padding small
+  surface main
 }

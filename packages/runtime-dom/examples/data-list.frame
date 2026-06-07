@@ -1,0 +1,56 @@
+component DataList {
+  state {
+    invoices list = []
+  }
+
+  view {
+    data InvoiceData:DataShell {
+      source $invoices
+      title "Invoices"
+
+      row DataHeader {
+        title "Number"
+        title "Status"
+      }
+
+      list InvoiceRows {
+        source $invoices
+
+        for invoice in $invoices key $invoice.id {
+          row InvoiceRow:DataRow {
+            item InvoiceNumber {
+              text $invoice.number
+            }
+
+            item InvoiceStatus {
+              badge StatusBadge {
+                text $invoice.status
+              }
+            }
+          }
+        }
+
+        empty EmptyInvoices {
+          text "No invoices"
+        }
+      }
+    }
+  }
+}
+
+stack DataShell {
+  gap small
+  padding large
+  surface panel
+}
+
+card DataRow {
+  padding small
+  gap medium
+}
+
+card StatusBadge {
+  surface main
+  padding small
+  radius pill
+}

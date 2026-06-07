@@ -1,0 +1,43 @@
+component FieldInput {
+  state {
+    draft text = ""
+    invalid bool = false
+  }
+
+  view {
+    field DraftField:FieldShell {
+      label "Draft"
+      hint "Text is mirrored below."
+      style InvalidField when $invalid
+
+      input DraftInput:TextInput {
+        value bind $draft
+        placeholder "Type a message"
+        on input @updateDraft
+      }
+    }
+
+    panel PreviewPanel {
+      label "Preview"
+      text $draft
+    }
+  }
+}
+
+stack FieldShell {
+  gap small
+  padding medium
+  surface panel
+  radius medium
+}
+
+stack InvalidField {
+  border danger
+  ring danger
+}
+
+card TextInput {
+  padding medium
+  radius small
+  surface main
+}

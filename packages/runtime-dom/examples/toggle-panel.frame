@@ -5,10 +5,31 @@ component TogglePanel {
   }
 
   view {
-    section AccountPanel {
+    stack AccountPanel:AccountShell {
       show when $loggedIn
       hidden when $collapsed
+
+      row AccountHeader {
+        title "Account"
+
+        action Collapse:SecondaryAction {
+          text "Toggle"
+          on press @toggleCollapsed
+        }
+      }
+
       text "Account details"
     }
   }
+}
+
+stack AccountShell {
+  gap medium
+  padding large
+  surface panel
+}
+
+card SecondaryAction {
+  surface main
+  padding small
 }

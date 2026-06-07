@@ -2,29 +2,58 @@ component SettingsDialog {
   state {
     open bool = true
     compact bool = false
+    saving bool = false
   }
 
   view {
-    dialog SettingsModal {
+    dialog SettingsDialog:DialogShell {
       show when $open
+      style SavingDialog when $saving
 
-      title SettingsTitle {
-        text "Settings"
+      stack DialogBody {
+        title "Settings"
+
+        field CompactField {
+          toggle CompactMode {
+            label "Compact mode"
+            checked bind $compact
+          }
+        }
       }
 
-      composer SettingsForm {
-        on submit @save
-
-        toggle CompactToggle {
-          label "Compact mode"
-          checked bind $compact
+      row DialogActions {
+        action Save:PrimaryAction {
+          text "Save"
+          disabled when $saving
+          on press @saveSettings
         }
 
-        action SaveButton {
-          text "Save"
-          on press @save
+        action Close:SecondaryAction {
+          text "Close"
+          on press @closeSettings
         }
       }
     }
   }
+}
+
+stack DialogShell {
+  gap medium
+  padding large
+  surface panel
+  radius large
+}
+
+stack SavingDialog {
+  opacity muted
+}
+
+card PrimaryAction {
+  background accent
+  padding medium
+}
+
+card SecondaryAction {
+  surface main
+  padding medium
 }

@@ -1,27 +1,69 @@
 component ChatComposer {
   state {
-    draft string = ""
+    draft text = ""
     sending bool = false
   }
 
   view {
-    composer ComposerForm {
+    composer MessageComposer:ComposerShell {
       label "Message composer"
-      on submit @send
-      on reset @clear
+      draft bind $draft
+      send @sendMessage
+      style SendingComposer when $sending
 
-      editor DraftInput {
+      field MessageField {
         label "Message"
-        value bind $draft
-        on input @updateDraft
-        on keydown.enter @send
+
+        editor DraftEditor:ComposerEditor {
+          value bind $draft
+          placeholder "Message #general"
+          on keydown.ctrl.enter @sendMessage
+        }
       }
 
-      action SendButton {
-        disabled when $sending
-        text "Send"
-        on press @send
+      row ComposerActions {
+        action Send:PrimaryAction {
+          text "Send"
+          disabled when $sending
+          on press @sendMessage
+        }
+
+        action Clear:SecondaryAction {
+          text "Clear"
+          on press @clearDraft
+        }
       }
     }
   }
+}
+
+stack ComposerShell {
+  gap medium
+  padding medium
+  surface panel
+  radius large
+}
+
+stack SendingComposer {
+  opacity muted
+}
+
+card ComposerEditor {
+  padding medium
+  min-height medium
+}
+
+row ComposerActions {
+  gap small
+  justify end
+}
+
+card PrimaryAction {
+  background accent
+  padding medium
+}
+
+card SecondaryAction {
+  surface main
+  padding medium
 }

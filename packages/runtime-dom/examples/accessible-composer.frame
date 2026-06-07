@@ -1,0 +1,68 @@
+component AccessibleComposer {
+  props {
+    heading text
+  }
+
+  state {
+    email text = ""
+    subscribed bool = false
+    submitting bool = false
+  }
+
+  view {
+    composer SignupComposer:SignupShell {
+      label $heading
+      description "Join the product update list."
+      style SubmittingShell when $submitting
+      on submit @submitSignup
+
+      field EmailField {
+        label "Email"
+        hint "Use the address where updates should arrive."
+
+        input EmailInput:FieldControl {
+          value bind $email
+          placeholder "you@example.com"
+          required when $submitting
+          on input @updateEmail
+        }
+      }
+
+      field SubscribeField {
+        toggle SubscribeToggle {
+          label "Subscribe to updates"
+          checked bind $subscribed
+          on change @toggleSubscribed
+        }
+      }
+
+      action Join:PrimaryAction {
+        text "Join"
+        disabled when $submitting
+        on press @submitSignup
+      }
+    }
+  }
+}
+
+stack SignupShell {
+  gap medium
+  padding large
+  surface panel
+}
+
+stack SubmittingShell {
+  opacity muted
+}
+
+card FieldControl {
+  padding medium
+  surface main
+  radius small
+}
+
+card PrimaryAction {
+  background accent
+  padding medium
+  radius medium
+}

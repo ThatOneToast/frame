@@ -1,19 +1,32 @@
 component MediaCard {
+  props {
+    cover text
+    preview text
+  }
+
   view {
-    card MediaCard {
-      image CoverPicture {
-        sources "/media/cover.avif"
+    card PreviewCard:MediaShell {
+      image CoverImage {
+        source $cover
         alt "Product preview"
       }
 
-      media PreviewVideo {
-        sources "/media/preview.mp4"
+      media PreviewMedia {
+        sources $preview
         poster "/media/poster.jpg"
       }
 
-      label Caption {
-        text "A media card with safe URL attributes."
+      stack Caption {
+        title "Preview"
+        text "Image and media sources stay explicit URL-bearing intent."
       }
     }
   }
+}
+
+card MediaShell {
+  surface panel
+  padding medium
+  radius large
+  overflow hidden
 }

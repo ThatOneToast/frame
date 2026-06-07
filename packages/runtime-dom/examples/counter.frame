@@ -1,12 +1,36 @@
 component Counter {
   state {
     count number = 0
+    busy bool = false
   }
 
   view {
-    action Increment:PrimaryButton {
+    stack CounterPanel {
+      title "Counter"
       text $count
-      on press @increment
+
+      action Increment:PrimaryAction {
+        text "Increment"
+        disabled when $busy
+        style BusyAction when $busy
+        on press @increment
+      }
     }
   }
+}
+
+stack CounterPanel {
+  gap medium
+  padding large
+  surface panel
+}
+
+card PrimaryAction {
+  background accent
+  padding medium
+  radius medium
+}
+
+card BusyAction {
+  opacity muted
 }

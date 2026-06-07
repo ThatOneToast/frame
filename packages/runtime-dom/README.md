@@ -32,3 +32,5 @@ app.flush();
 ```
 
 `frame build` writes both `app.ir.json` and `app.ir.ts`. The JSON file is the stable serialized IR artifact. The TS module imports `defineFrameIrDocument` and checks the same IR object as a literal, which keeps TypeScript enum fields such as `value_type: "Text"` aligned with the runtime types.
+
+The `examples/` directory uses current Frame-native UI syntax: `screen`, `panel`, `stack`, `row`, `field`, `input`, `editor`, `composer`, `action`, `list`, `feed`, and `data`. Browser element names are intentionally absent from primary examples.

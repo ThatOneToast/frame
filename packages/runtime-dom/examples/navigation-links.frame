@@ -1,23 +1,29 @@
 component NavigationLinks {
   view {
-    menu MainNav {
-      label "Primary"
+    menu MainNavigation:NavigationShell {
+      label "Primary navigation"
 
-      list NavList {
+      stack NavigationItems {
         item HomeItem {
-          link HomeLink {
+          link Home {
             goto "/"
             text "Home"
           }
         }
 
         item DocsItem {
-          link DocsLink {
-            goto "https://example.com/docs"
+          link Docs {
+            goto "/docs"
             text "Docs"
           }
         }
       }
     }
   }
+}
+
+stack NavigationShell {
+  gap small
+  padding medium
+  surface panel
 }
