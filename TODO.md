@@ -161,6 +161,8 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Add `frame init svelte`.
 - [x] Add `frame new` with web and svelte templates.
 - [x] Add `frame doctor` for environment checks.
+- [x] Add `frame build --watch` for automatic rebuilds during development.
+- [x] Add project theme file (`app-theme.frame`) auto-resolution in `frame build` and `frame check`.
 - [ ] Add `frame init tauri`. (Deferred to Phase 12 — Tauri/WebView Target)
 - [x] Keep existing styling commands compatible during migration.
 
@@ -189,13 +191,17 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Add go-to-definition for imported styles, components, and grids.
 - [x] Add Find All References for styles, handlers, state, props, and declarations across includes.
 - [x] Add workspace edits that create missing symbols in included files.
+- [x] Add project theme file (`app-theme.frame`) completions, hover, definitions, and references.
+- [x] Add code actions that can create missing styles in `app-theme.frame`.
 
 ## Phase 10 — Web App Target
 
-- [ ] Build a minimal browser app with the DOM runtime.
-- [ ] Document packaging expectations.
-- [ ] Keep desktop-specific APIs outside the core Frame language.
-- [ ] Add a small example app under `implementations/` when runtime exists.
+- [x] Build a minimal browser app with the DOM runtime.
+- [x] Document packaging expectations.
+- [x] Keep desktop-specific APIs outside the core Frame language.
+- [x] Add a small example app under `implementations/` when runtime exists.
+- [x] Add project theme file (`app-theme.frame`) to web template.
+- [x] Add `frame:watch` script to web template and wire into `npm run dev`.
 
 ## Phase 11 — Tauri/WebView Target
 

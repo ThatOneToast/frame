@@ -346,11 +346,14 @@ Deliverables:
 - [x] Hover docs for UI intent and accessibility behavior.
 - [x] Go-to-definition for handlers and styles.
 - [x] Code action for missing same-file style skeletons.
+- [x] Code action to map automatic style lookup nodes to existing styles.
 - [x] Multi-file code actions for missing handler, state, and prop skeletons.
 - [x] Workspace edits that create symbols in included files.
 - [x] Find All References across includes.
 - [x] Cross-file diagnostics for unresolved components, duplicate symbols, and shadowed imports.
 - [x] Diagnostics for unsafe/invalid DOM usage.
+- [x] Project theme file (`app-theme.frame`) completions, hover, definitions, and references.
+- [x] Code actions can create missing styles in `app-theme.frame`.
 
 Success criteria:
 
@@ -374,6 +377,10 @@ Deliverables:
 - [x] Browser example app (`implementations/frame-web-app`) demonstrating semantic layout, input binding, actions, lists, and handlers.
 - [x] Build output docs in web template README.
 - [x] Debugging docs explaining runtime debug mode and generated files.
+- [x] Project theme file (`app-theme.frame`) generated with web template.
+- [x] Theme file automatically included in `frame check` and `frame build`.
+- [x] `frame build --watch` for automatic rebuilds during development.
+- [x] Web template `npm run dev` runs Frame watch and Vite in parallel.
 - [ ] Hot reload during dev.
 - [ ] Production build optimization docs.
 

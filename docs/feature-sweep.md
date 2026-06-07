@@ -112,7 +112,12 @@ Implemented:
 - Explicit style binding uses `Name:StyleName`.
 - Conditional style switching supports `style when $state = StyleName` and `style StyleName when $state`; both lower into `FrameIrCondition::Style` and runtime patches classes.
 - Missing explicit style references produce semantic diagnostics.
+- LSP code actions can create missing style skeletons and map automatic lookup nodes to existing styles.
 - LSP navigation can resolve same-file style bindings.
+- Project theme file (`app-theme.frame`) is automatically discovered and included without explicit `#include`.
+- Theme file resolution works in CLI (`check`, `build`), LSP (completions, definitions, references), and code actions.
+- `frame build --watch` rebuilds when any `.frame` file in the project changes.
+- Web template includes `frame:watch` script and wires it into `npm run dev` via `npm-run-all`.
 
 Implemented:
 
@@ -158,8 +163,8 @@ npm test
 
 All commands passed.
 
-- Rust: 85 LSP tests, 46 `frame_core` tests, 18 parser tests, 19 CLI tests (including 20 golden fixture assertions), 32 `frame_codegen` tests (including contract/skeleton import coverage)
+- Rust: 97 LSP tests, 46 `frame_core` tests, 18 parser tests, 22 CLI tests (including 20 golden fixture assertions), 32 `frame_codegen` tests (including contract/skeleton import coverage)
 - TypeScript: 71 `runtime-dom` tests, 9 `frame-svelte` tests
-- End-to-end: all 10 runtime examples verified with `frame check`; all examples build; `implementations/frame-web-app` builds with Vite; fresh web template installs and builds
+- End-to-end: all 10 runtime examples verified with `frame check`; all examples build; `implementations/frame-web-app` builds with Vite; fresh web template installs and builds; theme file and watch mode verified
 - Tree-sitter: `generate`, `parse`, and highlight tests pass
 - Zed extension: `cargo test` passes
