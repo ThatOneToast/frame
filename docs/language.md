@@ -56,7 +56,7 @@ width fill
 Nested state blocks describe interaction intent:
 
 ```frame
-button PrimaryButton {
+card PrimaryButton {
   surface panel
   padding medium
   radius pill
@@ -107,7 +107,7 @@ Use style groups when generated CSS needs deterministic cascade layers:
 style-order reset, base, components, utilities
 
 style-group components {
-  button PrimaryButton {
+  card PrimaryButton {
     surface panel
     radius medium
   }
