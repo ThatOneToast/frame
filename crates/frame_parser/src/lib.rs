@@ -226,6 +226,14 @@ component Chat {
       }
 
       action Save
+
+      field EmailField {
+        style InvalidField when $hasError
+
+        input EmailInput {
+          value bind $draft
+        }
+      }
     }
   }
 }
@@ -238,7 +246,7 @@ component Chat {
         };
 
         assert_eq!(screen.kind.text, "screen");
-        assert_eq!(screen.children.len(), 4);
+        assert_eq!(screen.children.len(), 5);
         assert!(matches!(
             screen.children[0],
             UiNode::Element(ref element)
@@ -262,6 +270,12 @@ component Chat {
             screen.children[3],
             UiNode::Element(ref element)
                 if element.kind.text == "action" && element.name.text == "Save"
+        ));
+        assert!(matches!(
+            screen.children[4],
+            UiNode::Element(ref element)
+                if element.kind.text == "field"
+                    && matches!(element.properties[0].value, UiPropertyValue::StyleWhen { ref style, .. } if style.name.text == "InvalidField")
         ));
     }
 

@@ -482,6 +482,22 @@ fn parse_ui_property(line: Line<'_>, words: &[String]) -> Result<UiProperty, Par
                 },
             )
         }
+        [property, style, when, value]
+            if property == "style" && when == "when" && value.starts_with('$') =>
+        {
+            let state = value.trim_start_matches('$');
+            let style_span = word_span_in_line(line, style);
+            (
+                name.as_str(),
+                UiPropertyValue::StyleWhen {
+                    condition: data_ref(line, value, state),
+                    style: StyleBinding {
+                        name: Identifier::new(style, style_span),
+                        span: style_span,
+                    },
+                },
+            )
+        }
         _ => (
             name.as_str(),
             UiPropertyValue::Unknown(words.iter().skip(1).cloned().collect()),

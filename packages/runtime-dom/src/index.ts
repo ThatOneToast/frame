@@ -306,6 +306,7 @@ const ELEMENT_TAGS: Record<string, string> = {
   editor: 'textarea',
   empty: 'div',
   feed: 'div',
+  field: 'div',
   fieldset: 'fieldset',
   footer: 'footer',
   form: 'form',

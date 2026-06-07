@@ -521,8 +521,8 @@ fn lower_property(
 fn default_render_kind(kind: &str) -> &str {
     match kind {
         "screen" | "panel" | "section" | "stack" | "row" | "grid" | "split" | "dock"
-        | "overlay" | "scroll" | "toolbar" | "tabs" | "card" | "popover" | "item" | "empty"
-        | "data" => "div",
+        | "overlay" | "scroll" | "toolbar" | "tabs" | "field" | "card" | "popover" | "item"
+        | "empty" | "data" => "div",
         "action" => "button",
         "link" => "a",
         "menu" => "nav",

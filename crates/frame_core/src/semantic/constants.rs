@@ -1,8 +1,8 @@
 pub(crate) const SEMANTIC_UI_PRIMITIVES: &[&str] = &[
     "screen", "panel", "section", "stack", "row", "grid", "split", "dock", "overlay", "scroll",
-    "action", "link", "menu", "toolbar", "tabs", "input", "editor", "toggle", "choice", "select",
-    "composer", "title", "text", "label", "badge", "avatar", "icon", "image", "media", "list",
-    "feed", "data", "item", "empty", "card", "dialog", "popover",
+    "action", "link", "menu", "toolbar", "tabs", "field", "input", "editor", "toggle", "choice",
+    "select", "composer", "title", "text", "label", "badge", "avatar", "icon", "image", "media",
+    "list", "feed", "data", "item", "empty", "card", "dialog", "popover",
 ];
 
 pub(crate) const BROWSER_UI_WORDS: &[&str] = &[
