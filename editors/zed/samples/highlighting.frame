@@ -1,8 +1,5 @@
-tokens Brand {
-  color brand #7c3aed
-  color brand-muted #a78bfa
-  color page-bg #0f0f14
-}
+// Structural declarations and includes
+#include "./styles.frame"
 
 style-order reset, base, components, utilities
 
@@ -13,6 +10,7 @@ style-group components {
   }
 }
 
+// Grid and responsive declarations
 grid Dashboard {
   columns 25% 50% 25%
   rows header content footer
@@ -38,6 +36,7 @@ grid Dashboard {
   }
 }
 
+// Supports declarations
 supports display grid {
   grid SupportedShell {
     columns sidebar content
@@ -56,6 +55,7 @@ supports subgrid {
   }
 }
 
+// Keyframes
 keyframes FloatIn {
   from {
     opacity 0
@@ -72,6 +72,7 @@ keyframes FloatIn {
   }
 }
 
+// Layout declarations
 dock AppDock {
   position sticky bottom
   surface panel
@@ -81,6 +82,7 @@ dock AppDock {
   text bright
 }
 
+// Style declarations with effects and states
 card DemoCard {
   surface gradient dusk
   border accent
@@ -138,43 +140,167 @@ card DemoCard {
   }
 }
 
+// Component with all UI syntax forms
 component ChatInput {
+  props {
+    channel text
+    active bool
+  }
+
   state {
     draft text = ""
     sending bool = false
+    count number = 0
   }
 
   view {
-    panel Sidebar {
-      list Channels {
-        text "Channels"
+    // Layout primitives
+    screen ChatScreen {
+      panel Sidebar {
+        list Channels {
+          text "Channels"
+        }
+      }
+
+      stack ChatPanel {
+        text $draft
+
+        // Conditional rendering
+        panel StatusPanel {
+          show when $sending
+          text "Sending..."
+        }
+
+        // Field with input
+        field MessageField {
+          label "Message"
+          description "Enter your message"
+          hint "Markdown supported"
+
+          input MessageBox {
+            value bind $draft
+            placeholder "Message"
+            readonly when $sending
+            disabled when $sending
+            on keydown.ctrl.enter @sendMessage
+          }
+        }
+
+        // Composer
+        composer ChatComposer {
+          label "Compose"
+          draft bind $draft
+          send @sendMessage
+        }
+
+        // Action with explicit style and conditional style
+        action Send:PrimaryButton {
+          text "Send"
+          disabled when $sending
+          on press @sendMessage
+          style LoadingButton when $sending
+        }
+
+        // Link
+        link Docs {
+          goto "/docs"
+          text "Documentation"
+          new-window true
+        }
+
+        // Dialog
+        dialog ConfirmDialog {
+          show when $active
+          title "Confirm"
+          text "Are you sure?"
+        }
+
+        // Popover
+        popover HelpPopover {
+          text "More detail here"
+        }
+
+        // Image
+        image Avatar {
+          source $avatarUrl
+          alt "User avatar"
+        }
+
+        // Media
+        media Preview {
+          source $videoUrl
+          poster $posterUrl
+        }
+
+        // Toggle
+        toggle CompactMode {
+          label "Compact"
+          checked bind $compact
+        }
+
+        // Icon
+        icon SearchIcon {
+          label "Search"
+          decorative false
+        }
+
+        // Badge
+        badge StatusBadge {
+          text "New"
+        }
+
+        // Tabs
+        tabs SettingsTabs {
+          action General {
+            on press @openGeneral
+          }
+        }
+
+        // Toolbar
+        toolbar EditorTools {
+          action Save {
+            on press @save
+          }
+        }
+
+        // Menu
+        menu MainNav {
+          link Home {
+            goto "/"
+            text "Home"
+          }
+        }
+      }
+
+      // Keyed loop
+      for message in $messages key $message.id {
+        item MessageItem {
+          row MessageRow {
+            avatar AuthorAvatar {
+              source $message.avatar
+              alt $message.author
+            }
+            stack Body {
+              text $message.author
+              text $message.body
+            }
+          }
+        }
+      }
+
+      // Empty state
+      empty NoMessages {
+        text "No messages yet"
       }
     }
 
-    panel ChatPanel {
-      text $draft
-    }
+    // Component invocations with arguments
+    ChatPanel(channel: $activeChannel)
+    MessageComposer(draft bind $draft)
+    ChannelSidebar()
+  }
 
-    composer MessageComposer {
-      draft bind $draft
-      on send @sendMessage
-    }
-
-    field MessageField {
-      label "Message"
-
-      input MessageBox {
-        value bind $draft
-        placeholder "Message"
-        on keydown.ctrl.enter @sendMessage
-      }
-    }
-
-    action Send:PrimaryButton {
-      text "Send"
-      disabled when $sending
-      on press @sendMessage
-      style LoadingButton when $sending
-    }
+  slot Default {
+    text "Fallback content"
   }
 }

@@ -65,6 +65,7 @@ const UI_PROPERTY_KEYWORDS = [
   "checked",
   "selected",
   "disabled",
+  "readonly",
   "kind",
   "value",
   "style",
