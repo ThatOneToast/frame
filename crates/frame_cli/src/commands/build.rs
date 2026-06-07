@@ -51,6 +51,14 @@ pub fn build_project_at(root: &Path) -> anyhow::Result<()> {
         out_path.join("app.ir.ts"),
         frame_codegen::generate_ir_typescript(&document)?,
     )?;
+    std::fs::write(
+        out_path.join("frame.types.ts"),
+        frame_codegen::generate_contracts(&document),
+    )?;
+    let skeleton_path = out_path.join("frame.handlers.ts");
+    if !skeleton_path.exists() {
+        std::fs::write(&skeleton_path, frame_codegen::generate_skeletons(&document))?;
+    }
     println!("Frame build complete.");
     Ok(())
 }

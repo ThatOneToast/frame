@@ -100,7 +100,7 @@ const WEB_PACKAGE_JSON: &str = r#"{
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@frame/runtime-dom": "workspace:*"
+    "@frame/runtime-dom": "file:../../packages/runtime-dom"
   }
 }
 "#;
@@ -149,12 +149,12 @@ const app = mount(appIr, {
 (window as any).frameApp = app;
 "#;
 
-const WEB_HANDLERS_TS: &str = r#"import type { FrameHandler } from '@frame/runtime-dom';
+const WEB_HANDLERS_TS: &str = r#"import type { AppHandlers } from './generated/frame.types';
 
-export const handlers: Record<string, FrameHandler> = {
-  increment({ state }) {
-    const current = state.get('count') as number;
-    state.set('count', current + 1);
+export const handlers: AppHandlers = {
+  increment(ctx) {
+    const current = ctx.state.get('count') as number;
+    ctx.state.set('count', current + 1);
   }
 };
 "#;
@@ -169,15 +169,20 @@ A standalone Frame UI project using the DOM runtime.
 - `src/generated/generated.css` — compiled CSS output
 - `src/generated/app.ir.json` — stable serialized Frame IR
 - `src/generated/app.ir.ts` — typed IR module consumed by TypeScript
+- `src/generated/frame.types.ts` — generated TypeScript contracts (props, state, handlers)
+- `src/generated/frame.handlers.ts` — generated handler skeletons (non-destructive)
 - `src/main.ts` — app entry point (mounts the Frame runtime)
 - `src/handlers.ts` — your handler implementations
 
 ## Commands
 
-Build (CSS + IR):
+Build (CSS + IR + types + skeletons):
 ```bash
 frame build
 ```
+
+The build command generates `frame.handlers.ts` only if it does not already exist.
+Copy functions from there into your `src/handlers.ts` and implement them.
 
 Compile CSS only:
 ```bash

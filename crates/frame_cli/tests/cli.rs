@@ -365,17 +365,24 @@ fn new_web_generates_typed_runtime_project() {
     assert!(project.join("src/generated/generated.ts").exists());
     assert!(project.join("src/generated/app.ir.json").exists());
     assert!(project.join("src/generated/app.ir.ts").exists());
+    assert!(project.join("src/generated/frame.types.ts").exists());
+    assert!(project.join("src/generated/frame.handlers.ts").exists());
 
     let main_ts = fs::read_to_string(project.join("src/main.ts")).expect("main ts");
     let frame_source =
         fs::read_to_string(project.join("src/frame/app.frame")).expect("frame source");
     let ir_ts = fs::read_to_string(project.join("src/generated/app.ir.ts")).expect("typed ir");
+    let types_ts = fs::read_to_string(project.join("src/generated/frame.types.ts")).expect("types");
+    let handlers_ts =
+        fs::read_to_string(project.join("src/generated/frame.handlers.ts")).expect("handlers");
 
     assert!(main_ts.contains("import appIr from './generated/app.ir';"));
     assert!(frame_source.contains("screen Main"));
     assert!(frame_source.contains("action Increment"));
     assert!(ir_ts.contains("defineFrameIrDocument"));
     assert!(ir_ts.contains("as const"));
+    assert!(types_ts.contains("export type FramePressEvent"));
+    assert!(handlers_ts.contains("TODO: implement increment"));
 
     fs::remove_dir_all(root).expect("temporary project should be removable");
 }
