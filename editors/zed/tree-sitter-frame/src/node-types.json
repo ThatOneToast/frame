@@ -154,6 +154,14 @@
       "required": false,
       "types": [
         {
+          "type": "props_block",
+          "named": true
+        },
+        {
+          "type": "slot_block",
+          "named": true
+        },
+        {
           "type": "ui_state_block",
           "named": true
         },
@@ -235,7 +243,7 @@
         "required": true,
         "types": [
           {
-            "type": "ui_property_keyword",
+            "type": "ui_attribute_name",
             "named": true
           }
         ]
@@ -402,6 +410,52 @@
     "fields": {}
   },
   {
+    "type": "for_loop",
+    "named": true,
+    "fields": {
+      "collection": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "data_ref",
+            "named": true
+          }
+        ]
+      },
+      "item": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "key": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "data_ref",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "ui_block",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "gradient_block",
     "named": true,
     "fields": {
@@ -490,9 +544,50 @@
     "fields": {}
   },
   {
+    "type": "prop_value",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "state_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "property_keyword",
     "named": true,
     "fields": {}
+  },
+  {
+    "type": "props_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "prop_value",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "responsive_block",
@@ -585,6 +680,32 @@
     }
   },
   {
+    "type": "slot_block",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "ui_block",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "source_file",
     "named": true,
     "root": true,
@@ -666,6 +787,10 @@
         "types": [
           {
             "type": "boolean",
+            "named": true
+          },
+          {
+            "type": "list_literal",
             "named": true
           },
           {
@@ -863,6 +988,25 @@
     }
   },
   {
+    "type": "ui_attribute_name",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "ui_property_keyword",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "ui_block",
     "named": true,
     "fields": {},
@@ -887,7 +1031,15 @@
           "named": true
         },
         {
+          "type": "for_loop",
+          "named": true
+        },
+        {
           "type": "ui_element",
+          "named": true
+        },
+        {
+          "type": "ui_element_shorthand",
           "named": true
         },
         {
@@ -921,7 +1073,7 @@
       },
       "name": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "ui_node_name",
@@ -957,6 +1109,50 @@
     "fields": {}
   },
   {
+    "type": "ui_element_shorthand",
+    "named": true,
+    "fields": {
+      "kind": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "ui_element_keyword",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "data_ref",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "ui_node_name",
+            "named": true
+          }
+        ]
+      },
+      "style": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "style_name",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "ui_node_name",
     "named": true,
     "fields": {},
@@ -980,7 +1176,7 @@
         "required": true,
         "types": [
           {
-            "type": "ui_property_keyword",
+            "type": "ui_attribute_name",
             "named": true
           }
         ]
@@ -995,6 +1191,10 @@
           },
           {
             "type": "data_ref",
+            "named": true
+          },
+          {
+            "type": "handler_ref",
             "named": true
           },
           {
@@ -1148,6 +1348,10 @@
     "named": false
   },
   {
+    "type": "action",
+    "named": false
+  },
+  {
     "type": "active",
     "named": false
   },
@@ -1188,7 +1392,15 @@
     "named": false
   },
   {
+    "type": "avatar",
+    "named": false
+  },
+  {
     "type": "background",
+    "named": false
+  },
+  {
+    "type": "badge",
     "named": false
   },
   {
@@ -1232,6 +1444,10 @@
     "named": false
   },
   {
+    "type": "capture",
+    "named": false
+  },
+  {
     "type": "card",
     "named": false
   },
@@ -1252,7 +1468,15 @@
     "named": false
   },
   {
-    "type": "click",
+    "type": "choice",
+    "named": false
+  },
+  {
+    "type": "class",
+    "named": false
+  },
+  {
+    "type": "close",
     "named": false
   },
   {
@@ -1285,6 +1509,10 @@
     "named": true
   },
   {
+    "type": "composer",
+    "named": false
+  },
+  {
     "type": "container",
     "named": false
   },
@@ -1301,6 +1529,14 @@
     "named": false
   },
   {
+    "type": "data",
+    "named": false
+  },
+  {
+    "type": "data-test-id",
+    "named": false
+  },
+  {
     "type": "data_ref",
     "named": true
   },
@@ -1309,7 +1545,19 @@
     "named": false
   },
   {
+    "type": "decorative",
+    "named": false
+  },
+  {
     "type": "delay",
+    "named": false
+  },
+  {
+    "type": "description",
+    "named": false
+  },
+  {
+    "type": "dialog",
     "named": false
   },
   {
@@ -1337,11 +1585,27 @@
     "named": false
   },
   {
+    "type": "download",
+    "named": false
+  },
+  {
+    "type": "draft",
+    "named": false
+  },
+  {
     "type": "duration",
     "named": false
   },
   {
     "type": "ease",
+    "named": false
+  },
+  {
+    "type": "editor",
+    "named": false
+  },
+  {
+    "type": "empty",
     "named": false
   },
   {
@@ -1358,6 +1622,10 @@
   },
   {
     "type": "false",
+    "named": false
+  },
+  {
+    "type": "feed",
     "named": false
   },
   {
@@ -1393,7 +1661,7 @@
     "named": false
   },
   {
-    "type": "form",
+    "type": "for",
     "named": false
   },
   {
@@ -1406,6 +1674,10 @@
   },
   {
     "type": "glow",
+    "named": false
+  },
+  {
+    "type": "goto",
     "named": false
   },
   {
@@ -1429,11 +1701,27 @@
     "named": false
   },
   {
+    "type": "hidden",
+    "named": false
+  },
+  {
+    "type": "hint",
+    "named": false
+  },
+  {
     "type": "hover",
     "named": false
   },
   {
     "type": "hyphenate",
+    "named": false
+  },
+  {
+    "type": "icon",
+    "named": false
+  },
+  {
+    "type": "id",
     "named": false
   },
   {
@@ -1469,11 +1757,19 @@
     "named": false
   },
   {
+    "type": "item",
+    "named": false
+  },
+  {
     "type": "iteration",
     "named": false
   },
   {
     "type": "justify",
+    "named": false
+  },
+  {
+    "type": "key",
     "named": false
   },
   {
@@ -1486,6 +1782,14 @@
   },
   {
     "type": "keyup",
+    "named": false
+  },
+  {
+    "type": "kind",
+    "named": false
+  },
+  {
+    "type": "label",
     "named": false
   },
   {
@@ -1509,6 +1813,14 @@
     "named": false
   },
   {
+    "type": "list",
+    "named": false
+  },
+  {
+    "type": "list_literal",
+    "named": true
+  },
+  {
     "type": "margin",
     "named": false
   },
@@ -1526,6 +1838,10 @@
   },
   {
     "type": "max-width",
+    "named": false
+  },
+  {
+    "type": "menu",
     "named": false
   },
   {
@@ -1557,6 +1873,10 @@
     "named": false
   },
   {
+    "type": "new-window",
+    "named": false
+  },
+  {
     "type": "number",
     "named": false
   },
@@ -1573,7 +1893,19 @@
     "named": false
   },
   {
+    "type": "once",
+    "named": false
+  },
+  {
     "type": "opacity",
+    "named": false
+  },
+  {
+    "type": "open",
+    "named": false
+  },
+  {
+    "type": "options",
     "named": false
   },
   {
@@ -1594,6 +1926,10 @@
   },
   {
     "type": "panel",
+    "named": false
+  },
+  {
+    "type": "passive",
     "named": false
   },
   {
@@ -1625,11 +1961,27 @@
     "named": false
   },
   {
+    "type": "popover",
+    "named": false
+  },
+  {
     "type": "position",
     "named": false
   },
   {
+    "type": "poster",
+    "named": false
+  },
+  {
     "type": "press",
+    "named": false
+  },
+  {
+    "type": "prevent",
+    "named": false
+  },
+  {
+    "type": "props",
     "named": false
   },
   {
@@ -1669,7 +2021,27 @@
     "named": false
   },
   {
+    "type": "screen",
+    "named": false
+  },
+  {
+    "type": "scroll",
+    "named": false
+  },
+  {
     "type": "section",
+    "named": false
+  },
+  {
+    "type": "select",
+    "named": false
+  },
+  {
+    "type": "selected",
+    "named": false
+  },
+  {
+    "type": "send",
     "named": false
   },
   {
@@ -1682,6 +2054,10 @@
   },
   {
     "type": "shift",
+    "named": false
+  },
+  {
+    "type": "show",
     "named": false
   },
   {
@@ -1701,7 +2077,19 @@
     "named": false
   },
   {
+    "type": "slot",
+    "named": false
+  },
+  {
     "type": "smooth",
+    "named": false
+  },
+  {
+    "type": "source",
+    "named": false
+  },
+  {
+    "type": "sources",
     "named": false
   },
   {
@@ -1738,6 +2126,10 @@
   },
   {
     "type": "string",
+    "named": false
+  },
+  {
+    "type": "string",
     "named": true
   },
   {
@@ -1753,10 +2145,6 @@
     "named": false
   },
   {
-    "type": "submit",
-    "named": false
-  },
-  {
     "type": "supports",
     "named": false
   },
@@ -1766,6 +2154,10 @@
   },
   {
     "type": "tab",
+    "named": false
+  },
+  {
+    "type": "tabs",
     "named": false
   },
   {
@@ -1785,7 +2177,15 @@
     "named": false
   },
   {
+    "type": "title",
+    "named": false
+  },
+  {
     "type": "to",
+    "named": false
+  },
+  {
+    "type": "toggle",
     "named": false
   },
   {
@@ -1794,6 +2194,10 @@
   },
   {
     "type": "tone",
+    "named": false
+  },
+  {
+    "type": "toolbar",
     "named": false
   },
   {

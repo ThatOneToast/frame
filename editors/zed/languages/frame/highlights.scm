@@ -23,6 +23,13 @@
 (ui_state_block
   "state" @keyword)
 
+(props_block
+  "props" @keyword)
+
+(prop_value
+  name: (identifier) @variable
+  type: (state_type) @type)
+
 (state_value
   name: (identifier) @variable
   type: (state_type) @type)
@@ -30,11 +37,22 @@
 (view_block
   "view" @keyword)
 
+(slot_block
+  "slot" @keyword
+  name: (identifier) @type)
+
 (ui_element
   kind: (ui_element_keyword) @keyword
   name: (ui_node_name) @type)
 
 (ui_element
+  style: (style_name) @constant)
+
+(ui_element_shorthand
+  kind: (ui_element_keyword) @keyword
+  name: (ui_node_name) @type)
+
+(ui_element_shorthand
   style: (style_name) @constant)
 
 (component_invocation
@@ -45,6 +63,15 @@
 
 (component_argument
   "bind" @keyword)
+
+(for_loop
+  "for" @keyword
+  item: (identifier) @variable
+  "in" @keyword)
+
+(for_loop
+  "key" @keyword
+  key: (data_ref) @variable)
 
 (ui_text
   "text" @keyword)
@@ -61,7 +88,7 @@
   "bind" @keyword)
 
 (conditional_flag
-  property: (ui_property_keyword) @property
+  property: (ui_attribute_name) @property
   "when" @keyword)
 
 (conditional_style
@@ -70,11 +97,12 @@
   style: (style_name) @constant)
 
 (ui_property
-  property: (ui_property_keyword) @property)
+  property: (ui_attribute_name) @property)
 
 (data_ref) @variable
 (handler_ref) @function
 (boolean) @constant.builtin
+(list_literal) @constant.builtin
 
 ; Imports.
 (include

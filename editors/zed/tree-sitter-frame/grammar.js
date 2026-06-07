@@ -17,32 +17,81 @@ const DECLARATION_KEYWORDS = [
 ];
 
 const UI_ELEMENT_KEYWORDS = [
-  "button",
-  "input",
-  "text",
   "card",
+  "dialog",
+  "grid",
+  "image",
+  "input",
+  "label",
+  "link",
   "panel",
   "row",
+  "section",
+  "select",
   "stack",
-  "grid",
-  "area",
-  "image",
-  "link",
-  "form",
+  "text",
+  "screen",
+  "split",
+  "dock",
+  "overlay",
+  "scroll",
+  "action",
+  "menu",
+  "toolbar",
+  "tabs",
+  "editor",
+  "toggle",
+  "choice",
+  "composer",
+  "title",
+  "badge",
+  "avatar",
+  "icon",
+  "list",
+  "feed",
+  "data",
+  "item",
+  "empty",
+  "popover",
 ];
 
 const UI_PROPERTY_KEYWORDS = [
   "placeholder",
+  "hint",
+  "description",
+  "checked",
+  "selected",
   "disabled",
+  "kind",
   "value",
   "style",
+  "show",
+  "hidden",
+  "alt",
+  "decorative",
+  "id",
+  "class",
+  "data-test-id",
+  "goto",
+  "source",
+  "sources",
+  "poster",
+  "download",
+  "new-window",
+  "draft",
+  "send",
+  "options",
+  "required",
 ];
 
 const UI_EVENT_NAMES = [
-  "click",
+  "press",
+  "send",
+  "open",
+  "close",
+  "select",
   "input",
   "change",
-  "submit",
   "keydown",
   "keyup",
   "focus",
@@ -67,6 +116,11 @@ const UI_EVENT_MODIFIERS = [
   "right",
   "up",
   "down",
+  "prevent",
+  "stop",
+  "once",
+  "capture",
+  "passive",
 ];
 
 const STATE_KEYWORDS = [
@@ -222,8 +276,18 @@ module.exports = grammar({
     component_body: ($) =>
       seq(
         "{",
-        repeat(choice($._newline, $.ui_state_block, $.view_block)),
+        repeat(choice($._newline, $.props_block, $.ui_state_block, $.view_block, $.slot_block)),
         "}",
+      ),
+
+    props_block: ($) =>
+      seq("props", "{", repeat(choice($._newline, $.prop_value)), "}"),
+
+    prop_value: ($) =>
+      seq(
+        field("name", $.identifier),
+        field("type", $.state_type),
+        $._newline,
       ),
 
     ui_state_block: ($) =>
@@ -234,15 +298,18 @@ module.exports = grammar({
         field("name", $.identifier),
         field("type", $.state_type),
         "=",
-        field("default", choice($.string, $.boolean, $.number)),
+        field("default", choice($.string, $.boolean, $.number, $.list_literal)),
         $._newline,
       ),
 
-    state_type: (_) => choice("text", "bool", "number"),
+    state_type: (_) => choice("text", "string", "bool", "number", "list"),
 
     boolean: (_) => choice("true", "false"),
 
     view_block: ($) => seq("view", $.ui_block),
+
+    slot_block: ($) =>
+      seq("slot", field("name", $.identifier), $.ui_block),
 
     ui_block: ($) =>
       seq(
@@ -250,6 +317,8 @@ module.exports = grammar({
         repeat(choice(
           $._newline,
           $.ui_element,
+          $.ui_element_shorthand,
+          $.for_loop,
           $.component_invocation,
           $.ui_text,
           $.event_binding,
@@ -261,13 +330,30 @@ module.exports = grammar({
         "}",
       ),
 
+    for_loop: ($) =>
+      seq(
+        "for",
+        field("item", $.identifier),
+        "in",
+        field("collection", $.data_ref),
+        optional(seq("key", field("key", $.data_ref))),
+        $.ui_block,
+      ),
+
     ui_element: ($) =>
       seq(
         field("kind", $.ui_element_keyword),
-        field("name", $.ui_node_name),
-        optional(seq(":", field("style", $.style_name))),
+        optional(seq(field("name", $.ui_node_name), optional(seq(":", field("style", $.style_name))))),
         $.ui_block,
       ),
+
+    ui_element_shorthand: ($) =>
+      prec(1, seq(
+        field("kind", $.ui_element_keyword),
+        field("name", choice($.ui_node_name, $.string, $.data_ref)),
+        optional(seq(":", field("style", $.style_name))),
+        $._newline,
+      )),
 
     component_invocation: ($) =>
       seq(
@@ -285,7 +371,7 @@ module.exports = grammar({
       ),
 
     ui_text: ($) =>
-      seq("text", field("value", choice($.string, $.data_ref)), $._newline),
+      prec(2, seq("text", field("value", choice($.string, $.data_ref)), $._newline)),
 
     event_binding: ($) =>
       seq(
@@ -297,16 +383,24 @@ module.exports = grammar({
       ),
 
     value_binding: ($) =>
-      seq("value", "bind", field("value", $.data_ref), $._newline),
+      prec(2, choice(
+        seq("value", "bind", field("value", $.data_ref), $._newline),
+        seq("bind", field("value", $.data_ref), $._newline),
+      )),
+
+    ui_attribute_name: ($) => choice($.ui_property_keyword, $.identifier),
 
     conditional_flag: ($) =>
-      seq(field("property", $.ui_property_keyword), "when", field("condition", $.data_ref), $._newline),
+      seq(field("property", $.ui_attribute_name), "when", field("condition", $.data_ref), $._newline),
 
     conditional_style: ($) =>
       prec(1, seq("style", "when", field("condition", $.data_ref), "=", field("style", $.style_name), $._newline)),
 
     ui_property: ($) =>
-      seq(field("property", $.ui_property_keyword), field("value", choice($.string, $.data_ref, $.number, $.boolean, $.identifier)), $._newline),
+      choice(
+        seq(field("property", $.ui_attribute_name), "bind", field("value", $.data_ref), $._newline),
+        seq(field("property", $.ui_attribute_name), field("value", choice($.string, $.data_ref, $.handler_ref, $.number, $.boolean, $.identifier)), $._newline),
+      ),
 
     supports_block: ($) =>
       seq(
@@ -435,11 +529,13 @@ module.exports = grammar({
 
     number: (_) => /[0-9]+/,
 
+    list_literal: (_) => "[]",
+
     raw_value: (_) => /[^ \t\r\n{}]+/,
 
     color_literal: (_) => /#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?([0-9a-fA-F]{2})?/,
 
-    data_ref: (_) => /\$[A-Za-z_][A-Za-z0-9_-]*/,
+    data_ref: (_) => /\$[A-Za-z_][A-Za-z0-9_-]*(\.[A-Za-z_][A-Za-z0-9_-]*)*/,
 
     handler_ref: (_) => /@[A-Za-z_][A-Za-z0-9_-]*/,
 
