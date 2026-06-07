@@ -160,17 +160,21 @@ component ChatInput {
       on send @sendMessage
     }
 
-    input MessageBox {
-      value bind $draft
-      placeholder "Message"
-      on keydown.ctrl.enter @sendMessage
+    field MessageField {
+      label "Message"
+
+      input MessageBox {
+        value bind $draft
+        placeholder "Message"
+        on keydown.ctrl.enter @sendMessage
+      }
     }
 
     action Send:PrimaryButton {
       text "Send"
       disabled when $sending
       on press @sendMessage
-      style when $sending = LoadingButton
+      style LoadingButton when $sending
     }
   }
 }

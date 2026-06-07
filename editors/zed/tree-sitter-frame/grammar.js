@@ -39,6 +39,7 @@ const UI_ELEMENT_KEYWORDS = [
   "menu",
   "toolbar",
   "tabs",
+  "field",
   "editor",
   "toggle",
   "choice",
@@ -409,7 +410,10 @@ module.exports = grammar({
       seq(field("property", $.ui_attribute_name), "when", field("condition", $.data_ref), $._newline),
 
     conditional_style: ($) =>
-      prec(1, seq("style", "when", field("condition", $.data_ref), "=", field("style", $.style_name), $._newline)),
+      prec(1, choice(
+        seq("style", "when", field("condition", $.data_ref), "=", field("style", $.style_name), $._newline),
+        seq("style", field("style", $.style_name), "when", field("condition", $.data_ref), $._newline),
+      )),
 
     ui_property: ($) =>
       choice(

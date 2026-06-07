@@ -19,7 +19,7 @@ component ChatInput {
       text "Send"
       disabled when $sending
       on press @sendMessage
-      style when $sending = LoadingButton
+      style LoadingButton when $sending
     }
   }
 

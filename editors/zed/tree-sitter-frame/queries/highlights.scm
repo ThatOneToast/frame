@@ -96,6 +96,12 @@
   "when" @keyword
   style: (style_name) @constant)
 
+(conditional_style
+  "style" @property
+  style: (style_name) @constant
+  "when" @keyword
+  condition: (data_ref) @variable)
+
 (ui_property
   property: (ui_attribute_name) @property)
 
