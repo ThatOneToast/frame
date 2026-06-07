@@ -295,6 +295,89 @@ pub(crate) fn declaration_from_block(block: &crate::Block) -> Option<Declaration
     })
 }
 
+pub(crate) fn valid_properties_for_primitive(kind: &str) -> &'static [&'static str] {
+    match kind {
+        "input" | "editor" => &[
+            "value",
+            "placeholder",
+            "label",
+            "disabled",
+            "readonly",
+            "style",
+            "show",
+            "hidden",
+        ],
+        "toggle" | "choice" => &[
+            "checked", "selected", "label", "disabled", "readonly", "style", "show", "hidden",
+        ],
+        "select" => &[
+            "selected", "options", "label", "disabled", "readonly", "style", "show", "hidden",
+        ],
+        "field" => &[
+            "label",
+            "description",
+            "hint",
+            "style",
+            "show",
+            "hidden",
+            "disabled",
+        ],
+        "action" | "link" => &[
+            "text",
+            "label",
+            "goto",
+            "disabled",
+            "style",
+            "show",
+            "hidden",
+            "new-window",
+        ],
+        "composer" => &[
+            "label", "draft", "send", "disabled", "style", "show", "hidden",
+        ],
+        "media" | "image" | "avatar" => &[
+            "source",
+            "sources",
+            "alt",
+            "description",
+            "decorative",
+            "poster",
+            "style",
+            "show",
+            "hidden",
+        ],
+        "icon" => &["label", "decorative", "style", "show", "hidden"],
+        "list" | "feed" | "data" => &["source", "style", "show", "hidden"],
+        "text" | "title" | "label" | "badge" => &["value", "style", "show", "hidden"],
+        "card" | "panel" | "stack" | "row" | "screen" | "section" | "dialog" | "popover"
+        | "split" | "dock" | "overlay" | "scroll" | "grid" | "menu" | "toolbar" | "tabs" => {
+            &["style", "show", "hidden"]
+        }
+        "item" | "empty" => &["style", "show", "hidden"],
+        _ => &[],
+    }
+}
+
+pub(crate) fn primitive_kind_label(kind: &str) -> &'static str {
+    match kind {
+        "input" | "editor" => "input-like primitive",
+        "toggle" | "choice" | "select" => "selection primitive",
+        "field" => "field",
+        "action" | "link" => "action-like primitive",
+        "composer" => "composer",
+        "media" | "image" | "avatar" => "media-like primitive",
+        "icon" => "icon",
+        "list" | "feed" | "data" => "collection primitive",
+        "text" | "title" | "label" | "badge" => "text-like primitive",
+        "card" | "panel" | "stack" | "row" | "screen" | "section" | "dialog" | "popover"
+        | "split" | "dock" | "overlay" | "scroll" | "grid" | "menu" | "toolbar" | "tabs" => {
+            "container primitive"
+        }
+        "item" | "empty" => "collection item",
+        _ => "primitive",
+    }
+}
+
 pub(crate) fn is_style_declaration_kind(kind: &DeclarationKind) -> bool {
     matches!(
         kind,

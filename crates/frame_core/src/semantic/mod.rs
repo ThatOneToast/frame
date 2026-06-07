@@ -1544,4 +1544,276 @@ mod tests {
         assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.contains("valid color token"));
     }
+
+    #[test]
+    fn rejects_value_bind_on_text_primitive() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: Some(crate::StateDecl {
+                    values: vec![crate::StateValue {
+                        name: Identifier::new("draft", Span::default()),
+                        value_type: StateType::Text,
+                        default: StateDefault::Text("".to_string()),
+                        span: Span::default(),
+                    }],
+                    span: Span::default(),
+                }),
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("text", Span::default()),
+                        name: Identifier::new("Message", Span::default()),
+                        style: None,
+                        properties: vec![crate::UiProperty {
+                            name: Identifier::new("value", Span::default()),
+                            value: UiPropertyValue::Bind(DataRef {
+                                name: Identifier::new("draft", Span::default()),
+                                span: Span::default(),
+                            }),
+                            span: Span::default(),
+                        }],
+                        events: Vec::new(),
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert!(diagnostics.iter().any(|d| d
+            .message
+            .contains("`value bind` is only valid on input-like primitives")));
+    }
+
+    #[test]
+    fn rejects_placeholder_on_action_primitive() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: None,
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("action", Span::default()),
+                        name: Identifier::new("Send", Span::default()),
+                        style: None,
+                        properties: vec![crate::UiProperty {
+                            name: Identifier::new("placeholder", Span::default()),
+                            value: UiPropertyValue::Literal("Type here".to_string()),
+                            span: Span::default(),
+                        }],
+                        events: Vec::new(),
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert!(diagnostics.iter().any(|d| d
+            .message
+            .contains("Action-like primitives do not accept placeholder text")));
+    }
+
+    #[test]
+    fn accepts_valid_input_properties() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: Some(crate::StateDecl {
+                    values: vec![crate::StateValue {
+                        name: Identifier::new("draft", Span::default()),
+                        value_type: StateType::Text,
+                        default: StateDefault::Text("".to_string()),
+                        span: Span::default(),
+                    }],
+                    span: Span::default(),
+                }),
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("input", Span::default()),
+                        name: Identifier::new("MessageBox", Span::default()),
+                        style: None,
+                        properties: vec![
+                            crate::UiProperty {
+                                name: Identifier::new("value", Span::default()),
+                                value: UiPropertyValue::Bind(DataRef {
+                                    name: Identifier::new("draft", Span::default()),
+                                    span: Span::default(),
+                                }),
+                                span: Span::default(),
+                            },
+                            crate::UiProperty {
+                                name: Identifier::new("placeholder", Span::default()),
+                                value: UiPropertyValue::Literal("Message".to_string()),
+                                span: Span::default(),
+                            },
+                            crate::UiProperty {
+                                name: Identifier::new("label", Span::default()),
+                                value: UiPropertyValue::Literal("Draft".to_string()),
+                                span: Span::default(),
+                            },
+                        ],
+                        events: Vec::new(),
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert!(!diagnostics
+            .iter()
+            .any(|d| d.message.contains("is not a valid property for `input`")));
+    }
+
+    #[test]
+    fn rejects_value_bind_on_container_primitive() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: Some(crate::StateDecl {
+                    values: vec![crate::StateValue {
+                        name: Identifier::new("draft", Span::default()),
+                        value_type: StateType::Text,
+                        default: StateDefault::Text("".to_string()),
+                        span: Span::default(),
+                    }],
+                    span: Span::default(),
+                }),
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("panel", Span::default()),
+                        name: Identifier::new("Main", Span::default()),
+                        style: None,
+                        properties: vec![crate::UiProperty {
+                            name: Identifier::new("value", Span::default()),
+                            value: UiPropertyValue::Bind(DataRef {
+                                name: Identifier::new("draft", Span::default()),
+                                span: Span::default(),
+                            }),
+                            span: Span::default(),
+                        }],
+                        events: Vec::new(),
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert!(diagnostics.iter().any(|d| d
+            .message
+            .contains("Container primitives group children. They do not own form state")));
+    }
+
+    #[test]
+    fn rejects_source_on_non_media_primitive() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: None,
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("action", Span::default()),
+                        name: Identifier::new("Play", Span::default()),
+                        style: None,
+                        properties: vec![crate::UiProperty {
+                            name: Identifier::new("source", Span::default()),
+                            value: UiPropertyValue::Literal("https://example.com".to_string()),
+                            span: Span::default(),
+                        }],
+                        events: Vec::new(),
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert!(diagnostics.iter().any(|d| d
+            .message
+            .contains("`source` is not a valid property for `action`")));
+    }
+
+    #[test]
+    fn accepts_media_source_on_media_primitive() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: None,
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("media", Span::default()),
+                        name: Identifier::new("Preview", Span::default()),
+                        style: None,
+                        properties: vec![crate::UiProperty {
+                            name: Identifier::new("source", Span::default()),
+                            value: UiPropertyValue::Literal(
+                                "https://example.com/video.mp4".to_string(),
+                            ),
+                            span: Span::default(),
+                        }],
+                        events: Vec::new(),
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+
+        assert!(!diagnostics
+            .iter()
+            .any(|d| d.message.contains("is not a valid property for `media`")));
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("navigation or media destination")));
+    }
 }

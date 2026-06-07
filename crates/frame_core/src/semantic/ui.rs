@@ -419,6 +419,132 @@ pub(crate) fn validate_ui_property(
             property.span,
         ));
     }
+
+    validate_primitive_specific_property(property, element_kind, diagnostics);
+}
+
+pub(crate) fn validate_primitive_specific_property(
+    property: &UiProperty,
+    element_kind: &str,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    use super::helpers::{primitive_kind_label, valid_properties_for_primitive};
+
+    let valid = valid_properties_for_primitive(element_kind);
+    let name = property.name.text.as_str();
+
+    // Skip if the property is globally valid for this primitive
+    if valid.contains(&name) {
+        // Still check for misused bind forms
+        match name {
+            "value" => {
+                if !matches!(element_kind, "input" | "editor") && is_bind_value(&property.value) {
+                    diagnostics.push(Diagnostic::error(
+                        format!(
+                            "`value bind` is only valid on input-like primitives (`input`, `editor`).\n\n`{element_kind}` is a {} and does not own editable state.\nUse `field` when the user should edit a value, or place the binding on an `input` or `editor` child.",
+                            primitive_kind_label(element_kind)
+                        ),
+                        property.span,
+                    ));
+                }
+            }
+            "checked" => {
+                if !matches!(element_kind, "toggle" | "choice") && is_bind_value(&property.value) {
+                    diagnostics.push(Diagnostic::error(
+                        format!(
+                            "`checked bind` is only valid on toggle-like primitives (`toggle`, `choice`).\n\n`{element_kind}` is a {} and does not represent a binary setting.",
+                            primitive_kind_label(element_kind)
+                        ),
+                        property.span,
+                    ));
+                }
+            }
+            "selected" => {
+                if !matches!(element_kind, "select" | "choice") && is_bind_value(&property.value) {
+                    diagnostics.push(Diagnostic::error(
+                        format!(
+                            "`selected bind` is only valid on selection primitives (`select`, `choice`).\n\n`{element_kind}` is a {} and does not represent a choice.",
+                            primitive_kind_label(element_kind)
+                        ),
+                        property.span,
+                    ));
+                }
+            }
+            "source" => {
+                if !matches!(element_kind, "image" | "avatar" | "media")
+                    && is_bind_value(&property.value)
+                {
+                    diagnostics.push(Diagnostic::error(
+                        format!(
+                            "`source` on `{element_kind}` should reference media content, not a state binding.\n\nUse a literal or data reference for media destinations.",
+                        ),
+                        property.span,
+                    ));
+                }
+            }
+            _ => {}
+        }
+        return;
+    }
+
+    // Special-case common misuses with teacher-like guidance
+    let suggestion = match (element_kind, name) {
+        ("text" | "title" | "label" | "badge", "value") => {
+            "`text`-like primitives display content. They do not own editable state.\nUse `field` when the user should edit a value."
+        }
+        ("panel" | "stack" | "row" | "screen" | "section" | "card" | "dialog" | "popover", "value") => {
+            "Container primitives group children. They do not own form state.\nPlace `value bind` on an `input`, `editor`, `toggle`, or `select` child instead."
+        }
+        ("action" | "link", "value") => {
+            "Action-like primitives trigger commands. They do not store editable state.\nUse `text` or `label` for visible content."
+        }
+        ("list" | "feed" | "data", "value") => {
+            "Collection primitives render repeated content. They do not store single-item state.\nUse `source $items` to provide collection data."
+        }
+        ("media" | "image" | "avatar", "value") => {
+            "Media-like primitives display visual content. They do not own form state.\nUse `source` or `sources` for media destinations."
+        }
+        ("input" | "editor", "text") => {
+            "Input-like primitives already contain editable text.\nUse `value bind` for state, `placeholder` for help text, or `label` for a visible name."
+        }
+        ("action" | "link", "placeholder") => {
+            "Action-like primitives do not accept placeholder text.\nUse `text` or `label` for the visible command name."
+        }
+        ("action" | "link", "source") => {
+            "Action-like primitives trigger commands. They do not display media.\nUse `goto` for navigation destinations."
+        }
+        ("field", "value") => {
+            "`field` groups a label and a control. It does not own state directly.\nPlace `value bind` on the `input`, `editor`, or `toggle` child instead."
+        }
+        ("composer", "value") => {
+            "`composer` owns draft state through `draft bind`, not `value bind`.\nUse `draft bind $state` to connect the composer to component state."
+        }
+        ("icon", "text") => {
+            "`icon` represents symbolic visual content.\nUse `label` for accessibility text, or `decorative true` when the icon is purely visual."
+        }
+        ("panel" | "stack" | "row" | "screen" | "section" | "card" | "dialog" | "popover", "source") => {
+            "Container primitives group children. They do not own media destinations.\nPlace `source` on an `image`, `avatar`, or `media` child instead."
+        }
+        ("text" | "title" | "label" | "badge", "source") => {
+            "Text-like primitives display content. They do not own media destinations.\nUse `source` on `image`, `avatar`, or `media` instead."
+        }
+        ("toggle" | "choice" | "select", "source") => {
+            "Selection primitives represent settings. They do not own media destinations.\nUse `source` on `image`, `avatar`, or `media` instead."
+        }
+        _ => return, // Not a known misuse; skip
+    };
+
+    diagnostics.push(Diagnostic::error(
+        format!(
+            "`{name}` is not a valid property for `{element_kind}`.\n\n{}",
+            suggestion
+        ),
+        property.span,
+    ));
+}
+
+fn is_bind_value(value: &UiPropertyValue) -> bool {
+    matches!(value, UiPropertyValue::Bind(_))
 }
 
 pub(crate) fn is_url_intent_property(property: &str, element_kind: &str) -> bool {
