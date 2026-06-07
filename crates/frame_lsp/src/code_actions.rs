@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use frame_core::symbols::index_document;
+
 use frame_parser::parse;
 use tower_lsp::lsp_types::{
     CodeAction, CodeActionKind, CodeActionOrCommand, Position, Range, TextEdit, Url, WorkspaceEdit,
@@ -53,6 +54,28 @@ pub fn code_actions_for_source(source: &str, uri: &Url) -> Vec<CodeActionOrComma
             uri,
             insertion_at_end(source),
             format!("\ncard {style} {{\n  padding medium\n}}\n"),
+        ));
+    }
+
+    for handler in missing_handler_references(source) {
+        actions.push(create_handler_action(uri, &handler));
+    }
+
+    for (name, inferred_type, component_range) in missing_state_references(source) {
+        actions.push(edit_action(
+            &format!("Create state `{name}`"),
+            uri,
+            component_range,
+            format!("  {name} {inferred_type} = \"\"\n"),
+        ));
+    }
+
+    for (name, inferred_type, component_range) in missing_prop_references(source) {
+        actions.push(edit_action(
+            &format!("Create prop `{name}`"),
+            uri,
+            component_range,
+            format!("  {name} {inferred_type}\n"),
         ));
     }
 
@@ -553,6 +576,228 @@ fn edit_action(title: &str, uri: &Url, range: Range, new_text: String) -> CodeAc
     })
 }
 
+fn missing_handler_references(source: &str) -> Vec<String> {
+    let Ok(document) = parse(source) else {
+        return Vec::new();
+    };
+    let mut handlers = std::collections::HashSet::new();
+    for component in &document.components {
+        if let Some(view) = &component.view {
+            collect_handlers_from_nodes(&view.nodes, &mut handlers);
+        }
+        for slot in &component.slots {
+            collect_handlers_from_nodes(&slot.nodes, &mut handlers);
+        }
+    }
+    handlers.into_iter().collect()
+}
+
+fn collect_handlers_from_nodes(
+    nodes: &[frame_core::UiNode],
+    handlers: &mut std::collections::HashSet<String>,
+) {
+    for node in nodes {
+        match node {
+            frame_core::UiNode::Element(element) => {
+                for event in &element.events {
+                    handlers.insert(event.handler.name.text.clone());
+                }
+                collect_handlers_from_nodes(&element.children, handlers);
+            }
+            frame_core::UiNode::Loop(loop_node) => {
+                collect_handlers_from_nodes(&loop_node.children, handlers);
+            }
+            _ => {}
+        }
+    }
+}
+
+fn create_handler_action(uri: &Url, handler: &str) -> CodeActionOrCommand {
+    let ts_uri = handler_ts_uri(uri);
+    let document_changes = tower_lsp::lsp_types::DocumentChanges::Operations(vec![
+        tower_lsp::lsp_types::DocumentChangeOperation::Op(
+            tower_lsp::lsp_types::ResourceOp::Create(tower_lsp::lsp_types::CreateFile {
+                uri: ts_uri.clone(),
+                options: Some(tower_lsp::lsp_types::CreateFileOptions {
+                    overwrite: Some(false),
+                    ignore_if_exists: Some(true),
+                }),
+                annotation_id: None,
+            }),
+        ),
+    ]);
+
+    CodeActionOrCommand::CodeAction(CodeAction {
+        title: format!("Create handler `{handler}`"),
+        kind: Some(CodeActionKind::QUICKFIX),
+        edit: Some(WorkspaceEdit {
+            document_changes: Some(document_changes),
+            ..WorkspaceEdit::default()
+        }),
+        ..CodeAction::default()
+    })
+}
+
+fn handler_ts_uri(frame_uri: &Url) -> Url {
+    let path = frame_uri.to_file_path().unwrap_or_default();
+    let parent = path.parent().unwrap_or_else(|| std::path::Path::new("."));
+    let ts_path = parent.join("handlers.ts");
+    Url::from_file_path(ts_path).unwrap_or_else(|_| frame_uri.clone())
+}
+
+fn missing_state_references(source: &str) -> Vec<(String, String, Range)> {
+    let Ok(document) = parse(source) else {
+        return Vec::new();
+    };
+    let mut missing = Vec::new();
+    for component in &document.components {
+        let mut known_names = std::collections::HashSet::new();
+        if let Some(state) = &component.state {
+            for value in &state.values {
+                known_names.insert(value.name.text.clone());
+            }
+        }
+        if let Some(props) = &component.props {
+            for value in &props.values {
+                known_names.insert(value.name.text.clone());
+            }
+        }
+        if let Some(view) = &component.view {
+            collect_missing_refs(&view.nodes, &known_names, &mut missing, source);
+        }
+        for slot in &component.slots {
+            collect_missing_refs(&slot.nodes, &known_names, &mut missing, source);
+        }
+    }
+    missing
+}
+
+fn collect_missing_refs(
+    nodes: &[frame_core::UiNode],
+    known_names: &std::collections::HashSet<String>,
+    missing: &mut Vec<(String, String, Range)>,
+    source: &str,
+) {
+    for node in nodes {
+        match node {
+            frame_core::UiNode::Text(text) => {
+                if let frame_core::TextValue::Data(data_ref) = &text.value {
+                    if !known_names.contains(&data_ref.name.text)
+                        && !data_ref.name.text.contains('.')
+                    {
+                        missing.push((
+                            data_ref.name.text.clone(),
+                            infer_state_type_from_usage(data_ref.name.text.as_str()),
+                            crate::diagnostics::range_for_span(source, data_ref.name.span),
+                        ));
+                    }
+                }
+            }
+            frame_core::UiNode::Element(element) => {
+                for property in &element.properties {
+                    match &property.value {
+                        frame_core::UiPropertyValue::Data(data_ref)
+                        | frame_core::UiPropertyValue::Bind(data_ref) => {
+                            if !known_names.contains(&data_ref.name.text) {
+                                missing.push((
+                                    data_ref.name.text.clone(),
+                                    infer_state_type_from_usage(&data_ref.name.text),
+                                    crate::diagnostics::range_for_span(source, data_ref.name.span),
+                                ));
+                            }
+                        }
+                        frame_core::UiPropertyValue::Conditional(binding) => {
+                            if !known_names.contains(&binding.condition.name.text) {
+                                missing.push((
+                                    binding.condition.name.text.clone(),
+                                    "bool".to_string(),
+                                    crate::diagnostics::range_for_span(
+                                        source,
+                                        binding.condition.name.span,
+                                    ),
+                                ));
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                collect_missing_refs(&element.children, known_names, missing, source);
+            }
+            frame_core::UiNode::Loop(loop_node) => {
+                let mut loop_names = known_names.clone();
+                loop_names.insert(loop_node.item.text.clone());
+                collect_missing_refs(&loop_node.children, &loop_names, missing, source);
+            }
+            _ => {}
+        }
+    }
+}
+
+fn infer_state_type_from_usage(name: &str) -> String {
+    match name {
+        "sending" | "active" | "selected" | "invalid" | "disabled" | "checked" | "loggedIn"
+        | "compact" | "collapsed" | "hidden" | "open" => "bool".to_string(),
+        "count" | "attempts" | "unreadCount" => "number".to_string(),
+        "messages" | "items" | "channels" | "events" | "invoices" | "groups" => "list".to_string(),
+        _ => "text".to_string(),
+    }
+}
+
+fn missing_prop_references(source: &str) -> Vec<(String, String, Range)> {
+    let Ok(document) = parse(source) else {
+        return Vec::new();
+    };
+    let mut missing = Vec::new();
+    for component in &document.components {
+        let mut known_props = std::collections::HashSet::new();
+        if let Some(props) = &component.props {
+            for value in &props.values {
+                known_props.insert(value.name.text.clone());
+            }
+        }
+        if let Some(view) = &component.view {
+            collect_missing_props(&view.nodes, &known_props, &mut missing, source);
+        }
+    }
+    missing
+}
+
+fn collect_missing_props(
+    nodes: &[frame_core::UiNode],
+    known_props: &std::collections::HashSet<String>,
+    missing: &mut Vec<(String, String, Range)>,
+    source: &str,
+) {
+    for node in nodes {
+        match node {
+            frame_core::UiNode::Component(invocation) => {
+                for arg in &invocation.arguments {
+                    match &arg.value {
+                        frame_core::UiComponentArgumentValue::Data(data_ref)
+                        | frame_core::UiComponentArgumentValue::Bind(data_ref) => {
+                            if !known_props.contains(&data_ref.name.text) {
+                                missing.push((
+                                    data_ref.name.text.clone(),
+                                    infer_state_type_from_usage(&data_ref.name.text),
+                                    crate::diagnostics::range_for_span(source, data_ref.name.span),
+                                ));
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            frame_core::UiNode::Element(element) => {
+                collect_missing_props(&element.children, known_props, missing, source);
+            }
+            frame_core::UiNode::Loop(loop_node) => {
+                collect_missing_props(&loop_node.children, known_props, missing, source);
+            }
+            _ => {}
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use tower_lsp::lsp_types::Url;
@@ -627,5 +872,53 @@ mod tests {
         assert!(titles.contains(&"Replace browser event with `on press`"));
         assert!(titles.contains(&"Replace browser event with `on change`"));
         assert!(titles.contains(&"Create style `PrimaryAction`"));
+    }
+
+    #[test]
+    fn offers_create_missing_handler() {
+        let source = "component ChatInput {\n  view {\n    action Send {\n      on press @sendMessage\n    }\n  }\n}\n";
+        let uri = Url::parse("file:///demo.frame").unwrap();
+        let actions = code_actions_for_source(source, &uri);
+        let titles = actions
+            .iter()
+            .filter_map(|action| match action {
+                CodeActionOrCommand::CodeAction(action) => Some(action.title.as_str()),
+                CodeActionOrCommand::Command(_) => None,
+            })
+            .collect::<Vec<_>>();
+
+        assert!(titles.contains(&"Create handler `sendMessage`"));
+    }
+
+    #[test]
+    fn offers_create_missing_state() {
+        let source = "component ChatInput {\n  view {\n    text $draft\n  }\n}\n";
+        let uri = Url::parse("file:///demo.frame").unwrap();
+        let actions = code_actions_for_source(source, &uri);
+        let titles = actions
+            .iter()
+            .filter_map(|action| match action {
+                CodeActionOrCommand::CodeAction(action) => Some(action.title.as_str()),
+                CodeActionOrCommand::Command(_) => None,
+            })
+            .collect::<Vec<_>>();
+
+        assert!(titles.contains(&"Create state `draft`"));
+    }
+
+    #[test]
+    fn offers_create_missing_style_for_conditional_alias() {
+        let source = "component ChatInput {\n  view {\n    action Send {\n      style LoadingButton when $sending\n    }\n  }\n}\n";
+        let uri = Url::parse("file:///demo.frame").unwrap();
+        let actions = code_actions_for_source(source, &uri);
+        let titles = actions
+            .iter()
+            .filter_map(|action| match action {
+                CodeActionOrCommand::CodeAction(action) => Some(action.title.as_str()),
+                CodeActionOrCommand::Command(_) => None,
+            })
+            .collect::<Vec<_>>();
+
+        assert!(titles.contains(&"Create style `LoadingButton`"));
     }
 }
