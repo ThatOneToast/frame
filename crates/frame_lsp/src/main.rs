@@ -15,6 +15,7 @@ mod folding;
 mod formatting;
 mod hover;
 mod navigation;
+mod project;
 mod semantic_tokens;
 mod support;
 
@@ -114,5 +115,74 @@ mod tests {
             .to_file_path()
             .unwrap()
             .ends_with("theme.frame")));
+    }
+
+    #[test]
+    fn cross_file_completions_include_imported_components() {
+        let root =
+            std::env::temp_dir().join(format!("frame-lsp-completion-{}", std::process::id()));
+        std::fs::create_dir_all(&root).expect("temp dir should be writable");
+        let app = root.join("app.frame");
+        let components = root.join("components.frame");
+        std::fs::write(
+            &components,
+            "component MessageItem {\n  view {\n    text \"Hello\"\n  }\n}\n",
+        )
+        .expect("components should be writable");
+        let source = "#include components\n\ncomponent ChatApp {\n  view {\n    \n  }\n}\n";
+        std::fs::write(&app, source).expect("app should be writable");
+        let uri = Url::from_file_path(&app).expect("file uri should build");
+        let offset = source.find("    \n").unwrap() + 4;
+
+        let items = completions::completions_at_with_includes(
+            source,
+            offset,
+            vec![components.clone()],
+            Some(&uri),
+        );
+        let labels: Vec<String> = items.into_iter().map(|i| i.label).collect();
+        assert!(labels.contains(&"MessageItem".to_string()));
+    }
+
+    #[test]
+    fn cross_file_hover_shows_imported_declaration_docs() {
+        let root = std::env::temp_dir().join(format!("frame-lsp-hover-{}", std::process::id()));
+        std::fs::create_dir_all(&root).expect("temp dir should be writable");
+        let app = root.join("app.frame");
+        let styles = root.join("styles.frame");
+        std::fs::write(&styles, "card PrimaryAction {\n  surface accent\n}\n")
+            .expect("styles should be writable");
+        let source = "#include styles\n\ncard Hero {\n  background PrimaryAction\n}\n";
+        std::fs::write(&app, source).expect("app should be writable");
+        let merged = support::merged_frame_source(source, &Url::from_file_path(&app).unwrap());
+        let document = frame_parser::parse(&merged).expect("parse");
+        let symbols = frame_core::symbols::index_document(&merged, &document);
+        let offset = source.find("PrimaryAction").unwrap() + 2;
+
+        let doc = hover::hover_doc_at_with_symbols(source, offset, Some(&symbols))
+            .expect("hover should exist");
+        assert!(doc.contains("Frame style declaration"));
+    }
+
+    #[test]
+    fn cross_file_definition_resolves_imported_grid() {
+        let root = std::env::temp_dir().join(format!("frame-lsp-def-{}", std::process::id()));
+        std::fs::create_dir_all(&root).expect("temp dir should be writable");
+        let app = root.join("app.frame");
+        let layout = root.join("layout.frame");
+        std::fs::write(&layout, "grid AppShell {\n  columns sidebar content\n}\n")
+            .expect("layout should be writable");
+        let source = "#include layout\n\narea Sidebar {\n  in AppShell\n  place sidebar\n}\n";
+        std::fs::write(&app, source).expect("app should be writable");
+        let uri = Url::from_file_path(&app).expect("file uri should build");
+        let offset = source.rfind("AppShell").unwrap() + 2;
+
+        let location = support::imported_symbol_definition_location(source, offset, &uri)
+            .expect("definition should resolve");
+        assert!(location
+            .uri
+            .to_file_path()
+            .unwrap()
+            .ends_with("layout.frame"));
     }
 }

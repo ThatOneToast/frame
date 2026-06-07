@@ -95,6 +95,8 @@ pub fn imported_symbol_definition_location(
                 .or_else(|| symbols.gradients.get(word))
                 .or_else(|| symbols.keyframes.get(word))
                 .or_else(|| symbols.grids.get(word))
+                .or_else(|| symbols.declarations.get(word))
+                .or_else(|| symbols.components.get(word))
         };
         if let Some(symbol) = symbol {
             let target_uri = Url::from_file_path(path).ok()?;

@@ -142,6 +142,7 @@ impl LanguageServer for Backend {
             completion_source,
             completion_offset,
             include_files,
+            Some(&uri),
         )
         .into_iter()
         .map(|suggestion| CompletionItem {

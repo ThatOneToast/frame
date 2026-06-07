@@ -77,6 +77,21 @@ pub fn hover_doc_at_with_symbols(
                 keyframes.name
             ));
         }
+
+        if let Some(declaration) = symbols.declarations.get(word) {
+            return Some(format!(
+                "## `{}`\n\nFrame style declaration.\n\nKind: `{}`\n\nUse it as a style binding or automatic style lookup target in UI nodes.",
+                declaration.name,
+                declaration_kind_label(&declaration.kind)
+            ));
+        }
+
+        if let Some(component) = symbols.components.get(word) {
+            return Some(format!(
+                "## `{}`\n\nFrame component.\n\nInvoke it in view with `{}(...)`. Components encapsulate props, state, and a semantic view tree.",
+                component.name, component.name
+            ));
+        }
     }
 
     if let Some(doc) = contextual_value_doc(word, &words, symbols) {
@@ -290,6 +305,33 @@ fn native_hover_doc(word: &str) -> Option<&'static str> {
         "popover" => "## `popover`\n\nRepresents lightweight contextual content.\n\nUse it for small overlays tied to another interaction.\n\n```frame\npopover HelpPopover { text \"More detail\" }\n```",
         _ => return None,
     })
+}
+
+fn declaration_kind_label(kind: &frame_core::symbols::SymbolKind) -> &'static str {
+    use frame_core::symbols::SymbolKind;
+    match kind {
+        SymbolKind::Declaration(frame_core::DeclarationKind::Grid) => "grid",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Area) => "area",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Card) => "card",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Stack) => "stack",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Row) => "row",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Button) => "button",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Text) => "text",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Tokens) => "tokens",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Center) => "center",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Split) => "split",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Overlay) => "overlay",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Dock) => "dock",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Keyframes) => "keyframes",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Supports) => "supports",
+        SymbolKind::Declaration(frame_core::DeclarationKind::StyleGroup) => "style-group",
+        SymbolKind::Declaration(frame_core::DeclarationKind::StyleOrder) => "style-order",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Unknown(_)) => "declaration",
+        SymbolKind::Color => "color token",
+        SymbolKind::Gradient => "gradient token",
+        SymbolKind::Keyframes => "keyframes",
+        SymbolKind::GridSection { .. } => "grid section",
+    }
 }
 
 #[cfg(test)]

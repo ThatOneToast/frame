@@ -22,6 +22,7 @@ pub struct FrameSymbol {
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct SymbolIndex {
     pub declarations: HashMap<String, FrameSymbol>,
+    pub components: HashMap<String, FrameSymbol>,
     pub colors: HashMap<String, FrameSymbol>,
     pub gradients: HashMap<String, FrameSymbol>,
     pub keyframes: HashMap<String, FrameSymbol>,
@@ -32,6 +33,7 @@ pub struct SymbolIndex {
 impl SymbolIndex {
     pub fn merge(&mut self, other: SymbolIndex) {
         self.declarations.extend(other.declarations);
+        self.components.extend(other.components);
         self.colors.extend(other.colors);
         self.gradients.extend(other.gradients);
         self.keyframes.extend(other.keyframes);
@@ -99,6 +101,18 @@ pub fn index_document(source: &str, document: &Document) -> SymbolIndex {
         if declaration.kind == DeclarationKind::Tokens {
             collect_token_symbols(source, &declaration.body, &mut index);
         }
+    }
+
+    for component in &document.components {
+        index.components.insert(
+            component.name.text.clone(),
+            FrameSymbol {
+                name: component.name.text.clone(),
+                kind: SymbolKind::Declaration(DeclarationKind::Unknown("component".to_string())),
+                span: component.name.span,
+                value: None,
+            },
+        );
     }
 
     index

@@ -25,6 +25,7 @@ pub fn diagnostics_for_source(source: &str) -> Vec<FrameDiagnostic> {
 pub fn diagnostics_for_uri(source: &str, uri: &Url) -> Vec<FrameDiagnostic> {
     let mut diagnostics = diagnostics_for_source_with_imports(source, uri);
     diagnostics.extend(include_diagnostics(source, uri));
+    diagnostics.extend(cross_file_diagnostics(source, uri));
     diagnostics
 }
 
@@ -109,6 +110,99 @@ fn include_diagnostics(source: &str, uri: &Url) -> Vec<FrameDiagnostic> {
             })
         })
         .collect()
+}
+
+fn cross_file_diagnostics(source: &str, uri: &Url) -> Vec<FrameDiagnostic> {
+    let Ok(path) = uri.to_file_path() else {
+        return Vec::new();
+    };
+    let mut diagnostics = Vec::new();
+
+    // Unresolved imported component references
+    if let Ok(document) = parse(source) {
+        let all_components = crate::project::merged_component_names(&path, source);
+        for component in &document.components {
+            if let Some(view) = &component.view {
+                for node in &view.nodes {
+                    check_component_references(node, &all_components, source, &mut diagnostics);
+                }
+            }
+            for slot in &component.slots {
+                for node in &slot.nodes {
+                    check_component_references(node, &all_components, source, &mut diagnostics);
+                }
+            }
+        }
+    }
+
+    // Duplicate symbols across files
+    for (name, locations) in crate::project::duplicate_symbols(&path, source) {
+        let paths: Vec<String> = locations
+            .iter()
+            .map(|(p, _)| p.display().to_string())
+            .collect::<std::collections::HashSet<_>>()
+            .into_iter()
+            .collect();
+        for (location_path, span) in locations {
+            if location_path == path {
+                diagnostics.push(FrameDiagnostic::warning(
+                    format!(
+                        "Duplicate symbol `{}` defined in multiple files.\n\nFound in:\n{}\n\nRename one declaration or remove the duplicate include.",
+                        name,
+                        paths.iter().map(|p| format!("- {}", p)).collect::<Vec<_>>().join("\n")
+                    ),
+                    span,
+                ));
+            }
+        }
+    }
+
+    // Shadowed symbols
+    for (name, shadow_path, span) in crate::project::shadowed_symbols(&path, source) {
+        diagnostics.push(FrameDiagnostic::warning(
+            format!(
+                "Imported symbol `{}` from `{}` shadows a local symbol.\n\nThis can confuse resolution. Rename the local symbol or the imported one.",
+                name,
+                shadow_path.display()
+            ),
+            span,
+        ));
+    }
+
+    diagnostics
+}
+
+#[allow(clippy::only_used_in_recursion)]
+fn check_component_references(
+    node: &frame_core::UiNode,
+    all_components: &std::collections::HashSet<String>,
+    source: &str,
+    diagnostics: &mut Vec<FrameDiagnostic>,
+) {
+    match node {
+        frame_core::UiNode::Component(invocation) => {
+            if !all_components.contains(&invocation.name.text) {
+                diagnostics.push(FrameDiagnostic::error(
+                    format!(
+                        "Unknown component `{}`.\n\nDeclare `component {} {{ ... }}` in this file or import it with `#include path`.",
+                        invocation.name.text, invocation.name.text
+                    ),
+                    invocation.name.span,
+                ));
+            }
+        }
+        frame_core::UiNode::Element(element) => {
+            for child in &element.children {
+                check_component_references(child, all_components, source, diagnostics);
+            }
+        }
+        frame_core::UiNode::Loop(loop_node) => {
+            for child in &loop_node.children {
+                check_component_references(child, all_components, source, diagnostics);
+            }
+        }
+        frame_core::UiNode::Text(_) => {}
+    }
 }
 
 fn include_candidate(parent: &Path, target: &str) -> std::path::PathBuf {

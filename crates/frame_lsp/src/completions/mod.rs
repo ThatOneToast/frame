@@ -340,19 +340,20 @@ const SECTION_PROPERTIES: &[&str] = &[
 
 #[cfg(test)]
 pub fn completions_at(source: &str, offset: usize) -> Vec<CompletionSuggestion> {
-    completions_at_with_includes(source, offset, Vec::new())
+    completions_at_with_includes(source, offset, Vec::new(), None)
 }
 
 pub fn completions_at_with_includes(
     source: &str,
     offset: usize,
     include_files: Vec<PathBuf>,
+    uri: Option<&tower_lsp::lsp_types::Url>,
 ) -> Vec<CompletionSuggestion> {
     let context = completion_context(source, offset);
     let line_words = line_words_at(source, offset);
     let line = line_at(source, offset);
     let parsed_document = parse(source).ok();
-    let component_names = parsed_document
+    let local_component_names: Vec<String> = parsed_document
         .as_ref()
         .map(|document| {
             document
@@ -362,10 +363,28 @@ pub fn completions_at_with_includes(
                 .collect::<Vec<_>>()
         })
         .unwrap_or_default();
-    let symbols = parsed_document
+    let mut symbols = parsed_document
         .as_ref()
         .map(|document| index_document(source, document))
         .unwrap_or_default();
+    let mut component_names = local_component_names.clone();
+
+    // Merge included symbols for cross-file intelligence
+    if let Some(uri) = uri {
+        if let Ok(path) = uri.to_file_path() {
+            let included = crate::project::resolve_includes(&path, source);
+            for (_, _, _, included_symbols) in &included {
+                symbols.merge(included_symbols.clone());
+            }
+            for (_, _, included_doc, _) in &included {
+                for component in &included_doc.components {
+                    if !component_names.contains(&component.name.text) {
+                        component_names.push(component.name.text.clone());
+                    }
+                }
+            }
+        }
+    }
 
     if line.trim_start().starts_with("#include") {
         return include_suggestions(include_files);
@@ -1048,6 +1067,7 @@ mod tests {
             "#include ",
             "#include ".len(),
             vec![PathBuf::from("tokens.frame"), PathBuf::from("cards.frame")],
+            None,
         )
         .into_iter()
         .map(|item| item.label)
