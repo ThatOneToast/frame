@@ -242,14 +242,12 @@ pub(crate) fn validate_element_accessibility(
                 ));
             }
         }
-        "dialog" => {
-            if !has_accessible_name(element) {
-                diagnostics.push(Diagnostic::warning(
-                    "`dialog` requires a Frame label, title, or visible text so assistive technology can name it."
-                        .to_string(),
-                    element.kind.span,
-                ));
-            }
+        "dialog" if !has_accessible_name(element) => {
+            diagnostics.push(Diagnostic::warning(
+                "`dialog` requires a Frame label, title, or visible text so assistive technology can name it."
+                    .to_string(),
+                element.kind.span,
+            ));
         }
         _ => {}
     }
@@ -470,17 +468,16 @@ pub(crate) fn validate_primitive_specific_property(
                     ));
                 }
             }
-            "source" => {
+            "source"
                 if !matches!(element_kind, "image" | "avatar" | "media")
-                    && is_bind_value(&property.value)
-                {
-                    diagnostics.push(Diagnostic::error(
-                        format!(
-                            "`source` on `{element_kind}` should reference media content, not a state binding.\n\nUse a literal or data reference for media destinations.",
-                        ),
-                        property.span,
-                    ));
-                }
+                    && is_bind_value(&property.value) =>
+            {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "`source` on `{element_kind}` should reference media content, not a state binding.\n\nUse a literal or data reference for media destinations.",
+                    ),
+                    property.span,
+                ));
             }
             _ => {}
         }
