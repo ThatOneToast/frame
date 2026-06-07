@@ -360,7 +360,7 @@ fn new_web_generates_typed_runtime_project() {
     );
 
     let project = root.join("demo-web");
-    assert!(project.join("src/frame/app.frame").exists());
+    assert!(project.join("src/app.frame").exists());
     assert!(project.join("src/generated/generated.css").exists());
     assert!(project.join("src/generated/generated.ts").exists());
     assert!(project.join("src/generated/app.ir.json").exists());
@@ -369,20 +369,153 @@ fn new_web_generates_typed_runtime_project() {
     assert!(project.join("src/generated/frame.handlers.ts").exists());
 
     let main_ts = fs::read_to_string(project.join("src/main.ts")).expect("main ts");
-    let frame_source =
-        fs::read_to_string(project.join("src/frame/app.frame")).expect("frame source");
+    let package_json = fs::read_to_string(project.join("package.json")).expect("package json");
+    let frame_source = fs::read_to_string(project.join("src/app.frame")).expect("frame source");
     let ir_ts = fs::read_to_string(project.join("src/generated/app.ir.ts")).expect("typed ir");
     let types_ts = fs::read_to_string(project.join("src/generated/frame.types.ts")).expect("types");
     let handlers_ts =
         fs::read_to_string(project.join("src/generated/frame.handlers.ts")).expect("handlers");
 
     assert!(main_ts.contains("import appIr from './generated/app.ir';"));
+    assert!(!main_ts.contains("as any"));
+    assert!(package_json.contains("\"frame:build\": \"frame build\""));
+    assert!(package_json.contains("\"dev\": \"npm run frame:build && vite\""));
+    assert!(package_json.contains("\"build\": \"npm run frame:build && vite build\""));
+    assert!(package_json.contains("\"check\": \"npm run frame:build && tsc --noEmit\""));
     assert!(frame_source.contains("screen Main"));
     assert!(frame_source.contains("action Increment"));
+    assert!(ir_ts.contains("Source: src/app.frame"));
     assert!(ir_ts.contains("defineFrameIrDocument"));
     assert!(ir_ts.contains("as const"));
+    assert!(types_ts.contains("Generated TypeScript contracts"));
     assert!(types_ts.contains("export type FramePressEvent"));
+    assert!(handlers_ts.contains("Generated handler skeletons"));
+    assert!(handlers_ts.contains("import type { FrameEventContext"));
     assert!(handlers_ts.contains("TODO: implement increment"));
+
+    fs::remove_dir_all(root).expect("temporary project should be removable");
+}
+
+#[test]
+fn init_web_scaffolds_empty_directory() {
+    let root = temp_out_dir();
+    fs::create_dir_all(&root).expect("temporary project should be creatable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("init")
+        .arg("web")
+        .current_dir(&root)
+        .output()
+        .expect("frame init web should run");
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(root.join("frame.config.json").exists());
+    assert!(root.join("package.json").exists());
+    assert!(root.join("src/app.frame").exists());
+    assert!(root.join("src/main.ts").exists());
+    assert!(root.join("src/handlers.ts").exists());
+    assert!(root.join("src/generated/app.ir.ts").exists());
+    assert!(String::from_utf8_lossy(&output.stdout).contains("Frame web init is ready"));
+
+    fs::remove_dir_all(root).expect("temporary project should be removable");
+}
+
+#[test]
+fn build_reports_paths_and_preserves_handler_skeletons() {
+    let root = temp_out_dir();
+    fs::create_dir_all(root.join("src/generated")).expect("temporary project should be creatable");
+    fs::write(
+        root.join("frame.config.json"),
+        r#"{"entry":"src/app.frame","outDir":"src/generated"}"#,
+    )
+    .expect("config should be writable");
+    fs::write(
+        root.join("src/app.frame"),
+        r#"component App {
+  state {
+    draft text = ""
+  }
+
+  view {
+    screen Main {
+      action Save {
+        on press @save
+      }
+
+      action Clear {
+        on press @clear
+      }
+    }
+  }
+}
+"#,
+    )
+    .expect("frame source should be writable");
+    fs::write(
+        root.join("src/generated/frame.handlers.ts"),
+        "export function save() {\n  // existing user note\n}\n",
+    )
+    .expect("existing skeleton should be writable");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("build")
+        .current_dir(&root)
+        .output()
+        .expect("frame build should run");
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("source:"));
+    assert!(stdout.contains("src/app.frame"));
+    assert!(stdout.contains("app.ir.ts"));
+    assert!(stdout.contains("frame.types.ts"));
+    assert!(stdout.contains("frame.handlers.ts"));
+    assert!(stdout.contains("appended missing handler stubs"));
+    assert!(stdout.contains("warnings: 0"));
+
+    let ir_ts = fs::read_to_string(root.join("src/generated/app.ir.ts")).expect("typed ir");
+    let types_ts = fs::read_to_string(root.join("src/generated/frame.types.ts")).expect("types");
+    let handlers_ts =
+        fs::read_to_string(root.join("src/generated/frame.handlers.ts")).expect("handlers");
+    assert!(ir_ts.contains("Generated typed Frame IR"));
+    assert!(types_ts.contains("Generated TypeScript contracts"));
+    assert!(handlers_ts.contains("existing user note"));
+    assert!(handlers_ts.contains("export function save()"));
+    assert!(handlers_ts.contains("export function clear("));
+    assert!(handlers_ts.contains("import type { FrameEventContext"));
+
+    let ir_before = fs::read_to_string(root.join("src/generated/app.ir.ts")).expect("typed ir");
+    let handlers_before =
+        fs::read_to_string(root.join("src/generated/frame.handlers.ts")).expect("handlers");
+    let second = Command::new(env!("CARGO_BIN_EXE_frame"))
+        .arg("build")
+        .current_dir(&root)
+        .output()
+        .expect("second frame build should run");
+    assert!(
+        second.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&second.stderr)
+    );
+    let second_stdout = String::from_utf8_lossy(&second.stdout);
+    assert!(second_stdout.contains("unchanged"));
+    assert_eq!(
+        ir_before,
+        fs::read_to_string(root.join("src/generated/app.ir.ts")).expect("typed ir")
+    );
+    assert_eq!(
+        handlers_before,
+        fs::read_to_string(root.join("src/generated/frame.handlers.ts")).expect("handlers")
+    );
 
     fs::remove_dir_all(root).expect("temporary project should be removable");
 }

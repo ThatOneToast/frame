@@ -17,24 +17,20 @@ pub fn new_project(name: &str, template: &str) -> anyhow::Result<()> {
     println!("Created `{name}` ({template} template).");
     println!("\nNext steps:");
     println!("  cd {name}");
-    if template == "svelte" {
-        println!("  npm install");
-        println!("  npm run dev");
-    } else {
-        println!("  frame compile src/frame/app.frame --out dist/");
-    }
+    println!("  npm install");
+    println!("  npm run dev");
     Ok(())
 }
 
 fn init_web_template(root: &Path) -> anyhow::Result<()> {
-    let frame_dir = root.join("src/frame");
-    fs::create_dir_all(&frame_dir)?;
+    let src_dir = root.join("src");
+    fs::create_dir_all(&src_dir)?;
 
     fs::write(root.join("frame.config.json"), WEB_CONFIG)?;
-    fs::write(root.join("package.json"), WEB_PACKAGE_JSON)?;
+    fs::write(root.join("package.json"), web_package_json())?;
     fs::write(root.join("tsconfig.json"), WEB_TSCONFIG)?;
     fs::write(
-        frame_dir.join("app.frame"),
+        src_dir.join("app.frame"),
         crate::project::INITIAL_WEB_FRAME_SOURCE,
     )?;
     fs::write(root.join("index.html"), WEB_INDEX)?;
@@ -78,21 +74,24 @@ fn init_svelte_template(root: &Path) -> anyhow::Result<()> {
     Ok(())
 }
 
-const WEB_CONFIG: &str = r#"{
+pub(crate) const WEB_CONFIG: &str = r#"{
   "name": "frame-web-app",
   "version": "0.1.0",
-  "entry": "src/frame/app.frame",
+  "entry": "src/app.frame",
   "outDir": "src/generated"
 }
 "#;
 
-const WEB_PACKAGE_JSON: &str = r#"{
+pub(crate) fn web_package_json() -> String {
+    r#"{
   "name": "frame-web-app",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "frame:build": "frame build",
+    "dev": "npm run frame:build && vite",
+    "build": "npm run frame:build && vite build",
+    "check": "npm run frame:build && tsc --noEmit",
     "preview": "vite preview"
   },
   "devDependencies": {
@@ -100,12 +99,31 @@ const WEB_PACKAGE_JSON: &str = r#"{
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@frame/runtime-dom": "file:../../packages/runtime-dom"
+    "@frame/runtime-dom": "__FRAME_RUNTIME_DOM_DEPENDENCY__"
   }
 }
-"#;
+"#
+    .replace(
+        "__FRAME_RUNTIME_DOM_DEPENDENCY__",
+        &runtime_dom_dependency(),
+    )
+}
 
-const WEB_TSCONFIG: &str = r#"{
+fn runtime_dom_dependency() -> String {
+    let repo_runtime = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("packages/runtime-dom");
+    if repo_runtime.join("package.json").exists() {
+        let path = repo_runtime
+            .canonicalize()
+            .unwrap_or_else(|_| repo_runtime.clone());
+        format!("file:{}", path.display())
+    } else {
+        "latest".to_string()
+    }
+}
+
+pub(crate) const WEB_TSCONFIG: &str = r#"{
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
@@ -120,7 +138,7 @@ const WEB_TSCONFIG: &str = r#"{
 }
 "#;
 
-const WEB_INDEX: &str = r#"<!DOCTYPE html>
+pub(crate) const WEB_INDEX: &str = r#"<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -135,7 +153,7 @@ const WEB_INDEX: &str = r#"<!DOCTYPE html>
 </html>
 "#;
 
-const WEB_MAIN_TS: &str = r#"import { mount } from '@frame/runtime-dom';
+pub(crate) const WEB_MAIN_TS: &str = r#"import { mount } from '@frame/runtime-dom';
 import appIr from './generated/app.ir';
 import { handlers } from './handlers';
 
@@ -145,11 +163,16 @@ const app = mount(appIr, {
   handlers
 });
 
-// Expose for debugging
-(window as any).frameApp = app;
+declare global {
+  interface Window {
+    frameApp?: typeof app;
+  }
+}
+
+window.frameApp = app;
 "#;
 
-const WEB_HANDLERS_TS: &str = r#"import type { AppHandlers } from './generated/frame.types';
+pub(crate) const WEB_HANDLERS_TS: &str = r#"import type { AppHandlers } from './generated/frame.types';
 
 export const handlers: AppHandlers = {
   increment(ctx) {
@@ -159,13 +182,13 @@ export const handlers: AppHandlers = {
 };
 "#;
 
-const WEB_README: &str = r#"# Frame Web Project
+pub(crate) const WEB_README: &str = r#"# Frame Web Project
 
 A standalone Frame UI project using the DOM runtime.
 
 ## Files
 
-- `src/frame/app.frame` — your Frame UI source
+- `src/app.frame` — your Frame UI source
 - `src/generated/generated.css` — compiled CSS output
 - `src/generated/app.ir.json` — stable serialized Frame IR
 - `src/generated/app.ir.ts` — typed IR module consumed by TypeScript
@@ -178,25 +201,7 @@ A standalone Frame UI project using the DOM runtime.
 
 Build (CSS + IR + types + skeletons):
 ```bash
-frame build
-```
-
-The build command generates `frame.handlers.ts` only if it does not already exist.
-Copy functions from there into your `src/handlers.ts` and implement them.
-
-Compile CSS only:
-```bash
-frame compile src/frame/app.frame --out src/generated
-```
-
-Emit IR only:
-```bash
-frame emit-ir src/frame/app.frame --out src/generated/app.ir.json
-```
-
-Watch:
-```bash
-frame watch src/frame/app.frame --out src/generated
+npm run frame:build
 ```
 
 Dev server:
@@ -204,6 +209,11 @@ Dev server:
 npm install
 npm run dev
 ```
+
+`npm run dev` and `npm run build` regenerate Frame output before Vite starts.
+`npm run check` regenerates Frame output and type-checks the runtime wiring.
+The build command writes generated-only files under `src/generated`.
+It creates `src/generated/frame.handlers.ts` only when missing. Copy functions from there into `src/handlers.ts` and implement them.
 "#;
 
 const SVELTE_PACKAGE_JSON: &str = r#"{

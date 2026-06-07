@@ -60,29 +60,62 @@ pub fn init_svelte(dry_run: bool, force: bool, _yes: bool) -> anyhow::Result<()>
 
 pub fn init_web(dry_run: bool, force: bool, _yes: bool) -> anyhow::Result<()> {
     let start = env::current_dir().context("failed to read current directory")?;
-    let root = crate::args::detect_project_root(&start)?;
+    let root = crate::args::detect_project_root(&start).unwrap_or(start);
 
-    let frame_dir = root.join("src/frame");
-    let frame_file = frame_dir.join("app.frame");
+    let src_dir = root.join("src");
+    let frame_file = src_dir.join("app.frame");
+    let generated_dir = src_dir.join("generated");
 
     if dry_run {
         println!("Frame init web dry run for {}", root.display());
-        println!("would create {}", frame_dir.display());
+        println!("would create {}", src_dir.display());
         println!("would create or preserve {}", frame_file.display());
-        println!("would generate generated.css and generated.ts");
+        println!("would create frame.config.json when missing");
+        println!(
+            "would create package.json, index.html, src/main.ts, and src/handlers.ts when missing"
+        );
+        println!("would generate CSS, typed IR, contracts, and handler skeletons");
         return Ok(());
     }
 
-    fs::create_dir_all(&frame_dir)?;
+    fs::create_dir_all(&src_dir)?;
+    fs::create_dir_all(&generated_dir)?;
     if force || !frame_file.exists() {
         fs::write(&frame_file, INITIAL_WEB_FRAME_SOURCE)?;
     }
 
-    crate::commands::compile::compile_file(
-        &frame_file,
-        &frame_dir,
-        std::slice::from_ref(&frame_dir),
+    write_if_missing_or_forced(
+        &root.join("frame.config.json"),
+        crate::commands::new::WEB_CONFIG,
+        force,
     )?;
+    write_if_missing_or_forced(
+        &root.join("package.json"),
+        &crate::commands::new::web_package_json(),
+        force,
+    )?;
+    write_if_missing_or_forced(
+        &root.join("tsconfig.json"),
+        crate::commands::new::WEB_TSCONFIG,
+        force,
+    )?;
+    write_if_missing_or_forced(
+        &root.join("index.html"),
+        crate::commands::new::WEB_INDEX,
+        force,
+    )?;
+    write_if_missing_or_forced(
+        &root.join("src/main.ts"),
+        crate::commands::new::WEB_MAIN_TS,
+        force,
+    )?;
+    write_if_missing_or_forced(
+        &root.join("src/handlers.ts"),
+        crate::commands::new::WEB_HANDLERS_TS,
+        force,
+    )?;
+
+    crate::commands::build::build_project_at(&root)?;
     println!("Frame web init is ready.\n");
     Ok(())
 }
@@ -217,6 +250,13 @@ fn backup_file(path: &Path) -> anyhow::Result<()> {
                 .unwrap_or("config")
         )),
     )?;
+    Ok(())
+}
+
+fn write_if_missing_or_forced(path: &Path, contents: &str, force: bool) -> anyhow::Result<()> {
+    if force || !path.exists() {
+        fs::write(path, contents)?;
+    }
     Ok(())
 }
 
