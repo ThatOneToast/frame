@@ -309,4 +309,54 @@ mod tests {
         assert_eq!(local, 1);
         assert_eq!(cross, 2);
     }
+
+    #[test]
+    fn theme_tokens_resolve_in_completions_without_include() {
+        let root =
+            std::env::temp_dir().join(format!("frame-lsp-theme-completion-{}", std::process::id()));
+        std::fs::create_dir_all(&root).expect("temp dir should be writable");
+        let app = root.join("app.frame");
+        let theme = root.join("app-theme.frame");
+
+        std::fs::write(&theme, "tokens Brand {\n  color brand-panel #181820\n}\n")
+            .expect("theme should be writable");
+
+        let source = "card Hero {\n  background brand-panel\n}\n";
+        std::fs::write(&app, source).expect("app should be writable");
+
+        let uri = Url::from_file_path(&app).expect("file uri should build");
+        // Position after "background " so we are in the value position
+        let offset = source.find("background ").unwrap() + "background ".len();
+
+        let items =
+            completions::completions_at_with_includes(source, offset, Vec::new(), Some(&uri));
+        let labels: Vec<String> = items.into_iter().map(|i| i.label).collect();
+        // brand-panel should be known from the theme file without explicit include
+        assert!(labels.contains(&"brand-panel".to_string()));
+    }
+
+    #[test]
+    fn theme_token_definition_resolves_to_app_theme_frame() {
+        let root = std::env::temp_dir().join(format!("frame-lsp-theme-def-{}", std::process::id()));
+        std::fs::create_dir_all(&root).expect("temp dir should be writable");
+        let app = root.join("app.frame");
+        let theme = root.join("app-theme.frame");
+
+        std::fs::write(&theme, "tokens Brand {\n  color brand-panel #181820\n}\n")
+            .expect("theme should be writable");
+
+        let source = "card Hero {\n  background brand-panel\n}\n";
+        std::fs::write(&app, source).expect("app should be writable");
+
+        let uri = Url::from_file_path(&app).expect("file uri should build");
+        let offset = source.find("brand-panel").unwrap() + 2;
+
+        let location = support::imported_symbol_definition_location(source, offset, &uri)
+            .expect("definition should resolve");
+        assert!(location
+            .uri
+            .to_file_path()
+            .unwrap()
+            .ends_with("app-theme.frame"));
+    }
 }
