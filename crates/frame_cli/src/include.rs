@@ -15,6 +15,7 @@ pub fn load_frame_document(
     include_paths: &[PathBuf],
     stack: &mut Vec<PathBuf>,
     seen: &mut HashSet<PathBuf>,
+    theme_path: Option<&Path>,
 ) -> anyhow::Result<Document> {
     let file = fs::canonicalize(file).unwrap_or_else(|_| file.to_path_buf());
 
@@ -66,10 +67,22 @@ pub fn load_frame_document(
                 searched
             );
         };
-        let included = load_frame_document(target, include_paths, stack, seen)?;
+        let included = load_frame_document(target, include_paths, stack, seen, theme_path)?;
         declarations.extend(included.declarations);
         components.extend(included.components);
     }
+    // Load implicit theme file after explicit includes but before local declarations.
+    // This gives local declarations precedence over the theme, and explicit includes
+    // precedence over the theme as well (they are loaded earlier; duplicates will be
+    // caught by the semantic validator).
+    if let Some(theme) = theme_path {
+        if theme != file && theme.exists() {
+            let theme_doc = load_frame_document(theme, include_paths, stack, seen, None)?;
+            declarations.extend(theme_doc.declarations);
+            components.extend(theme_doc.components);
+        }
+    }
+
     stack.pop();
 
     declarations.extend(document.declarations);

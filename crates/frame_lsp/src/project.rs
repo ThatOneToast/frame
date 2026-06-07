@@ -13,9 +13,21 @@ use tower_lsp::lsp_types::{Location, Url};
 
 use crate::diagnostics;
 
-/// Resolve all included Frame files for a given source document.
+/// Detect the project theme file for a given Frame source path.
+/// Looks for `app-theme.frame` in the same directory as the source file.
+pub fn resolve_theme_file(current_path: &Path) -> Option<PathBuf> {
+    let parent = current_path.parent()?;
+    let theme = parent.join("app-theme.frame");
+    if theme.exists() {
+        Some(fs::canonicalize(&theme).unwrap_or(theme))
+    } else {
+        None
+    }
+}
+
+/// Resolve all included Frame files for a given source document, plus the implicit theme file.
 /// Returns a vec of (canonical path, source text, parsed document, symbol index).
-/// The order is depth-first: deepest includes first, then the direct includes.
+/// The order is: explicit includes (depth-first), then the implicit theme file.
 pub fn resolve_includes(
     current_path: &Path,
     source: &str,
@@ -23,6 +35,17 @@ pub fn resolve_includes(
     let mut seen = HashSet::new();
     let mut results = Vec::new();
     collect_includes(current_path, source, &mut seen, &mut results);
+    // Append implicit theme file after explicit includes so local symbols take precedence.
+    if let Some(theme) = resolve_theme_file(current_path) {
+        if !seen.contains(&theme) {
+            if let Ok(theme_source) = fs::read_to_string(&theme) {
+                if let Ok(document) = parse(&theme_source) {
+                    let symbols = index_document(&theme_source, &document);
+                    results.push((theme, theme_source, document, symbols));
+                }
+            }
+        }
+    }
     results
 }
 
@@ -108,6 +131,13 @@ pub fn include_files_for_symbol(
 
         if is_match {
             candidates.push(path);
+        }
+    }
+
+    // Also include the theme file as a candidate for style/theme symbols.
+    if symbol_kind_hint == "style" || symbol_kind_hint == "theme" {
+        if let Some(theme) = resolve_theme_file(current_path) {
+            candidates.push(theme);
         }
     }
 

@@ -193,6 +193,15 @@ pub fn included_sources_for_path(
         results.extend(included_sources_for_path(&canonical, &include_source, seen));
         results.push((canonical, include_source));
     }
+    // Append implicit theme file after explicit includes.
+    if let Some(theme) = crate::project::resolve_theme_file(current_path) {
+        let canonical = fs::canonicalize(&theme).unwrap_or(theme);
+        if seen.insert(canonical.clone()) {
+            if let Ok(theme_source) = fs::read_to_string(&canonical) {
+                results.push((canonical, theme_source));
+            }
+        }
+    }
     results
 }
 

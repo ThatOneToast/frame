@@ -26,7 +26,8 @@ pub fn compile_file_document(
 ) -> anyhow::Result<frame_core::Document> {
     let mut stack = Vec::new();
     let mut seen = std::collections::HashSet::new();
-    let document = load_frame_document(file, includes, &mut stack, &mut seen)?;
+    let theme = crate::theme::resolve_theme_file(file);
+    let document = load_frame_document(file, includes, &mut stack, &mut seen, theme.as_deref())?;
     let diagnostics = validate(&document);
 
     if !diagnostics.is_empty() {

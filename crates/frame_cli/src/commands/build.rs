@@ -33,6 +33,13 @@ pub fn build_project_at(root: &Path) -> anyhow::Result<()> {
         anyhow::bail!("Entry file `{}` does not exist.", entry);
     }
 
+    let theme_path = crate::theme::resolve_theme_file(&entry_path);
+    if let Some(ref theme) = theme_path {
+        println!("theme: {}", theme.display());
+    } else {
+        println!("theme: none");
+    }
+
     let document = crate::commands::compile::compile_file_document(&entry_path, &[])?;
     std::fs::create_dir_all(&out_path)?;
     let mut outputs = vec![
