@@ -18,6 +18,20 @@ use types::SnippetScope;
 pub use types::{CompletionCategory, CompletionSuggestion};
 use values::value_completions;
 
+const COMMON_BODY_COMPLETIONS: &[&str] = &[
+    "id \"element-id\"",
+    "class StyleName",
+    "class StyleName when $condition",
+    "rel \"relationship\"",
+    "data-test-id \"value\"",
+    "text \"Label\"",
+    "on click @handler",
+    "on press @handler",
+    "bind $state",
+    "when $condition",
+    "hidden when $condition",
+];
+
 const ACTION_BODY_COMPLETIONS: &[&str] = &[
     "on press @handler",
     "label \"Label\"",
@@ -38,6 +52,7 @@ const FIELD_BODY_COMPLETIONS: &[&str] = &[
 
 const INPUT_BODY_COMPLETIONS: &[&str] = &[
     "value bind $state",
+    "checked bind $state",
     "placeholder \"Text\"",
     "label \"Label\"",
     "on input @handler",
@@ -61,6 +76,9 @@ const DIALOG_BODY_COMPLETIONS: &[&str] =
     &["show when $state", "title \"Title\"", "text \"Message\""];
 
 const POPOVER_BODY_COMPLETIONS: &[&str] = &["text \"Content\""];
+
+const CONTAINER_BODY_COMPLETIONS: &[&str] =
+    &["for item in $items {", "for item in $items key $item.id {"];
 
 const GRID_PROPERTIES: &[&str] = &[
     "columns",
@@ -390,6 +408,7 @@ pub fn completions_at_with_includes(
         }
 
         // @ trigger: suggest known handlers
+        // Rank local handlers first, then alphabetically
         CursorSlot::HandlerReference => {
             let mut items: Vec<CompletionSuggestion> = cursor
                 .scope
@@ -405,10 +424,15 @@ pub fn completions_at_with_includes(
                     insert_text: Some(sym.name.clone()),
                     is_snippet: false,
                     category: CompletionCategory::Value,
-                    sort_text: None,
+                    sort_text: Some(format!("0_{}", sym.name)),
                 })
                 .collect();
-            items.sort_by(|a, b| a.label.cmp(&b.label));
+            items.sort_by(|a, b| {
+                let a_key = a.sort_text.as_deref().unwrap_or(&a.label);
+                let b_key = b.sort_text.as_deref().unwrap_or(&b.label);
+                a_key.cmp(b_key)
+            });
+            items.dedup_by(|a, b| a.label == b.label);
             items
         }
 
@@ -419,11 +443,38 @@ pub fn completions_at_with_includes(
                 "event",
                 "Event name for an external handler binding.",
             );
+            // focus and blur are recognized events in Frame semantics but registered
+            // as StateKeyword and Effect respectively; augment dynamically.
+            items.extend(suggestions_with_category(
+                &["focus", "blur"],
+                "event",
+                "Fires when this element gains or loses focus.",
+                CompletionCategory::Value,
+            ));
             items.extend(registry_item_suggestions(
                 language::items_by_kind(language::LanguageItemKind::EventModifier),
                 "event modifier",
                 "Keyboard or platform modifier used after an event name.",
             ));
+            // Keyboard modifier snippets for common patterns
+            items.push(CompletionSuggestion {
+                label: "keydown.enter @handler".to_string(),
+                detail: "event snippet",
+                documentation: "Binds the Enter/Return key to an external handler.".to_string(),
+                insert_text: Some("keydown.enter @handler".to_string()),
+                is_snippet: false,
+                category: CompletionCategory::Value,
+                sort_text: Some("2_keydown.enter @handler".to_string()),
+            });
+            items.push(CompletionSuggestion {
+                label: "keydown.escape @handler".to_string(),
+                detail: "event snippet",
+                documentation: "Binds the Escape key to an external handler.".to_string(),
+                insert_text: Some("keydown.escape @handler".to_string()),
+                is_snippet: false,
+                category: CompletionCategory::Value,
+                sort_text: Some("2_keydown.escape @handler".to_string()),
+            });
             items
         }
 
@@ -474,6 +525,14 @@ pub fn completions_at_with_includes(
                             POPOVER_BODY_COMPLETIONS,
                             "popover body",
                             "Popover content suggestions.",
+                        )),
+                        "screen" | "panel" | "section" | "stack" | "row" | "grid"
+                        | "split" | "dock" | "overlay" | "scroll" | "link" | "menu"
+                        | "toolbar" | "tabs" | "composer" | "item" | "empty" | "card"
+                        | "center" | "button" => Some(primitive_body_completions(
+                            CONTAINER_BODY_COMPLETIONS,
+                            "container body",
+                            "Container rendering suggestions including loops and children.",
                         )),
                         _ => None,
                     };
@@ -748,18 +807,45 @@ fn primitive_body_completions(
     detail: &'static str,
     documentation: &'static str,
 ) -> Vec<CompletionSuggestion> {
-    labels
+    let mut items: Vec<CompletionSuggestion> = COMMON_BODY_COMPLETIONS
         .iter()
         .map(|label| CompletionSuggestion {
             label: (*label).to_string(),
-            detail,
-            documentation: documentation.to_string(),
+            detail: "common ui property",
+            documentation: primitive_body_docs(label),
             insert_text: Some((*label).to_string()),
             is_snippet: false,
             category: CompletionCategory::Value,
-            sort_text: None,
+            sort_text: Some(format!("0_{}", label)),
         })
-        .collect()
+        .collect();
+    items.extend(labels.iter().map(|label| CompletionSuggestion {
+        label: (*label).to_string(),
+        detail,
+        documentation: documentation.to_string(),
+        insert_text: Some((*label).to_string()),
+        is_snippet: false,
+        category: CompletionCategory::Value,
+        sort_text: Some(format!("1_{}", label)),
+    }));
+    items
+}
+
+fn primitive_body_docs(label: &str) -> String {
+    match label {
+        "id \"element-id\"" => "Assigns a stable DOM/accessibility identifier.\n\nPrefer unique IDs. Useful for labels, testing, anchors, and runtime lookup if supported.",
+        "class StyleName" => "Adds an explicit CSS class to this UI node.\n\nFrame classes reference Frame style symbols or style-like class names.",
+        "class StyleName when $condition" => "Conditional class syntax. Applies only when the condition is truthy.",
+        "rel \"relationship\"" => "Sets link relationship intent. Common values: `noopener`, `noreferrer`, `nofollow`. Use with `target` or `new-window` for external links.",
+        "data-test-id \"value\"" => "Stores custom metadata. Useful for testing, instrumentation, and app-specific hooks. Data attributes should be string-like values.",
+        "text \"Label\"" => "Sets visible text content for this node.",
+        "on click @handler" => "Fires when the user clicks this element. Use `@handlerName` for the external handler reference.",
+        "on press @handler" => "Fires when the user presses/activates this element. Use `@handlerName` for the external handler reference.",
+        "bind $state" => "Shorthand for `value bind $state`. Binds this control to component state.",
+        "when $condition" => "Introduces a state-driven condition. Used with properties like `disabled` or `hidden`.",
+        "hidden when $condition" => "Conditionally hides this node when the condition is truthy.",
+        _ => "Common UI property for this primitive.",
+    }.to_string()
 }
 
 #[cfg(test)]
@@ -1363,5 +1449,150 @@ mod tests {
         assert!(labels.contains(&"on press @handler".to_string()));
         assert!(labels.contains(&"disabled when $state".to_string()));
         assert!(!labels.contains(&"value bind $state".to_string()));
+    }
+
+    #[test]
+    fn primitive_body_suggests_id_class_rel_and_data() {
+        let labels = labels_for("component Demo {\n  view {\n    action Send {\n      ");
+        assert!(
+            labels.contains(&"id \"element-id\"".to_string()),
+            "expected id in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"class StyleName".to_string()),
+            "expected class in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"rel \"relationship\"".to_string()),
+            "expected rel in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"data-test-id \"value\"".to_string()),
+            "expected data-test-id in {:?}",
+            labels
+        );
+    }
+
+    #[test]
+    fn primitive_body_suggests_text_on_bind_when_hidden() {
+        let labels = labels_for("component Demo {\n  view {\n    action Send {\n      ");
+        assert!(
+            labels.contains(&"text \"Label\"".to_string()),
+            "expected text in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"on click @handler".to_string()),
+            "expected on click in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"bind $state".to_string()),
+            "expected bind in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"hidden when $condition".to_string()),
+            "expected hidden when in {:?}",
+            labels
+        );
+    }
+
+    #[test]
+    fn on_context_suggests_events_and_modifiers() {
+        let labels = labels_for("component Demo {\n  view {\n    action Send {\n      on ");
+        assert!(labels.contains(&"click".to_string()));
+        assert!(labels.contains(&"keydown".to_string()));
+        assert!(labels.contains(&"focus".to_string()));
+        assert!(labels.contains(&"blur".to_string()));
+        assert!(labels.contains(&"enter".to_string()));
+    }
+
+    #[test]
+    fn on_context_suggests_keyboard_modifier_snippets() {
+        let labels = labels_for("component Demo {\n  view {\n    action Send {\n      on ");
+        assert!(
+            labels.contains(&"keydown.enter @handler".to_string()),
+            "expected keydown.enter snippet in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"keydown.escape @handler".to_string()),
+            "expected keydown.escape snippet in {:?}",
+            labels
+        );
+    }
+
+    #[test]
+    fn at_context_ranks_local_handlers_first() {
+        let source = "component ChatApp {\n  view {\n    action Send {\n      on press @sendMessage\n    }\n    action Delete {\n      on press @deleteMessage\n    }\n  }\n}\n";
+        let offset = source.find("on press @").unwrap() + 10;
+        let items = completions_at(source, offset);
+        let labels: Vec<String> = items.iter().map(|i| i.label.clone()).collect();
+        assert!(labels.contains(&"@sendMessage".to_string()));
+        assert!(labels.contains(&"@deleteMessage".to_string()));
+        // Both should have sort_text starting with 0_ because they're local handlers
+        for item in &items {
+            if item.label.starts_with('@') {
+                assert!(
+                    item.sort_text.as_deref().unwrap_or("").starts_with("0_"),
+                    "handler {} should rank first: sort_text={:?}",
+                    item.label,
+                    item.sort_text
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn input_primitive_suggests_value_and_checked_bind() {
+        let labels = labels_for("component Demo {\n  view {\n    input MessageInput {\n      ");
+        assert!(
+            labels.contains(&"value bind $state".to_string()),
+            "expected value bind in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"checked bind $state".to_string()),
+            "expected checked bind in {:?}",
+            labels
+        );
+    }
+
+    #[test]
+    fn toggle_primitive_suggests_checked_bind() {
+        let labels = labels_for("component Demo {\n  view {\n    toggle Enabled {\n      ");
+        assert!(
+            labels.contains(&"checked bind $state".to_string()),
+            "expected checked bind in {:?}",
+            labels
+        );
+    }
+
+    #[test]
+    fn container_primitive_suggests_for_loop() {
+        let labels = labels_for("component Demo {\n  view {\n    stack MainPanel {\n      ");
+        assert!(
+            labels.contains(&"for item in $items {".to_string()),
+            "expected for loop in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"for item in $items key $item.id {".to_string()),
+            "expected keyed for loop in {:?}",
+            labels
+        );
+    }
+
+    #[test]
+    fn text_primitive_does_not_suggest_for_loop() {
+        let labels = labels_for("component Demo {\n  view {\n    text Label {\n      ");
+        assert!(
+            !labels.contains(&"for item in $items {".to_string()),
+            "text primitive should not suggest for loop"
+        );
     }
 }
