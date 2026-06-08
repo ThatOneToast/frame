@@ -346,4 +346,23 @@ mod tests {
         assert!(doc.contains("on press"));
         assert!(doc.contains("External handler reference"));
     }
+
+    #[test]
+    fn returns_class_hover_docs() {
+        let doc = hover_doc("class").expect("class should have docs");
+        assert!(doc.contains("CSS class"));
+    }
+
+    #[test]
+    fn returns_rel_hover_docs() {
+        let doc = hover_doc("rel").expect("rel should have docs");
+        assert!(doc.contains("noopener"));
+    }
+
+    #[test]
+    fn returns_in_hover_with_loop_context() {
+        let doc = hover_doc("in").expect("in should have docs");
+        assert!(doc.contains("for"));
+        assert!(doc.contains("loop"));
+    }
 }

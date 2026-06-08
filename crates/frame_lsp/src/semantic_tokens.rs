@@ -50,6 +50,23 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
             }
         } else if first == "props" || first == "state" || first == "view" || first == "slot" {
             push_word(line, line_index, first, TOKEN_KEYWORD, &mut raw);
+            if first == "slot" {
+                if let Some(name) = words.get(1) {
+                    let name = name.trim_end_matches('{');
+                    push_word(line, line_index, name, TOKEN_CLASS, &mut raw);
+                }
+            }
+        } else if words.len() == 2
+            && matches!(
+                words.get(1).copied(),
+                Some("text" | "string" | "bool" | "number" | "list")
+            )
+        {
+            // Prop or state declaration without a default value: `channel text`
+            push_word(line, line_index, first, TOKEN_CLASS, &mut raw);
+            if let Some(ty) = words.get(1) {
+                push_word(line, line_index, ty, TOKEN_ENUM_MEMBER, &mut raw);
+            }
         } else if language::is_ui_primitive(first)
             && words.get(1).is_some_and(|word| word.ends_with('{'))
         {
@@ -114,7 +131,7 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
         } else if first == "for" {
             push_word(line, line_index, first, TOKEN_KEYWORD, &mut raw);
             if let Some(item) = words.get(1) {
-                push_word(line, line_index, item, TOKEN_CLASS, &mut raw);
+                push_word(line, line_index, item, TOKEN_VARIABLE, &mut raw);
             }
             if let Some(in_word) = words.get(2) {
                 push_word(line, line_index, in_word, TOKEN_KEYWORD, &mut raw);
@@ -146,25 +163,32 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
             first,
             "value"
                 | "bind"
-                | "draft"
-                | "send"
-                | "source"
-                | "goto"
-                | "label"
+                | "class"
+                | "data-test-id"
+                | "decorative"
                 | "description"
+                | "disabled"
+                | "draft"
+                | "goto"
+                | "hidden"
                 | "hint"
+                | "id"
+                | "kind"
+                | "label"
+                | "new-window"
                 | "options"
                 | "placeholder"
-                | "disabled"
+                | "poster"
                 | "readonly"
-                | "style"
-                | "show"
-                | "hidden"
-                | "checked"
+                | "rel"
                 | "selected"
+                | "send"
+                | "show"
+                | "source"
+                | "sources"
+                | "style"
+                | "checked"
                 | "alt"
-                | "decorative"
-                | "new-window"
         ) {
             push_word(line, line_index, first, TOKEN_PROPERTY, &mut raw);
             for value in words.iter().skip(1) {
@@ -278,6 +302,8 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                         TOKEN_NUMBER
                     } else if value.starts_with('#') {
                         TOKEN_VARIABLE
+                    } else if is_time_value(value) {
+                        TOKEN_NUMBER
                     } else if is_known_value(value) {
                         TOKEN_ENUM_MEMBER
                     } else {
@@ -357,6 +383,12 @@ fn is_known_value(value: &str) -> bool {
         )
         || language::BORDER_LINE_STYLES.contains(&value)
         || is_tuned_amount(value)
+}
+
+fn is_time_value(value: &str) -> bool {
+    value.len() > 2
+        && value.ends_with("ms")
+        && value[..value.len() - 2].chars().all(|c| c.is_ascii_digit())
 }
 
 fn is_tuned_amount(value: &str) -> bool {
@@ -565,6 +597,23 @@ mod tests {
             .iter()
             .any(|token| token.token_type == TOKEN_VARIABLE && token.length == 8));
         // "$sending"
+
+        // Loop variable `message` should be VARIABLE, not CLASS
+        assert!(tokens.data.iter().any(|token| {
+            token.token_type == TOKEN_VARIABLE && token.length == 7 // "message"
+        }));
+    }
+
+    #[test]
+    fn emits_time_values_as_number() {
+        let tokens =
+            semantic_tokens("card Panel {\n  animation FloatIn {\n    duration 240ms\n  }\n}\n");
+
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_NUMBER && token.length == 5));
+        // "240ms"
     }
 
     #[test]
@@ -610,6 +659,48 @@ mod tests {
             .data
             .iter()
             .any(|token| token.token_type == TOKEN_VARIABLE)); // $activeChannel
+    }
+
+    #[test]
+    fn emits_tokens_for_slot_and_ui_properties() {
+        let tokens = semantic_tokens(
+            "component ChatApp {\n  slot Default {\n    text $fallback\n  }\n  view {\n    action Send {\n      id \"send-btn\"\n      class Primary\n      rel \"noopener\"\n    }\n  }\n}\n",
+        );
+
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_CLASS && token.length == 7)); // "Default"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_PROPERTY && token.length == 2)); // "id"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_PROPERTY && token.length == 5)); // "class"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_PROPERTY && token.length == 3));
+        // "rel"
+    }
+
+    #[test]
+    fn emits_tokens_for_prop_and_state_declarations() {
+        let tokens = semantic_tokens(
+            "component ChatApp {\n  props {\n    channel text\n  }\n  state {\n    draft text = \"\"\n  }\n}\n",
+        );
+
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_CLASS && token.length == 7)); // "channel"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_CLASS && token.length == 5));
+        // "draft"
     }
 
     #[test]
