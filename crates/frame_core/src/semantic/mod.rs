@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::{
-    knowledge,
+    language,
     symbols::{index_document, SymbolIndex},
     ComponentDecl, DeclarationKind, Diagnostic, Document, PropType,
 };
@@ -38,7 +38,7 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
         }
 
         if let DeclarationKind::Unknown(kind) = &declaration.kind {
-            let suggestion = closest(kind, knowledge::declaration_keywords())
+            let suggestion = closest(kind, language::declaration_keywords())
                 .map(|value| format!("\n\nDid you mean `{value}`?"))
                 .unwrap_or_default();
             diagnostics.push(Diagnostic::error(
@@ -1518,9 +1518,9 @@ mod tests {
 
     #[test]
     fn knowledge_catalog_documents_new_motion_and_responsive_concepts() {
-        let keyframes = knowledge::concept("keyframes").expect("keyframes concept");
-        let below = knowledge::concept("below").expect("below concept");
-        let container = knowledge::concept("container").expect("container concept");
+        let keyframes = language::item("keyframes").expect("keyframes concept");
+        let below = language::item("below").expect("below concept");
+        let container = language::item("container").expect("container concept");
 
         assert!(keyframes.markdown().contains("@keyframes frame-Name"));
         assert!(below.markdown().contains("@media"));

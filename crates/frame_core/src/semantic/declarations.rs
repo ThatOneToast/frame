@@ -1,5 +1,5 @@
 use crate::{
-    symbols::SymbolIndex, tokens, Declaration, DeclarationKind, Diagnostic, Node, Span, Statement,
+    language, symbols::SymbolIndex, Declaration, DeclarationKind, Diagnostic, Node, Span, Statement,
 };
 
 use super::helpers::*;
@@ -285,7 +285,7 @@ pub(crate) fn validate_keyframe_block(block: &crate::Block, diagnostics: &mut Ve
             continue;
         };
         match statement.words.first().map(String::as_str) {
-            Some(property) if tokens::KEYFRAME_PROPERTIES.contains(&property) => {}
+            Some(property) if language::KEYFRAME_PROPERTIES.contains(&property) => {}
             Some(other) => diagnostics.push(Diagnostic::error(
                 format!(
                     "Unknown keyframe property `{other}`.\n\nFrame keyframes currently support `opacity`, `transform`, `filter`, `scale`, `translate`, and `rotate`."
@@ -304,9 +304,9 @@ pub(crate) fn validate_section_block(block: &crate::Block, diagnostics: &mut Vec
         };
         match statement.words.first().map(String::as_str) {
             Some("padding" | "margin") => validate_box_space(statement, diagnostics),
-            Some("align") => validate_value(statement, tokens::ALIGN, diagnostics),
-            Some("justify") => validate_value(statement, tokens::JUSTIFY, diagnostics),
-            Some("gap") => validate_value(statement, tokens::SPACING, diagnostics),
+            Some("align") => validate_value(statement, language::ALIGN, diagnostics),
+            Some("justify") => validate_value(statement, language::JUSTIFY, diagnostics),
+            Some("gap") => validate_value(statement, language::SPACING, diagnostics),
             Some(
                 "width"
                 | "height"
@@ -432,7 +432,7 @@ pub(crate) fn validate_token_block(
         match statement.words.first().map(String::as_str) {
             Some("type") => {
                 let gradient_type = statement.words.get(1).map(String::as_str).unwrap_or("");
-                if !tokens::GRADIENT_TYPES.contains(&gradient_type) {
+                if !language::GRADIENT_TYPES.contains(&gradient_type) {
                     diagnostics.push(Diagnostic::error(
                         format!("Unknown gradient type `{gradient_type}`.\n\nUse `linear`, `radial`, `conic`, or `layered`."),
                         statement.span,
@@ -461,7 +461,7 @@ pub(crate) fn validate_token_block(
                     continue;
                 };
                 if !is_hex_color(color)
-                    && !tokens::COLORS.contains(&color.as_str())
+                    && !language::COLORS.contains(&color.as_str())
                     && !symbols.colors.contains_key(color)
                 {
                     diagnostics.push(Diagnostic::error(
@@ -485,7 +485,7 @@ pub(crate) fn validate_token_block(
                     ));
                     continue;
                 };
-                if !tokens::GRADIENT_CORNERS.contains(&corner.as_str()) {
+                if !language::GRADIENT_CORNERS.contains(&corner.as_str()) {
                     diagnostics.push(Diagnostic::error(
                         format!(
                             "Unknown gradient corner `{corner}`.\n\nUse top-left, top-right, bottom-left, or bottom-right."
@@ -494,7 +494,7 @@ pub(crate) fn validate_token_block(
                     ));
                 }
                 if !is_hex_color(color)
-                    && !tokens::COLORS.contains(&color.as_str())
+                    && !language::COLORS.contains(&color.as_str())
                     && !symbols.colors.contains_key(color)
                 {
                     diagnostics.push(Diagnostic::error(

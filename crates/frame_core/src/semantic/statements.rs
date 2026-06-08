@@ -1,6 +1,5 @@
 use crate::{
-    knowledge, symbols::SymbolIndex, tokens, Declaration, DeclarationKind, Diagnostic, Node,
-    Statement,
+    language, symbols::SymbolIndex, Declaration, DeclarationKind, Diagnostic, Node, Statement,
 };
 
 use super::declarations::validate_keyframe_block;
@@ -75,10 +74,10 @@ pub(crate) fn validate_condition_header(
 ) {
     let words = name.split_whitespace().collect::<Vec<_>>();
     match words.as_slice() {
-        ["below" | "above", breakpoint] if tokens::BREAKPOINTS.contains(breakpoint) => {}
+        ["below" | "above", breakpoint] if language::BREAKPOINTS.contains(breakpoint) => {}
         ["between", start, end]
-            if tokens::BREAKPOINTS.contains(start) && tokens::BREAKPOINTS.contains(end) => {}
-        ["container", container] if tokens::CONTAINERS.contains(container) => {}
+            if language::BREAKPOINTS.contains(start) && language::BREAKPOINTS.contains(end) => {}
+        ["container", container] if language::CONTAINERS.contains(container) => {}
         ["below" | "above", breakpoint] => diagnostics.push(Diagnostic::error(
             format!(
                 "Unknown breakpoint `{breakpoint}`.\n\nUse `mobile`, `tablet`, `desktop`, or `wide`."
@@ -114,7 +113,7 @@ pub(crate) fn validate_animation_block(
         return;
     };
 
-    if !tokens::ANIMATIONS.contains(&name) && !symbols.keyframes.contains_key(name) {
+    if !language::ANIMATIONS.contains(&name) && !symbols.keyframes.contains_key(name) {
         diagnostics.push(Diagnostic::error(
             format!(
                 "Unknown animation `{name}`.\n\nUse a preset like `fade-in`, `slide-up`, `pop-in`, or define `keyframes {name} {{ ... }}`."
@@ -129,11 +128,11 @@ pub(crate) fn validate_animation_block(
         };
         match statement.words.first().map(String::as_str) {
             Some("duration" | "delay") => validate_animation_time(statement, diagnostics),
-            Some("ease") => validate_value(statement, tokens::EASES, diagnostics),
+            Some("ease") => validate_value(statement, language::EASES, diagnostics),
             Some("iteration") => validate_animation_iteration(statement, diagnostics),
-            Some("direction") => validate_value(statement, tokens::ANIMATION_DIRECTIONS, diagnostics),
-            Some("fill") => validate_value(statement, tokens::ANIMATION_FILLS, diagnostics),
-            Some("play-state") => validate_value(statement, tokens::ANIMATION_PLAY_STATES, diagnostics),
+            Some("direction") => validate_value(statement, language::ANIMATION_DIRECTIONS, diagnostics),
+            Some("fill") => validate_value(statement, language::ANIMATION_FILLS, diagnostics),
+            Some("play-state") => validate_value(statement, language::ANIMATION_PLAY_STATES, diagnostics),
             Some(other) => diagnostics.push(Diagnostic::error(
                 format!(
                     "Unknown animation option `{other}`.\n\nUse `duration`, `delay`, `ease`, `iteration`, `direction`, `fill`, or `play-state`."
@@ -154,7 +153,7 @@ pub(crate) fn validate_statement(
         return;
     };
 
-    if !knowledge::property_keywords().contains(&keyword) {
+    if !language::property_keywords().contains(&keyword) {
         if let Some(alias) = css_property_alias(keyword) {
             let example_value = alias_example_value(alias);
             diagnostics.push(Diagnostic::error(
@@ -166,7 +165,7 @@ pub(crate) fn validate_statement(
             return;
         }
 
-        let suggestion = closest(keyword, knowledge::property_keywords())
+        let suggestion = closest(keyword, language::property_keywords())
             .map(|value| format!("\n\nDid you mean `{value}`?"))
             .unwrap_or_default();
         diagnostics.push(Diagnostic::error(
@@ -180,13 +179,13 @@ pub(crate) fn validate_statement(
 
     match first_word(statement) {
         Some("padding" | "margin") => validate_box_space(statement, diagnostics),
-        Some("display") => validate_value(statement, tokens::DISPLAY, diagnostics),
-        Some("visibility") => validate_value(statement, tokens::VISIBILITY, diagnostics),
+        Some("display") => validate_value(statement, language::DISPLAY, diagnostics),
+        Some("visibility") => validate_value(statement, language::VISIBILITY, diagnostics),
         Some("flex") => validate_flex(statement, diagnostics),
-        Some("gap") => validate_value(statement, tokens::SPACING, diagnostics),
-        Some("radius") => validate_value(statement, tokens::RADII, diagnostics),
+        Some("gap") => validate_value(statement, language::SPACING, diagnostics),
+        Some("radius") => validate_value(statement, language::RADII, diagnostics),
         Some("surface") => validate_surface(statement, symbols, diagnostics),
-        Some("shadow") => validate_value(statement, tokens::SHADOWS, diagnostics),
+        Some("shadow") => validate_value(statement, language::SHADOWS, diagnostics),
         Some("border") => validate_border(statement, symbols, diagnostics),
         Some("outline") => validate_outline(statement, symbols, diagnostics),
         Some(
@@ -194,39 +193,41 @@ pub(crate) fn validate_statement(
             | "inline-size" | "block-size" | "min-inline-size" | "max-inline-size"
             | "min-block-size" | "max-block-size",
         ) => validate_size_value(statement, diagnostics),
-        Some("align") => validate_value(statement, tokens::ALIGN, diagnostics),
-        Some("justify") => validate_value(statement, tokens::JUSTIFY, diagnostics),
+        Some("align") => validate_value(statement, language::ALIGN, diagnostics),
+        Some("justify") => validate_value(statement, language::JUSTIFY, diagnostics),
         Some("tracks") => validate_tracks(statement, diagnostics),
         Some("areas") => validate_areas(statement, diagnostics),
-        Some("layout") => validate_value(statement, tokens::LAYOUTS, diagnostics),
-        Some("overflow") => validate_value(statement, tokens::OVERFLOWS, diagnostics),
-        Some("scroll") => validate_value(statement, tokens::SCROLL_AXES, diagnostics),
-        Some("scrollbar") => validate_value(statement, tokens::SCROLLBARS, diagnostics),
-        Some("box") => validate_value(statement, tokens::BOX_SIZING, diagnostics),
-        Some("square") => validate_value(statement, tokens::SQUARES, diagnostics),
-        Some("self") => validate_value(statement, tokens::SELF_ALIGN, diagnostics),
-        Some("nudge") => validate_value(statement, tokens::NUDGES, diagnostics),
-        Some("wrap") => validate_value(statement, tokens::TEXT_WRAPS, diagnostics),
-        Some("case") => validate_value(statement, tokens::TEXT_CASES, diagnostics),
-        Some("align-text") => validate_value(statement, tokens::TEXT_ALIGN, diagnostics),
-        Some("decoration") => validate_value(statement, tokens::TEXT_DECORATIONS, diagnostics),
-        Some("whitespace") => validate_value(statement, tokens::WHITE_SPACE, diagnostics),
-        Some("word-break") => validate_value(statement, tokens::WORD_BREAKS, diagnostics),
-        Some("hyphenate") => validate_value(statement, tokens::HYPHENS, diagnostics),
-        Some("line") => validate_value(statement, tokens::LINES, diagnostics),
-        Some("letter") => validate_value(statement, tokens::LETTERS, diagnostics),
-        Some("control") => validate_value(statement, tokens::CONTROLS, diagnostics),
-        Some("position") => validate_value(statement, tokens::POSITIONS, diagnostics),
-        Some("anchor") => validate_value(statement, tokens::ANCHORS, diagnostics),
-        Some("z") => validate_value(statement, tokens::Z_LAYERS, diagnostics),
+        Some("layout") => validate_value(statement, language::LAYOUTS, diagnostics),
+        Some("overflow") => validate_value(statement, language::OVERFLOWS, diagnostics),
+        Some("scroll") => validate_value(statement, language::SCROLL_AXES, diagnostics),
+        Some("scrollbar") => validate_value(statement, language::SCROLLBARS, diagnostics),
+        Some("box") => validate_value(statement, language::BOX_SIZING, diagnostics),
+        Some("square") => validate_value(statement, language::SQUARES, diagnostics),
+        Some("self") => validate_value(statement, language::SELF_ALIGN, diagnostics),
+        Some("nudge") => validate_value(statement, language::NUDGES, diagnostics),
+        Some("wrap") => validate_value(statement, language::TEXT_WRAPS, diagnostics),
+        Some("case") => validate_value(statement, language::TEXT_CASES, diagnostics),
+        Some("align-text") => validate_value(statement, language::TEXT_ALIGN, diagnostics),
+        Some("decoration") => validate_value(statement, language::TEXT_DECORATIONS, diagnostics),
+        Some("whitespace") => validate_value(statement, language::WHITE_SPACE, diagnostics),
+        Some("word-break") => validate_value(statement, language::WORD_BREAKS, diagnostics),
+        Some("hyphenate") => validate_value(statement, language::HYPHENS, diagnostics),
+        Some("line") => validate_value(statement, language::LINES, diagnostics),
+        Some("letter") => validate_value(statement, language::LETTERS, diagnostics),
+        Some("control") => validate_value(statement, language::CONTROLS, diagnostics),
+        Some("position") => validate_value(statement, language::POSITIONS, diagnostics),
+        Some("anchor") => validate_value(statement, language::ANCHORS, diagnostics),
+        Some("z") => validate_value(statement, language::Z_LAYERS, diagnostics),
         Some("theme" | "color" | "text") => validate_color(statement, symbols, diagnostics),
         Some("background") => validate_background(statement, symbols, diagnostics),
         Some("columns") => validate_grid_columns(statement, diagnostics),
-        Some("flow") => validate_value(statement, tokens::GRID_FLOWS, diagnostics),
-        Some("transition") => validate_value(statement, tokens::TRANSITIONS, diagnostics),
-        Some("duration") => validate_value(statement, tokens::DURATIONS, diagnostics),
-        Some("ease") => validate_value(statement, tokens::EASES, diagnostics),
-        Some("animation" | "animate") => validate_value(statement, tokens::ANIMATIONS, diagnostics),
+        Some("flow") => validate_value(statement, language::GRID_FLOWS, diagnostics),
+        Some("transition") => validate_value(statement, language::TRANSITIONS, diagnostics),
+        Some("duration") => validate_value(statement, language::DURATIONS, diagnostics),
+        Some("ease") => validate_value(statement, language::EASES, diagnostics),
+        Some("animation" | "animate") => {
+            validate_value(statement, language::ANIMATIONS, diagnostics)
+        }
         Some("lift" | "sink" | "shift" | "grow" | "shrink" | "tilt" | "press" | "pop") => {
             validate_motion_statement(statement, diagnostics)
         }
@@ -262,7 +263,7 @@ pub(crate) fn validate_tracks(statement: &Statement, diagnostics: &mut Vec<Diagn
     }
 
     for value in statement.words.iter().skip(2) {
-        if !tokens::TRACKS.contains(&value.as_str()) && !is_valid_percentage(value) {
+        if !language::TRACKS.contains(&value.as_str()) && !is_valid_percentage(value) {
             diagnostics.push(Diagnostic::error(
                 format!(
                     "Unknown track value `{value}`.\n\nUse app layout tracks like `rail`, `panel`, `side`, `header`, `composer`, `fill`, `auto`, or percentages."
@@ -291,7 +292,7 @@ pub(crate) fn validate_flex(statement: &Statement, diagnostics: &mut Vec<Diagnos
                 ));
                 return;
             };
-            if !tokens::FLEX_DIRECTIONS.contains(&value.as_str()) {
+            if !language::FLEX_DIRECTIONS.contains(&value.as_str()) {
                 diagnostics.push(Diagnostic::error(
                     format!("Unknown flex direction `{value}`.\n\nUse `row`, `column`, `row-reverse`, or `column-reverse`."),
                     statement.span,
@@ -306,7 +307,7 @@ pub(crate) fn validate_flex(statement: &Statement, diagnostics: &mut Vec<Diagnos
                 ));
                 return;
             };
-            if !tokens::FLEX_WRAPS.contains(&value.as_str()) {
+            if !language::FLEX_WRAPS.contains(&value.as_str()) {
                 diagnostics.push(Diagnostic::error(
                     format!("Unknown flex wrap `{value}`.\n\nUse `nowrap`, `wrap`, or `wrap-reverse`."),
                     statement.span,
@@ -336,7 +337,7 @@ pub(crate) fn validate_flex(statement: &Statement, diagnostics: &mut Vec<Diagnos
                 ));
                 return;
             };
-            if !is_valid_percentage(value) && !tokens::SIZES.contains(&value.as_str()) {
+            if !is_valid_percentage(value) && !language::SIZES.contains(&value.as_str()) {
                 diagnostics.push(Diagnostic::error(
                     format!("`{value}` is not a valid flex basis value.\n\nUse size values like `auto`, `fill`, `content`, `sidebar`, or percentages."),
                     statement.span,
@@ -370,7 +371,7 @@ pub(crate) fn validate_effect_statement(
         return;
     };
 
-    if knowledge::declaration_keywords().contains(&effect) {
+    if language::declaration_keywords().contains(&effect) {
         diagnostics.push(Diagnostic::error(
             format!(
                 "`{effect}` cannot be used inside an interaction state.\n\nUse effect keywords here, such as:\n- `lift`\n- `glow`\n- `brighten`\n- `dim`"
@@ -380,8 +381,8 @@ pub(crate) fn validate_effect_statement(
         return;
     }
 
-    if !tokens::EFFECTS.contains(&effect) {
-        let suggestion = closest(effect, tokens::EFFECTS)
+    if !language::EFFECTS.contains(&effect) {
+        let suggestion = closest(effect, language::EFFECTS)
             .map(|value| format!("\n\nDid you mean `{value}`?"))
             .unwrap_or_default();
         diagnostics.push(Diagnostic::error(
@@ -396,10 +397,10 @@ pub(crate) fn validate_effect_statement(
             validate_motion_statement(statement, diagnostics)
         }
         "glow" | "ring" => validate_glow(statement, symbols, diagnostics),
-        "transition" => validate_value(statement, tokens::TRANSITIONS, diagnostics),
-        "duration" => validate_value(statement, tokens::DURATIONS, diagnostics),
-        "ease" => validate_value(statement, tokens::EASES, diagnostics),
-        "animation" | "animate" => validate_value(statement, tokens::ANIMATIONS, diagnostics),
+        "transition" => validate_value(statement, language::TRANSITIONS, diagnostics),
+        "duration" => validate_value(statement, language::DURATIONS, diagnostics),
+        "ease" => validate_value(statement, language::EASES, diagnostics),
+        "animation" | "animate" => validate_value(statement, language::ANIMATIONS, diagnostics),
         _ => {}
     }
 }
@@ -413,7 +414,7 @@ pub(crate) fn validate_motion_statement(statement: &Statement, diagnostics: &mut
         "lift" | "sink" => validate_tuned_amount_at(
             statement,
             1,
-            tokens::MOVEMENT_AMOUNTS,
+            language::MOVEMENT_AMOUNTS,
             "movement amount",
             diagnostics,
         ),
@@ -440,7 +441,7 @@ pub(crate) fn validate_motion_statement(statement: &Statement, diagnostics: &mut
             validate_tuned_amount_at(
                 statement,
                 2,
-                tokens::MOVEMENT_AMOUNTS,
+                language::MOVEMENT_AMOUNTS,
                 "movement amount",
                 diagnostics,
             );
@@ -448,7 +449,7 @@ pub(crate) fn validate_motion_statement(statement: &Statement, diagnostics: &mut
         "grow" | "shrink" => validate_tuned_amount_at(
             statement,
             1,
-            tokens::VISUAL_AMOUNTS,
+            language::VISUAL_AMOUNTS,
             "visual amount",
             diagnostics,
         ),
@@ -473,7 +474,7 @@ pub(crate) fn validate_motion_statement(statement: &Statement, diagnostics: &mut
             validate_tuned_amount_at(
                 statement,
                 2,
-                tokens::VISUAL_AMOUNTS,
+                language::VISUAL_AMOUNTS,
                 "visual amount",
                 diagnostics,
             );
@@ -548,8 +549,8 @@ pub(crate) fn validate_surface(
         return;
     }
 
-    if !tokens::SURFACES.contains(&value.as_str()) {
-        let suggestion = closest(value, tokens::SURFACES)
+    if !language::SURFACES.contains(&value.as_str()) {
+        let suggestion = closest(value, language::SURFACES)
             .map(|value| format!("\n\nDid you mean `{value}`?"))
             .unwrap_or_default();
         diagnostics.push(Diagnostic::error(
@@ -597,17 +598,17 @@ pub(crate) fn validate_background(
         return;
     };
 
-    if tokens::COLORS.contains(&value.as_str())
-        || tokens::SURFACES.contains(&value.as_str())
+    if language::COLORS.contains(&value.as_str())
+        || language::SURFACES.contains(&value.as_str())
         || symbols.colors.contains_key(value)
         || symbols.gradients.contains_key(value)
     {
         return;
     }
 
-    let mut candidates = tokens::COLORS
+    let mut candidates = language::COLORS
         .iter()
-        .chain(tokens::SURFACES.iter())
+        .chain(language::SURFACES.iter())
         .copied()
         .collect::<Vec<_>>();
     candidates.sort_unstable();
@@ -638,11 +639,11 @@ pub(crate) fn validate_color(
         return;
     };
 
-    if tokens::COLORS.contains(&value.as_str()) || symbols.colors.contains_key(value) {
+    if language::COLORS.contains(&value.as_str()) || symbols.colors.contains_key(value) {
         return;
     }
 
-    let suggestion = closest(value, tokens::COLORS)
+    let suggestion = closest(value, language::COLORS)
         .map(|value| format!("\n\nDid you mean `{value}`?"))
         .unwrap_or_default();
     let property = statement.words[0].as_str();
@@ -695,10 +696,10 @@ pub(crate) fn validate_border(
             ));
             return;
         };
-        if tokens::BORDER_LINE_STYLES.contains(&style.as_str()) {
+        if language::BORDER_LINE_STYLES.contains(&style.as_str()) {
             return;
         }
-        let suggestion = closest(style, tokens::BORDER_LINE_STYLES)
+        let suggestion = closest(style, language::BORDER_LINE_STYLES)
             .map(|value| format!("\n\nDid you mean `{value}`?"))
             .unwrap_or_default();
         diagnostics.push(Diagnostic::error(
@@ -716,10 +717,10 @@ pub(crate) fn validate_border(
             ));
             return;
         };
-        if tokens::RADII.contains(&radius.as_str()) {
+        if language::RADII.contains(&radius.as_str()) {
             return;
         }
-        let suggestion = closest(radius, tokens::RADII)
+        let suggestion = closest(radius, language::RADII)
             .map(|value| format!("\n\nDid you mean `{value}`?"))
             .unwrap_or_default();
         diagnostics.push(Diagnostic::error(
@@ -739,8 +740,8 @@ pub(crate) fn validate_border(
             ));
             return;
         };
-        if tokens::BORDER_STYLES.contains(&edge_value.as_str())
-            || tokens::COLORS.contains(&edge_value.as_str())
+        if language::BORDER_STYLES.contains(&edge_value.as_str())
+            || language::COLORS.contains(&edge_value.as_str())
             || symbols.colors.contains_key(edge_value)
         {
             return;
@@ -754,15 +755,15 @@ pub(crate) fn validate_border(
         return;
     }
 
-    if tokens::BORDER_STYLES.contains(&value.as_str())
-        || tokens::COLORS.contains(&value.as_str())
+    if language::BORDER_STYLES.contains(&value.as_str())
+        || language::COLORS.contains(&value.as_str())
         || symbols.colors.contains_key(value)
     {
         return;
     }
 
-    let suggestion = closest(value, tokens::BORDER_STYLES)
-        .or_else(|| closest(value, tokens::COLORS))
+    let suggestion = closest(value, language::BORDER_STYLES)
+        .or_else(|| closest(value, language::COLORS))
         .map(|value| format!("\n\nDid you mean `{value}`?"))
         .unwrap_or_default();
     diagnostics.push(Diagnostic::error(
@@ -786,7 +787,7 @@ pub(crate) fn validate_outline(
         return;
     };
 
-    if value == "none" || tokens::COLORS.contains(&value) || symbols.colors.contains_key(value) {
+    if value == "none" || language::COLORS.contains(&value) || symbols.colors.contains_key(value) {
         return;
     }
 
@@ -798,10 +799,10 @@ pub(crate) fn validate_outline(
             ));
             return;
         };
-        if tokens::SPACING.contains(&offset.as_str()) {
+        if language::SPACING.contains(&offset.as_str()) {
             return;
         }
-        let suggestion = closest(offset, tokens::SPACING)
+        let suggestion = closest(offset, language::SPACING)
             .map(|value| format!("\n\nDid you mean `{value}`?"))
             .unwrap_or_default();
         diagnostics.push(Diagnostic::error(
@@ -811,7 +812,7 @@ pub(crate) fn validate_outline(
         return;
     }
 
-    let suggestion = closest(value, tokens::COLORS)
+    let suggestion = closest(value, language::COLORS)
         .map(|value| format!("\n\nDid you mean `{value}`?"))
         .unwrap_or_default();
     diagnostics.push(Diagnostic::error(
@@ -831,15 +832,15 @@ pub(crate) fn validate_glow(
         return;
     };
 
-    if tokens::GLOWS.contains(&value.as_str())
-        || tokens::COLORS.contains(&value.as_str())
+    if language::GLOWS.contains(&value.as_str())
+        || language::COLORS.contains(&value.as_str())
         || symbols.colors.contains_key(value)
     {
         return;
     }
 
-    let suggestion = closest(value, tokens::GLOWS)
-        .or_else(|| closest(value, tokens::COLORS))
+    let suggestion = closest(value, language::GLOWS)
+        .or_else(|| closest(value, language::COLORS))
         .map(|value| format!("\n\nDid you mean `{value}`?"))
         .unwrap_or_default();
     diagnostics.push(Diagnostic::error(
@@ -902,7 +903,7 @@ pub(crate) fn validate_animation_time(statement: &Statement, diagnostics: &mut V
         return;
     };
 
-    if tokens::DURATIONS.contains(&value.as_str()) || is_time_value(value) {
+    if language::DURATIONS.contains(&value.as_str()) || is_time_value(value) {
         return;
     }
 
@@ -947,11 +948,11 @@ pub(crate) fn validate_box_space(statement: &Statement, diagnostics: &mut Vec<Di
         return;
     };
 
-    if tokens::SPACING.contains(&value.as_str()) {
+    if language::SPACING.contains(&value.as_str()) {
         return;
     }
 
-    if tokens::EDGES.contains(&value.as_str()) {
+    if language::EDGES.contains(&value.as_str()) {
         let Some(amount) = statement.words.get(2) else {
             diagnostics.push(Diagnostic::error(
                 format!("{} {value} expects a spacing value", statement.words[0]),
@@ -959,7 +960,7 @@ pub(crate) fn validate_box_space(statement: &Statement, diagnostics: &mut Vec<Di
             ));
             return;
         };
-        if tokens::SPACING.contains(&amount.as_str()) {
+        if language::SPACING.contains(&amount.as_str()) {
             return;
         }
     }
@@ -982,7 +983,7 @@ pub(crate) fn validate_size_value(statement: &Statement, diagnostics: &mut Vec<D
         return;
     };
 
-    if is_valid_percentage(value) || tokens::SIZES.contains(&value.as_str()) {
+    if is_valid_percentage(value) || language::SIZES.contains(&value.as_str()) {
         return;
     }
 
