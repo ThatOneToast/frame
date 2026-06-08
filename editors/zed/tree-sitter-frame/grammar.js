@@ -116,6 +116,7 @@ const UI_PROPERTY_KEYWORDS = [
   "placeholder",
   "poster",
   "readonly",
+  "rel",
   "selected",
   "show",
   "source",

@@ -55,6 +55,14 @@
   name: (ui_node_name) @type)
 
 (ui_element_shorthand
+  kind: (ui_element_keyword) @keyword
+  name: (string) @string)
+
+(ui_element_shorthand
+  kind: (ui_element_keyword) @keyword
+  name: (data_ref) @variable)
+
+(ui_element_shorthand
   style: (style_name) @constant)
 
 (component_invocation
@@ -89,6 +97,10 @@
   "value" @property
   "bind" @keyword)
 
+(value_binding
+  "bind" @keyword
+  value: (data_ref) @variable)
+
 (conditional_flag
   property: (ui_attribute_name) @property
   "when" @keyword)
@@ -106,6 +118,12 @@
 
 (ui_property
   property: (ui_attribute_name) @property)
+
+(ui_property
+  "bind" @keyword)
+
+(statement
+  property: (identifier) @property)
 
 (data_ref) @variable
 (handler_ref) @function
