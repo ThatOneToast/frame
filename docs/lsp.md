@@ -333,6 +333,25 @@ tree-sitter highlight ../samples/highlighting.frame
 
 Note: `tree-sitter highlight --check` expects a `test/highlight/` directory with expected highlight files, which the repository does not currently include. Use the commands above as the canonical validation.
 
+## Running Tests
+
+LSP tests are part of the workspace Rust tests:
+
+```bash
+cargo fmt
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+```
+
+Editor grammar tests:
+
+```bash
+cd editors/zed/tree-sitter-frame
+npx tree-sitter generate
+tree-sitter parse ../samples/highlighting.frame
+tree-sitter highlight ../samples/highlighting.frame
+```
+
 ## UI LSP Support
 
 The LSP now provides completions, hover docs, and diagnostics for UI syntax:
@@ -346,6 +365,12 @@ The LSP now provides completions, hover docs, and diagnostics for UI syntax:
 - Hover docs for `component`, `props`, `state`, `view`, `slot`, `$value`, `@handler`, and UI keywords.
 - Diagnostics for unresolved state/prop references, unknown events, unknown modifiers, and missing accessible text.
 - Diagnostics for URL-bearing attributes, `javascript:` URLs, unsafe DOM usage, inline event attributes, and unsafe blank-target links.
+- All-token line diagnostics: every token on a line is checked, not just the first word.
+- Duplicate property detection (`id`, `data-*` keys, and non-`class` properties).
+- Duplicate exact event handler detection (same event + same handler).
+- Empty view and empty primitive body diagnostics.
+- Component/primitive name collision warnings.
+- Local unused state/prop hints.
 
 ## Known Limitations
 
@@ -354,3 +379,9 @@ The LSP now provides completions, hover docs, and diagnostics for UI syntax:
   indexing is planned.
 - The formatter is line-oriented because the parser does not preserve comments
   in the AST yet.
+- Unused symbol detection is local-only; cross-file references are not yet
+  considered when reporting unused props or state.
+- Cross-file import-aware completions and diagnostics are incomplete.
+- Advanced style completions from the symbol index are not yet implemented.
+- Code actions / quick fixes for duplicate properties and empty declarations
+  are not yet implemented.

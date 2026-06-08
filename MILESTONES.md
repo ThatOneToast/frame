@@ -245,7 +245,7 @@ Success criteria:
 
 Goal: redesign Frame's authoring model around UI intent, semantics, accessibility, and developer goals instead of browser implementation details.
 
-Status: **Phase 1 implementation complete. Runtime feature work paused.**
+Status: **Phase 1 implementation complete. Completions, validation, and diagnostics expanded.**
 
 Out of scope:
 
@@ -284,6 +284,11 @@ Deliverables:
 - [x] AST-backed `SemanticCursor` model in `crates/frame_lsp/src/ide/cursor.rs` as unified cursor context.
 - [x] Completions, hover, diagnostics, and references migrated to `SemanticCursor`.
 - [x] Internal `ReferenceKind` classification and `includeDeclaration` honored in LSP references.
+- [x] Context-aware primitive body completions (id, class, rel, data-*, text, on, bind, when, hidden, for).
+- [x] Duplicate property and duplicate event handler validation.
+- [x] Empty declaration diagnostics (empty view, empty primitive body).
+- [x] Component/primitive name collision warnings.
+- [x] Local unused state/prop hints.
 - [ ] Update `TODO-DOM.md` after any DOM coverage changes are implemented.
 - [ ] Update `TODO-CSS.md` after any styling coverage changes are implemented.
 
@@ -341,6 +346,8 @@ Success criteria:
 
 Goal: make Frame's editor support teach the semantic UI language.
 
+Status: **Core teacher features implemented. Expanded completions and validation added.**
+
 Deliverables:
 
 - [x] UI syntax highlighting.
@@ -359,6 +366,19 @@ Deliverables:
 - [x] Diagnostics for unsafe/invalid DOM usage.
 - [x] Project theme file (`app-theme.frame`) completions, hover, definitions, and references.
 - [x] Code actions can create missing styles in `app-theme.frame`.
+- [x] All-token line diagnostics with clearer wording for value/color issues.
+- [x] Expanded semantic token coverage (loop vars, time values, slot names, prop/state names, UI keywords).
+- [x] Primitive body completions with id, class, rel, data-*, text, on, bind, when, hidden.
+- [x] Event and binding completions with keyboard modifier snippets.
+- [x] Completion ranking (loop vars before state before props, local handlers first).
+- [x] Duplicate property and duplicate exact event handler diagnostics.
+- [x] Empty view and empty primitive body diagnostics.
+- [x] Component/primitive name collision warnings.
+- [x] Local unused state/prop hints.
+- [ ] Cross-file import-aware completions and diagnostics.
+- [ ] Full unused symbol detection across includes.
+- [ ] Advanced style completions from the symbol index.
+- [ ] Code actions / quick fixes for duplicate properties and empty declarations.
 
 Success criteria:
 

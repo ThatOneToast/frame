@@ -56,7 +56,7 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Add `docs/semantic-lowering.md`.
 - [x] Create canonical language registry in `crates/frame_core/src/language.rs` as the single source of truth for all language concepts.
 - [x] Update LSP, Zed extension, parser, and semantic model to consume the canonical registry.
-- [ ] Update docs and samples to reflect the registry as the source of truth and reinforce UI-native syntax direction.
+- [x] Update docs and samples to reflect the registry as the source of truth and reinforce UI-native syntax direction.
 
 ## Phase 2 — Parser Upgrade Plan
 
@@ -173,7 +173,7 @@ This file tracks the implementation path. Unchecked implementation items should 
 
 - [x] Add completions for UI declarations.
 - [x] Add completions for initial UI elements.
-- [ ] Add completions for attributes by element.
+- [x] Add completions for attributes by element (primitive body completions with id, class, rel, data-*, text, on, bind, when, hidden, for).
 - [x] Add completions for initial events and modifiers.
 - [x] Add completions for `$state`, `$props`, and `@handlers`.
 - [x] Add completions for same-file component invocations.
@@ -232,3 +232,14 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] `cargo test --workspace`
 - [x] Runtime package tests when package exists.
 - [x] Documentation examples compile or are clearly marked conceptual.
+
+## Remaining Focused TODOs
+
+- Cross-file import-aware completions and diagnostics (local-only for now).
+- Full unused symbol detection across includes (deferred due to cross-file complexity).
+- Advanced style completions from the symbol index.
+- Runtime-aware diagnostics (requires DOM runtime integration).
+- Accessibility diagnostics expansion (aria-* modeling, focus order).
+- Code actions / quick fixes for duplicate properties and empty declarations.
+- Full `data-*` key registry (currently `data-test-id` is the canonical example).
+- Parser support for `for` loops inside text-like primitives if the language evolves to allow it.
