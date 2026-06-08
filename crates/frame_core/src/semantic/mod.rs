@@ -3,7 +3,8 @@ use std::collections::HashSet;
 use crate::{
     language,
     symbols::{index_document, SymbolIndex},
-    ComponentDecl, DeclarationKind, Diagnostic, Document, PropType,
+    ComponentDecl, DeclarationKind, Diagnostic, Document, PropType, TextValue,
+    UiComponentArgumentValue, UiNode, UiPropertyValue,
 };
 
 mod constants;
@@ -120,6 +121,18 @@ fn validate_component(
     symbols: &SymbolIndex,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
+    // High-confidence name collision: component named after a semantic primitive
+    if constants::SEMANTIC_UI_PRIMITIVES.contains(&component.name.text.as_str()) {
+        diagnostics.push(Diagnostic::warning(
+            format!(
+                "Name collision: `{}` is both a component and a UI primitive name.\n\nUse a more specific component name like `Primary{}` or rename the view node.",
+                component.name.text,
+                component.name.text
+            ),
+            component.name.span,
+        ));
+    }
+
     let mut prop_names = HashSet::new();
     if let Some(props) = &component.props {
         for value in &props.values {
@@ -189,6 +202,40 @@ fn validate_component(
         }
     }
 
+    // Check for slot name collisions with props/state
+    for slot in &component.slots {
+        if prop_names.contains(&slot.name.text) || state_names.contains(&slot.name.text) {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "`{}` is both a slot name and a prop/state name.\n\nUse distinct names so Frame can tell them apart.",
+                    slot.name.text
+                ),
+                slot.name.span,
+            ));
+        }
+    }
+
+    // Empty component check
+    if component.props.is_none() && component.state.is_none() && component.view.is_none() {
+        diagnostics.push(Diagnostic::info(
+            format!(
+                "Empty component `{}`.\n\nThis component has no props, state, or view. Add a `view` block or remove it if unused.",
+                component.name.text
+            ),
+            component.span,
+        ));
+    }
+
+    // Empty view check
+    if let Some(view) = &component.view {
+        if view.nodes.is_empty() {
+            diagnostics.push(Diagnostic::warning(
+                "Empty view block. This component renders nothing.\n\nAdd a UI primitive, text node, slot, or loop.".to_string(),
+                view.span,
+            ));
+        }
+    }
+
     let all_names: HashSet<String> = prop_names.union(&state_names).cloned().collect();
 
     if let Some(view) = &component.view {
@@ -223,6 +270,90 @@ fn validate_component(
                 diagnostics,
                 &prop_names,
             );
+        }
+    }
+
+    // Local-only unused state/prop detection
+    let mut referenced_names = std::collections::HashSet::new();
+    if let Some(view) = &component.view {
+        collect_referenced_names_from_nodes(&view.nodes, &mut referenced_names);
+    }
+    for slot in &component.slots {
+        collect_referenced_names_from_nodes(&slot.nodes, &mut referenced_names);
+    }
+    for prop_name in &prop_names {
+        if !referenced_names.contains(prop_name) {
+            diagnostics.push(Diagnostic::info(
+                format!(
+                    "Prop `{}` is never referenced in this component.\n\nIf it is part of the public API, you can ignore this hint.",
+                    prop_name
+                ),
+                component.span,
+            ));
+        }
+    }
+    for state_name in &state_names {
+        if !referenced_names.contains(state_name) {
+            diagnostics.push(Diagnostic::info(
+                format!(
+                    "State `{}` is never referenced in this component.\n\nIf it is reserved for future use, you can ignore this hint.",
+                    state_name
+                ),
+                component.span,
+            ));
+        }
+    }
+}
+
+fn collect_referenced_names_from_nodes(
+    nodes: &[UiNode],
+    referenced: &mut std::collections::HashSet<String>,
+) {
+    for node in nodes {
+        match node {
+            UiNode::Text(text) => {
+                if let TextValue::Data(data_ref) = &text.value {
+                    referenced.insert(data_ref.name.text.clone());
+                }
+            }
+            UiNode::Element(el) => {
+                for property in &el.properties {
+                    match &property.value {
+                        UiPropertyValue::Data(data_ref) | UiPropertyValue::Bind(data_ref) => {
+                            referenced.insert(data_ref.name.text.clone());
+                        }
+                        UiPropertyValue::Conditional(binding) => {
+                            referenced.insert(binding.condition.name.text.clone());
+                        }
+                        UiPropertyValue::StyleWhen { condition, .. } => {
+                            referenced.insert(condition.name.text.clone());
+                        }
+                        _ => {}
+                    }
+                }
+                for event in &el.events {
+                    referenced.insert(event.handler.name.text.clone());
+                }
+                collect_referenced_names_from_nodes(&el.children, referenced);
+            }
+            UiNode::Component(invocation) => {
+                for argument in &invocation.arguments {
+                    match &argument.value {
+                        UiComponentArgumentValue::Data(data_ref)
+                        | UiComponentArgumentValue::Bind(data_ref) => {
+                            referenced.insert(data_ref.name.text.clone());
+                        }
+                        UiComponentArgumentValue::Literal(_) => {}
+                    }
+                }
+            }
+            UiNode::Loop(loop_node) => {
+                referenced.insert(loop_node.collection.name.text.clone());
+                if let Some(key) = &loop_node.key {
+                    referenced.insert(key.name.text.clone());
+                }
+                collect_referenced_names_from_nodes(&loop_node.children, referenced);
+            }
         }
     }
 }
@@ -1815,5 +1946,481 @@ mod tests {
         assert!(diagnostics
             .iter()
             .any(|d| d.message.contains("navigation or media destination")));
+    }
+
+    #[test]
+    fn detects_duplicate_id_property() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: None,
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("action", Span::default()),
+                        name: Identifier::new("Send", Span::default()),
+                        style: None,
+                        properties: vec![
+                            crate::UiProperty {
+                                name: Identifier::new("id", Span::default()),
+                                value: UiPropertyValue::Literal("send".to_string()),
+                                span: Span::default(),
+                            },
+                            crate::UiProperty {
+                                name: Identifier::new("id", Span::default()),
+                                value: UiPropertyValue::Literal("send-again".to_string()),
+                                span: Span::default(),
+                            },
+                        ],
+                        events: Vec::new(),
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("Duplicate property `id`")));
+    }
+
+    #[test]
+    fn allows_repeated_class_property() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: None,
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("action", Span::default()),
+                        name: Identifier::new("Send", Span::default()),
+                        style: None,
+                        properties: vec![
+                            crate::UiProperty {
+                                name: Identifier::new("class", Span::default()),
+                                value: UiPropertyValue::Literal("Primary".to_string()),
+                                span: Span::default(),
+                            },
+                            crate::UiProperty {
+                                name: Identifier::new("class", Span::default()),
+                                value: UiPropertyValue::Conditional(crate::ConditionalBinding {
+                                    condition: DataRef {
+                                        name: Identifier::new("disabled", Span::default()),
+                                        span: Span::default(),
+                                    },
+                                    span: Span::default(),
+                                }),
+                                span: Span::default(),
+                            },
+                        ],
+                        events: Vec::new(),
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+        assert!(!diagnostics
+            .iter()
+            .any(|d| d.message.contains("Duplicate property `class`")));
+    }
+
+    #[test]
+    fn detects_duplicate_data_attribute_key() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: None,
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("action", Span::default()),
+                        name: Identifier::new("Send", Span::default()),
+                        style: None,
+                        properties: vec![
+                            crate::UiProperty {
+                                name: Identifier::new("data-test-id", Span::default()),
+                                value: UiPropertyValue::Literal("a".to_string()),
+                                span: Span::default(),
+                            },
+                            crate::UiProperty {
+                                name: Identifier::new("data-test-id", Span::default()),
+                                value: UiPropertyValue::Literal("b".to_string()),
+                                span: Span::default(),
+                            },
+                        ],
+                        events: Vec::new(),
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("Duplicate data attribute")));
+    }
+
+    #[test]
+    fn detects_duplicate_exact_event_handler() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: None,
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("action", Span::default()),
+                        name: Identifier::new("Save", Span::default()),
+                        style: None,
+                        properties: Vec::new(),
+                        events: vec![
+                            crate::EventBinding {
+                                event: Identifier::new("click", Span::default()),
+                                modifiers: Vec::new(),
+                                handler: crate::HandlerRef {
+                                    name: Identifier::new("save", Span::default()),
+                                    span: Span::default(),
+                                },
+                                span: Span::default(),
+                            },
+                            crate::EventBinding {
+                                event: Identifier::new("click", Span::default()),
+                                modifiers: Vec::new(),
+                                handler: crate::HandlerRef {
+                                    name: Identifier::new("save", Span::default()),
+                                    span: Span::default(),
+                                },
+                                span: Span::default(),
+                            },
+                        ],
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("Duplicate event handler")));
+    }
+
+    #[test]
+    fn allows_different_handlers_for_same_event() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: None,
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("action", Span::default()),
+                        name: Identifier::new("Save", Span::default()),
+                        style: None,
+                        properties: Vec::new(),
+                        events: vec![
+                            crate::EventBinding {
+                                event: Identifier::new("click", Span::default()),
+                                modifiers: Vec::new(),
+                                handler: crate::HandlerRef {
+                                    name: Identifier::new("save", Span::default()),
+                                    span: Span::default(),
+                                },
+                                span: Span::default(),
+                            },
+                            crate::EventBinding {
+                                event: Identifier::new("click", Span::default()),
+                                modifiers: Vec::new(),
+                                handler: crate::HandlerRef {
+                                    name: Identifier::new("analytics", Span::default()),
+                                    span: Span::default(),
+                                },
+                                span: Span::default(),
+                            },
+                        ],
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+        assert!(!diagnostics
+            .iter()
+            .any(|d| d.message.contains("Duplicate event handler")));
+    }
+
+    #[test]
+    fn warns_on_empty_view() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Empty", Span::default()),
+                props: None,
+                state: None,
+                view: Some(crate::ViewDecl {
+                    nodes: Vec::new(),
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("Empty view block")));
+    }
+
+    #[test]
+    fn warns_on_empty_primitive_body() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: None,
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("action", Span::default()),
+                        name: Identifier::new("Send", Span::default()),
+                        style: None,
+                        properties: Vec::new(),
+                        events: Vec::new(),
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("Empty action body")));
+    }
+
+    #[test]
+    fn detects_slot_name_collision_with_prop() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: Some(crate::PropsDecl {
+                    values: vec![PropValue {
+                        name: Identifier::new("title", Span::default()),
+                        value_type: PropType::Text,
+                        span: Span::default(),
+                    }],
+                    span: Span::default(),
+                }),
+                state: None,
+                view: None,
+                slots: vec![crate::SlotDecl {
+                    name: Identifier::new("title", Span::default()),
+                    nodes: Vec::new(),
+                    span: Span::default(),
+                }],
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("both a slot name and a prop/state name")));
+    }
+
+    #[test]
+    fn hints_unused_local_state() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: Some(crate::StateDecl {
+                    values: vec![crate::StateValue {
+                        name: Identifier::new("draft", Span::default()),
+                        value_type: StateType::Text,
+                        default: StateDefault::Text("".to_string()),
+                        span: Span::default(),
+                    }],
+                    span: Span::default(),
+                }),
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Element(crate::UiElement {
+                        kind: Identifier::new("text", Span::default()),
+                        name: Identifier::new("Label", Span::default()),
+                        style: None,
+                        properties: Vec::new(),
+                        events: Vec::new(),
+                        children: Vec::new(),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("State `draft` is never referenced")));
+    }
+
+    #[test]
+    fn no_unused_hint_when_state_is_referenced() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: None,
+                state: Some(crate::StateDecl {
+                    values: vec![crate::StateValue {
+                        name: Identifier::new("draft", Span::default()),
+                        value_type: StateType::Text,
+                        default: StateDefault::Text("".to_string()),
+                        span: Span::default(),
+                    }],
+                    span: Span::default(),
+                }),
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Text(UiText {
+                        value: TextValue::Data(DataRef {
+                            name: Identifier::new("draft", Span::default()),
+                            span: Span::default(),
+                        }),
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+        assert!(!diagnostics
+            .iter()
+            .any(|d| d.message.contains("State `draft` is never referenced")));
+    }
+
+    #[test]
+    fn no_false_unused_warning_for_loop_variables() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("Demo", Span::default()),
+                props: Some(crate::PropsDecl {
+                    values: vec![PropValue {
+                        name: Identifier::new("messages", Span::default()),
+                        value_type: PropType::List,
+                        span: Span::default(),
+                    }],
+                    span: Span::default(),
+                }),
+                state: None,
+                view: Some(crate::ViewDecl {
+                    nodes: vec![UiNode::Loop(UiForLoop {
+                        item: Identifier::new("msg", Span::default()),
+                        collection: DataRef {
+                            name: Identifier::new("messages", Span::default()),
+                            span: Span::default(),
+                        },
+                        key: None,
+                        children: vec![UiNode::Text(UiText {
+                            value: TextValue::Data(DataRef {
+                                name: Identifier::new("msg", Span::default()),
+                                span: Span::default(),
+                            }),
+                            span: Span::default(),
+                        })],
+                        span: Span::default(),
+                    })],
+                    span: Span::default(),
+                }),
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+        // The prop `messages` is referenced inside the for loop collection
+        assert!(!diagnostics
+            .iter()
+            .any(|d| d.message.contains("Prop `messages` is never referenced")));
+        // The loop var itself should not trigger unused diagnostics
+        assert!(!diagnostics
+            .iter()
+            .any(|d| d.message.contains("`msg` is never referenced")));
+    }
+
+    #[test]
+    fn warns_when_component_name_matches_primitive() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: Vec::new(),
+            components: vec![ComponentDecl {
+                name: Identifier::new("action", Span::default()),
+                props: None,
+                state: None,
+                view: None,
+                slots: Vec::new(),
+                span: Span::default(),
+            }],
+        };
+
+        let diagnostics = validate(&document);
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("Name collision")
+                && d.message.contains("component and a UI primitive")));
     }
 }

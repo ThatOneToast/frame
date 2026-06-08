@@ -125,6 +125,9 @@ pub(crate) fn validate_ui_node(
                 ));
             }
 
+            validate_duplicate_properties(element, diagnostics);
+            validate_duplicate_events(element, diagnostics);
+
             for property in &element.properties {
                 validate_ui_property(
                     property,
@@ -138,6 +141,39 @@ pub(crate) fn validate_ui_node(
 
             for event in &element.events {
                 validate_event_binding(event, diagnostics);
+            }
+
+            // Empty primitive body hint
+            if element.properties.is_empty()
+                && element.events.is_empty()
+                && element.children.is_empty()
+            {
+                let kind = element.kind.text.as_str();
+                let msg = match kind {
+                    "action" | "link" => format!(
+                        "Empty {kind} body. This {kind} has no text, children, bindings, or events.\n\nAdd `text \"Label\"` or an event handler."
+                    ),
+                    "input" | "editor" | "toggle" | "choice" | "select" | "composer" => format!(
+                        "Empty {kind} body. This {kind} has no label, bindings, or events.\n\nAdd `label \"Name\"`, `value bind $state`, or an event handler."
+                    ),
+                    "button" => "Empty button body. This button has no text, children, bindings, or events.\n\nAdd `text \"Label\"` or an event handler.".to_string(),
+                    "text" | "title" | "label" | "badge" => format!(
+                        "Empty {kind} body. This {kind} has no content.\n\nAdd `text \"Content\"` or a data reference."
+                    ),
+                    "image" | "avatar" | "media" => format!(
+                        "Empty {kind} body. This {kind} has no source or accessibility text.\n\nAdd `source \"...\"` or `alt \"...\"`."
+                    ),
+                    "list" | "feed" | "data" => format!(
+                        "Empty {kind} body. This {kind} has no source or item template.\n\nAdd `source $items` and child `item` or `empty` blocks."
+                    ),
+                    "dialog" | "popover" => format!(
+                        "Empty {kind} body. This {kind} has no content.\n\nAdd `title \"Title\"`, `text \"Message\"`, or `show when $state`."
+                    ),
+                    _ => format!(
+                        "Empty {kind} body. This {kind} has no properties, children, or events.\n\nAdd content or remove it if it is a placeholder."
+                    ),
+                };
+                diagnostics.push(Diagnostic::info(msg, element.span));
             }
 
             validate_element_children(
@@ -538,6 +574,72 @@ pub(crate) fn validate_primitive_specific_property(
         ),
         property.span,
     ));
+}
+
+pub(crate) fn validate_duplicate_properties(
+    element: &UiElement,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let mut seen = std::collections::HashMap::new();
+    for property in &element.properties {
+        let name = property.name.text.as_str();
+        // class is intentionally repeatable (conditional classes)
+        if name == "class" {
+            continue;
+        }
+        if let Some(first_span) = seen.insert(name, property.span) {
+            if name == "id" {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Duplicate property `id` on `{}`.
+\n`id` was already set on this node. Remove one value or keep the intended one.",
+                        element.kind.text
+                    ),
+                    property.span,
+                ));
+            } else if name.starts_with("data-") {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Duplicate data attribute `{name}` on `{}`.
+\nEach data key should appear only once. Combine the values or remove the duplicate.",
+                        element.kind.text
+                    ),
+                    property.span,
+                ));
+            } else {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Duplicate property `{name}` on `{}`.
+\nRemove one value or keep the intended one.",
+                        element.kind.text
+                    ),
+                    property.span,
+                ));
+            }
+            // Also mark the first occurrence
+            diagnostics.push(Diagnostic::info(
+                format!("`{name}` was first set here."),
+                first_span,
+            ));
+        }
+    }
+}
+
+pub(crate) fn validate_duplicate_events(element: &UiElement, diagnostics: &mut Vec<Diagnostic>) {
+    let mut seen = std::collections::HashSet::new();
+    for event in &element.events {
+        let key = format!("{}.{}", event.event.text, event.handler.name.text);
+        if !seen.insert(key.clone()) {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "Duplicate event handler `on {} @{}` on `{}`.
+\nFrame allows multiple handlers for the same event, but not the exact same handler twice. Combine the logic in one handler or remove the duplicate.",
+                    event.event.text, event.handler.name.text, element.kind.text
+                ),
+                event.span,
+            ));
+        }
+    }
 }
 
 fn is_bind_value(value: &UiPropertyValue) -> bool {
