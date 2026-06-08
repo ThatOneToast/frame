@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use frame_core::{
     language, symbols::index_document, symbols::SymbolIndex, DeclarationKind, Document, UiNode,
 };
@@ -14,6 +12,8 @@ pub struct SemanticCursor<'a> {
     pub source: &'a str,
     pub offset: usize,
     /// The word the cursor is on or after.
+    /// Reserved for future IDE features (e.g., symbol rename, quick fix).
+    #[allow(dead_code)]
     pub word: Option<String>,
     /// The token text at the cursor position.
     pub token_text: Option<String>,
@@ -65,6 +65,8 @@ pub enum CursorSlot {
     /// Inside an event name slot (after `on`).
     EventName,
     /// Inside an event modifier slot (after `.`).
+    /// Reserved for future modifier completions.
+    #[allow(dead_code)]
     EventModifier { event: String },
     /// Inside a handler reference (after `@`).
     HandlerReference,
@@ -73,8 +75,12 @@ pub enum CursorSlot {
     /// Inside a state declaration block.
     StateDeclaration,
     /// Inside a state default value.
+    /// Reserved for future default-value diagnostics.
+    #[allow(dead_code)]
     StateDefaultValue,
     /// Inside a binding target.
+    /// Reserved for future bind-target validation.
+    #[allow(dead_code)]
     BindingTarget,
     /// Inside an include target.
     IncludeTarget,
@@ -93,12 +99,8 @@ pub struct CursorScope {
     pub loop_vars: Vec<SymbolCandidate>,
     /// Handler names in the enclosing component.
     pub handlers: Vec<SymbolCandidate>,
-    /// Declarations in the current file.
+    /// Declarations and components in the current file.
     pub local_declarations: Vec<SymbolCandidate>,
-    /// Declarations from included files.
-    pub imported_declarations: Vec<SymbolCandidate>,
-    /// Theme symbols (colors, gradients).
-    pub theme_symbols: Vec<SymbolCandidate>,
 }
 
 /// A symbol candidate for completions, hovers, or references.
@@ -118,10 +120,20 @@ pub enum SymbolKind {
     Handler,
     Declaration,
     Component,
+    /// Reserved for future theme-aware completions.
+    #[allow(dead_code)]
     Color,
+    /// Reserved for future theme-aware completions.
+    #[allow(dead_code)]
     Gradient,
+    /// Reserved for future animation-aware completions.
+    #[allow(dead_code)]
     Keyframes,
+    /// Reserved for future import-aware navigation.
+    #[allow(dead_code)]
     Import,
+    /// Reserved for future theme-aware completions.
+    #[allow(dead_code)]
     Theme,
 }
 

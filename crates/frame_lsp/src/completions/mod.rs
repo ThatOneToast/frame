@@ -338,6 +338,7 @@ pub fn completions_at_with_includes(
 
     match cursor.slot {
         // $ trigger: suggest state, props, and loop variables
+        // Sort: loop vars (most local) → state → props
         CursorSlot::DataReference => {
             let mut refs: Vec<CompletionSuggestion> = Vec::new();
             for sym in &cursor.scope.local_state {
@@ -351,7 +352,7 @@ pub fn completions_at_with_includes(
                     insert_text: Some(sym.name.clone()),
                     is_snippet: false,
                     category: CompletionCategory::Value,
-                    sort_text: None,
+                    sort_text: Some(format!("10b_{}", sym.name)),
                 });
             }
             for sym in &cursor.scope.local_props {
@@ -365,7 +366,7 @@ pub fn completions_at_with_includes(
                     insert_text: Some(sym.name.clone()),
                     is_snippet: false,
                     category: CompletionCategory::Value,
-                    sort_text: None,
+                    sort_text: Some(format!("10c_{}", sym.name)),
                 });
             }
             for sym in &cursor.scope.loop_vars {
@@ -376,10 +377,14 @@ pub fn completions_at_with_includes(
                     insert_text: Some(sym.name.clone()),
                     is_snippet: false,
                     category: CompletionCategory::Value,
-                    sort_text: None,
+                    sort_text: Some(format!("10a_{}", sym.name)),
                 });
             }
-            refs.sort_by(|a, b| a.label.cmp(&b.label));
+            refs.sort_by(|a, b| {
+                let a_key = a.sort_text.as_deref().unwrap_or(&a.label);
+                let b_key = b.sort_text.as_deref().unwrap_or(&b.label);
+                a_key.cmp(b_key)
+            });
             refs.dedup_by(|a, b| a.label == b.label);
             refs
         }
@@ -1296,5 +1301,67 @@ mod tests {
             surface_sort,
             advanced_sort
         );
+    }
+
+    #[test]
+    fn dollar_trigger_ranks_loop_vars_before_state_and_props() {
+        let source = "component ChatApp {\n  props {\n    channel text\n  }\n  state {\n    draft text = \"\"\n  }\n  view {\n    list Messages {\n      for msg in $messages {\n        text $\n      }\n    }\n  }\n}\n";
+        let offset = source.find("text $").unwrap() + 6;
+        let items = completions_at(source, offset);
+        let labels: Vec<String> = items.iter().map(|i| i.label.clone()).collect();
+
+        assert!(
+            labels.contains(&"$msg".to_string()),
+            "expected $msg in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"$draft".to_string()),
+            "expected $draft in {:?}",
+            labels
+        );
+        assert!(
+            labels.contains(&"$channel".to_string()),
+            "expected $channel in {:?}",
+            labels
+        );
+
+        let msg_sort = items
+            .iter()
+            .find(|i| i.label == "$msg")
+            .map(|i| i.sort_text.as_deref().unwrap_or(""))
+            .expect("$msg should exist");
+        let draft_sort = items
+            .iter()
+            .find(|i| i.label == "$draft")
+            .map(|i| i.sort_text.as_deref().unwrap_or(""))
+            .expect("$draft should exist");
+        let channel_sort = items
+            .iter()
+            .find(|i| i.label == "$channel")
+            .map(|i| i.sort_text.as_deref().unwrap_or(""))
+            .expect("$channel should exist");
+
+        assert!(
+            msg_sort < draft_sort,
+            "loop var $msg should rank before state $draft: msg={} draft={}",
+            msg_sort,
+            draft_sort
+        );
+        assert!(
+            draft_sort < channel_sort,
+            "state $draft should rank before prop $channel: draft={} channel={}",
+            draft_sort,
+            channel_sort
+        );
+    }
+
+    #[test]
+    fn action_body_contextual_completions() {
+        let source = "component Demo {\n  view {\n    action Send {\n      ";
+        let labels = labels_for(source);
+        assert!(labels.contains(&"on press @handler".to_string()));
+        assert!(labels.contains(&"disabled when $state".to_string()));
+        assert!(!labels.contains(&"value bind $state".to_string()));
     }
 }

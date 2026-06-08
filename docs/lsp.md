@@ -10,6 +10,19 @@ single source of truth for all completions, hover docs, semantic token classes,
 and diagnostic categories. Every LSP feature that reasons about keywords,
 primitives, properties, values, events, or modifiers consumes the registry.
 
+## Semantic Cursor Model
+
+Frame's LSP uses an AST-backed `SemanticCursor` (`crates/frame_lsp/src/ide/cursor.rs`) to understand cursor context. The cursor model is built from the parsed document and source text, then consumed by completions, hover, diagnostics, and references.
+
+The cursor captures:
+
+- **Slot** — what kind of completion or hover is valid (`ViewBody`, `StylePropertyValue`, `DataReference`, `HandlerReference`, `EventName`, etc.)
+- **Scope** — visible symbols at the cursor position: state, props, loop vars, handlers, declarations
+- **Enclosing blocks** — component, declaration, view node, innermost block
+- **Incomplete syntax recovery** — falls back to text heuristics when the AST is broken
+
+This unified model ensures completions, hover, diagnostics, and references share one understanding of the cursor position instead of duplicating heuristics in each feature.
+
 ## Features
 
 - Parser and semantic diagnostics with suggestions and examples.

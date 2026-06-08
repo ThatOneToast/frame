@@ -196,6 +196,12 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Add workspace edits that create missing symbols in included files.
 - [x] Add project theme file (`app-theme.frame`) completions, hover, definitions, and references.
 - [x] Add code actions that can create missing styles in `app-theme.frame`.
+- [x] Add AST-backed `SemanticCursor` model as the unified cursor context for completions, hover, diagnostics, and references.
+- [x] Migrate completions to `SemanticCursor` slot-based dispatch with registry-aware suggestions.
+- [x] Migrate hover to `SemanticCursor` context-aware docs for state, props, loop vars, and handlers.
+- [x] Migrate references to `SemanticCursor` with internal `ReferenceKind` classification and `includeDeclaration` support.
+- [x] Add cursor-aware diagnostics using `SemanticCursor` and canonical registry for teachable messages.
+- [x] Remove obsolete completion context heuristics after `SemanticCursor` migration.
 
 ## Phase 10 — Web App Target
 

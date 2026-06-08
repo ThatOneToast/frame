@@ -281,6 +281,9 @@ Deliverables:
 - [x] Generated IR golden fixtures and cross-language structural tests.
 - [x] Canonical language registry in `crates/frame_core/src/language.rs` as the single source of truth for all language concepts.
 - [x] LSP, parser, semantic model, and Zed extension consuming the canonical registry.
+- [x] AST-backed `SemanticCursor` model in `crates/frame_lsp/src/ide/cursor.rs` as unified cursor context.
+- [x] Completions, hover, diagnostics, and references migrated to `SemanticCursor`.
+- [x] Internal `ReferenceKind` classification and `includeDeclaration` honored in LSP references.
 - [ ] Update `TODO-DOM.md` after any DOM coverage changes are implemented.
 - [ ] Update `TODO-CSS.md` after any styling coverage changes are implemented.
 

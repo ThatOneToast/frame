@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use frame_core::{Node, Span};
+use frame_core::{DeclarationKind, Document, Node, Span};
 use frame_parser::parse;
 use tower_lsp::lsp_types::Url;
 
@@ -13,6 +13,26 @@ use crate::ide::cursor::SemanticCursor;
 pub struct NavigationTarget {
     pub span: Span,
     pub path: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReferenceKind {
+    Declaration,
+    ComponentInvocation,
+    StyleApplication,
+    AutomaticStyleLookup,
+    StateRead,
+    StateWriteBinding,
+    PropRead,
+    HandlerReference,
+    TokenUsage,
+    IncludeUsage,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReferenceTarget {
+    pub target: NavigationTarget,
+    pub kind: ReferenceKind,
 }
 
 pub fn definition_at(source: &str, offset: usize) -> Option<NavigationTarget> {
@@ -67,7 +87,12 @@ pub fn definition_at(source: &str, offset: usize) -> Option<NavigationTarget> {
     None
 }
 
-pub fn references_at(source: &str, offset: usize, uri: &Url) -> Vec<NavigationTarget> {
+pub fn references_at_with_context(
+    source: &str,
+    offset: usize,
+    uri: &Url,
+    include_declaration: bool,
+) -> Vec<ReferenceTarget> {
     let Some((frame_source, frame_offset, base)) = frame_source_at(source, offset) else {
         return Vec::new();
     };
@@ -76,14 +101,26 @@ pub fn references_at(source: &str, offset: usize, uri: &Url) -> Vec<NavigationTa
     };
 
     let clean_word = clean_word_for_references(word);
+    let cursor = SemanticCursor::at(frame_source, frame_offset);
 
     let mut targets = Vec::new();
 
     // Current file references
+    let document = parse(frame_source).ok();
     for span in crate::project::collect_references_in_source(frame_source, clean_word) {
-        targets.push(NavigationTarget {
-            span: add_base(span, base),
-            path: None,
+        let kind = document
+            .as_ref()
+            .map(|doc| classify_span(frame_source, span, clean_word, doc, &cursor))
+            .unwrap_or(ReferenceKind::TokenUsage);
+        if !include_declaration && kind == ReferenceKind::Declaration {
+            continue;
+        }
+        targets.push(ReferenceTarget {
+            target: NavigationTarget {
+                span: add_base(span, base),
+                path: None,
+            },
+            kind,
         });
     }
 
@@ -91,14 +128,19 @@ pub fn references_at(source: &str, offset: usize, uri: &Url) -> Vec<NavigationTa
     // found nothing. This preserves behavior for grid columns that might not be
     // captured as explicit statement-word matches in some edge cases.
     if targets.is_empty() {
-        targets.extend(
-            collect_grid_section_references(frame_source, base, clean_word)
-                .into_iter()
-                .map(|target| NavigationTarget {
+        for target in collect_grid_section_references(frame_source, base, clean_word) {
+            let kind = ReferenceKind::TokenUsage;
+            if !include_declaration && kind == ReferenceKind::Declaration {
+                continue;
+            }
+            targets.push(ReferenceTarget {
+                target: NavigationTarget {
                     span: target.span,
-                    path: None,
-                }),
-        );
+                    path: target.path,
+                },
+                kind,
+            });
+        }
     }
 
     // Included file references
@@ -106,18 +148,135 @@ pub fn references_at(source: &str, offset: usize, uri: &Url) -> Vec<NavigationTa
         for (path, include_source, _, _) in
             crate::project::resolve_includes(&current_path, frame_source)
         {
+            let include_doc = parse(&include_source).ok();
             for span in crate::project::collect_references_in_source(&include_source, clean_word) {
-                targets.push(NavigationTarget {
-                    span,
-                    path: Some(path.clone()),
+                let kind = include_doc
+                    .as_ref()
+                    .map(|doc| classify_span(&include_source, span, clean_word, doc, &cursor))
+                    .unwrap_or(ReferenceKind::TokenUsage);
+                if !include_declaration && kind == ReferenceKind::Declaration {
+                    continue;
+                }
+                targets.push(ReferenceTarget {
+                    target: NavigationTarget {
+                        span,
+                        path: Some(path.clone()),
+                    },
+                    kind,
                 });
             }
         }
     }
 
-    targets.sort_by_key(|t| (t.path.clone(), t.span.start));
-    targets.dedup_by(|a, b| a.span == b.span && a.path == b.path);
+    targets.sort_by_key(|t| (t.target.path.clone(), t.target.span.start));
+    targets.dedup_by(|a, b| a.target.span == b.target.span && a.target.path == b.target.path);
     targets
+}
+
+#[allow(dead_code)]
+pub fn references_at(source: &str, offset: usize, uri: &Url) -> Vec<NavigationTarget> {
+    references_at_with_context(source, offset, uri, true)
+        .into_iter()
+        .map(|r| r.target)
+        .collect()
+}
+
+fn classify_span(
+    source: &str,
+    span: Span,
+    word: &str,
+    document: &Document,
+    cursor: &SemanticCursor,
+) -> ReferenceKind {
+    // Declarations
+    for decl in &document.declarations {
+        if decl.name.span == span && decl.name.text == word {
+            return ReferenceKind::Declaration;
+        }
+    }
+
+    // Components
+    for component in &document.components {
+        if component.name.span == span && component.name.text == word {
+            return ReferenceKind::Declaration;
+        }
+    }
+
+    // Component props
+    for component in &document.components {
+        if let Some(props) = &component.props {
+            for prop in &props.values {
+                if prop.name.span == span && prop.name.text == word {
+                    return ReferenceKind::Declaration;
+                }
+            }
+        }
+    }
+
+    // Component state
+    for component in &document.components {
+        if let Some(state) = &component.state {
+            for value in &state.values {
+                if value.name.span == span && value.name.text == word {
+                    return ReferenceKind::Declaration;
+                }
+            }
+        }
+    }
+
+    // Handler reference (@word)
+    if source.as_bytes()[span.start] == b'@' {
+        return ReferenceKind::HandlerReference;
+    }
+
+    // Data reference ($word)
+    if source.as_bytes()[span.start] == b'$' {
+        let before = &source[..span.start];
+        if before.trim_end().ends_with("bind") {
+            return ReferenceKind::StateWriteBinding;
+        }
+        if cursor.scope.local_props.iter().any(|s| s.name == word) {
+            return ReferenceKind::PropRead;
+        }
+        return ReferenceKind::StateRead;
+    }
+
+    // Include usage
+    let line_start = source[..span.start].rfind('\n').map_or(0, |i| i + 1);
+    let line_end = source[span.start..]
+        .find('\n')
+        .map_or(source.len(), |i| span.start + i);
+    let line_text = source[line_start..line_end].trim();
+    if line_text.starts_with("#include") {
+        return ReferenceKind::IncludeUsage;
+    }
+
+    // Component invocation (word followed by '(')
+    if span.end < source.len() && source[span.end..].starts_with('(') {
+        return ReferenceKind::ComponentInvocation;
+    }
+
+    // Style application (word preceded by ':')
+    if span.start > 0 && source.as_bytes()[span.start - 1] == b':' {
+        return ReferenceKind::StyleApplication;
+    }
+
+    // Automatic style lookup (style when ... = word)
+    if line_text.contains("when") && line_text.ends_with(word) {
+        return ReferenceKind::AutomaticStyleLookup;
+    }
+
+    // Token usage inside tokens declarations
+    for decl in &document.declarations {
+        if matches!(decl.kind, DeclarationKind::Tokens)
+            && decl.span.start <= span.start
+            && decl.span.end >= span.end
+        {
+            return ReferenceKind::TokenUsage;
+        }
+    }
+
+    ReferenceKind::TokenUsage
 }
 
 fn clean_word_for_references(word: &str) -> &str {
@@ -428,5 +587,130 @@ component ChatApp {
 
         assert_eq!(local_count, 1);
         assert_eq!(cross_count, 1);
+    }
+
+    #[test]
+    fn include_declaration_true_returns_declaration_and_usages() {
+        let source = "grid Dashboard {\n}\narea Sidebar {\n  in Dashboard\n}\n";
+        let offset = source.find("Dashboard").unwrap() + 1;
+        let references = references_at_with_context(source, offset, &dummy_uri(), true);
+
+        let declarations: Vec<_> = references
+            .iter()
+            .filter(|r| r.kind == ReferenceKind::Declaration)
+            .collect();
+        let usages: Vec<_> = references
+            .iter()
+            .filter(|r| r.kind != ReferenceKind::Declaration)
+            .collect();
+
+        assert_eq!(declarations.len(), 1);
+        assert_eq!(usages.len(), 1);
+        assert_eq!(references.len(), 2);
+    }
+
+    #[test]
+    fn include_declaration_false_returns_only_usages() {
+        let source = "grid Dashboard {\n}\narea Sidebar {\n  in Dashboard\n}\n";
+        let offset = source.find("Dashboard").unwrap() + 1;
+        let references = references_at_with_context(source, offset, &dummy_uri(), false);
+
+        assert!(references
+            .iter()
+            .all(|r| r.kind != ReferenceKind::Declaration));
+        assert_eq!(references.len(), 1);
+        let r = &references[0];
+        assert_eq!(&source[r.target.span.start..r.target.span.end], "Dashboard");
+    }
+
+    #[test]
+    fn state_declaration_and_reads_classified_correctly() {
+        let source = r#"
+component ChatApp {
+  state {
+    draft text = ""
+  }
+  view {
+    input MessageBox {
+      value bind $draft
+    }
+    text $draft
+  }
+}
+"#;
+        let offset = source.rfind("$draft").unwrap() + 2;
+        let references = references_at_with_context(source, offset, &dummy_uri(), true);
+
+        let declarations: Vec<_> = references
+            .iter()
+            .filter(|r| r.kind == ReferenceKind::Declaration)
+            .collect();
+        let state_reads: Vec<_> = references
+            .iter()
+            .filter(|r| r.kind == ReferenceKind::StateRead)
+            .collect();
+        let write_bindings: Vec<_> = references
+            .iter()
+            .filter(|r| r.kind == ReferenceKind::StateWriteBinding)
+            .collect();
+
+        assert_eq!(declarations.len(), 1);
+        assert_eq!(state_reads.len(), 1);
+        assert_eq!(write_bindings.len(), 1);
+        assert_eq!(references.len(), 3);
+    }
+
+    #[test]
+    fn handler_references_classified_correctly() {
+        let source = r#"
+component ChatApp {
+  view {
+    button Send {
+      on click @sendMessage
+    }
+    button Cancel {
+      on press @sendMessage
+    }
+  }
+}
+"#;
+        let offset = source.find("@sendMessage").unwrap() + 2;
+        let references = references_at_with_context(source, offset, &dummy_uri(), true);
+
+        assert!(references
+            .iter()
+            .all(|r| r.kind == ReferenceKind::HandlerReference));
+        assert_eq!(references.len(), 2);
+    }
+
+    #[test]
+    fn component_declaration_and_invocation_classified_correctly() {
+        let source = r#"
+component ChatPanel {
+  view {
+    text "Hello"
+  }
+}
+component ChatApp {
+  view {
+    ChatPanel()
+  }
+}
+"#;
+        let offset = source.find("ChatPanel()").unwrap() + 2;
+        let references = references_at_with_context(source, offset, &dummy_uri(), true);
+
+        let declarations: Vec<_> = references
+            .iter()
+            .filter(|r| r.kind == ReferenceKind::Declaration)
+            .collect();
+        let invocations: Vec<_> = references
+            .iter()
+            .filter(|r| r.kind == ReferenceKind::ComponentInvocation)
+            .collect();
+
+        assert_eq!(declarations.len(), 1);
+        assert_eq!(invocations.len(), 1);
+        assert_eq!(references.len(), 2);
     }
 }

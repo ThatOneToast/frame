@@ -77,6 +77,43 @@ Low-level CSS and DOM concepts remain available in the styling layer and through
 
 The compiler and LSP should teach the preferred path first, then document the advanced path when a user reaches for it.
 
+## IDE Intelligence Pipeline
+
+Frame IDE features (completions, hover, diagnostics, references, definitions, and semantic tokens) are built from two shared sources:
+
+1. **The canonical language registry** in `crates/frame_core/src/language.rs`
+   - Owns language concepts, docs, completion metadata, semantic categories, and value domains.
+   - Consumed by completions, hover, diagnostics, and semantic tokens.
+
+2. **The semantic cursor model** in `crates/frame_lsp/src/ide/cursor.rs`
+   - Owns cursor context, scope, visible symbols, enclosing blocks, and incomplete syntax recovery.
+   - Built from parsed AST + source text.
+   - Consumed by completions, hover, diagnostics, and references.
+
+### How to add a new IDE-aware concept
+
+1. **Add the concept to the canonical registry** in `crates/frame_core/src/language.rs`.
+2. **Add parser support** only if the syntax shape changes.
+3. **Add semantic cursor slot/scope handling** if the new concept changes cursor context (e.g., a new block type or reference syntax).
+4. **Add completion/hover/diagnostic/reference tests** in `crates/frame_lsp/src/`.
+5. **Update examples and docs**.
+
+### Cursor slot dispatch
+
+Completions and hover dispatch on `CursorSlot`:
+
+- `RootDeclaration` — declarations, snippets, includes
+- `DeclarationBody` / `StylePropertyName` / `StylePropertyValue` — properties and values
+- `ViewBody` / `ViewPrimitive` / `ViewNodeName` — UI primitives, declarations, components
+- `EventName` — events and modifiers
+- `DataReference` — `$state`, `$props`, loop vars
+- `HandlerReference` — `@handler` names
+- `StateDeclaration` — effects and state blocks
+
+Diagnostics use `SemanticCursor` to detect unknown primitives, properties, values, handlers, and state references with registry-aware suggestions.
+
+References use `SemanticCursor` to classify reference kinds (`StateRead`, `HandlerReference`, `ComponentInvocation`, etc.) and honor `includeDeclaration`.
+
 ## Testing Requirements
 
 Run the full workspace test suite before claiming work complete:

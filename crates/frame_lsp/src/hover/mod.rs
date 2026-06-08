@@ -304,4 +304,46 @@ mod tests {
         assert!(doc.contains("Custom keyframes animation"));
         assert!(doc.contains("@keyframes frame-FloatIn"));
     }
+
+    #[test]
+    fn returns_state_hover_with_local_context() {
+        let source = "component ChatApp {\n  state {\n    draft text = \"\"\n  }\n  view {\n    text $draft\n  }\n}\n";
+        let offset = source.find("$draft").unwrap() + 1;
+        let doc = hover_doc_at(source, offset).expect("state hover should exist");
+
+        assert!(doc.contains("$draft"));
+        assert!(doc.contains("state text"));
+        assert!(doc.contains("Text interpolation escapes by default"));
+    }
+
+    #[test]
+    fn returns_prop_hover_with_type() {
+        let source = "component ChatApp {\n  props {\n    channel text\n  }\n  view {\n    text $channel\n  }\n}\n";
+        let offset = source.find("$channel").unwrap() + 1;
+        let doc = hover_doc_at(source, offset).expect("prop hover should exist");
+
+        assert!(doc.contains("$channel"));
+        assert!(doc.contains("prop text"));
+    }
+
+    #[test]
+    fn returns_loop_var_hover() {
+        let source = "component ChatApp {\n  view {\n    list Messages {\n      for msg in $messages {\n        text $msg\n      }\n    }\n  }\n}\n";
+        let offset = source.rfind("$msg").unwrap() + 1;
+        let doc = hover_doc_at(source, offset).expect("loop var hover should exist");
+
+        assert!(doc.contains("$msg"));
+        assert!(doc.contains("for msg in ..."));
+    }
+
+    #[test]
+    fn returns_handler_hover_with_references() {
+        let source = "component ChatApp {\n  view {\n    action Send {\n      on press @sendMessage\n    }\n    action Cancel {\n      on press @sendMessage\n    }\n  }\n}\n";
+        let offset = source.find("@sendMessage").unwrap() + 1;
+        let doc = hover_doc_at(source, offset).expect("handler hover should exist");
+
+        assert!(doc.contains("@sendMessage"));
+        assert!(doc.contains("on press"));
+        assert!(doc.contains("External handler reference"));
+    }
 }

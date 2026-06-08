@@ -280,27 +280,30 @@ impl LanguageServer for Backend {
             }
         }
 
-        let locations = navigation::references_at(source, offset, &uri)
-            .into_iter()
-            .map(|target| {
-                let target_uri = if let Some(path) = &target.path {
-                    Url::from_file_path(path)
-                        .ok()
-                        .unwrap_or_else(|| uri.clone())
-                } else {
-                    uri.clone()
-                };
-                let target_source = if let Some(path) = &target.path {
-                    included_sources.get(path).map(|s| s.as_str()).unwrap_or("")
-                } else {
-                    source
-                };
-                Location {
-                    uri: target_uri,
-                    range: diagnostics::range_for_span(target_source, target.span),
-                }
-            })
-            .collect();
+        let include_declaration = params.context.include_declaration;
+
+        let locations =
+            navigation::references_at_with_context(source, offset, &uri, include_declaration)
+                .into_iter()
+                .map(|target| {
+                    let target_uri = if let Some(path) = &target.target.path {
+                        Url::from_file_path(path)
+                            .ok()
+                            .unwrap_or_else(|| uri.clone())
+                    } else {
+                        uri.clone()
+                    };
+                    let target_source = if let Some(path) = &target.target.path {
+                        included_sources.get(path).map(|s| s.as_str()).unwrap_or("")
+                    } else {
+                        source
+                    };
+                    Location {
+                        uri: target_uri,
+                        range: diagnostics::range_for_span(target_source, target.target.span),
+                    }
+                })
+                .collect();
 
         Ok(Some(locations))
     }

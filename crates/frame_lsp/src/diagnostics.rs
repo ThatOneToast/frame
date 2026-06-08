@@ -1,10 +1,11 @@
 use std::{collections::HashSet, fs, path::Path};
 
-use frame_core::{semantic::validate, Diagnostic as FrameDiagnostic, Severity, Span};
+use frame_core::{language, semantic::validate, Diagnostic as FrameDiagnostic, Severity, Span};
 use frame_parser::parse;
 use tower_lsp::lsp_types::{Diagnostic as LspDiagnostic, DiagnosticSeverity, Position, Range, Url};
 
 use crate::embedded::{frame_blocks, map_diagnostic_from_block};
+use crate::ide::cursor::{CursorSlot, SemanticCursor};
 
 pub fn diagnostics_for_source(source: &str) -> Vec<FrameDiagnostic> {
     let blocks = frame_blocks(source);
@@ -50,11 +51,221 @@ fn diagnostics_for_source_with_imports(source: &str, uri: &Url) -> Vec<FrameDiag
         .collect()
 }
 
-fn diagnostics_for_frame_source(source: &str) -> Vec<FrameDiagnostic> {
-    match parse(source) {
-        Ok(document) => validate(&document),
-        Err(error) => error.diagnostics,
+pub fn cursor_diagnostics(source: &str, offset: usize) -> Vec<FrameDiagnostic> {
+    let cursor = SemanticCursor::at(source, offset);
+    let mut diagnostics = Vec::new();
+    let span = word_span_at(source, offset);
+
+    match &cursor.slot {
+        CursorSlot::ViewPrimitive | CursorSlot::ViewBody | CursorSlot::ViewNodeName => {
+            if let Some(word) = &cursor.word {
+                if !word.starts_with('$')
+                    && !word.starts_with('@')
+                    && !word.starts_with('"')
+                    && language::item(word).is_none()
+                {
+                    let message = format!(
+                        "Unknown UI primitive `{word}`. Frame prefers UI-native primitives:\n\
+                         - `panel` for visible content regions\n\
+                         - `stack` for vertical groups\n\
+                         - `dock` for app shell layout\n\
+                         - `action` for clickable intent\n"
+                    );
+                    diagnostics.push(FrameDiagnostic::error(message, span));
+                }
+            }
+        }
+        CursorSlot::StylePropertyName => {
+            if let Some(word) = &cursor.word {
+                if !language::property_keywords().contains(&word.as_str()) {
+                    let suggestion = closest_match(word, language::property_keywords())
+                        .map(|v| format!("\n\nDid you mean `{v}`?"))
+                        .unwrap_or_default();
+                    diagnostics.push(FrameDiagnostic::error(
+                        format!(
+                            "Unknown property `{word}`.{suggestion} Use Frame-native layout concepts such as `surface`, `padding`, `gap`, or `align`."
+                        ),
+                        span,
+                    ));
+                }
+            }
+        }
+        CursorSlot::StylePropertyValue { property } => {
+            if !language::property_keywords().contains(&property.as_str()) {
+                let suggestion = closest_match(property, language::property_keywords())
+                    .map(|v| format!("\n\nDid you mean `{v}`?"))
+                    .unwrap_or_default();
+                diagnostics.push(FrameDiagnostic::error(
+                    format!(
+                        "Unknown property `{property}`.{suggestion} Use Frame-native layout concepts such as `surface`, `padding`, `gap`, or `align`."
+                    ),
+                    span,
+                ));
+            } else if let Some(word) = &cursor.word {
+                if word != property {
+                    if let Some(item) = language::item(property) {
+                        if !item.values.is_empty()
+                            && !item.values.contains(&word.as_str())
+                            && !language::is_known_value(word)
+                        {
+                            let values = item
+                                .values
+                                .iter()
+                                .map(|v| format!("`{v}`"))
+                                .collect::<Vec<_>>()
+                                .join(", ");
+                            diagnostics.push(FrameDiagnostic::error(
+                                format!(
+                                    "Invalid value `{word}` for property `{property}`. Valid values include: {values}."
+                                ),
+                                span,
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+        CursorSlot::HandlerReference => {
+            if let Some(word) = &cursor.word {
+                let handler_name = word.trim_start_matches('@');
+                let known = cursor.scope.handlers.iter().any(|h| h.name == handler_name);
+                if !known {
+                    let suggestion = if cursor.scope.handlers.is_empty() {
+                        "\n\nNo handlers are declared in this component.".to_string()
+                    } else {
+                        let candidates: Vec<&str> = cursor
+                            .scope
+                            .handlers
+                            .iter()
+                            .map(|h| h.name.as_str())
+                            .collect();
+                        closest_match(handler_name, &candidates)
+                            .map(|v| format!("\n\nDid you mean `@{v}`?"))
+                            .unwrap_or_default()
+                    };
+                    diagnostics.push(FrameDiagnostic::error(
+                        format!(
+                            "Unknown handler reference `@{handler_name}`.{suggestion} Define the handler in your external script or add it to the component."
+                        ),
+                        span,
+                    ));
+                }
+            }
+        }
+        CursorSlot::DataReference => {
+            if let Some(word) = &cursor.word {
+                let data_name = word.trim_start_matches('$');
+                let known = cursor.scope.local_state.iter().any(|s| s.name == data_name)
+                    || cursor.scope.local_props.iter().any(|p| p.name == data_name)
+                    || cursor.scope.loop_vars.iter().any(|v| v.name == data_name);
+                if !known {
+                    let all_names: Vec<&str> = cursor
+                        .scope
+                        .local_state
+                        .iter()
+                        .chain(&cursor.scope.local_props)
+                        .chain(&cursor.scope.loop_vars)
+                        .map(|s| s.name.as_str())
+                        .collect();
+                    let suggestion = closest_match(data_name, &all_names)
+                        .map(|v| format!("\n\nDid you mean `${v}`?"))
+                        .unwrap_or_default();
+                    diagnostics.push(FrameDiagnostic::error(
+                        format!(
+                            "Unknown state/prop reference `${data_name}`.{suggestion} Declare it in `state`, `props`, or an enclosing `for` loop."
+                        ),
+                        span,
+                    ));
+                }
+            }
+        }
+        _ => {}
     }
+
+    diagnostics
+}
+
+fn word_span_at(source: &str, offset: usize) -> Span {
+    let safe_offset = offset.min(source.len());
+    let start = source[..safe_offset]
+        .rfind(|c: char| !is_word_char(c))
+        .map_or(0, |i| i + 1);
+    let end = source[safe_offset..]
+        .find(|c: char| !is_word_char(c))
+        .map_or(source.len(), |i| safe_offset + i);
+    Span { start, end }
+}
+
+fn is_word_char(c: char) -> bool {
+    c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '$' || c == '@'
+}
+
+fn closest_match<'a>(needle: &str, candidates: &[&'a str]) -> Option<&'a str> {
+    candidates
+        .iter()
+        .copied()
+        .map(|candidate| (candidate, edit_distance(needle, candidate)))
+        .filter(|(_, distance)| *distance <= 2)
+        .min_by_key(|(_, distance)| *distance)
+        .map(|(candidate, _)| candidate)
+}
+
+fn edit_distance(left: &str, right: &str) -> usize {
+    let mut costs = (0..=right.len()).collect::<Vec<_>>();
+    for (left_index, left_char) in left.chars().enumerate() {
+        let mut previous = left_index;
+        costs[0] = left_index + 1;
+        for (right_index, right_char) in right.chars().enumerate() {
+            let old = costs[right_index + 1];
+            costs[right_index + 1] = if left_char == right_char {
+                previous
+            } else {
+                1 + previous.min(costs[right_index]).min(old)
+            };
+            previous = old;
+        }
+    }
+    *costs.last().unwrap_or(&0)
+}
+
+fn spans_overlap(a: Span, b: Span) -> bool {
+    a.start < b.end && b.start < a.end
+}
+
+fn diagnostics_for_frame_source(source: &str) -> Vec<FrameDiagnostic> {
+    let parse_result = parse(source);
+    let mut diagnostics = match &parse_result {
+        Ok(document) => validate(document),
+        Err(error) => error.diagnostics.clone(),
+    };
+
+    // Only add cursor diagnostics when the source parses successfully.
+    // When the AST is missing the cursor slot heuristics are unreliable.
+    if parse_result.is_ok() {
+        let mut offset = 0;
+        for line in source.lines() {
+            let line_end = offset + line.len();
+            let trimmed = line.trim_start();
+            if !trimmed.is_empty() && !trimmed.starts_with('#') && !trimmed.starts_with("//") {
+                if let Some(first_word) = trimmed.split_whitespace().next() {
+                    let word_offset = offset + line.find(first_word).unwrap_or(0);
+                    let word_end = word_offset + first_word.len();
+                    let check_offset = word_offset + (word_end - word_offset) / 2;
+                    for d in cursor_diagnostics(source, check_offset) {
+                        let overlaps = diagnostics
+                            .iter()
+                            .any(|existing| spans_overlap(existing.span, d.span));
+                        if !overlaps {
+                            diagnostics.push(d);
+                        }
+                    }
+                }
+            }
+            offset = line_end + 1;
+        }
+    }
+
+    diagnostics
 }
 
 fn include_diagnostics(source: &str, uri: &Url) -> Vec<FrameDiagnostic> {
@@ -413,5 +624,64 @@ mod tests {
         assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.contains("unknown declaration"));
         assert!(diagnostics[0].span.start > source.find("<style").unwrap());
+    }
+
+    #[test]
+    fn cursor_diagnoses_unknown_ui_primitive() {
+        let source = "component ChatApp {\n  view {\n    div Broken {\n    }\n  }\n}\n";
+        let offset = source.find("div").unwrap() + 1;
+        let diagnostics = cursor_diagnostics(source, offset);
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Unknown UI primitive"));
+        assert!(diagnostics[0].message.contains("panel"));
+    }
+
+    #[test]
+    fn cursor_diagnoses_unknown_property() {
+        let source = "card Demo {\n  magic\n}\n";
+        let offset = source.find("magic").unwrap() + 1;
+        let diagnostics = cursor_diagnostics(source, offset);
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Unknown property"));
+        assert!(diagnostics[0].message.contains("surface"));
+    }
+
+    #[test]
+    fn cursor_diagnoses_invalid_value() {
+        let source = "card Demo {\n  surface unknown\n}\n";
+        let offset = source.find("unknown").unwrap() + 1;
+        let diagnostics = cursor_diagnostics(source, offset);
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Invalid value"));
+        assert!(diagnostics[0].message.contains("surface"));
+    }
+
+    #[test]
+    fn cursor_diagnoses_unknown_handler() {
+        let source = "component ChatApp {\n  view {\n    composer MessageComposer {\n      send @missing\n    }\n  }\n}\n";
+        let offset = source.find("@missing").unwrap() + 1;
+        let diagnostics = cursor_diagnostics(source, offset);
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Unknown handler"));
+    }
+
+    #[test]
+    fn cursor_diagnoses_unknown_state_reference() {
+        let source = "component ChatApp {\n  view {\n    text $missing\n  }\n}\n";
+        let offset = source.find("$missing").unwrap() + 1;
+        let diagnostics = cursor_diagnostics(source, offset);
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Unknown state/prop"));
+    }
+
+    #[test]
+    fn no_duplicate_cursor_diagnostics() {
+        let source = "component ChatApp {\n  view {\n    unknown Broken {\n    }\n  }\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let primitive_errors = diagnostics
+            .iter()
+            .filter(|d| d.message.contains("Unknown UI primitive"))
+            .count();
+        assert_eq!(primitive_errors, 1);
     }
 }
