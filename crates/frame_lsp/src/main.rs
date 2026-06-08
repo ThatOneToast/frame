@@ -14,6 +14,7 @@ mod embedded;
 mod folding;
 mod formatting;
 mod hover;
+mod ide;
 mod navigation;
 mod project;
 mod semantic_tokens;

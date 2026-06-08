@@ -3,12 +3,11 @@ mod suggestions;
 mod types;
 mod values;
 
-use crate::context::{completion_context, CompletionScope};
+use crate::context::{completion_context, property_at_line, CompletionScope};
+use crate::ide::cursor::{CursorSlot, SemanticCursor};
 use frame_core::{language, symbols::index_document};
 use frame_parser::parse;
-use helpers::{
-    is_inside_ancestor_block, is_inside_block, is_inside_keyframe_selector, line_at, line_words_at,
-};
+use helpers::{line_at, line_words_at};
 use std::path::PathBuf;
 use suggestions::{
     dynamic_suggestions, include_documentation, include_suggestions, property_suggestions,
@@ -329,92 +328,87 @@ pub fn completions_at_with_includes(
         return supports_predicate_completions(&line_words);
     }
 
-    if is_inside_ancestor_block(source, offset, "view") {
+    // Build semantic cursor for slot-based dispatch
+    let cursor = match parsed_document {
+        Some(ref doc) => {
+            SemanticCursor::at_with_document(source, offset, Some(doc.clone()), symbols.clone())
+        }
+        None => SemanticCursor::at(source, offset),
+    };
+
+    match cursor.slot {
         // $ trigger: suggest state, props, and loop variables
-        if line.trim_end().ends_with('$') {
-            if let Some(ref document) = parsed_document {
-                if let Some(component) = find_component_at_offset(document, offset) {
-                    let mut refs = Vec::new();
-                    if let Some(ref state) = component.state {
-                        for value in &state.values {
-                            refs.push(CompletionSuggestion {
-                                label: format!("${}", value.name.text),
-                                detail: "state",
-                                documentation: format!(
-                                    "Component state `{}` of type `{}`.",
-                                    value.name.text,
-                                    state_type_label(&value.value_type)
-                                ),
-                                insert_text: Some(value.name.text.clone()),
-                                is_snippet: false,
-                                category: CompletionCategory::Value,
-                                sort_text: None,
-                            });
-                        }
-                    }
-                    if let Some(ref props) = component.props {
-                        for value in &props.values {
-                            refs.push(CompletionSuggestion {
-                                label: format!("${}", value.name.text),
-                                detail: "prop",
-                                documentation: format!(
-                                    "Component prop `{}` of type `{}`.",
-                                    value.name.text,
-                                    prop_type_label(&value.value_type)
-                                ),
-                                insert_text: Some(value.name.text.clone()),
-                                is_snippet: false,
-                                category: CompletionCategory::Value,
-                                sort_text: None,
-                            });
-                        }
-                    }
-                    // Collect loop variables from view and slots
-                    if let Some(ref view) = component.view {
-                        collect_loop_variables(&view.nodes, &mut refs);
-                    }
-                    for slot in &component.slots {
-                        collect_loop_variables(&slot.nodes, &mut refs);
-                    }
-                    refs.sort_by(|a, b| a.label.cmp(&b.label));
-                    refs.dedup_by(|a, b| a.label == b.label);
-                    return refs;
-                }
+        CursorSlot::DataReference => {
+            let mut refs: Vec<CompletionSuggestion> = Vec::new();
+            for sym in &cursor.scope.local_state {
+                refs.push(CompletionSuggestion {
+                    label: format!("${}", sym.name),
+                    detail: "state",
+                    documentation: format!(
+                        "Component state `{}` of type `{}`.",
+                        sym.name, sym.detail
+                    ),
+                    insert_text: Some(sym.name.clone()),
+                    is_snippet: false,
+                    category: CompletionCategory::Value,
+                    sort_text: None,
+                });
             }
+            for sym in &cursor.scope.local_props {
+                refs.push(CompletionSuggestion {
+                    label: format!("${}", sym.name),
+                    detail: "prop",
+                    documentation: format!(
+                        "Component prop `{}` of type `{}`.",
+                        sym.name, sym.detail
+                    ),
+                    insert_text: Some(sym.name.clone()),
+                    is_snippet: false,
+                    category: CompletionCategory::Value,
+                    sort_text: None,
+                });
+            }
+            for sym in &cursor.scope.loop_vars {
+                refs.push(CompletionSuggestion {
+                    label: format!("${}", sym.name),
+                    detail: "loop variable",
+                    documentation: format!("Loop variable `{}` ({}).", sym.name, sym.detail),
+                    insert_text: Some(sym.name.clone()),
+                    is_snippet: false,
+                    category: CompletionCategory::Value,
+                    sort_text: None,
+                });
+            }
+            refs.sort_by(|a, b| a.label.cmp(&b.label));
+            refs.dedup_by(|a, b| a.label == b.label);
+            refs
         }
 
         // @ trigger: suggest known handlers
-        if line.trim_end().ends_with('@') {
-            if let Some(ref document) = parsed_document {
-                if let Some(component) = find_component_at_offset(document, offset) {
-                    let mut handlers = std::collections::HashSet::new();
-                    if let Some(ref view) = component.view {
-                        collect_handlers(&view.nodes, &mut handlers);
-                    }
-                    for slot in &component.slots {
-                        collect_loop_handlers(&slot.nodes, &mut handlers);
-                    }
-                    let mut items: Vec<CompletionSuggestion> = handlers
-                        .into_iter()
-                        .map(|name| CompletionSuggestion {
-                            label: format!("@{name}"),
-                            detail: "handler",
-                            documentation: format!(
-                                "External handler reference `{name}`. Frame stores the handler name, not inline script bodies."
-                            ),
-                            insert_text: Some(name),
-                            is_snippet: false,
-                            category: CompletionCategory::Value,
-                            sort_text: None,
-                        })
-                        .collect();
-                    items.sort_by(|a, b| a.label.cmp(&b.label));
-                    return items;
-                }
-            }
+        CursorSlot::HandlerReference => {
+            let mut items: Vec<CompletionSuggestion> = cursor
+                .scope
+                .handlers
+                .iter()
+                .map(|sym| CompletionSuggestion {
+                    label: format!("@{}", sym.name),
+                    detail: "handler",
+                    documentation: format!(
+                        "External handler reference `{}`. Frame stores the handler name, not inline script bodies.",
+                        sym.name
+                    ),
+                    insert_text: Some(sym.name.clone()),
+                    is_snippet: false,
+                    category: CompletionCategory::Value,
+                    sort_text: None,
+                })
+                .collect();
+            items.sort_by(|a, b| a.label.cmp(&b.label));
+            items
         }
 
-        if line_words.first().map(String::as_str) == Some("on") {
+        // Event names and modifiers
+        CursorSlot::EventName => {
             let mut items = registry_item_suggestions(
                 language::items_by_kind(language::LanguageItemKind::Event),
                 "event",
@@ -425,156 +419,132 @@ pub fn completions_at_with_includes(
                 "event modifier",
                 "Keyboard or platform modifier used after an event name.",
             ));
-            return items;
+            items
         }
 
-        if line_words.is_empty() || line.trim().is_empty() {
-            if let Some(kind) = nearest_ui_element_kind(source, offset) {
-                let items = match kind.as_str() {
-                    "action" => Some(primitive_body_completions(
-                        ACTION_BODY_COMPLETIONS,
-                        "action body",
-                        "Intent-first action syntax. Prefer `on press @handler` over browser event attributes.",
-                    )),
-                    "field" => Some(primitive_body_completions(
-                        FIELD_BODY_COMPLETIONS,
-                        "field body",
-                        "Field structure and control binding suggestions.",
-                    )),
-                    "input" | "editor" | "toggle" | "choice" | "select" => Some(
-                        primitive_body_completions(
-                            INPUT_BODY_COMPLETIONS,
-                            "input body",
-                            "Input binding and state-driven control suggestions.",
+        // View body: primitives, declarations, components, contextual body completions
+        CursorSlot::ViewBody | CursorSlot::ViewPrimitive | CursorSlot::ViewNodeName => {
+            // Empty line inside an element → contextual body completions
+            if line_words.is_empty() || line.trim().is_empty() {
+                if let Some(ref kind) = cursor.enclosing_view_node {
+                    let items = match kind.as_str() {
+                        "action" => Some(primitive_body_completions(
+                            ACTION_BODY_COMPLETIONS,
+                            "action body",
+                            "Intent-first action syntax. Prefer `on press @handler` over browser event attributes.",
+                        )),
+                        "field" => Some(primitive_body_completions(
+                            FIELD_BODY_COMPLETIONS,
+                            "field body",
+                            "Field structure and control binding suggestions.",
+                        )),
+                        "input" | "editor" | "toggle" | "choice" | "select" => Some(
+                            primitive_body_completions(
+                                INPUT_BODY_COMPLETIONS,
+                                "input body",
+                                "Input binding and state-driven control suggestions.",
+                            ),
                         ),
-                    ),
-                    "list" | "feed" | "data" => Some(primitive_body_completions(
-                        LIST_BODY_COMPLETIONS,
-                        "collection body",
-                        "Collection rendering suggestions with keyed identity and empty states.",
-                    )),
-                    "text" | "title" | "label" | "badge" => Some(primitive_body_completions(
-                        TEXT_BODY_COMPLETIONS,
-                        "text body",
-                        "Text content and style switching suggestions.",
-                    )),
-                    "media" | "image" | "avatar" => Some(primitive_body_completions(
-                        MEDIA_BODY_COMPLETIONS,
-                        "media body",
-                        "Media source and accessibility suggestions.",
-                    )),
-                    "dialog" => Some(primitive_body_completions(
-                        DIALOG_BODY_COMPLETIONS,
-                        "dialog body",
-                        "Dialog visibility and content suggestions.",
-                    )),
-                    "popover" => Some(primitive_body_completions(
-                        POPOVER_BODY_COMPLETIONS,
-                        "popover body",
-                        "Popover content suggestions.",
-                    )),
-                    _ => None,
-                };
-                if let Some(items) = items {
-                    return items;
+                        "list" | "feed" | "data" => Some(primitive_body_completions(
+                            LIST_BODY_COMPLETIONS,
+                            "collection body",
+                            "Collection rendering suggestions with keyed identity and empty states.",
+                        )),
+                        "text" | "title" | "label" | "badge" => Some(primitive_body_completions(
+                            TEXT_BODY_COMPLETIONS,
+                            "text body",
+                            "Text content and style switching suggestions.",
+                        )),
+                        "media" | "image" | "avatar" => Some(primitive_body_completions(
+                            MEDIA_BODY_COMPLETIONS,
+                            "media body",
+                            "Media source and accessibility suggestions.",
+                        )),
+                        "dialog" => Some(primitive_body_completions(
+                            DIALOG_BODY_COMPLETIONS,
+                            "dialog body",
+                            "Dialog visibility and content suggestions.",
+                        )),
+                        "popover" => Some(primitive_body_completions(
+                            POPOVER_BODY_COMPLETIONS,
+                            "popover body",
+                            "Popover content suggestions.",
+                        )),
+                        _ => None,
+                    };
+                    if let Some(items) = items {
+                        return items;
+                    }
                 }
             }
+
+            let mut items = registry_item_suggestions(
+                language::items_by_kind(language::LanguageItemKind::Primitive),
+                "ui primitive",
+                "Semantic Frame UI primitive. Renderers lower the intent to their target platform.",
+            );
+            items.extend(registry_item_suggestions(
+                language::items_by_kind(language::LanguageItemKind::Declaration),
+                "declaration",
+                "Starts a Frame declaration.",
+            ));
+            items.extend(registry_item_suggestions(
+                language::items_by_kind(language::LanguageItemKind::UiKeyword),
+                "ui keyword",
+                "Experimental Frame UI syntax keyword.",
+            ));
+            items.extend(registry_item_suggestions(
+                language::items_by_kind(language::LanguageItemKind::BindingKeyword),
+                "binding keyword",
+                "Binding keyword for state and condition control.",
+            ));
+            items.extend(registry_item_suggestions(
+                language::items_by_kind(language::LanguageItemKind::StateKeyword),
+                "state keyword",
+                "Interaction state keyword for styling and behavior.",
+            ));
+            items.extend(dynamic_suggestions(
+                component_names,
+                "component",
+                "Component declared in this Frame file.",
+                CompletionCategory::ProjectSymbol,
+            ));
+            items
         }
-        let mut items = registry_item_suggestions(
-            language::items_by_kind(language::LanguageItemKind::Primitive),
-            "ui primitive",
-            "Semantic Frame UI primitive. Renderers lower the intent to their target platform.",
-        );
-        items.extend(registry_item_suggestions(
-            language::items_by_kind(language::LanguageItemKind::Declaration),
-            "declaration",
-            "Starts a Frame declaration.",
-        ));
-        items.extend(registry_item_suggestions(
-            language::items_by_kind(language::LanguageItemKind::UiKeyword),
-            "ui keyword",
-            "Experimental Frame UI syntax keyword.",
-        ));
-        items.extend(registry_item_suggestions(
-            language::items_by_kind(language::LanguageItemKind::BindingKeyword),
-            "binding keyword",
-            "Binding keyword for state and condition control.",
-        ));
-        items.extend(registry_item_suggestions(
-            language::items_by_kind(language::LanguageItemKind::StateKeyword),
-            "state keyword",
-            "Interaction state keyword for styling and behavior.",
-        ));
-        items.extend(dynamic_suggestions(
-            component_names,
-            "component",
-            "Component declared in this Frame file.",
-            CompletionCategory::ProjectSymbol,
-        ));
-        return items;
-    }
 
-    if is_inside_block(source, offset, "gradient") {
-        if let Some(property) = line_words.first() {
-            return value_completions(property, &line_words, &symbols);
+        // View property completions (reuse declaration logic)
+        CursorSlot::ViewPropertyName | CursorSlot::ViewPropertyValue { .. } => {
+            // For now, treat view properties like declaration properties
+            declaration_completions(&cursor, &line_words, &symbols, &context)
         }
-        return suggestions_with_category(
-            GRADIENT_PROPERTIES,
-            "gradient property",
-            "Property inside a custom gradient token.",
-            CompletionCategory::TokenProperty,
-        );
-    }
 
-    if is_inside_block(source, offset, "animation") {
-        if let Some(property) = line_words.first() {
-            return value_completions(property, &line_words, &symbols);
+        // State blocks (hover, focus, active, etc.)
+        CursorSlot::StateDeclaration => {
+            let property = property_at_line(&cursor.line_prefix);
+            property
+                .as_deref()
+                .map(|property| value_completions(property, &line_words, &symbols))
+                .filter(|items| !items.is_empty())
+                .unwrap_or_else(|| {
+                    let mut items = snippet_suggestions(SnippetScope::State);
+                    items.extend(registry_item_suggestions(
+                        language::items_by_kind(language::LanguageItemKind::Effect),
+                        "effect",
+                        "Effect used inside an interaction state.",
+                    ));
+                    items
+                })
         }
-        let mut items = snippet_suggestions(SnippetScope::Animation);
-        items.extend(suggestions_with_category(
-            ANIMATION_PROPERTIES,
-            "animation option",
-            "Timing, easing, iteration, and fill options for a custom animation.",
-            CompletionCategory::AnimationOption,
-        ));
-        return items;
-    }
 
-    if is_inside_keyframe_selector(source, offset) {
-        if let Some(property) = line_words.first() {
-            return value_completions(property, &line_words, &symbols);
+        // Declaration body and style property completions
+        CursorSlot::DeclarationBody
+        | CursorSlot::StylePropertyName
+        | CursorSlot::StylePropertyValue { .. } => {
+            declaration_completions(&cursor, &line_words, &symbols, &context)
         }
-        return suggestions_with_category(
-            language::KEYFRAME_PROPERTIES,
-            "keyframe property",
-            "Animatable property inside a keyframe selector.",
-            CompletionCategory::MotionProperty,
-        );
-    }
 
-    if is_inside_block(source, offset, "advanced") {
-        return suggestions_with_category(
-            ADVANCED_PROPERTIES,
-            "advanced css",
-            "Explicit scoped CSS escape hatch.",
-            CompletionCategory::AdvancedProperty,
-        );
-    }
-
-    if is_inside_block(source, offset, "section") {
-        if let Some(property) = line_words.first() {
-            return value_completions(property, &line_words, &symbols);
-        }
-        return suggestions_with_category(
-            SECTION_PROPERTIES,
-            "section property",
-            "Spacing, sizing, and alignment for a named grid section.",
-            CompletionCategory::LayoutProperty,
-        );
-    }
-
-    match context.scope {
-        CompletionScope::Root => {
+        // Root-level completions
+        CursorSlot::RootDeclaration | CursorSlot::DeclarationName | CursorSlot::Unknown => {
             let mut items = snippet_suggestions(SnippetScope::Root);
             items.extend(registry_item_suggestions(
                 language::items_by_kind(language::LanguageItemKind::Declaration),
@@ -592,100 +562,179 @@ pub fn completions_at_with_includes(
             });
             items
         }
-        CompletionScope::State { property } => property
-            .as_deref()
-            .map(|property| value_completions(property, &line_words, &symbols))
-            .filter(|items| !items.is_empty())
-            .unwrap_or_else(|| {
-                let mut items = snippet_suggestions(SnippetScope::State);
-                items.extend(registry_item_suggestions(
-                    language::items_by_kind(language::LanguageItemKind::Effect),
-                    "effect",
-                    "Effect used inside an interaction state.",
-                ));
-                items
-            }),
-        CompletionScope::Declaration {
-            kind,
-            property,
-            area_grid,
-        } => {
-            if let Some(property) = property {
-                match property.as_str() {
-                    "in" => {
-                        return dynamic_suggestions(
-                            context.symbols.grids.keys().cloned().collect(),
-                            "grid",
-                            "Grid declaration in the current document.",
-                            CompletionCategory::GridReference,
-                        )
-                    }
-                    "place" => {
-                        if let Some(grid) = area_grid {
-                            if let Some(columns) = context.symbols.grids.get(&grid) {
-                                return dynamic_suggestions(
-                                    columns.clone(),
-                                    "grid area",
-                                    "Named column or area from the referenced grid.",
-                                    CompletionCategory::GridSection,
-                                );
-                            }
-                        }
-                    }
-                    _ => {}
-                }
 
-                return value_completions(&property, &line_words, &symbols);
-            }
-
-            match kind.as_str() {
-                "tokens" => suggestions_with_category(
-                    TOKEN_PROPERTIES,
-                    "token property",
-                    "Token definition for reusable colors and gradients.",
-                    CompletionCategory::TokenProperty,
-                ),
-                "grid" => {
-                    let mut items = snippet_suggestions(SnippetScope::Grid);
-                    items.extend(property_suggestions(
-                        GRID_PROPERTIES,
-                        "grid property",
-                        "Property for grid layout and child placement.",
-                    ));
-                    items
-                }
-                "keyframes" => {
-                    let mut items = snippet_suggestions(SnippetScope::Keyframes);
-                    items.extend(suggestions_with_category(
-                        KEYFRAME_SELECTORS,
-                        "keyframe selector",
-                        "Selector inside a keyframes declaration.",
-                        CompletionCategory::KeyframeSelector,
-                    ));
-                    items
-                }
-                "area" => property_suggestions(
-                    AREA_PROPERTIES,
-                    "area property",
-                    "Property for a child region inside a grid.",
-                ),
-                "card" | "stack" | "row" | "button" | "center" | "split" | "overlay" | "dock"
-                | "text" => {
-                    let mut items = snippet_suggestions(SnippetScope::Component);
-                    items.extend(property_suggestions(
-                        CARD_PROPERTIES,
-                        "component property",
-                        "Property for a reusable UI surface.",
-                    ));
-                    items
-                }
-                _ => property_suggestions(
-                    COMMON_PROPERTIES,
-                    "property",
-                    "Adds design intent to this declaration.",
-                ),
-            }
+        // Fallback for slots not yet fully migrated
+        _ => {
+            let mut items = snippet_suggestions(SnippetScope::Root);
+            items.extend(registry_item_suggestions(
+                language::items_by_kind(language::LanguageItemKind::Declaration),
+                "declaration",
+                "Starts a Frame declaration.",
+            ));
+            items
         }
+    }
+}
+
+fn declaration_completions(
+    cursor: &SemanticCursor,
+    line_words: &[String],
+    symbols: &frame_core::symbols::SymbolIndex,
+    context: &crate::context::CompletionContext,
+) -> Vec<CompletionSuggestion> {
+    // Nested blocks inside declarations: check the first word of the innermost block header
+    if let Some(ref block) = cursor.innermost_block {
+        let block_first = block.split_whitespace().next().unwrap_or("");
+        match block_first {
+            "gradient" => {
+                if let Some(property) = line_words.first() {
+                    return value_completions(property, line_words, symbols);
+                }
+                return suggestions_with_category(
+                    GRADIENT_PROPERTIES,
+                    "gradient property",
+                    "Property inside a custom gradient token.",
+                    CompletionCategory::TokenProperty,
+                );
+            }
+            "animation" => {
+                if let Some(property) = line_words.first() {
+                    return value_completions(property, line_words, symbols);
+                }
+                let mut items = snippet_suggestions(SnippetScope::Animation);
+                items.extend(suggestions_with_category(
+                    ANIMATION_PROPERTIES,
+                    "animation option",
+                    "Timing, easing, iteration, and fill options for a custom animation.",
+                    CompletionCategory::AnimationOption,
+                ));
+                return items;
+            }
+            "advanced" => {
+                return suggestions_with_category(
+                    ADVANCED_PROPERTIES,
+                    "advanced css",
+                    "Explicit scoped CSS escape hatch.",
+                    CompletionCategory::AdvancedProperty,
+                );
+            }
+            "section" => {
+                if let Some(property) = line_words.first() {
+                    return value_completions(property, line_words, symbols);
+                }
+                return suggestions_with_category(
+                    SECTION_PROPERTIES,
+                    "section property",
+                    "Spacing, sizing, and alignment for a named grid section.",
+                    CompletionCategory::LayoutProperty,
+                );
+            }
+            block if block == "from" || block == "to" || block.ends_with('%') => {
+                if let Some(property) = line_words.first() {
+                    return value_completions(property, line_words, symbols);
+                }
+                return suggestions_with_category(
+                    language::KEYFRAME_PROPERTIES,
+                    "keyframe property",
+                    "Animatable property inside a keyframe selector.",
+                    CompletionCategory::MotionProperty,
+                );
+            }
+            _ => {}
+        }
+    }
+
+    // Use enclosing declaration kind for dispatch.
+    // Prefer parsed AST kind, fall back to text-heuristic kind from context.
+    let kind = cursor
+        .enclosing_declaration
+        .as_ref()
+        .map(|(_, k)| format!("{:?}", k).to_lowercase())
+        .or_else(|| match &context.scope {
+            CompletionScope::Declaration { kind, .. } => Some(kind.clone()),
+            _ => None,
+        })
+        .unwrap_or_default();
+
+    // Check if we're in a property value position
+    let property = property_at_line(&cursor.line_prefix);
+    if let Some(property) = property {
+        match property.as_str() {
+            "in" => {
+                return dynamic_suggestions(
+                    context.symbols.grids.keys().cloned().collect(),
+                    "grid",
+                    "Grid declaration in the current document.",
+                    CompletionCategory::GridReference,
+                )
+            }
+            "place" => {
+                // area_grid is not tracked by SemanticCursor yet; fall back to context
+                let area_grid = match &context.scope {
+                    CompletionScope::Declaration { area_grid, .. } => area_grid.clone(),
+                    _ => None,
+                };
+                if let Some(grid) = area_grid {
+                    if let Some(columns) = context.symbols.grids.get(&grid) {
+                        return dynamic_suggestions(
+                            columns.clone(),
+                            "grid area",
+                            "Named column or area from the referenced grid.",
+                            CompletionCategory::GridSection,
+                        );
+                    }
+                }
+            }
+            _ => {}
+        }
+        return value_completions(&property, line_words, symbols);
+    }
+
+    match kind.as_str() {
+        "tokens" => suggestions_with_category(
+            TOKEN_PROPERTIES,
+            "token property",
+            "Token definition for reusable colors and gradients.",
+            CompletionCategory::TokenProperty,
+        ),
+        "grid" => {
+            let mut items = snippet_suggestions(SnippetScope::Grid);
+            items.extend(property_suggestions(
+                GRID_PROPERTIES,
+                "grid property",
+                "Property for grid layout and child placement.",
+            ));
+            items
+        }
+        "keyframes" => {
+            let mut items = snippet_suggestions(SnippetScope::Keyframes);
+            items.extend(suggestions_with_category(
+                KEYFRAME_SELECTORS,
+                "keyframe selector",
+                "Selector inside a keyframes declaration.",
+                CompletionCategory::KeyframeSelector,
+            ));
+            items
+        }
+        "area" => property_suggestions(
+            AREA_PROPERTIES,
+            "area property",
+            "Property for a child region inside a grid.",
+        ),
+        "card" | "stack" | "row" | "button" | "center" | "split" | "overlay" | "dock" | "text" => {
+            let mut items = snippet_suggestions(SnippetScope::Component);
+            items.extend(property_suggestions(
+                CARD_PROPERTIES,
+                "component property",
+                "Property for a reusable UI surface.",
+            ));
+            items
+        }
+        _ => property_suggestions(
+            COMMON_PROPERTIES,
+            "property",
+            "Adds design intent to this declaration.",
+        ),
     }
 }
 
@@ -706,129 +755,6 @@ fn primitive_body_completions(
             sort_text: None,
         })
         .collect()
-}
-
-fn nearest_ui_element_kind(source: &str, offset: usize) -> Option<String> {
-    let mut stack = Vec::new();
-    let prefix = &source[..offset.min(source.len())];
-    for line in prefix.lines() {
-        let trimmed = line.trim();
-        if trimmed == "}" {
-            stack.pop();
-            continue;
-        }
-        if trimmed.ends_with('{') {
-            let first = trimmed.split_whitespace().next().unwrap_or_default();
-            if language::item(first).is_some_and(|i| {
-                matches!(
-                    i.kind,
-                    language::LanguageItemKind::Primitive | language::LanguageItemKind::Declaration
-                )
-            }) {
-                stack.push(first.to_string());
-            } else if matches!(first, "component" | "props" | "state" | "view" | "for") {
-                stack.push(String::new());
-            }
-        }
-    }
-    stack.into_iter().rev().find(|kind| !kind.is_empty())
-}
-
-fn find_component_at_offset(
-    document: &frame_core::Document,
-    offset: usize,
-) -> Option<&frame_core::ComponentDecl> {
-    document
-        .components
-        .iter()
-        .find(|component| component.span.start <= offset && component.span.end >= offset)
-}
-
-fn collect_loop_variables(nodes: &[frame_core::UiNode], refs: &mut Vec<CompletionSuggestion>) {
-    for node in nodes {
-        match node {
-            frame_core::UiNode::Loop(loop_node) => {
-                refs.push(CompletionSuggestion {
-                    label: format!("${}", loop_node.item.text),
-                    detail: "loop variable",
-                    documentation: format!(
-                        "Loop item variable `{}` from `for {} in ...`.",
-                        loop_node.item.text, loop_node.item.text
-                    ),
-                    insert_text: Some(loop_node.item.text.clone()),
-                    is_snippet: false,
-                    category: CompletionCategory::Value,
-                    sort_text: None,
-                });
-                if let Some(ref key) = loop_node.key {
-                    refs.push(CompletionSuggestion {
-                        label: format!("${}", key.name.text),
-                        detail: "loop key",
-                        documentation: format!(
-                            "Loop key variable `{}` from `key ${}`.",
-                            key.name.text, key.name.text
-                        ),
-                        insert_text: Some(key.name.text.clone()),
-                        is_snippet: false,
-                        category: CompletionCategory::Value,
-                        sort_text: None,
-                    });
-                }
-                collect_loop_variables(&loop_node.children, refs);
-            }
-            frame_core::UiNode::Element(element) => {
-                collect_loop_variables(&element.children, refs);
-            }
-            _ => {}
-        }
-    }
-}
-
-fn collect_handlers(
-    nodes: &[frame_core::UiNode],
-    handlers: &mut std::collections::HashSet<String>,
-) {
-    for node in nodes {
-        match node {
-            frame_core::UiNode::Element(element) => {
-                for event in &element.events {
-                    handlers.insert(event.handler.name.text.clone());
-                }
-                collect_handlers(&element.children, handlers);
-            }
-            frame_core::UiNode::Loop(loop_node) => {
-                collect_loop_handlers(&loop_node.children, handlers);
-            }
-            _ => {}
-        }
-    }
-}
-
-fn collect_loop_handlers(
-    nodes: &[frame_core::UiNode],
-    handlers: &mut std::collections::HashSet<String>,
-) {
-    collect_handlers(nodes, handlers);
-}
-
-fn state_type_label(value_type: &frame_core::StateType) -> &'static str {
-    match value_type {
-        frame_core::StateType::Text => "text",
-        frame_core::StateType::Bool => "bool",
-        frame_core::StateType::Number => "number",
-        frame_core::StateType::List => "list",
-        frame_core::StateType::Unknown(_) => "unknown",
-    }
-}
-
-fn prop_type_label(value_type: &frame_core::PropType) -> &'static str {
-    match value_type {
-        frame_core::PropType::Text => "text",
-        frame_core::PropType::Bool => "bool",
-        frame_core::PropType::Number => "number",
-        frame_core::PropType::List => "list",
-        frame_core::PropType::Unknown(_) => "unknown",
-    }
 }
 
 #[cfg(test)]

@@ -1,3 +1,4 @@
+use crate::ide::cursor::{CursorSlot, SemanticCursor};
 use docs::{
     INCLUDE_DOC, SURFACE_GLASS_DOC, SURFACE_MAIN_DOC, SURFACE_PANEL_DOC, WIDTH_PERCENT_DOC,
 };
@@ -24,6 +25,40 @@ pub fn hover_doc_at_with_symbols(
     let word = word_at(source, offset)?;
     let line = line_at(source, offset);
     let words = line.split_whitespace().collect::<Vec<_>>();
+
+    // Build semantic cursor for context-aware hover
+    let cursor = SemanticCursor::at(source, offset);
+
+    match cursor.slot {
+        CursorSlot::DataReference => {
+            let name = word.strip_prefix('$').unwrap_or(word);
+            if let Some(sym) = cursor
+                .scope
+                .local_state
+                .iter()
+                .chain(&cursor.scope.local_props)
+                .chain(&cursor.scope.loop_vars)
+                .find(|s| s.name == name)
+            {
+                return Some(format!(
+                    "## `${}`\n\n{}\n\nReferenced in a Frame view node. Text interpolation escapes by default.",
+                    sym.name, sym.detail
+                ));
+            }
+            return hover_doc(word);
+        }
+        CursorSlot::HandlerReference => {
+            let name = word.strip_prefix('@').unwrap_or(word);
+            if let Some(sym) = cursor.scope.handlers.iter().find(|s| s.name == name) {
+                return Some(format!(
+                    "## `@{}`\n\n{}\n\nExternal handler reference. Frame stores the handler name, not inline script bodies.",
+                    sym.name, sym.detail
+                ));
+            }
+            return hover_doc(word);
+        }
+        _ => {}
+    }
 
     if line.starts_with("#include") {
         return Some(INCLUDE_DOC.to_string());
@@ -57,55 +92,56 @@ pub fn hover_doc_at_with_symbols(
         _ => {}
     }
 
-    if let Some(symbols) = symbols {
-        if let Some(color) = symbols.colors.get(word) {
-            return Some(format!(
-                "## `{}`\n\nCustom color token.\n\nValue:\n\n```css\n{}\n```\n\nUse it anywhere Frame accepts color intent, including `background`, `color`, `border`, `glow`, and `ring`.\n\n### Frame\n\n```frame\ncard BrandCard {{\n  background {}\n  color {}\n}}\n```",
-                color.name,
-                color.value.as_deref().unwrap_or("custom color"),
-                color.name,
-                color.name
-            ));
-        }
+    // Prefer caller-supplied symbols, fall back to cursor symbols
+    let symbols = symbols.unwrap_or(&cursor.symbols);
 
-        if let Some(gradient) = symbols.gradients.get(word) {
-            return Some(format!(
-                "## `{}`\n\nCustom gradient token.\n\nGenerated behavior:\n\n```css\n{}\n```\n\nUse it for hero cards, highlighted dashboard cards, panels, and sign-in screens.\n\n### Frame\n\n```frame\ncard HeroCard {{\n  background {}\n  color white\n}}\n```",
-                gradient.name,
-                gradient.value.as_deref().unwrap_or("linear-gradient(...)"),
-                gradient.name
-            ));
-        }
-
-        if let Some(keyframes) = symbols.keyframes.get(word) {
-            return Some(format!(
-                "## `{}`\n\nCustom keyframes animation.\n\nGenerated CSS:\n\n```css\n{}\n```\n\nUse it with a structured animation block:\n\n```frame\ncard Panel {{\n  animation {} {{\n    duration 240ms\n    ease smooth\n    fill both\n  }}\n}}\n```",
-                keyframes.name,
-                keyframes
-                    .value
-                    .as_deref()
-                    .unwrap_or("@keyframes frame-Name"),
-                keyframes.name
-            ));
-        }
-
-        if let Some(declaration) = symbols.declarations.get(word) {
-            return Some(format!(
-                "## `{}`\n\nFrame style declaration.\n\nKind: `{}`\n\nUse it as a style binding or automatic style lookup target in UI nodes.",
-                declaration.name,
-                declaration_kind_label(&declaration.kind)
-            ));
-        }
-
-        if let Some(component) = symbols.components.get(word) {
-            return Some(format!(
-                "## `{}`\n\nFrame component.\n\nInvoke it in view with `{}(...)`. Components encapsulate props, state, and a semantic view tree.",
-                component.name, component.name
-            ));
-        }
+    if let Some(color) = symbols.colors.get(word) {
+        return Some(format!(
+            "## `{}`\n\nCustom color token.\n\nValue:\n\n```css\n{}\n```\n\nUse it anywhere Frame accepts color intent, including `background`, `color`, `border`, `glow`, and `ring`.\n\n### Frame\n\n```frame\ncard BrandCard {{\n  background {}\n  color {}\n}}\n```",
+            color.name,
+            color.value.as_deref().unwrap_or("custom color"),
+            color.name,
+            color.name
+        ));
     }
 
-    if let Some(doc) = contextual_value_doc(word, &words, symbols) {
+    if let Some(gradient) = symbols.gradients.get(word) {
+        return Some(format!(
+            "## `{}`\n\nCustom gradient token.\n\nGenerated behavior:\n\n```css\n{}\n```\n\nUse it for hero cards, highlighted dashboard cards, panels, and sign-in screens.\n\n### Frame\n\n```frame\ncard HeroCard {{\n  background {}\n  color white\n}}\n```",
+            gradient.name,
+            gradient.value.as_deref().unwrap_or("linear-gradient(...)"),
+            gradient.name
+        ));
+    }
+
+    if let Some(keyframes) = symbols.keyframes.get(word) {
+        return Some(format!(
+            "## `{}`\n\nCustom keyframes animation.\n\nGenerated CSS:\n\n```css\n{}\n```\n\nUse it with a structured animation block:\n\n```frame\ncard Panel {{\n  animation {} {{\n    duration 240ms\n    ease smooth\n    fill both\n  }}\n}}\n```",
+            keyframes.name,
+            keyframes
+                .value
+                .as_deref()
+                .unwrap_or("@keyframes frame-Name"),
+            keyframes.name
+        ));
+    }
+
+    if let Some(declaration) = symbols.declarations.get(word) {
+        return Some(format!(
+            "## `{}`\n\nFrame style declaration.\n\nKind: `{}`\n\nUse it as a style binding or automatic style lookup target in UI nodes.",
+            declaration.name,
+            declaration_kind_label(&declaration.kind)
+        ));
+    }
+
+    if let Some(component) = symbols.components.get(word) {
+        return Some(format!(
+            "## `{}`\n\nFrame component.\n\nInvoke it in view with `{}(...)`. Components encapsulate props, state, and a semantic view tree.",
+            component.name, component.name
+        ));
+    }
+
+    if let Some(doc) = contextual_value_doc(word, &words, Some(symbols)) {
         return Some(doc);
     }
 

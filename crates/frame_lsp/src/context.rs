@@ -63,7 +63,7 @@ pub fn completion_context(source: &str, offset: usize) -> CompletionContext {
     }
 }
 
-fn property_at_line(line_prefix: &str) -> Option<String> {
+pub(crate) fn property_at_line(line_prefix: &str) -> Option<String> {
     let trimmed = line_prefix.trim_start();
     if trimmed.is_empty() {
         return None;

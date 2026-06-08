@@ -7,6 +7,7 @@ use tower_lsp::lsp_types::Url;
 use crate::document_symbols::collect_document_symbols;
 use crate::embedded::{frame_block_at, frame_blocks};
 use crate::hover::word_at;
+use crate::ide::cursor::SemanticCursor;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NavigationTarget {
@@ -20,6 +21,7 @@ pub fn definition_at(source: &str, offset: usize) -> Option<NavigationTarget> {
     let line = line_at(frame_source, frame_offset);
     let words = line.split_whitespace().collect::<Vec<_>>();
     let symbols = collect_document_symbols(frame_source);
+    let cursor = SemanticCursor::at(frame_source, frame_offset);
 
     if words.first() == Some(&"in") && words.get(1) == Some(&word) {
         return symbols.declarations.get(word).map(|span| NavigationTarget {
@@ -45,6 +47,21 @@ pub fn definition_at(source: &str, offset: usize) -> Option<NavigationTarget> {
                 span: add_base(*span, base),
                 path: None,
             });
+    }
+
+    // Use SemanticCursor symbols for declarations and components
+    if let Some(declaration) = cursor.symbols.declarations.get(word) {
+        return Some(NavigationTarget {
+            span: add_base(declaration.span, base),
+            path: None,
+        });
+    }
+
+    if let Some(component) = cursor.symbols.components.get(word) {
+        return Some(NavigationTarget {
+            span: add_base(component.span, base),
+            path: None,
+        });
     }
 
     None
