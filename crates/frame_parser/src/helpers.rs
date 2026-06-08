@@ -2,25 +2,31 @@ use crate::Line;
 use frame_core::{DataRef, DeclarationKind, Identifier, Span, StateDefault};
 
 pub fn declaration_kind(kind: &str) -> DeclarationKind {
-    match kind {
-        "grid" => DeclarationKind::Grid,
-        "area" => DeclarationKind::Area,
-        "card" => DeclarationKind::Card,
-        "stack" => DeclarationKind::Stack,
-        "row" => DeclarationKind::Row,
-        "button" => DeclarationKind::Button,
-        "text" => DeclarationKind::Text,
-        "tokens" => DeclarationKind::Tokens,
-        "center" => DeclarationKind::Center,
-        "split" => DeclarationKind::Split,
-        "overlay" => DeclarationKind::Overlay,
-        "dock" => DeclarationKind::Dock,
-        "keyframes" => DeclarationKind::Keyframes,
-        "supports" => DeclarationKind::Supports,
-        "style-group" => DeclarationKind::StyleGroup,
-        "style-order" => DeclarationKind::StyleOrder,
-        other => DeclarationKind::Unknown(other.to_string()),
-    }
+    frame_core::language::item(kind)
+        .filter(|i| {
+            i.kind == frame_core::language::LanguageItemKind::Declaration
+                || i.kind == frame_core::language::LanguageItemKind::Primitive
+        })
+        .map(|_| match kind {
+            "grid" => DeclarationKind::Grid,
+            "area" => DeclarationKind::Area,
+            "card" => DeclarationKind::Card,
+            "stack" => DeclarationKind::Stack,
+            "row" => DeclarationKind::Row,
+            "button" => DeclarationKind::Button,
+            "text" => DeclarationKind::Text,
+            "tokens" => DeclarationKind::Tokens,
+            "center" => DeclarationKind::Center,
+            "split" => DeclarationKind::Split,
+            "overlay" => DeclarationKind::Overlay,
+            "dock" => DeclarationKind::Dock,
+            "keyframes" => DeclarationKind::Keyframes,
+            "supports" => DeclarationKind::Supports,
+            "style-group" => DeclarationKind::StyleGroup,
+            "style-order" => DeclarationKind::StyleOrder,
+            other => DeclarationKind::Unknown(other.to_string()),
+        })
+        .unwrap_or_else(|| DeclarationKind::Unknown(kind.to_string()))
 }
 
 pub fn is_declaration_keyword(kind: &str) -> bool {
@@ -28,30 +34,23 @@ pub fn is_declaration_keyword(kind: &str) -> bool {
 }
 
 pub fn is_allowed_nested_block(name: &str) -> bool {
-    matches!(
-        name,
-        "hover"
-            | "focus"
-            | "focus-visible"
-            | "focus-within"
-            | "active"
-            | "disabled"
-            | "checked"
-            | "selected"
-            | "invalid"
-            | "required"
-            | "target"
-            | "advanced"
-    ) || name == "gradient"
-        || name.starts_with("gradient ")
-        || name.starts_with("section ")
-        || name.starts_with("animation ")
-        || matches!(name, "from" | "to")
-        || is_percentage_selector(name)
-        || name.starts_with("below ")
-        || name.starts_with("above ")
-        || name.starts_with("between ")
-        || name.starts_with("container ")
+    if frame_core::language::state_keywords().contains(&name) {
+        return true;
+    }
+
+    if matches!(name, "selected" | "advanced" | "from" | "to") {
+        return frame_core::language::item(name).is_some();
+    }
+
+    let first = name.split_whitespace().next().unwrap_or(name);
+    if matches!(
+        first,
+        "gradient" | "section" | "animation" | "below" | "above" | "between" | "container"
+    ) {
+        return frame_core::language::item(first).is_some();
+    }
+
+    is_percentage_selector(name)
 }
 
 pub fn is_percentage_selector(name: &str) -> bool {
@@ -60,47 +59,7 @@ pub fn is_percentage_selector(name: &str) -> bool {
 }
 
 pub fn is_semantic_ui_primitive(kind: &str) -> bool {
-    matches!(
-        kind,
-        "screen"
-            | "panel"
-            | "section"
-            | "stack"
-            | "row"
-            | "grid"
-            | "split"
-            | "dock"
-            | "overlay"
-            | "scroll"
-            | "action"
-            | "link"
-            | "menu"
-            | "toolbar"
-            | "tabs"
-            | "field"
-            | "input"
-            | "editor"
-            | "toggle"
-            | "choice"
-            | "select"
-            | "composer"
-            | "title"
-            | "text"
-            | "label"
-            | "badge"
-            | "avatar"
-            | "icon"
-            | "image"
-            | "media"
-            | "list"
-            | "feed"
-            | "data"
-            | "item"
-            | "empty"
-            | "card"
-            | "dialog"
-            | "popover"
-    )
+    frame_core::language::is_ui_primitive(kind)
 }
 
 pub fn default_ui_node_name(kind: &str) -> &str {

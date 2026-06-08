@@ -6406,11 +6406,15 @@ pub fn event_keywords() -> &'static [&'static str] {
 pub fn event_modifiers() -> &'static [&'static str] {
     static CACHE: OnceLock<&'static [&'static str]> = OnceLock::new();
     CACHE.get_or_init(|| {
-        let names: Vec<&str> = REGISTRY
+        let mut names: Vec<&str> = REGISTRY
             .iter()
             .filter(|i| i.kind == LanguageItemKind::EventModifier)
             .map(|i| i.name)
             .collect();
+        // "shift" is also a valid event modifier (e.g. `keydown.shift.enter`)
+        // even though its primary registry classification is Effect.
+        names.push("shift");
+        names.sort();
         Box::leak(names.into_boxed_slice())
     })
 }

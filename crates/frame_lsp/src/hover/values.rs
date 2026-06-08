@@ -1,4 +1,3 @@
-use super::docs::*;
 use frame_core::{language, symbols::SymbolIndex};
 
 pub fn contextual_value_doc(
@@ -46,7 +45,7 @@ pub fn contextual_value_doc(
         "shadow" if language::SHADOWS.contains(&word) => Some(format!(
             "## `{word}`\n\nShadow depth token.\n\nGenerated CSS uses `box-shadow: var(--frame-shadow-{word})`."
         )),
-        "surface" if word == "gradient" => Some(SURFACE_GRADIENT_DOC.to_string()),
+        "surface" if word == "gradient" => language::hover_doc_for("gradient"),
         "surface" | "background" if is_color_or_surface(word, symbols) => Some(format!(
             "## `{word}`\n\nVisual value for `{property}`.\n\nFrame treats this as design intent and emits the matching surface, color, or custom token variable."
         )),
