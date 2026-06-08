@@ -995,7 +995,10 @@ pub(crate) fn validate_size_value(statement: &Statement, diagnostics: &mut Vec<D
 
 pub(crate) fn validate_grid_columns(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
     if statement.words.len() <= 1 {
-        diagnostics.push(Diagnostic::error("columns expects values", statement.span));
+        diagnostics.push(Diagnostic::error(
+            "`columns` expects one or more column values.\n\nUse named sections like `columns sidebar content` or percentages like `columns 25% 50% 25%`.",
+            statement.span,
+        ));
         return;
     }
 

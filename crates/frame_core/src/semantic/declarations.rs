@@ -374,7 +374,7 @@ pub(crate) fn validate_token_statement(
 
     if statement.words.len() < 3 {
         diagnostics.push(Diagnostic::error(
-            "color token expects `color name #hex`",
+            "Color token definition is incomplete.\n\nUse the form `color name #hex` where `#hex` is a valid hex color like `#fff`, `#ffffff`, or `#ffffffff`.",
             statement.span,
         ));
         return;

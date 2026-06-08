@@ -247,10 +247,11 @@ fn diagnostics_for_frame_source(source: &str) -> Vec<FrameDiagnostic> {
             let line_end = offset + line.len();
             let trimmed = line.trim_start();
             if !trimmed.is_empty() && !trimmed.starts_with('#') && !trimmed.starts_with("//") {
-                if let Some(first_word) = trimmed.split_whitespace().next() {
-                    let word_offset = offset + line.find(first_word).unwrap_or(0);
-                    let word_end = word_offset + first_word.len();
-                    let check_offset = word_offset + (word_end - word_offset) / 2;
+                // Check every token on the line, not just the first word.
+                // This catches issues in `value bind $draft`, `for msg in $messages`, etc.
+                let mut token_start = offset + (line.len() - trimmed.len());
+                for token in trimmed.split_whitespace() {
+                    let check_offset = token_start + token.len() / 2;
                     for d in cursor_diagnostics(source, check_offset) {
                         let overlaps = diagnostics
                             .iter()
@@ -259,6 +260,7 @@ fn diagnostics_for_frame_source(source: &str) -> Vec<FrameDiagnostic> {
                             diagnostics.push(d);
                         }
                     }
+                    token_start += token.len() + 1; // +1 for the whitespace separator
                 }
             }
             offset = line_end + 1;
@@ -683,5 +685,33 @@ mod tests {
             .filter(|d| d.message.contains("Unknown UI primitive"))
             .count();
         assert_eq!(primitive_errors, 1);
+    }
+
+    #[test]
+    fn cursor_diagnoses_non_first_word_tokens() {
+        // The semantic validator catches $missing, and cursor diagnostics should also
+        // detect it (even though it is deduplicated in the final list).
+        let source = "component ChatApp {\n  view {\n    input MessageInput {\n      value bind $missing\n    }\n  }\n}\n";
+        let offset = source.find("$missing").unwrap() + 4;
+        let cursor_d = cursor_diagnostics(source, offset);
+        assert!(
+            cursor_d
+                .iter()
+                .any(|d| d.message.contains("Unknown state/prop")),
+            "cursor_diagnostics at $missing should report unknown state: got {:?}",
+            cursor_d
+        );
+
+        // The semantic validator already produces a diagnostic for $missing,
+        // so the combined list should contain at least one unknown-reference error.
+        let diagnostics = diagnostics_for_source(source);
+        let unknown_state_errors = diagnostics
+            .iter()
+            .filter(|d| d.message.contains("Unknown") && d.message.contains("$missing"))
+            .count();
+        assert_eq!(
+            unknown_state_errors, 1,
+            "expected one unknown state diagnostic for $missing"
+        );
     }
 }
