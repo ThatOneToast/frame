@@ -742,6 +742,11 @@
     }
   },
   {
+    "type": "special_block_keyword",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "state_block",
     "named": true,
     "fields": {
@@ -1353,6 +1358,10 @@
   },
   {
     "type": "active",
+    "named": false
+  },
+  {
+    "type": "advanced",
     "named": false
   },
   {
@@ -2151,10 +2160,6 @@
   {
     "type": "span",
     "named": false
-  },
-  {
-    "type": "special_block_keyword",
-    "named": true
   },
   {
     "type": "split",

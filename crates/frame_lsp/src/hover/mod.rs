@@ -1,5 +1,5 @@
 use docs::*;
-use frame_core::{knowledge, symbols::SymbolIndex};
+use frame_core::{language, symbols::SymbolIndex};
 use helpers::line_at;
 use values::contextual_value_doc;
 
@@ -106,7 +106,11 @@ pub fn hover_doc(word: &str) -> Option<String> {
         return Some(doc.to_string());
     }
 
-    if let Some(doc) = knowledge::completion_doc(word) {
+    if let Some(doc) = language::completion_doc(word) {
+        return Some(doc);
+    }
+
+    if let Some(doc) = language::hover_doc_for(word) {
         return Some(doc);
     }
 

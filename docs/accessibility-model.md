@@ -2,6 +2,8 @@
 
 Frame should make common UI accessible by default. Authors should not need to know ARIA attributes, DOM roles, or ID wiring for ordinary controls, navigation, dialogs, tabs, forms, lists, and data displays.
 
+The canonical language registry in `crates/frame_core/src/language.rs` defines every primitive and property. LSP completions, hover docs, and diagnostics consume the registry to teach accessible defaults.
+
 ARIA and roles are not part of Phase 1 author-facing UI syntax. Renderers may generate ARIA and roles internally from Frame semantics.
 
 ## Principles

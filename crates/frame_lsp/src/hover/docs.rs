@@ -1,7 +1,9 @@
-use frame_core::knowledge;
+use frame_core::language;
 
 pub fn doc_for(name: &str, fallback: &str) -> String {
-    knowledge::completion_doc(name).unwrap_or_else(|| fallback.to_string())
+    language::completion_doc(name)
+        .or_else(|| language::hover_doc_for(name))
+        .unwrap_or_else(|| fallback.to_string())
 }
 
 pub const SURFACE_PANEL_DOC: &str = r#"surface panel

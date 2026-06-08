@@ -1,4 +1,4 @@
-use frame_core::{knowledge, tokens};
+use frame_core::language;
 use tower_lsp::lsp_types::{SemanticToken, SemanticTokens};
 
 // Token type indices matching the SemanticTokensLegend in backend.rs:
@@ -50,7 +50,7 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
             }
         } else if first == "props" || first == "state" || first == "view" || first == "slot" {
             push_word(line, line_index, first, TOKEN_KEYWORD, &mut raw);
-        } else if is_semantic_ui_primitive(first)
+        } else if language::is_ui_primitive(first)
             && words.get(1).is_some_and(|word| word.ends_with('{'))
         {
             push_word(line, line_index, first, TOKEN_KEYWORD, &mut raw);
@@ -128,7 +128,7 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
             if let Some(key) = words.get(5) {
                 push_word(line, line_index, key, TOKEN_VARIABLE, &mut raw);
             }
-        } else if is_semantic_ui_primitive(first) && words.get(1).is_some() {
+        } else if language::is_ui_primitive(first) && words.get(1).is_some() {
             // Shorthand UI element without a block: e.g. "action Send"
             push_word(line, line_index, first, TOKEN_KEYWORD, &mut raw);
             if let Some(name) = words.get(1) {
@@ -219,7 +219,7 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                     &mut raw,
                 );
             }
-        } else if knowledge::declaration_keywords().contains(&first) {
+        } else if language::declaration_keywords().contains(&first) {
             push_word(line, line_index, first, TOKEN_KEYWORD, &mut raw);
             if let Some(name) = words.get(1) {
                 push_word(
@@ -269,7 +269,7 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                     &mut raw,
                 );
             }
-        } else if knowledge::property_keywords().contains(&first) {
+        } else if language::property_keywords().contains(&first) {
             push_word(line, line_index, first, TOKEN_PROPERTY, &mut raw);
             for value in words.iter().skip(1) {
                 let value = value.trim_end_matches('{');
@@ -285,7 +285,7 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                     };
                 push_word(line, line_index, value, token_type, &mut raw);
             }
-        } else if tokens::EFFECTS.contains(&first) {
+        } else if language::effect_keywords().contains(&first) {
             push_word(line, line_index, first, TOKEN_PROPERTY, &mut raw);
             for value in words.iter().skip(1) {
                 push_word(line, line_index, value, TOKEN_ENUM_MEMBER, &mut raw);
@@ -333,86 +333,8 @@ fn looks_like_component_invocation(content: &str) -> bool {
             .is_some_and(|character| character.is_ascii_uppercase())
 }
 
-fn is_semantic_ui_primitive(kind: &str) -> bool {
-    matches!(
-        kind,
-        "screen"
-            | "panel"
-            | "section"
-            | "stack"
-            | "row"
-            | "grid"
-            | "split"
-            | "dock"
-            | "overlay"
-            | "scroll"
-            | "action"
-            | "link"
-            | "menu"
-            | "toolbar"
-            | "tabs"
-            | "field"
-            | "input"
-            | "editor"
-            | "toggle"
-            | "choice"
-            | "select"
-            | "composer"
-            | "title"
-            | "text"
-            | "label"
-            | "badge"
-            | "avatar"
-            | "icon"
-            | "image"
-            | "media"
-            | "list"
-            | "feed"
-            | "data"
-            | "item"
-            | "empty"
-            | "card"
-            | "dialog"
-            | "popover"
-    )
-}
-
 fn is_known_value(value: &str) -> bool {
-    tokens::COLORS.contains(&value)
-        || tokens::SURFACES.contains(&value)
-        || tokens::SPACING.contains(&value)
-        || tokens::MOVEMENT_AMOUNTS.contains(&value)
-        || tokens::VISUAL_AMOUNTS.contains(&value)
-        || tokens::RADII.contains(&value)
-        || tokens::SHADOWS.contains(&value)
-        || tokens::ALIGN.contains(&value)
-        || tokens::JUSTIFY.contains(&value)
-        || tokens::POSITIONS.contains(&value)
-        || tokens::ANCHORS.contains(&value)
-        || tokens::EDGES.contains(&value)
-        || tokens::GRADIENT_TYPES.contains(&value)
-        || tokens::GRADIENT_CORNERS.contains(&value)
-        || tokens::TRANSITIONS.contains(&value)
-        || tokens::DURATIONS.contains(&value)
-        || tokens::EASES.contains(&value)
-        || tokens::ANIMATIONS.contains(&value)
-        || tokens::BREAKPOINTS.contains(&value)
-        || tokens::CONTAINERS.contains(&value)
-        || tokens::ANIMATION_FILLS.contains(&value)
-        || tokens::ANIMATION_DIRECTIONS.contains(&value)
-        || tokens::ANIMATION_PLAY_STATES.contains(&value)
-        || tokens::BORDER_STYLES.contains(&value)
-        || tokens::Z_LAYERS.contains(&value)
-        || tokens::DISPLAY.contains(&value)
-        || tokens::VISIBILITY.contains(&value)
-        || tokens::FLEX_DIRECTIONS.contains(&value)
-        || tokens::FLEX_WRAPS.contains(&value)
-        || tokens::TEXT_CASES.contains(&value)
-        || tokens::TEXT_ALIGN.contains(&value)
-        || tokens::TEXT_DECORATIONS.contains(&value)
-        || tokens::WHITE_SPACE.contains(&value)
-        || tokens::WORD_BREAKS.contains(&value)
-        || tokens::HYPHENS.contains(&value)
+    language::is_known_value(value)
         || matches!(
             value,
             "direction"
@@ -433,7 +355,7 @@ fn is_known_value(value: &str) -> bool {
                 | "has"
                 | "subgrid"
         )
-        || tokens::BORDER_LINE_STYLES.contains(&value)
+        || language::BORDER_LINE_STYLES.contains(&value)
         || is_tuned_amount(value)
 }
 
@@ -441,7 +363,7 @@ fn is_tuned_amount(value: &str) -> bool {
     let Some((amount, percent)) = value.split_once('%') else {
         return false;
     };
-    (tokens::MOVEMENT_AMOUNTS.contains(&amount) || tokens::VISUAL_AMOUNTS.contains(&amount))
+    (language::MOVEMENT_AMOUNTS.contains(&amount) || language::VISUAL_AMOUNTS.contains(&amount))
         && !percent.is_empty()
         && percent.chars().all(|character| character.is_ascii_digit())
 }
@@ -630,6 +552,44 @@ mod tests {
             .data
             .iter()
             .any(|token| token.token_type == TOKEN_PROPERTY)); // "style"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_ENUM_MEMBER && token.length == 13)); // "LoadingButton"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_KEYWORD && token.length == 4)); // "when"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_VARIABLE && token.length == 8));
+        // "$sending"
+    }
+
+    #[test]
+    fn emits_tokens_for_conditional_style_alternate_form() {
+        let tokens = semantic_tokens(
+            "component ChatInput {\n  view {\n    action Send {\n      style when $sending = LoadingButton\n    }\n  }\n}\n",
+        );
+
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_PROPERTY && token.length == 5)); // "style"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_KEYWORD && token.length == 4)); // "when"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_VARIABLE && token.length == 8)); // "$sending"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_ENUM_MEMBER && token.length == 13));
+        // "LoadingButton"
     }
 
     #[test]

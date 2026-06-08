@@ -279,6 +279,8 @@ Deliverables:
 - [x] `docs/semantic-lowering.md`.
 - [x] Primitive-specific property validation with teacher-like diagnostics.
 - [x] Generated IR golden fixtures and cross-language structural tests.
+- [x] Canonical language registry in `crates/frame_core/src/language.rs` as the single source of truth for all language concepts.
+- [x] LSP, parser, semantic model, and Zed extension consuming the canonical registry.
 - [ ] Update `TODO-DOM.md` after any DOM coverage changes are implemented.
 - [ ] Update `TODO-CSS.md` after any styling coverage changes are implemented.
 

@@ -1,5 +1,5 @@
 use super::docs::*;
-use frame_core::{symbols::SymbolIndex, tokens};
+use frame_core::{language, symbols::SymbolIndex};
 
 pub fn contextual_value_doc(
     word: &str,
@@ -28,22 +28,22 @@ pub fn contextual_value_doc(
         "in" => Some(format!(
             "## `{word}`\n\nParent grid reference.\n\nThis area belongs to `grid {word}`. Go-to-definition can jump to that grid when it is in this file or an included Frame file."
         )),
-        "padding" | "margin" | "gap" if tokens::SPACING.contains(&word) => Some(format!(
+        "padding" | "margin" | "gap" if language::SPACING.contains(&word) => Some(format!(
             "## `{word}`\n\nSpacing token.\n\nUsed by `{property}` to keep layout spacing consistent.\n\nGenerated CSS uses `var(--frame-space-{word})`."
         )),
-        "display" if tokens::DISPLAY.contains(&word) => Some(format!(
+        "display" if language::DISPLAY.contains(&word) => Some(format!(
             "## `{word}`\n\nDisplay value.\n\nGenerated CSS writes `display: {word};`."
         )),
-        "visibility" if tokens::VISIBILITY.contains(&word) => Some(format!(
+        "visibility" if language::VISIBILITY.contains(&word) => Some(format!(
             "## `{word}`\n\nVisibility value.\n\nGenerated CSS writes `visibility: {word};`."
         )),
         "flex" => Some(format!(
             "## `{word}`\n\nFlex option or value.\n\nFrame keeps flex controls structured as `flex direction ...`, `flex wrap ...`, `flex grow ...`, `flex shrink ...`, and `flex basis ...`."
         )),
-        "radius" if tokens::RADII.contains(&word) => Some(format!(
+        "radius" if language::RADII.contains(&word) => Some(format!(
             "## `{word}`\n\nRadius token.\n\nGenerated CSS uses `border-radius: var(--frame-radius-{word})`."
         )),
-        "shadow" if tokens::SHADOWS.contains(&word) => Some(format!(
+        "shadow" if language::SHADOWS.contains(&word) => Some(format!(
             "## `{word}`\n\nShadow depth token.\n\nGenerated CSS uses `box-shadow: var(--frame-shadow-{word})`."
         )),
         "surface" if word == "gradient" => Some(SURFACE_GRADIENT_DOC.to_string()),
@@ -55,37 +55,37 @@ pub fn contextual_value_doc(
                 "## `{word}`\n\nColor intent.\n\nUsed by `{property}` to reference a built-in semantic color or custom color token.\n\nGenerated CSS uses `var(--frame-color-{word})` where applicable."
             ))
         }
-        "align" if tokens::ALIGN.contains(&word) => Some(format!(
+        "align" if language::ALIGN.contains(&word) => Some(format!(
             "## `{word}`\n\nAlignment value.\n\nGenerated CSS maps Frame alignment intent to `align-items`."
         )),
-        "justify" if tokens::JUSTIFY.contains(&word) => Some(format!(
+        "justify" if language::JUSTIFY.contains(&word) => Some(format!(
             "## `{word}`\n\nJustification value.\n\nGenerated CSS maps Frame justification intent to `justify-content`."
         )),
-        "case" if tokens::TEXT_CASES.contains(&word) => Some(format!(
+        "case" if language::TEXT_CASES.contains(&word) => Some(format!(
             "## `{word}`\n\nText transform value.\n\nGenerated CSS maps this to `text-transform`."
         )),
-        "align-text" if tokens::TEXT_ALIGN.contains(&word) => Some(format!(
+        "align-text" if language::TEXT_ALIGN.contains(&word) => Some(format!(
             "## `{word}`\n\nText alignment value.\n\nGenerated CSS writes `text-align: {word};`."
         )),
-        "decoration" if tokens::TEXT_DECORATIONS.contains(&word) => Some(format!(
+        "decoration" if language::TEXT_DECORATIONS.contains(&word) => Some(format!(
             "## `{word}`\n\nText decoration value.\n\nGenerated CSS writes `text-decoration-line: {word};`."
         )),
-        "whitespace" if tokens::WHITE_SPACE.contains(&word) => Some(format!(
+        "whitespace" if language::WHITE_SPACE.contains(&word) => Some(format!(
             "## `{word}`\n\nWhite-space value.\n\nGenerated CSS writes `white-space: {word};`."
         )),
-        "word-break" if tokens::WORD_BREAKS.contains(&word) => Some(format!(
+        "word-break" if language::WORD_BREAKS.contains(&word) => Some(format!(
             "## `{word}`\n\nWord-break value.\n\nGenerated CSS writes `word-break: {word};`."
         )),
-        "hyphenate" if tokens::HYPHENS.contains(&word) => Some(format!(
+        "hyphenate" if language::HYPHENS.contains(&word) => Some(format!(
             "## `{word}`\n\nHyphenation value.\n\nGenerated CSS writes `hyphens: {word};`."
         )),
-        "below" | "above" if tokens::BREAKPOINTS.contains(&word) => Some(format!(
+        "below" | "above" if language::BREAKPOINTS.contains(&word) => Some(format!(
             "## `{word}`\n\nResponsive breakpoint.\n\nUsed by `{property}` to generate a media query for viewport-aware layout changes."
         )),
-        "between" if tokens::BREAKPOINTS.contains(&word) => Some(format!(
+        "between" if language::BREAKPOINTS.contains(&word) => Some(format!(
             "## `{word}`\n\nResponsive breakpoint boundary.\n\n`between` uses two breakpoint values to generate a bounded media query."
         )),
-        "container" if tokens::CONTAINERS.contains(&word) => Some(format!(
+        "container" if language::CONTAINERS.contains(&word) => Some(format!(
             "## `{word}`\n\nContainer size.\n\nUsed by `container {word}` to generate a container query for component-local responsive behavior."
         )),
         "animation" | "animate" => Some(format!(
@@ -94,19 +94,19 @@ pub fn contextual_value_doc(
         "duration" | "delay" => Some(format!(
             "## `{word}`\n\nAnimation timing value.\n\n`{property}` controls when motion happens. Named values and explicit CSS time values such as `240ms` are valid."
         )),
-        "ease" if tokens::EASES.contains(&word) => Some(format!(
+        "ease" if language::EASES.contains(&word) => Some(format!(
             "## `{word}`\n\nEasing value.\n\nControls the feel of transition or animation timing."
         )),
         "iteration" => Some(format!(
             "## `{word}`\n\nAnimation iteration count.\n\nUse a number for finite loops or `infinite` for continuous motion."
         )),
-        "direction" if tokens::ANIMATION_DIRECTIONS.contains(&word) => Some(format!(
+        "direction" if language::ANIMATION_DIRECTIONS.contains(&word) => Some(format!(
             "## `{word}`\n\nAnimation direction.\n\nControls whether keyframes play forward, reverse, or alternate on repeats."
         )),
-        "fill" if tokens::ANIMATION_FILLS.contains(&word) => Some(format!(
+        "fill" if language::ANIMATION_FILLS.contains(&word) => Some(format!(
             "## `{word}`\n\nAnimation fill mode.\n\nControls whether animation styles apply before or after playback."
         )),
-        "play-state" if tokens::ANIMATION_PLAY_STATES.contains(&word) => Some(format!(
+        "play-state" if language::ANIMATION_PLAY_STATES.contains(&word) => Some(format!(
             "## `{word}`\n\nAnimation play state.\n\nControls whether this animation is currently running or paused."
         )),
         "opacity" => Some(format!(
@@ -123,14 +123,14 @@ pub fn contextual_value_doc(
 }
 
 pub fn is_color_or_surface(word: &str, symbols: Option<&SymbolIndex>) -> bool {
-    tokens::SURFACES.contains(&word)
-        || tokens::COLORS.contains(&word)
+    language::SURFACES.contains(&word)
+        || language::COLORS.contains(&word)
         || symbols.is_some_and(|symbols| {
             symbols.colors.contains_key(word) || symbols.gradients.contains_key(word)
         })
 }
 
 pub fn is_color_or_custom(word: &str, symbols: Option<&SymbolIndex>) -> bool {
-    tokens::COLORS.contains(&word)
+    language::COLORS.contains(&word)
         || symbols.is_some_and(|symbols| symbols.colors.contains_key(word))
 }

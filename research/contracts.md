@@ -25,8 +25,8 @@ Possible generated files:
 Frame syntax:
 
 ```frame
-button Send {
-  on click @sendMessage
+action Send {
+  on press @sendMessage
 }
 ```
 

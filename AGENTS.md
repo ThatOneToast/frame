@@ -95,16 +95,16 @@ This existing work should be preserved while the new UI/IR/runtime system is int
 Named UI node with automatic style lookup:
 
 ```frame
-button Send {
+action Send {
   text "Send"
-  on click @sendMessage
+  on press @sendMessage
 }
 ```
 
 Explicit style binding:
 
 ```frame
-button Send:PrimaryButton {
+action Send:PrimaryButton {
   text "Send"
 }
 ```
@@ -112,7 +112,7 @@ button Send:PrimaryButton {
 State-driven style switching:
 
 ```frame
-button Send:PrimaryButton {
+action Send:PrimaryButton {
   text "Send"
   disabled when $sending
   style when $sending = LoadingButton
@@ -135,6 +135,7 @@ Do not introduce inline scripting syntax.
 
 ## Implementation Rules
 
+- `crates/frame_core/src/language.rs` is the canonical registry and single source of truth for all Frame language concepts. Update the registry before adding parser grammar, LSP behavior, or documentation for new concepts.
 - Prefer small modules with clear responsibility.
 - Add tests for every parser, semantic, codegen, and runtime feature.
 - Keep generated output deterministic.

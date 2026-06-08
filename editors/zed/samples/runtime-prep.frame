@@ -22,7 +22,7 @@ component ChatApp {
   slot Footer {
     action Send {
       text "Send"
-      on press @send
+      on click @send
     }
   }
 
@@ -53,7 +53,7 @@ component ChatApp {
         action SendButton {
           disabled when $sending
           text "Send"
-          on press @send
+      on click @send
         }
       }
 

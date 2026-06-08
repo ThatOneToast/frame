@@ -197,7 +197,7 @@ component ChatInput {
         action Send:PrimaryButton {
           text "Send"
           disabled when $sending
-          on press @sendMessage
+          on click @sendMessage
           style LoadingButton when $sending
         }
 
@@ -252,14 +252,14 @@ component ChatInput {
         // Tabs
         tabs SettingsTabs {
           action General {
-            on press @openGeneral
+            on click @openGeneral
           }
         }
 
         // Toolbar
         toolbar EditorTools {
           action Save {
-            on press @save
+            on click @save
           }
         }
 
@@ -292,6 +292,48 @@ component ChatInput {
       empty NoMessages {
         text "No messages yet"
       }
+
+      // Additional primitives and events
+      button SubmitBtn {
+        text "Submit"
+        on click.prevent @submit
+        on keyup.escape @cancel
+        on mouseenter @hover
+        on pointerdown @press
+        on change @update
+        on reset @clear
+        on submit @send
+        on open @open
+        on close @close
+        on pointermove @move
+        on pointerup @up
+        on mouseleave @leave
+      }
+
+      select CountrySelect {
+        surface panel
+        color bright
+      }
+
+      choice ColorChoice {
+        surface flat
+        border accent
+      }
+
+      feed ActivityFeed {
+        surface panel
+        overflow auto
+      }
+
+      data UserData {
+        surface panel
+        color muted
+      }
+
+      editor NoteEditor {
+        surface panel
+        border soft
+      }
     }
 
     // Component invocations with arguments
@@ -303,4 +345,101 @@ component ChatInput {
   slot Default {
     text "Fallback content"
   }
+}
+
+// Additional declarations and coverage for missing registry items
+area MainArea {
+  surface panel
+  padding medium
+}
+
+center ModalCenter {
+  surface glass
+}
+
+overlay ModalOverlay {
+  surface overlay
+  opacity strong
+}
+
+row DataRow {
+  surface flat
+  gap small
+}
+
+split SidebarSplit {
+  side panel
+  main content
+}
+
+section InfoSection {
+  surface inset
+  padding large
+}
+
+select CountrySelect {
+  surface panel
+  color bright
+}
+
+choice ColorChoice {
+  surface flat
+  border accent
+}
+
+feed ActivityFeed {
+  surface panel
+  overflow auto
+}
+
+data UserData {
+  surface panel
+  color muted
+}
+
+editor NoteEditor {
+  surface panel
+  border soft
+}
+
+card EffectCard {
+  blur slight
+  sink small
+  brighten subtle
+  dim normal
+  fade fast
+  pop medium
+  scale slight
+  rotate small
+  slide right
+  smooth fast
+  transition smooth
+  animate pulse
+  animation Bounce {
+    duration 300ms
+    ease bounce
+  }
+
+  focus {
+    ring accent
+  }
+
+  focus-visible {
+    outline accent
+  }
+
+  required {
+    border danger
+  }
+
+  target {
+    shadow deep
+  }
+}
+
+card AdvancedCard {
+  advanced {
+    css "background: red"
+  }
+  surface panel
 }

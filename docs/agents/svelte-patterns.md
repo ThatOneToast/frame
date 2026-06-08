@@ -252,7 +252,7 @@ card QuickLinkCard {
     text muted
   }
 
-  button PrimaryButton {
+  card PrimaryButton {
     surface raised
     padding medium
     radius pill

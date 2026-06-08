@@ -2,6 +2,8 @@
 
 Frame diagnostics are meant to teach the language while pointing to the failing span.
 
+The canonical language registry in `crates/frame_core/src/language.rs` is the single source of truth for known keywords, primitives, properties, values, events, and modifiers. Parser and semantic diagnostics validate against this registry so the CLI and LSP share the same messages.
+
 Examples:
 
 ```frame

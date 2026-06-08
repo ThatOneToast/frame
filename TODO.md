@@ -54,6 +54,9 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Add migration diagnostics and initial code actions for common HTML-like syntax.
 - [x] Update examples to prefer semantic primitives after implementation exists.
 - [x] Add `docs/semantic-lowering.md`.
+- [x] Create canonical language registry in `crates/frame_core/src/language.rs` as the single source of truth for all language concepts.
+- [x] Update LSP, Zed extension, parser, and semantic model to consume the canonical registry.
+- [ ] Update docs and samples to reflect the registry as the source of truth and reinforce UI-native syntax direction.
 
 ## Phase 2 — Parser Upgrade Plan
 

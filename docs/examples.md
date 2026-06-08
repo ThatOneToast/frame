@@ -1,5 +1,7 @@
 # Examples
 
+The canonical language registry in `crates/frame_core/src/language.rs` defines every concept used in these examples. LSP completions, hover docs, and diagnostics all consume the registry.
+
 ## Dashboard With Sidebar And Inspector
 
 ```svelte

@@ -46,12 +46,12 @@ card BrandCard {
 ## Outline
 
 ```frame
-button PrimaryAction {
+card PrimaryAction {
   outline accent
   outline offset small
 }
 
-button FlatAction {
+card FlatAction {
   outline none
 }
 ```

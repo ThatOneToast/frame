@@ -2,6 +2,8 @@
 
 Frame layout should describe spatial intent without requiring authors to choose flexbox or CSS grid terminology first.
 
+The canonical language registry in `crates/frame_core/src/language.rs` defines all layout primitives, properties, and values. Parser, LSP, completions, hover, and diagnostics consume this registry.
+
 The styling compiler may still emit CSS grid, flexbox, positioning, and overflow. The language surface should prefer layout primitives that can map to DOM, WebView, or future native renderers.
 
 ## Principles

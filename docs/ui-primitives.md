@@ -2,6 +2,8 @@
 
 Frame UI primitives describe interface intent before renderer mechanics. Each primitive should lower to Frame IR with a semantic kind, name, style binding, accessibility metadata, state dependencies, and event contracts.
 
+The canonical language registry in `crates/frame_core/src/language.rs` is the single source of truth for all primitives, properties, values, and events. LSP completions, hover docs, semantic tokens, and diagnostics all consume the registry.
+
 The DOM mappings below are defaults. Custom renderers may provide native widgets or different DOM structures as long as they preserve the primitive contract.
 
 ## Primitive Catalog

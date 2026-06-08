@@ -39,6 +39,21 @@ display grid
 border-radius 12px
 ```
 
+Inside `view` blocks, use UI primitives instead of browser tags:
+
+```frame
+action Save { on press @save }
+input Email { label "Email" }
+editor Message { label "Message" }
+```
+
+Avoid browser tags in `view`:
+
+```frame
+button Save { on click @save }      // not valid in view
+input type="email"                 // not valid in view
+```
+
 ## Setup Commands
 
 Inside an existing Svelte or SvelteKit project:

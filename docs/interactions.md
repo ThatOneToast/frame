@@ -38,7 +38,7 @@ Generated CSS emits state selectors for the generated class while keeping the Fr
 Examples:
 
 ```frame
-button PrimaryAction {
+card PrimaryAction {
   focus-visible {
     ring accent
   }
@@ -58,13 +58,13 @@ card FormRow {
   }
 }
 
-button Option {
+card Option {
   checked {
     glow accent
   }
 }
 
-button Submit {
+card Submit {
   invalid {
     ring danger
   }

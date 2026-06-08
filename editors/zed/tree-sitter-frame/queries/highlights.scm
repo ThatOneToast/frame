@@ -1,3 +1,5 @@
+; Highlight queries aligned with editors/zed/tree-sitter-frame/grammar.js.
+; When grammar nodes change, keep both highlights.scm files in sync.
 ; Top-level declaration headers.
 (declaration
   kind: (declaration_keyword) @keyword

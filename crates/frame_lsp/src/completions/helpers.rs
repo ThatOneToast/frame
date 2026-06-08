@@ -93,6 +93,15 @@ pub(crate) fn line_at(source: &str, offset: usize) -> &str {
 }
 
 pub(crate) fn completion_documentation(label: &str) -> Option<String> {
+    if let Some(doc) = frame_core::language::hover_doc_for(label) {
+        if !doc.is_empty() {
+            return Some(doc);
+        }
+    }
+    custom_completion_documentation(label)
+}
+
+fn custom_completion_documentation(label: &str) -> Option<String> {
     Some(match label {
         "tokens" => "Declares reusable design tokens for a Frame file.",
         "grid" => "Defines a layout container. Use `columns`, `rows`, `gap`, and child `area` declarations.",
@@ -270,7 +279,33 @@ pub(crate) fn category_for_detail(detail: &str) -> CompletionCategory {
     }
 }
 
+pub(crate) fn layer_sort_prefix(
+    layer: Option<frame_core::language::LanguageLayer>,
+) -> &'static str {
+    match layer {
+        Some(frame_core::language::LanguageLayer::Ui) => "0",
+        Some(frame_core::language::LanguageLayer::Advanced)
+        | Some(frame_core::language::LanguageLayer::EscapeHatch) => "2",
+        _ => "1",
+    }
+}
+
 pub(crate) fn property_category(label: &str) -> CompletionCategory {
+    if let Some(item) = frame_core::language::item(label) {
+        // Use the registry category when it is meaningful for completions.
+        if !matches!(
+            item.completion_category,
+            CompletionCategory::Snippet
+                | CompletionCategory::Value
+                | CompletionCategory::ProjectSymbol
+                | CompletionCategory::GridReference
+                | CompletionCategory::GridSection
+                | CompletionCategory::KeyframeSelector
+                | CompletionCategory::AnimationOption
+        ) {
+            return item.completion_category;
+        }
+    }
     match label {
         "columns" | "rows" | "tracks" | "areas" | "flow" | "section" | "layout" | "display"
         | "gap" | "height" | "width" | "min-height" | "max-height" | "min-width" | "max-width"

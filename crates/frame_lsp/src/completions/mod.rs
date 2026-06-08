@@ -4,7 +4,7 @@ mod types;
 mod values;
 
 use crate::context::{completion_context, CompletionScope};
-use frame_core::{symbols::index_document, tokens};
+use frame_core::{language, symbols::index_document};
 use frame_parser::parse;
 use helpers::{
     is_inside_ancestor_block, is_inside_block, is_inside_keyframe_selector, line_at, line_words_at,
@@ -12,88 +12,12 @@ use helpers::{
 use std::path::PathBuf;
 use suggestions::{
     dynamic_suggestions, include_documentation, include_suggestions, property_suggestions,
-    snippet_suggestions, suggestions_with_category, supports_predicate_completions,
+    registry_item_suggestions, snippet_suggestions, suggestions_with_category,
+    supports_predicate_completions,
 };
 use types::SnippetScope;
 pub use types::{CompletionCategory, CompletionSuggestion};
 use values::value_completions;
-
-const DECLARATIONS: &[&str] = &[
-    "tokens",
-    "grid",
-    "area",
-    "card",
-    "stack",
-    "row",
-    "text",
-    "center",
-    "split",
-    "overlay",
-    "dock",
-    "keyframes",
-    "supports",
-    "style-group",
-    "style-order",
-    "component",
-];
-
-const UI_ELEMENT_KINDS: &[&str] = &[
-    "screen", "panel", "section", "stack", "row", "grid", "split", "dock", "overlay", "scroll",
-    "action", "link", "menu", "toolbar", "tabs", "field", "input", "editor", "toggle", "choice",
-    "select", "composer", "title", "text", "label", "badge", "avatar", "icon", "image", "media",
-    "list", "feed", "data", "item", "empty", "card", "dialog", "popover",
-];
-
-const UI_KEYWORDS: &[&str] = &[
-    "props",
-    "state",
-    "view",
-    "slot",
-    "for",
-    "in",
-    "key",
-    "on",
-    "bind",
-    "when",
-    "style",
-    "disabled",
-    "readonly",
-    "label",
-    "hint",
-    "description",
-    "placeholder",
-    "checked",
-    "selected",
-    "kind",
-    "value",
-    "source",
-    "goto",
-    "send",
-    "draft",
-    "options",
-    "required",
-    "decorative",
-    "show",
-    "hidden",
-    "alt",
-    "id",
-    "class",
-    "title",
-    "data-test-id",
-    "poster",
-    "download",
-    "new-window",
-];
-
-const UI_EVENTS: &[&str] = &[
-    "press", "send", "open", "close", "select", "keydown", "keyup", "input", "change", "focus",
-    "blur",
-];
-
-const UI_MODIFIERS: &[&str] = &[
-    "enter", "escape", "ctrl", "shift", "alt", "meta", "prevent", "stop", "once", "capture",
-    "passive",
-];
 
 const ACTION_BODY_COMPLETIONS: &[&str] = &[
     "on press @handler",
@@ -205,6 +129,7 @@ const CARD_PROPERTIES: &[&str] = &[
     "background",
     "padding",
     "margin",
+    "gap",
     "radius",
     "border",
     "shadow",
@@ -423,6 +348,7 @@ pub fn completions_at_with_includes(
                                 insert_text: Some(value.name.text.clone()),
                                 is_snippet: false,
                                 category: CompletionCategory::Value,
+                                sort_text: None,
                             });
                         }
                     }
@@ -439,6 +365,7 @@ pub fn completions_at_with_includes(
                                 insert_text: Some(value.name.text.clone()),
                                 is_snippet: false,
                                 category: CompletionCategory::Value,
+                                sort_text: None,
                             });
                         }
                     }
@@ -478,6 +405,7 @@ pub fn completions_at_with_includes(
                             insert_text: Some(name),
                             is_snippet: false,
                             category: CompletionCategory::Value,
+                            sort_text: None,
                         })
                         .collect();
                     items.sort_by(|a, b| a.label.cmp(&b.label));
@@ -487,17 +415,15 @@ pub fn completions_at_with_includes(
         }
 
         if line_words.first().map(String::as_str) == Some("on") {
-            let mut items = suggestions_with_category(
-                UI_EVENTS,
+            let mut items = registry_item_suggestions(
+                language::items_by_kind(language::LanguageItemKind::Event),
                 "event",
                 "Event name for an external handler binding.",
-                CompletionCategory::Value,
             );
-            items.extend(suggestions_with_category(
-                UI_MODIFIERS,
+            items.extend(registry_item_suggestions(
+                language::items_by_kind(language::LanguageItemKind::EventModifier),
                 "event modifier",
                 "Keyboard or platform modifier used after an event name.",
-                CompletionCategory::Value,
             ));
             return items;
         }
@@ -554,17 +480,30 @@ pub fn completions_at_with_includes(
                 }
             }
         }
-        let mut items = suggestions_with_category(
-            UI_ELEMENT_KINDS,
+        let mut items = registry_item_suggestions(
+            language::items_by_kind(language::LanguageItemKind::Primitive),
             "ui primitive",
             "Semantic Frame UI primitive. Renderers lower the intent to their target platform.",
-            CompletionCategory::Declaration,
         );
-        items.extend(suggestions_with_category(
-            UI_KEYWORDS,
+        items.extend(registry_item_suggestions(
+            language::items_by_kind(language::LanguageItemKind::Declaration),
+            "declaration",
+            "Starts a Frame declaration.",
+        ));
+        items.extend(registry_item_suggestions(
+            language::items_by_kind(language::LanguageItemKind::UiKeyword),
             "ui keyword",
             "Experimental Frame UI syntax keyword.",
-            CompletionCategory::Value,
+        ));
+        items.extend(registry_item_suggestions(
+            language::items_by_kind(language::LanguageItemKind::BindingKeyword),
+            "binding keyword",
+            "Binding keyword for state and condition control.",
+        ));
+        items.extend(registry_item_suggestions(
+            language::items_by_kind(language::LanguageItemKind::StateKeyword),
+            "state keyword",
+            "Interaction state keyword for styling and behavior.",
         ));
         items.extend(dynamic_suggestions(
             component_names,
@@ -606,7 +545,7 @@ pub fn completions_at_with_includes(
             return value_completions(property, &line_words, &symbols);
         }
         return suggestions_with_category(
-            tokens::KEYFRAME_PROPERTIES,
+            language::KEYFRAME_PROPERTIES,
             "keyframe property",
             "Animatable property inside a keyframe selector.",
             CompletionCategory::MotionProperty,
@@ -637,11 +576,10 @@ pub fn completions_at_with_includes(
     match context.scope {
         CompletionScope::Root => {
             let mut items = snippet_suggestions(SnippetScope::Root);
-            items.extend(suggestions_with_category(
-                DECLARATIONS,
+            items.extend(registry_item_suggestions(
+                language::items_by_kind(language::LanguageItemKind::Declaration),
                 "declaration",
                 "Starts a Frame declaration.",
-                CompletionCategory::Declaration,
             ));
             items.push(CompletionSuggestion {
                 label: "#include".to_string(),
@@ -650,6 +588,7 @@ pub fn completions_at_with_includes(
                 insert_text: Some("#include ".to_string()),
                 is_snippet: false,
                 category: CompletionCategory::Include,
+                sort_text: None,
             });
             items
         }
@@ -659,11 +598,10 @@ pub fn completions_at_with_includes(
             .filter(|items| !items.is_empty())
             .unwrap_or_else(|| {
                 let mut items = snippet_suggestions(SnippetScope::State);
-                items.extend(suggestions_with_category(
-                    tokens::EFFECTS,
+                items.extend(registry_item_suggestions(
+                    language::items_by_kind(language::LanguageItemKind::Effect),
                     "effect",
                     "Effect used inside an interaction state.",
-                    CompletionCategory::MotionProperty,
                 ));
                 items
             }),
@@ -731,7 +669,8 @@ pub fn completions_at_with_includes(
                     "area property",
                     "Property for a child region inside a grid.",
                 ),
-                "card" | "button" => {
+                "card" | "stack" | "row" | "button" | "center" | "split" | "overlay" | "dock"
+                | "text" => {
                     let mut items = snippet_suggestions(SnippetScope::Component);
                     items.extend(property_suggestions(
                         CARD_PROPERTIES,
@@ -764,6 +703,7 @@ fn primitive_body_completions(
             insert_text: Some((*label).to_string()),
             is_snippet: false,
             category: CompletionCategory::Value,
+            sort_text: None,
         })
         .collect()
 }
@@ -779,7 +719,12 @@ fn nearest_ui_element_kind(source: &str, offset: usize) -> Option<String> {
         }
         if trimmed.ends_with('{') {
             let first = trimmed.split_whitespace().next().unwrap_or_default();
-            if UI_ELEMENT_KINDS.contains(&first) {
+            if language::item(first).is_some_and(|i| {
+                matches!(
+                    i.kind,
+                    language::LanguageItemKind::Primitive | language::LanguageItemKind::Declaration
+                )
+            }) {
                 stack.push(first.to_string());
             } else if matches!(first, "component" | "props" | "state" | "view" | "for") {
                 stack.push(String::new());
@@ -813,6 +758,7 @@ fn collect_loop_variables(nodes: &[frame_core::UiNode], refs: &mut Vec<Completio
                     insert_text: Some(loop_node.item.text.clone()),
                     is_snippet: false,
                     category: CompletionCategory::Value,
+                    sort_text: None,
                 });
                 if let Some(ref key) = loop_node.key {
                     refs.push(CompletionSuggestion {
@@ -825,6 +771,7 @@ fn collect_loop_variables(nodes: &[frame_core::UiNode], refs: &mut Vec<Completio
                         insert_text: Some(key.name.text.clone()),
                         is_snippet: false,
                         category: CompletionCategory::Value,
+                        sort_text: None,
                     });
                 }
                 collect_loop_variables(&loop_node.children, refs);
@@ -948,7 +895,7 @@ mod tests {
     fn event_lines_suggest_events_and_modifiers() {
         let labels = labels_for("component ChatInput {\n  view {\n    action Send {\n      on ");
 
-        assert!(labels.contains(&"press".to_string()));
+        assert!(labels.contains(&"click".to_string()));
         assert!(labels.contains(&"keydown".to_string()));
         assert!(labels.contains(&"enter".to_string()));
         assert!(labels.contains(&"ctrl".to_string()));
@@ -1358,5 +1305,70 @@ mod tests {
         let labels = labels_for("component ChatInput {\n  view {\n    text Label {\n      ");
 
         assert!(!labels.contains(&"value bind $state".to_string()));
+    }
+
+    #[test]
+    fn row_block_suggests_hover_and_component_properties() {
+        let labels = labels_for("row Actions {\n  ");
+
+        assert!(labels.contains(&"hover".to_string()));
+        assert!(labels.contains(&"focus".to_string()));
+        assert!(labels.contains(&"radius".to_string()));
+        assert!(labels.contains(&"shadow".to_string()));
+        assert!(labels.contains(&"padding".to_string()));
+    }
+
+    #[test]
+    fn stack_block_suggests_state_blocks_and_surface() {
+        let labels = labels_for("stack MainPanel {\n  ");
+
+        assert!(labels.contains(&"hover".to_string()));
+        assert!(labels.contains(&"active".to_string()));
+        assert!(labels.contains(&"surface".to_string()));
+        assert!(labels.contains(&"gap".to_string()));
+    }
+
+    #[test]
+    fn view_body_prioritizes_ui_primitives_over_declarations() {
+        let items = items_for("component ChatInput {\n  view {\n    ");
+        let action_sort = items
+            .iter()
+            .find(|i| i.label == "action")
+            .map(|i| i.sort_text.as_deref().unwrap_or(""))
+            .expect("action should be suggested");
+        let grid_sort = items
+            .iter()
+            .find(|i| i.label == "grid")
+            .map(|i| i.sort_text.as_deref().unwrap_or(""))
+            .expect("grid should be suggested");
+        assert!(
+            action_sort < grid_sort,
+            "action (primitive) should sort before grid (declaration): action={} grid={}",
+            action_sort,
+            grid_sort
+        );
+    }
+
+    #[test]
+    fn escape_hatch_available_but_ranked_lower() {
+        let items = items_for("card A {\n  ");
+        let labels: Vec<String> = items.iter().map(|i| i.label.clone()).collect();
+        assert!(labels.contains(&"advanced".to_string()));
+        let surface_sort = items
+            .iter()
+            .find(|i| i.label == "surface")
+            .map(|i| i.sort_text.as_deref().unwrap_or(""))
+            .expect("surface should be suggested");
+        let advanced_sort = items
+            .iter()
+            .find(|i| i.label == "advanced")
+            .map(|i| i.sort_text.as_deref().unwrap_or(""))
+            .expect("advanced should be suggested");
+        assert!(
+            surface_sort < advanced_sort,
+            "surface should rank before advanced escape hatch: surface={} advanced={}",
+            surface_sort,
+            advanced_sort
+        );
     }
 }

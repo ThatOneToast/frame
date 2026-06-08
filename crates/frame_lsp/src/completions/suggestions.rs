@@ -1,8 +1,7 @@
 use crate::completions::helpers::{
-    category_for_detail, completion_documentation, property_category,
+    category_for_detail, completion_documentation, layer_sort_prefix, property_category,
 };
 use crate::completions::types::{CompletionCategory, CompletionSuggestion, SnippetScope};
-use frame_core::knowledge;
 use std::path::PathBuf;
 
 struct FrameSnippet {
@@ -125,6 +124,19 @@ pub(crate) fn suggestions(
     suggestions_with_category(labels, detail, documentation, category_for_detail(detail))
 }
 
+fn label_sort_text(label: &str, category: CompletionCategory) -> Option<String> {
+    if let Some(item) = frame_core::language::item(label) {
+        Some(format!(
+            "{}_{}_{}",
+            category.sort_prefix(),
+            layer_sort_prefix(Some(item.layer)),
+            label
+        ))
+    } else {
+        Some(format!("{}_{}", category.sort_prefix(), label))
+    }
+}
+
 pub(crate) fn suggestions_with_category(
     labels: &[&str],
     detail: &'static str,
@@ -137,11 +149,11 @@ pub(crate) fn suggestions_with_category(
             label: (*label).to_string(),
             detail,
             documentation: completion_documentation(label)
-                .or_else(|| knowledge::completion_doc(label))
                 .unwrap_or_else(|| documentation.to_string()),
             insert_text: None,
             is_snippet: false,
             category,
+            sort_text: label_sort_text(label, category),
         })
         .collect()
 }
@@ -159,11 +171,45 @@ pub(crate) fn property_suggestions(
                 label: (*label).to_string(),
                 detail,
                 documentation: completion_documentation(label)
-                    .or_else(|| knowledge::completion_doc(label))
                     .unwrap_or_else(|| documentation.to_string()),
                 insert_text: None,
                 is_snippet: false,
                 category,
+                sort_text: label_sort_text(label, category),
+            }
+        })
+        .collect()
+}
+
+pub(crate) fn registry_item_suggestions(
+    items: &[frame_core::language::LanguageItem],
+    detail: &'static str,
+    default_documentation: &'static str,
+) -> Vec<CompletionSuggestion> {
+    items
+        .iter()
+        .map(|item| {
+            let category = item.completion_category;
+            let documentation = if item.documentation.is_empty() {
+                completion_documentation(item.name)
+                    .unwrap_or_else(|| default_documentation.to_string())
+            } else {
+                item.documentation.to_string()
+            };
+            let sort_text = Some(format!(
+                "{}_{}_{}",
+                category.sort_prefix(),
+                layer_sort_prefix(Some(item.layer)),
+                item.name
+            ));
+            CompletionSuggestion {
+                label: item.name.to_string(),
+                detail,
+                documentation,
+                insert_text: None,
+                is_snippet: false,
+                category,
+                sort_text,
             }
         })
         .collect()
@@ -180,6 +226,7 @@ pub(crate) fn snippet_suggestions(scope: SnippetScope) -> Vec<CompletionSuggesti
             insert_text: Some(snippet.body.to_string()),
             is_snippet: true,
             category: CompletionCategory::Snippet,
+            sort_text: None,
         })
         .collect()
 }
@@ -200,6 +247,7 @@ pub(crate) fn dynamic_suggestions(
             insert_text: None,
             is_snippet: false,
             category,
+            sort_text: None,
         })
         .collect()
 }
@@ -223,6 +271,11 @@ pub(crate) fn motion_amount_suggestions(
             insert_text: None,
             is_snippet: false,
             category: CompletionCategory::MotionProperty,
+            sort_text: Some(format!(
+                "{}_{}%44",
+                CompletionCategory::MotionProperty.sort_prefix(),
+                base
+            )),
         });
     }
     if let Some(strongest) = amounts.last() {
@@ -233,6 +286,11 @@ pub(crate) fn motion_amount_suggestions(
             insert_text: None,
             is_snippet: false,
             category: CompletionCategory::MotionProperty,
+            sort_text: Some(format!(
+                "{}_{}%50",
+                CompletionCategory::MotionProperty.sort_prefix(),
+                strongest
+            )),
         });
     }
     items
@@ -308,6 +366,7 @@ pub(crate) fn include_suggestions(mut include_files: Vec<PathBuf>) -> Vec<Comple
                     .map(ToOwned::to_owned),
                 is_snippet: false,
                 category: CompletionCategory::Include,
+                sort_text: None,
             })
         })
         .collect()

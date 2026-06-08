@@ -27,7 +27,7 @@ grid Dashboard {
 
 ## Top-level Declarations
 
-Use these at file root:
+Use these at file root for styling and layout:
 
 ```txt
 tokens
@@ -36,7 +36,6 @@ area
 card
 stack
 row
-button
 text
 center
 split
@@ -61,6 +60,8 @@ card ProjectCard {
   padding medium
 }
 ```
+
+UI primitives such as `action`, `link`, `input`, `editor`, `toggle`, `panel`, `dialog`, `menu`, `toolbar`, and `composer` belong inside `view` blocks, not at the file root. See `docs/ui-primitives.md`.
 
 ## Grid
 
@@ -430,7 +431,7 @@ card HoverCard {
   }
 }
 
-button PrimaryButton {
+card PrimaryButton {
   focus {
     ring accent
   }

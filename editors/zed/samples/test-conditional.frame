@@ -1,0 +1,23 @@
+component TestApp {
+  view {
+    screen Main {
+      action Send:PrimaryButton {
+        text "Send"
+        style LoadingButton when $sending
+      }
+      action Submit {
+        text "Submit"
+        style when $submitting = LoadingButton
+      }
+    }
+  }
+}
+
+card PrimaryButton {
+  surface raised
+}
+
+card LoadingButton {
+  surface panel
+  opacity muted
+}

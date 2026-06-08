@@ -35,7 +35,7 @@ Named track values:
 Use `layout` presets for repeated internal component structures:
 
 ```frame
-button ChannelButton {
+card ChannelButton {
   layout icon-content-action
   gap small
   control reset
@@ -114,7 +114,7 @@ text SectionLabel {
 Use control and sizing intent for interactive elements:
 
 ```frame
-button ServerButton {
+card ServerButton {
   control reset
   interactive
   square server

@@ -146,11 +146,13 @@ impl LanguageServer for Backend {
         )
         .into_iter()
         .map(|suggestion| CompletionItem {
-            sort_text: Some(format!(
-                "{}_{}",
-                suggestion.category.sort_prefix(),
-                suggestion.label
-            )),
+            sort_text: suggestion.sort_text.clone().or_else(|| {
+                Some(format!(
+                    "{}_{}",
+                    suggestion.category.sort_prefix(),
+                    suggestion.label
+                ))
+            }),
             kind: Some(completion_kind(suggestion.category)),
             detail: Some(format!(
                 "Frame {} • {}",

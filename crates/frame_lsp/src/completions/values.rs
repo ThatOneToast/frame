@@ -2,7 +2,7 @@ use crate::completions::suggestions::{
     dynamic_suggestions, motion_amount_suggestions, suggestions,
 };
 use crate::completions::types::{CompletionCategory, CompletionSuggestion};
-use frame_core::tokens;
+use frame_core::language;
 
 const COLUMN_VALUES: &[&str] = &[
     "responsive",
@@ -94,27 +94,27 @@ pub(crate) fn value_completions(
             "Named area in a grid template row.",
         ),
         "layout" => suggestions(
-            tokens::LAYOUTS,
+            language::LAYOUTS,
             "layout preset",
             "Dense component layout preset.",
         ),
         "display" => suggestions(
-            tokens::DISPLAY,
+            language::DISPLAY,
             "display value",
             "CSS display mode exposed through structured Frame syntax.",
         ),
         "visibility" => suggestions(
-            tokens::VISIBILITY,
+            language::VISIBILITY,
             "visibility value",
             "Visibility behavior without changing the element's declaration.",
         ),
         "flex" if line_words.get(1).map(String::as_str) == Some("direction") => suggestions(
-            tokens::FLEX_DIRECTIONS,
+            language::FLEX_DIRECTIONS,
             "flex direction",
             "Main-axis direction for a flex container.",
         ),
         "flex" if line_words.get(1).map(String::as_str) == Some("wrap") => suggestions(
-            tokens::FLEX_WRAPS,
+            language::FLEX_WRAPS,
             "flex wrap",
             "Whether flex items stay on one line or wrap.",
         ),
@@ -141,7 +141,7 @@ pub(crate) fn value_completions(
             "Structured flexbox option.",
         ),
         "flow" => suggestions(
-            tokens::GRID_FLOWS,
+            language::GRID_FLOWS,
             "grid flow",
             "Use `vertical` to stack named columns as rows.",
         ),
@@ -214,69 +214,69 @@ pub(crate) fn value_completions(
             items
         }
         "padding" | "margin" | "gap" | "radius" => {
-            let mut items = suggestions(tokens::SPACING, "space value", "Named spacing token.");
+            let mut items = suggestions(language::SPACING, "space value", "Named spacing token.");
             if matches!(keyword, "padding" | "margin") {
                 items.extend(suggestions(
-                    tokens::EDGES,
+                    language::EDGES,
                     "box edge",
                     "Target one side or axis, such as `padding top medium`.",
                 ));
             }
             items
         }
-        "shadow" => suggestions(tokens::SHADOWS, "shadow value", "Named shadow depth."),
-        "overflow" => suggestions(tokens::OVERFLOWS, "overflow value", "Overflow intent."),
-        "scroll" => suggestions(tokens::SCROLL_AXES, "scroll axis", "Scrollable axis."),
+        "shadow" => suggestions(language::SHADOWS, "shadow value", "Named shadow depth."),
+        "overflow" => suggestions(language::OVERFLOWS, "overflow value", "Overflow intent."),
+        "scroll" => suggestions(language::SCROLL_AXES, "scroll axis", "Scrollable axis."),
         "scrollbar" => suggestions(
-            tokens::SCROLLBARS,
+            language::SCROLLBARS,
             "scrollbar density",
             "Scrollbar density for dense app panels.",
         ),
-        "box" => suggestions(tokens::BOX_SIZING, "box sizing", "Sizing model intent."),
+        "box" => suggestions(language::BOX_SIZING, "box sizing", "Sizing model intent."),
         "square" => suggestions(
-            tokens::SQUARES,
+            language::SQUARES,
             "square size",
             "Named square size for icons, avatars, and status dots.",
         ),
         "self" => suggestions(
-            tokens::SELF_ALIGN,
+            language::SELF_ALIGN,
             "self alignment",
             "Align this item in both axes.",
         ),
         "nudge" => suggestions(
-            tokens::NUDGES,
+            language::NUDGES,
             "nudge",
             "Small positional nudge for badges.",
         ),
-        "wrap" => suggestions(tokens::TEXT_WRAPS, "text wrap", "Text wrapping behavior."),
-        "case" => suggestions(tokens::TEXT_CASES, "text case", "Text casing behavior."),
+        "wrap" => suggestions(language::TEXT_WRAPS, "text wrap", "Text wrapping behavior."),
+        "case" => suggestions(language::TEXT_CASES, "text case", "Text casing behavior."),
         "align-text" => suggestions(
-            tokens::TEXT_ALIGN,
+            language::TEXT_ALIGN,
             "text alignment",
             "Text alignment intent.",
         ),
         "decoration" => suggestions(
-            tokens::TEXT_DECORATIONS,
+            language::TEXT_DECORATIONS,
             "text decoration",
             "Text decoration line intent.",
         ),
         "whitespace" => suggestions(
-            tokens::WHITE_SPACE,
+            language::WHITE_SPACE,
             "white-space value",
             "White-space preservation and wrapping behavior.",
         ),
         "word-break" => suggestions(
-            tokens::WORD_BREAKS,
+            language::WORD_BREAKS,
             "word-break value",
             "Word breaking behavior for narrow text.",
         ),
         "hyphenate" => suggestions(
-            tokens::HYPHENS,
+            language::HYPHENS,
             "hyphenation value",
             "Hyphenation behavior.",
         ),
         "control" => suggestions(
-            tokens::CONTROLS,
+            language::CONTROLS,
             "control affordance",
             "Control reset behavior.",
         ),
@@ -288,7 +288,7 @@ pub(crate) fn value_completions(
             "Named or percentage sizing intent.",
         ),
         "theme" | "text" | "color" | "glow" | "ring" => {
-            let mut items = suggestions(tokens::COLORS, "color value", "Named color intent.");
+            let mut items = suggestions(language::COLORS, "color value", "Named color intent.");
             items.extend(dynamic_suggestions(
                 symbols.color_names(),
                 "custom color",
@@ -297,14 +297,14 @@ pub(crate) fn value_completions(
             ));
             items
         }
-        "align" => suggestions(tokens::ALIGN, "alignment value", "Cross-axis alignment."),
+        "align" => suggestions(language::ALIGN, "alignment value", "Cross-axis alignment."),
         "anchor" => suggestions(
-            tokens::ANCHORS,
+            language::ANCHORS,
             "anchor value",
             "Anchor this declaration to an edge using sticky positioning.",
         ),
         "justify" => suggestions(
-            tokens::JUSTIFY,
+            language::JUSTIFY,
             "justification value",
             "Main-axis distribution.",
         ),
@@ -334,7 +334,7 @@ pub(crate) fn value_completions(
             items
         }
         "outline" if line_words.get(1).map(String::as_str) == Some("offset") => suggestions(
-            tokens::SPACING,
+            language::SPACING,
             "outline offset",
             "Spacing token used for outline offset.",
         ),
@@ -353,20 +353,20 @@ pub(crate) fn value_completions(
             items
         }
         "transition" => suggestions(
-            tokens::TRANSITIONS,
+            language::TRANSITIONS,
             "transition value",
             "Named transition intent.",
         ),
         "duration" => suggestions(
-            tokens::DURATIONS,
+            language::DURATIONS,
             "duration value",
             "Named duration intent.",
         ),
-        "ease" => suggestions(tokens::EASES, "ease value", "Named easing intent."),
+        "ease" => suggestions(language::EASES, "ease value", "Named easing intent."),
         "animation" | "animate" => suggestions(&[], "animation value", "Named animation intent.")
             .into_iter()
             .chain(suggestions(
-                tokens::ANIMATIONS,
+                language::ANIMATIONS,
                 "animation preset",
                 "Named animation preset.",
             ))
@@ -388,22 +388,22 @@ pub(crate) fn value_completions(
             "Number of animation repeats.",
         ),
         "direction" => suggestions(
-            tokens::ANIMATION_DIRECTIONS,
+            language::ANIMATION_DIRECTIONS,
             "animation direction",
             "Direction used when an animation runs or repeats.",
         ),
         "fill" => suggestions(
-            tokens::ANIMATION_FILLS,
+            language::ANIMATION_FILLS,
             "animation fill mode",
             "How animation styles apply before and after playback.",
         ),
         "play-state" => suggestions(
-            tokens::ANIMATION_PLAY_STATES,
+            language::ANIMATION_PLAY_STATES,
             "animation play state",
             "Whether an animation is running or paused.",
         ),
         "type" => suggestions(
-            tokens::GRADIENT_TYPES,
+            language::GRADIENT_TYPES,
             "gradient type",
             "Gradient type. `layered` can combine corner gradients with linear stops.",
         ),
@@ -415,7 +415,7 @@ pub(crate) fn value_completions(
             "Linear gradient angle.",
         ),
         "stop" => {
-            let mut items = suggestions(tokens::COLORS, "gradient color", "Gradient stop color.");
+            let mut items = suggestions(language::COLORS, "gradient color", "Gradient stop color.");
             items.extend(dynamic_suggestions(
                 symbols.color_names(),
                 "custom color",
@@ -425,7 +425,7 @@ pub(crate) fn value_completions(
             items
         }
         "corner" => suggestions(
-            tokens::GRADIENT_CORNERS,
+            language::GRADIENT_CORNERS,
             "gradient corner",
             "Adds a radial gradient layer from a corner.",
         ),
@@ -436,24 +436,28 @@ pub(crate) fn value_completions(
             CompletionCategory::ProjectSymbol,
         ),
         "font" | "size" | "weight" => suggestions(TYPOGRAPHY, "type value", "Typography token."),
-        "line" => suggestions(tokens::LINES, "line height", "Line height intent."),
-        "letter" => suggestions(tokens::LETTERS, "letter spacing", "Letter spacing intent."),
-        "lift" | "sink" => motion_amount_suggestions(tokens::MOVEMENT_AMOUNTS, "movement amount"),
+        "line" => suggestions(language::LINES, "line height", "Line height intent."),
+        "letter" => suggestions(
+            language::LETTERS,
+            "letter spacing",
+            "Letter spacing intent.",
+        ),
+        "lift" | "sink" => motion_amount_suggestions(language::MOVEMENT_AMOUNTS, "movement amount"),
         "shift" if line_words.len() <= 1 => suggestions(
             &["left", "right", "up", "down"],
             "shift direction",
             "Direction for movement intent.",
         ),
-        "shift" => motion_amount_suggestions(tokens::MOVEMENT_AMOUNTS, "movement amount"),
-        "grow" | "shrink" => motion_amount_suggestions(tokens::VISUAL_AMOUNTS, "visual amount"),
+        "shift" => motion_amount_suggestions(language::MOVEMENT_AMOUNTS, "movement amount"),
+        "grow" | "shrink" => motion_amount_suggestions(language::VISUAL_AMOUNTS, "visual amount"),
         "tilt" if line_words.len() <= 1 => suggestions(
             &["left", "right"],
             "tilt direction",
             "Direction for rotation intent.",
         ),
-        "tilt" => motion_amount_suggestions(tokens::VISUAL_AMOUNTS, "visual amount"),
+        "tilt" => motion_amount_suggestions(language::VISUAL_AMOUNTS, "visual amount"),
         "brighten" | "dim" | "blur" | "press" | "pop" | "scale" | "fade" | "slide" => {
-            suggestions(tokens::SPACING, "effect value", "Effect strength token.")
+            suggestions(language::SPACING, "effect value", "Effect strength token.")
         }
         "opacity" => suggestions(
             &["0", "0.25", "0.5", "0.75", "1"],

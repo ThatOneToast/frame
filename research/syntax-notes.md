@@ -2,12 +2,14 @@
 
 These notes describe planned Frame UI syntax. They are not implemented yet.
 
+The canonical language registry in `crates/frame_core/src/language.rs` is the single source of truth for all language concepts. Update the registry before adding new syntax.
+
 ## Element Names and Styles
 
 Automatic style lookup:
 
 ```frame
-button Send {
+action Send {
   text "Send"
 }
 ```
@@ -15,7 +17,7 @@ button Send {
 Explicit style binding:
 
 ```frame
-button Send:PrimaryButton {
+action Send:PrimaryButton {
   text "Send"
 }
 ```
@@ -25,8 +27,8 @@ button Send:PrimaryButton {
 ## Events
 
 ```frame
-button Send {
-  on click @sendMessage
+action Send {
+  on press @sendMessage
   on keydown.enter @submitMessage
   on keydown.ctrl.enter @submitMessage
 }

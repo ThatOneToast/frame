@@ -130,7 +130,7 @@ card PendingPreview {
 Use `layout` presets when a component needs a repeated internal structure:
 
 ```frame
-button ChannelButton {
+card ChannelButton {
   layout icon-content-action
   gap small
   control reset
@@ -155,7 +155,7 @@ area Sidebar {
   border right terminal-border
 }
 
-button ServerButton {
+card ServerButton {
   square server
   layout center
 }
@@ -192,7 +192,7 @@ row NavBar {
   gap medium
 }
 
-button NavAction {
+card NavAction {
   surface flat
   text accent
   padding small

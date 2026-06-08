@@ -147,7 +147,7 @@ row Toolbar {
   surface panel
 }
 
-button PrimaryButton {
+card PrimaryButton {
   surface raised
   padding medium
   radius pill
@@ -176,7 +176,7 @@ Why this works:
 
 - `align center` vertically centers toolbar items
 - `justify between` pushes title and action apart
-- button states use Frame effects rather than raw CSS
+- card states use Frame effects rather than raw CSS
 
 ## Settings Panel
 

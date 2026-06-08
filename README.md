@@ -43,6 +43,17 @@ Frame should not become:
 - a language that hides security-sensitive behavior
 - a UI framework that can only target one renderer
 
+## Canonical Language Registry
+
+`crates/frame_core/src/language.rs` is the single source of truth for every Frame language concept. The registry defines declarations, UI primitives, properties, values, events, modifiers, state keywords, binding keywords, and effects. All of the following consume the registry:
+
+- **Parser** — validates keywords and identifiers against the registry.
+- **Semantic model** — classifies language items by kind and layer.
+- **LSP** — provides completions, hover docs, semantic tokens, and diagnostics from the registry.
+- **Zed extension** — tree-sitter grammar and highlighting are aligned with registry categories.
+
+To add a new primitive, property, or value, update the registry first. See `docs/contributing.md`.
+
 ## Current status
 
 The repository contains three distinct layers:
@@ -91,7 +102,9 @@ Frame should own the UI model.
 
 A Frame file should be able to describe structure, style, state references, event bindings, accessibility, attributes, DOM behavior, and renderer intent without writing inline JavaScript inside the UI declaration.
 
-Semantic UI syntax uses Frame primitives:
+### UI-native syntax first
+
+Frame source is intent-first. Inside `view` blocks, use primitives that describe user intent:
 
 ```frame
 component ChatInput {
@@ -125,7 +138,23 @@ component ChatInput {
 }
 ```
 
-Frame source is intent-first. `action`, `link`, `field`, `input`, `editor`, `toggle`, `choice`, `composer`, `panel`, `menu`, `tabs`, `data`, and layout primitives such as `screen`, `stack`, `row`, `grid`, `dock`, `scroll`, and `split` describe user intent. DOM elements such as `button`, `a`, `textarea`, `div`, `span`, `form`, `table`, `tr`, and `td` are internal lowering targets, not author-facing UI syntax.
+Author-facing UI primitives include:
+- **Actions and navigation**: `action`, `link`, `menu`, `toolbar`, `tabs`
+- **Content**: `panel`, `card`, `dialog`, `popover`, `screen`, `section`, `text`, `title`, `label`, `badge`, `icon`
+- **Input**: `field`, `input`, `editor`, `toggle`, `choice`, `select`, `composer`
+- **Data**: `list`, `feed`, `data`, `item`, `empty`
+- **Media**: `image`, `avatar`, `media`
+- **Layout**: `stack`, `row`, `dock`, `grid`, `split`, `overlay`, `scroll`
+
+DOM elements such as `button`, `a`, `textarea`, `div`, `span`, `form`, `table`, `tr`, and `td` are internal lowering targets, not author-facing UI syntax. The compiler stores `semantic_kind` separately from `render_kind` so the LSP, diagnostics, and non-DOM renderers can reason about author intent.
+
+### Advanced and escape hatches
+
+Low-level CSS terms remain valid in the styling layer but should not be the primary authoring path in UI `view` blocks:
+
+- Prefer `stack`, `flow`, `grid`, `dock` over `display flex`, `display grid`
+- Prefer `overlay`, `scroll` over `position absolute`, `position fixed`
+- Use `advanced { css "raw-property" value }` for true escape hatches
 
 ## Frame IR
 
@@ -237,6 +266,7 @@ Default rules:
 Start here:
 
 - `AGENTS.md` — contributor and automation guidance
+- `docs/contributing.md` — how to add language concepts and follow the canonical registry
 - `TODO.md` — overhaul checklist
 - `MILESTONES.md` — staged implementation plan
 - `docs/language-redesign.md` — current semantic language redesign report

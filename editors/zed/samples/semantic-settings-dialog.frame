@@ -23,7 +23,7 @@ component SettingsExample {
       toolbar Actions {
         action Cancel
         action Save {
-          on press @saveSettings
+          on click @saveSettings
         }
       }
     }

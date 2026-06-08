@@ -1,3 +1,5 @@
+; Highlight queries aligned with editors/zed/tree-sitter-frame/grammar.js.
+; When grammar nodes change, keep both highlights.scm files in sync.
 ; Top-level declaration headers.
 (declaration
   kind: (declaration_keyword) @keyword
@@ -95,6 +97,12 @@
   "style" @property
   "when" @keyword
   style: (style_name) @constant)
+
+(conditional_style
+  "style" @property
+  style: (style_name) @constant
+  "when" @keyword
+  condition: (data_ref) @variable)
 
 (ui_property
   property: (ui_attribute_name) @property)

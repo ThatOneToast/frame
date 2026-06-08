@@ -18,7 +18,7 @@ component ChatInput {
     action Send:PrimaryButton {
       text "Send"
       disabled when $sending
-      on press @sendMessage
+          on click @sendMessage
       style LoadingButton when $sending
     }
   }

@@ -2,6 +2,8 @@
 
 Frame forms should be built around the user's task and the data contract, not raw DOM controls.
 
+The canonical language registry in `crates/frame_core/src/language.rs` defines all form primitives, properties, and values. LSP completions, hover docs, and diagnostics consume the registry.
+
 The DOM renderer can map controls to `input`, `textarea`, `select`, `button`, and form elements. Frame source should first describe what value is being collected and what action is being submitted.
 
 ## Principles

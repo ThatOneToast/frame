@@ -5,6 +5,11 @@ files. Tree-sitter handles syntax highlighting. The LSP handles semantic help:
 diagnostics, completions, hover docs, formatting, document symbols, links,
 navigation, code actions, semantic tokens, and folding.
 
+The canonical language registry in `crates/frame_core/src/language.rs` is the
+single source of truth for all completions, hover docs, semantic token classes,
+and diagnostic categories. Every LSP feature that reasons about keywords,
+primitives, properties, values, events, or modifiers consumes the registry.
+
 ## Features
 
 - Parser and semantic diagnostics with suggestions and examples.
@@ -42,7 +47,6 @@ area
 card
 stack
 row
-button
 text
 center
 split

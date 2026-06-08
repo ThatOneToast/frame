@@ -2,6 +2,8 @@
 
 Frame's semantic UI milestone replaces browser-tag authoring with intent-first primitives. HTML and DOM remain important renderer targets, but Frame source now describes interface intent, accessibility, and developer goals first.
 
+The canonical language registry in `crates/frame_core/src/language.rs` is the single source of truth for all Frame language concepts. Parser, semantic model, LSP, Zed extension, and diagnostics all consume this registry. To add a new primitive or property, update the registry first.
+
 Runtime, SSR, hydration, routing, portals, suspense, and async component work are paused for this milestone.
 
 ## Goal

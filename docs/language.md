@@ -2,6 +2,8 @@
 
 Frame is a structured CSS language for Svelte projects. A `.frame` file describes components and layout regions with concepts like `surface panel`, `columns responsive cards`, `radius large`, and `hover { lift small }`.
 
+The canonical language registry in `crates/frame_core/src/language.rs` is the single source of truth for all Frame language concepts. Parser, semantic model, LSP, and Zed extension all consume this registry. To add a new primitive, property, or value, update the registry first. See `docs/contributing.md`.
+
 Frame is not raw CSS with different punctuation. The goal is to expose CSS power through readable, guided syntax: first-class grids, responsive rules, container queries, gradients, transitions, animations, keyframes, tokens, states, and safe advanced CSS escape hatches.
 
 ## Declarations

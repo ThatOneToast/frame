@@ -19,7 +19,7 @@ card QuickLinkCard {
 Focus, active, and disabled states:
 
 ```frame
-button PrimaryButton {
+card PrimaryButton {
   surface panel
   padding medium
   radius pill

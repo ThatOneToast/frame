@@ -2,6 +2,8 @@
 
 The Frame LSP provides quick fixes for common authoring mistakes and layout scaffolding.
 
+All code actions are driven by the canonical language registry in `crates/frame_core/src/language.rs`. The LSP uses registry entries to suggest replacements, create skeletons, and validate intent.
+
 Current actions include:
 
 - Replace close typos such as `surface pannel` with `surface panel`.
