@@ -1,0 +1,31 @@
+dock App {
+  flow horizontal
+  gap comfortable
+  surface main
+}
+
+panel ChannelList {
+  surface panel
+  space comfortable
+  radius soft
+}
+
+action Send {
+  tone primary
+  press lift subtle
+}
+
+feed Messages {
+  gap tight
+}
+
+panel Message {
+  surface panel
+  space comfortable
+  radius soft
+}
+
+panel Composer {
+  surface panel
+  space comfortable
+}

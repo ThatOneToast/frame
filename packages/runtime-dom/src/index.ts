@@ -366,6 +366,7 @@ const ELEMENT_TAGS: Record<string, string> = {
   tfoot: 'tfoot',
   th: 'th',
   thead: 'thead',
+  title: 'h2',
   toggle: 'input',
   toolbar: 'div',
   track: 'track',

@@ -304,7 +304,11 @@ inside embedded Frame blocks when an editor routes `.svelte` buffers to
 `frame_lsp`. The Zed extension intentionally registers the LSP only for
 `.frame` files so it does not conflict with Svelte and CSS tooling.
 
-## Zed Setup
+## Editor Setup
+
+### Zed Extension
+
+The Zed extension is in `editors/zed/`. It launches the Frame LSP binary and provides syntax highlighting via Tree-sitter.
 
 Install the extension from `editors/zed`, then build the server:
 
@@ -317,6 +321,17 @@ The extension resolves the LSP command in this order:
 1. `FRAME_LSP`
 2. `frame_lsp` on `PATH`
 3. `target/debug/frame_lsp` from this repository checkout when available
+
+### Tree-sitter Validation
+
+```bash
+cd editors/zed/tree-sitter-frame
+tree-sitter generate
+tree-sitter parse ../samples/highlighting.frame
+tree-sitter highlight ../samples/highlighting.frame
+```
+
+Note: `tree-sitter highlight --check` expects a `test/highlight/` directory with expected highlight files, which the repository does not currently include. Use the commands above as the canonical validation.
 
 ## UI LSP Support
 

@@ -1,0 +1,52 @@
+component ChatShell {
+  prop title Text readonly = "Frame Chat"
+  state message Text = ""
+  state messages List = []
+  state selectedChannel Text = "general"
+
+  view {
+    dock App {
+      panel ChannelList {
+        stack Channels {
+          action General {
+            text "general"
+            on press @select_channel
+          }
+          action Development {
+            text "development"
+            on press @select_channel
+          }
+          action Design {
+            text "design"
+            on press @select_channel
+          }
+        }
+      }
+      stack Conversation {
+        panel Header {
+          title $title
+        }
+        feed Messages {
+          for message in $messages key $message.id {
+            panel Message {
+              text $message.author
+              text $message.body
+            }
+          }
+        }
+        panel Composer {
+          field MessageInput {
+            bind $message
+          }
+          action Send {
+            text "Send"
+            on press @send_message
+          }
+        }
+      }
+      panel Inspector {
+        title "Members"
+      }
+    }
+  }
+}

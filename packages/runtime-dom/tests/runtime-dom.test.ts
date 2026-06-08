@@ -1761,6 +1761,84 @@ test('debug stats accurately track mounts unmounts and listeners', () => {
   assert.ok(app.getDebugStats().disposedNodes >= 1);
 });
 
+test('title renders as heading with fr class', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('TitleDemo', [
+    element('h2', 'ChatTitle', {
+      semantic_kind: 'title',
+      children: [textLiteral('Messages')]
+    })
+  ]), {
+    component: 'TitleDemo',
+    target
+  });
+
+  const title = target.querySelector('h2')!;
+  assert.equal(title.tagName.toLowerCase(), 'h2');
+  assert.equal(title.className, 'fr-ChatTitle');
+  assert.equal(title.textContent, 'Messages');
+});
+
+test('dock feed overlay dialog and popover render with correct tags', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('ShellDemo', [
+    element('div', 'AppDock', { semantic_kind: 'dock' }),
+    element('div', 'MessageFeed', { semantic_kind: 'feed' }),
+    element('div', 'ModalOverlay', { semantic_kind: 'overlay' }),
+    element('dialog', 'ConfirmDialog', { semantic_kind: 'dialog' }),
+    element('div', 'InfoPopover', { semantic_kind: 'popover' })
+  ]), {
+    component: 'ShellDemo',
+    target
+  });
+
+  assert.ok(target.querySelector('.fr-AppDock'));
+  assert.ok(target.querySelector('.fr-MessageFeed'));
+  assert.ok(target.querySelector('.fr-ModalOverlay'));
+  assert.equal(target.querySelector('dialog')?.tagName.toLowerCase(), 'dialog');
+  assert.ok(target.querySelector('.fr-InfoPopover'));
+});
+
+test('choice renders as select with correct defaults', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('ChoiceDemo', [
+    element('select', 'ThemeSelect', {
+      semantic_kind: 'choice'
+    })
+  ]), {
+    component: 'ChoiceDemo',
+    target
+  });
+
+  const select = target.querySelector('select')!;
+  assert.equal(select.tagName.toLowerCase(), 'select');
+  assert.equal(select.className, 'fr-ThemeSelect');
+});
+
+test('editor renders as textarea with default rows', () => {
+  const { document } = dom();
+  const target = document.createElement('div');
+
+  mount(documentFixture('EditorDemo', [
+    element('textarea', 'NoteEditor', {
+      semantic_kind: 'editor'
+    })
+  ]), {
+    component: 'EditorDemo',
+    target
+  });
+
+  const textarea = target.querySelector('textarea')!;
+  assert.equal(textarea.tagName.toLowerCase(), 'textarea');
+  assert.equal(textarea.getAttribute('rows'), '4');
+});
+
 const exampleDir = resolve('examples');
 const exampleFiles = [
   'chat-app.frame',

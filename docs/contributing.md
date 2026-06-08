@@ -98,6 +98,17 @@ Frame IDE features (completions, hover, diagnostics, references, definitions, an
 4. **Add completion/hover/diagnostic/reference tests** in `crates/frame_lsp/src/`.
 5. **Update examples and docs**.
 
+## Adding a Frame UI Primitive
+
+1. Add the primitive to the canonical registry in `crates/frame_core/src/language.rs`.
+2. Add parser/grammar support if the syntax shape changes.
+3. Add semantic validation.
+4. Add LSP completion, hover, diagnostic, and reference tests.
+5. Add Tree-sitter highlight coverage in `editors/zed/tree-sitter-frame/queries/highlights.scm`.
+6. Add runtime-dom lowering in `packages/runtime-dom/src/index.ts` if it renders.
+7. Add docs and sample usage.
+8. Add drift tests so the concept cannot silently desync from the registry.
+
 ### Cursor slot dispatch
 
 Completions and hover dispatch on `CursorSlot`:

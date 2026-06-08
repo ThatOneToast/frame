@@ -1,6 +1,8 @@
 # Frame
 
-Frame is an experimental UI language for building interfaces through structured, teachable syntax.
+Frame is an experimental UI-native language for building interfaces through structured, teachable syntax.
+
+The canonical language registry in `crates/frame_core/src/language.rs` owns all language facts, and the `SemanticCursor` in `crates/frame_lsp/src/ide/cursor.rs` owns IDE context. Author-facing primitives include `panel`, `stack`, `dock`, `action`, `field`, `feed`, `overlay`, and others. HTML and CSS terms remain available as advanced or explicit escape-hatch syntax, not the primary authoring path.
 
 The project began as a structured CSS language for Svelte-focused UI development. That work proved the core idea: interface styling can be easier to understand when the language describes intent instead of forcing every developer to memorize CSS property syntax first.
 
