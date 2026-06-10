@@ -1851,7 +1851,6 @@ supports display grid {
         let source = "\
 grid Dashboard {
   columns sidebar content
-  tracks columns rail panel fill
   areas sidebar content
 }
 
@@ -1867,9 +1866,73 @@ area Sidebar {
             .collect();
         assert!(
             errors.is_empty(),
-            "Expected no errors for valid grid with areas and tracks, got: {:?}",
+            "Expected no errors for valid grid with areas, got: {:?}",
             errors.iter().map(|d| &d.message).collect::<Vec<_>>()
         );
+    }
+
+    #[test]
+    fn grid_columns_tracks_conflict_reports_error() {
+        let source = "\
+grid BadGrid {
+  columns sidebar content
+  tracks columns rail panel fill
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            !errors.is_empty(),
+            "Expected error for columns+tracks conflict"
+        );
+        assert!(errors
+            .iter()
+            .any(|d| d.message.contains("columns") && d.message.contains("tracks")));
+    }
+
+    #[test]
+    fn duplicate_grid_column_name_reports_error() {
+        let source = "\
+grid BadGrid {
+  columns content content
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            !errors.is_empty(),
+            "Expected error for duplicate column name"
+        );
+        assert!(errors.iter().any(|d| d.message.contains("duplicate")));
+    }
+
+    #[test]
+    fn unknown_explicit_style_binding_reports_actionable_warning() {
+        let source = "\
+component Test {
+  view {
+    card MetricCard:ActiveModel {
+      surface raised
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let warnings: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Warning)
+            .collect();
+        assert!(
+            !warnings.is_empty(),
+            "Expected warning for unknown explicit style binding"
+        );
+        assert!(warnings.iter().any(|d| d.message.contains("ActiveModel")));
     }
 
     #[test]

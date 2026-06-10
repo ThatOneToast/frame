@@ -871,3 +871,79 @@ fn generates_corner_gradient_layers_targeted_padding_and_anchor() {
     assert!(css.contains("position: sticky;"));
     assert!(css.contains("top: 0;"));
 }
+
+#[test]
+fn page_body_emits_global_body_rule() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Body,
+            "page-body",
+            vec![
+                statement(&["margin", "none"]),
+                statement(&["background", "#0a0f1a"]),
+                statement(&["color", "#e2e8f0"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("body {"));
+    assert!(css.contains("margin: 0;"));
+    assert!(css.contains("min-height: 100vh;"));
+    assert!(css.contains("background: #0a0f1a;"));
+    assert!(css.contains("color: #e2e8f0;"));
+    assert!(!css.contains(".fr-page-body"));
+}
+
+#[test]
+fn html_declaration_emits_global_html_rule() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Html,
+            "html",
+            vec![
+                statement(&["background", "#0A0A0F"]),
+                statement(&["color", "#F8FAFC"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("html {"));
+    assert!(css.contains("background: #0A0A0F;"));
+    assert!(css.contains("color: #F8FAFC;"));
+    assert!(!css.contains(".fr-html"));
+}
+
+#[test]
+fn html_and_page_body_do_not_emit_component_classes() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Html,
+                "html",
+                vec![statement(&["background", "#000"])],
+            ),
+            declaration(
+                DeclarationKind::Body,
+                "page-body",
+                vec![statement(&["margin", "none"])],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(!css.contains(".fr-html"));
+    assert!(!css.contains(".fr-page-body"));
+    assert!(css.contains("html {"));
+    assert!(css.contains("body {"));
+}

@@ -1,0 +1,14 @@
+// page-root-styling.frame
+// Tests html and page-body declaration kinds for page-level styling.
+// Used as a regression fixture for page root styling support.
+
+html {
+  background #0a0f1a
+  color #e2e8f0
+}
+
+page-body {
+  margin none
+  background #0a0f1a
+  color #e2e8f0
+}
