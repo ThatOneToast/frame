@@ -322,6 +322,34 @@ Success criteria:
 
 ---
 
+## Milestone 10B — Page Root Styling
+
+Goal: enable full-page dark-themed apps by supporting `html` and `page-body` declarations.
+
+Deliverables:
+
+- [x] `html` declaration that emits a global `html` CSS rule.
+- [x] `page-body` declaration that emits a global `body` CSS rule.
+- [x] `page-body` emits default `min-height: 100vh` and `margin: 0`.
+- [x] Raw CSS values supported (hex colors, etc.).
+- [x] Grid conflict diagnostics for `columns` + `tracks`.
+- [x] Grid conflict diagnostics for duplicate column names.
+- [x] Unknown explicit style binding diagnostics.
+- [x] LSP completions for `html` and `page-body`.
+- [x] LSP hover docs for `html` and `page-body`.
+- [x] Tree-sitter grammar updated with `html` and `page-body`.
+- [x] Dashboard regression test with page root styling.
+- [x] Codegen tests for `html`/`page-body` CSS emission.
+- [x] Diagnostic tests for grid conflicts and style bindings.
+
+Success criteria:
+
+- Full-page dark-themed apps work without white body backgrounds.
+- `html` and `page-body` emit correct global CSS rules.
+- Grid conflicts and unknown style bindings produce actionable diagnostics.
+
+---
+
 ## Milestone 11 — CSS Coverage Expansion
 
 Goal: continue evolving Frame styling toward complete CSS capability through structured syntax.

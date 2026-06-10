@@ -6,6 +6,8 @@ This guide helps coding agents build production-quality UIs with Frame. It cover
 
 ### Valid Style Declarations (file root)
 ```
+html { background ...; color ... }
+page-body { margin ...; background ...; color ...; min-height ... }
 grid Name { columns ...; rows ...; gap ...; height screen; tracks ... }
 area Name { in GridName; place ...; col ...; row ... }
 card Name { surface ...; padding ...; radius ...; border ...; shadow ...; color ... }
@@ -163,14 +165,43 @@ card MyCard {
 }
 ```
 
+### 8. Using both `columns` and `tracks` in the same grid
+**Wrong:**
+```
+grid AppShell {
+  columns sidebar content
+  tracks columns rail panel fill
+}
+```
+**Why it breaks:** Both `columns` and `tracks` set `grid-template-columns`. The second silently overwrites the first.
+
+**Correct:** Use one or the other:
+```
+grid AppShell {
+  columns sidebar content
+}
+```
+
+### 9. Missing page root styling
+**Wrong:** Setting `surface background` on all containers but not on `html`/`body`.
+
+**Why it breaks:** The browser default background is white. Without page root styling, the `<html>` and `<body>` elements show white behind your app shell.
+
+**Correct:** Add page root styling at the top of your theme file:
+```
+html {
+  background #0a0f1a
+  color #e2e8f0
+}
+
+page-body {
+  margin none
+  background #0a0f1a
+  color #e2e8f0
+}
+```
+
 ## Known Frame Limitations
-
-### No body/root styling
-Frame cannot set styles on `body` or `html`. The `:root` block only emits CSS custom properties. The `advanced { css }` escape hatch targets the current class selector, not `body`/`html`.
-
-**Impact:** Full-page dark-themed apps have white body background and black default text.
-
-**Workaround:** Set `color text-primary` on all visible containers. The body background remains white but is hidden by the full-viewport app shell.
 
 ### No table layout primitives
 Frame has no `table`, `thead`, `tbody`, `tr`, `td`, `th` primitives. Tables must be built with `row` + `card` or `stack` + `row` patterns.

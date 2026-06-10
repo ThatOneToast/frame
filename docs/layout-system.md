@@ -14,6 +14,73 @@ The styling compiler may still emit CSS grid, flexbox, positioning, and overflow
 - Advanced CSS remains available in the styling layer and escape hatches.
 - Data tables and interactive grids are not the same as visual `grid`.
 
+## Page Root Styling
+
+Frame supports `html` and `page-body` declarations for full-page styling. These emit global CSS rules, not class-based styles.
+
+### `html`
+
+Styles the root `<html>` element. Use for page-level background, text color, and font settings.
+
+```frame
+html {
+  background #0a0f1a
+  color #e2e8f0
+}
+```
+
+Generated CSS:
+```css
+html {
+  background: #0a0f1a;
+  color: #e2e8f0;
+}
+```
+
+### `page-body`
+
+Styles the `<body>` element. Use for page-level layout, margin, min-height, and background. Named `page-body` to avoid confusion with UI/body concepts.
+
+```frame
+page-body {
+  margin none
+  background #0a0f1a
+  color #e2e8f0
+}
+```
+
+Generated CSS:
+```css
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: #0a0f1a;
+  color: #e2e8f0;
+}
+```
+
+### Full-Page Dark App Pattern
+
+```frame
+html {
+  background #0a0f1a
+  color #e2e8f0
+}
+
+page-body {
+  margin none
+  background #0a0f1a
+  color #e2e8f0
+}
+
+grid AppShell {
+  tracks columns panel fill
+  tracks rows auto fill
+  gap none
+  height screen
+}
+```
+
 ## Proposed Primitives
 
 ### `dock`
