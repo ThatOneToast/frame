@@ -40,25 +40,25 @@ component LLMDashboard {
       panel MainContent {
         stack DashboardContent {
           row MetricRow {
-            card MetricCard:ActiveModel {
+            card MetricCard {
               stack MetricContent {
                 text "Active Model"
                 text "Qwen3.6 Coder 27B"
               }
             }
-            card MetricCard:TokensPerSecond {
+            card MetricCard {
               stack MetricContent {
                 text "Tokens/sec"
                 text "42.5"
               }
             }
-            card MetricCard:ContextUsed {
+            card MetricCard {
               stack MetricContent {
                 text "Context Used"
                 text "18,432 / 32,768"
               }
             }
-            card MetricCard:VRAMUsage {
+            card MetricCard {
               stack MetricContent {
                 text "VRAM Usage"
                 text "14.2 GB / 24.0 GB"

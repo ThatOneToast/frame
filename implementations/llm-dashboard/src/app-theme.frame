@@ -20,10 +20,8 @@ tokens DashboardTokens {
 // App Layout
 grid AppShell {
   columns sidebar content
-  rows header main
   gap small
   height screen
-  tracks columns rail panel fill
 }
 
 area Header {
@@ -34,6 +32,7 @@ area Header {
   padding medium
   align center
   justify between
+  border soft
 }
 
 area Sidebar {
@@ -42,6 +41,7 @@ area Sidebar {
   col 1
   surface panel
   padding medium
+  border soft
 }
 
 area Main {
@@ -52,9 +52,18 @@ area Main {
 }
 
 // Navigation Styles
+row NavBar {
+  gap medium
+  align center
+  justify between
+  color text-primary
+}
+
 stack Logo {
   padding small
   gap small
+  color text-primary
+  weight bold
 }
 
 row SearchBar {
@@ -62,32 +71,39 @@ row SearchBar {
   surface raised
   radius medium
   gap medium
+  color text-muted
+  border soft
 }
 
 row UserInfo {
   padding small
   gap small
+  color text-secondary
 }
 
 stack SidebarNav {
   surface panel
   padding medium
+  border soft
 }
 
 stack Navigation {
   gap medium
   padding medium
+  color text-primary
 }
 
 stack NavSection {
   gap small
   padding small
+  color text-secondary
 }
 
 // Main Content
 stack MainContent {
   surface main
   padding medium
+  color text-primary
 }
 
 // Dashboard Grid
@@ -106,19 +122,25 @@ card MetricCard {
   surface raised
   padding medium
   radius medium
+  border soft
+  shadow small
+  color text-primary
+  transition smooth
   hover {
     lift small
+    glow soft
   }
 }
 
 stack MetricContent {
   gap small
   padding small
+  color text-secondary
 }
 
 // Performance Section
 grid PerformanceGrid {
-  columns content content
+  columns chart prompt
   gap medium
   below mobile {
     columns content
@@ -129,6 +151,8 @@ card PerformanceChart {
   surface raised
   padding medium
   radius medium
+  border soft
+  color text-primary
 }
 
 stack ChartHeader {
@@ -139,21 +163,26 @@ stack ChartHeader {
 row ChartTitle {
   gap medium
   align center
+  color text-primary
 }
 
 row ChartLegend {
   gap medium
   align center
+  color text-muted
 }
 
 stack ChartArea {
   padding medium
+  color text-muted
 }
 
 card RunPrompt {
   surface raised
   padding medium
   radius medium
+  border soft
+  color text-primary
 }
 
 stack PromptContent {
@@ -165,17 +194,24 @@ stack PromptInput {
   padding medium
   surface overlay
   radius medium
+  color text-muted
+  border soft
 }
 
 button PrimaryButton {
   surface accent
   padding medium
   radius medium
+  color text-primary
+  transition smooth
+  hover {
+    glow soft
+  }
 }
 
 // Inference Runs Table
 grid DashboardGrid {
-  columns content sidebar
+  columns runs models
   gap medium
   below mobile {
     columns content
@@ -186,11 +222,14 @@ card InferenceRuns {
   surface raised
   padding medium
   radius medium
+  border soft
+  color text-primary
 }
 
 stack RunsHeader {
   gap small
   padding small
+  color text-primary
 }
 
 row RunTabs {
@@ -201,16 +240,28 @@ row RunTabs {
 button TabAll {
   padding small
   radius small
+  surface overlay
+  color text-primary
+  border soft
+  transition smooth
 }
 
 button TabLocal {
   padding small
   radius small
+  surface overlay
+  color text-primary
+  border soft
+  transition smooth
 }
 
 button TabRemote {
   padding small
   radius small
+  surface overlay
+  color text-primary
+  border soft
+  transition smooth
 }
 
 stack RunsTable {
@@ -222,6 +273,9 @@ row RunRow {
   gap medium
   padding small
   align center
+  border soft
+  color text-secondary
+  transition smooth
   hover {
     lift small
   }
@@ -232,11 +286,14 @@ card TopModels {
   surface raised
   padding medium
   radius medium
+  border soft
+  color text-primary
 }
 
 stack ModelsHeader {
   gap small
   padding small
+  color text-primary
 }
 
 stack ModelsList {
@@ -249,6 +306,9 @@ row ModelRow {
   padding small
   align center
   justify between
+  color text-secondary
+  border soft
+  transition smooth
   hover {
     lift small
   }

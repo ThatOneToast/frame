@@ -21,16 +21,21 @@ A dark, glassy, high-contrast dashboard for monitoring LLM operations built with
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Start dev server (builds Frame + starts Vite)
-npm run dev
+pnpm run dev
 
 # Build for production
-npm run build
+pnpm run build
 
 # Type check
-npm run check
+pnpm run check
+```
+
+**Prerequisites**: The `@frame/runtime-dom` package must be built first:
+```bash
+cd ../../packages/runtime-dom && npm install && npx tsc -p tsconfig.json
 ```
 
 ## Project Structure
@@ -50,14 +55,18 @@ src/
 
 - **Background**: #0A0A0F (dark)
 - **Surface**: #12121A (raised panels)
-- **Border**: #2A2A36
+- **Border**: #2A2A36 (soft white opacity)
 - **Accent**: #3B82F6 (blue)
-- **Text Primary**: #F8FAFC
-- **Text Secondary**: #94A3B8
+- **Text Primary**: #F8FAFC (white)
+- **Text Secondary**: #94A3B8 (gray)
 
-## Limitations
+## Known Limitations
 
-- No real LLM provider connections
-- Mock data only
-- SVG chart is a placeholder
-- Table uses row-based layout (Frame doesn't have native table primitives)
+- **No body/root styling**: Frame cannot set `body { background }` or `body { color }`. The dark theme only applies to Frame elements, not the document body.
+- **No table primitives**: Tables are built with `row` + `card` patterns, not native table elements.
+- **No real LLM provider connections**: Mock data only.
+- **SVG chart is a placeholder**: No real charting library integration.
+
+## Frame Patterns Used
+
+See `docs/agents/ui-implementation-guide.md` for the Frame patterns and anti-patterns demonstrated in this implementation.
