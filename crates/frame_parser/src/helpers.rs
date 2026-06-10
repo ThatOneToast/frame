@@ -24,6 +24,8 @@ pub fn declaration_kind(kind: &str) -> DeclarationKind {
             "supports" => DeclarationKind::Supports,
             "style-group" => DeclarationKind::StyleGroup,
             "style-order" => DeclarationKind::StyleOrder,
+            "html" => DeclarationKind::Html,
+            "page-body" => DeclarationKind::Body,
             other => DeclarationKind::Unknown(other.to_string()),
         })
         .unwrap_or_else(|| DeclarationKind::Unknown(kind.to_string()))

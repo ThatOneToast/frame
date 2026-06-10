@@ -528,3 +528,55 @@ pub(crate) fn validate_token_block(
         ));
     }
 }
+
+pub(crate) fn validate_grid_conflicts(
+    declaration: &Declaration,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let mut has_columns = false;
+    let mut has_tracks = false;
+    let mut column_names: Vec<String> = Vec::new();
+
+    for node in &declaration.body {
+        let Node::Statement(statement) = node else {
+            continue;
+        };
+        let Some(first) = statement.words.first().map(String::as_str) else {
+            continue;
+        };
+        match first {
+            "columns" => {
+                has_columns = true;
+                column_names = statement.words.iter().skip(1).cloned().collect();
+            }
+            "tracks" => {
+                has_tracks = true;
+            }
+            _ => {}
+        }
+    }
+
+    if has_columns && has_tracks {
+        diagnostics.push(Diagnostic::error(
+            "grid uses both `columns` and `tracks` which both set `grid-template-columns`.\n\nRemove one. Use `columns` for named sections, or `tracks` for explicit grid template definitions.",
+            declaration.span,
+        ));
+    }
+
+    let mut seen = std::collections::HashMap::new();
+    for (i, name) in column_names.iter().enumerate() {
+        if matches!(name.as_str(), "responsive" | "cards" | "auto" | "fill") || name.ends_with('%')
+        {
+            continue;
+        }
+        if let Some(_prev) = seen.insert(name.clone(), i) {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "duplicate column name `{name}` in grid `{}`.\n\nEach column must have a unique name so child areas can claim distinct slots.",
+                    declaration.name.text
+                ),
+                declaration.span,
+            ));
+        }
+    }
+}

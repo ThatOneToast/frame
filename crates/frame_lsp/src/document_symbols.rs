@@ -219,6 +219,8 @@ fn declaration_kind_label(kind: &DeclarationKind) -> &str {
         DeclarationKind::Supports => "supports",
         DeclarationKind::StyleGroup => "style-group",
         DeclarationKind::StyleOrder => "style-order",
+        DeclarationKind::Html => "html",
+        DeclarationKind::Body => "body",
         DeclarationKind::Unknown(value) => value.as_str(),
     }
 }

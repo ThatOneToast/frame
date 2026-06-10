@@ -86,6 +86,8 @@ const PARSER_DECLARATION_KINDS: &[&str] = &[
     "supports",
     "style-group",
     "style-order",
+    "html",
+    "page-body",
 ];
 
 /// Keywords that have dedicated grammar rules in both parser and tree-sitter.

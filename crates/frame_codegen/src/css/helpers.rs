@@ -15,7 +15,6 @@ pub(crate) fn supports_condition(predicate: &str) -> Option<&'static str> {
 pub(crate) fn declaration_from_block(block: &frame_core::Block) -> Option<Declaration> {
     let mut parts = block.name.split_whitespace();
     let kind_text = parts.next()?;
-    let name_text = parts.next()?;
     let kind = match kind_text {
         "grid" => DeclarationKind::Grid,
         "area" => DeclarationKind::Area,
@@ -29,12 +28,21 @@ pub(crate) fn declaration_from_block(block: &frame_core::Block) -> Option<Declar
         "overlay" => DeclarationKind::Overlay,
         "dock" => DeclarationKind::Dock,
         "keyframes" => DeclarationKind::Keyframes,
+        "html" => DeclarationKind::Html,
+        "page-body" => DeclarationKind::Body,
         _ => return None,
+    };
+
+    let unnamed = matches!(kind, DeclarationKind::Html | DeclarationKind::Body);
+    let name_text = if unnamed {
+        kind_text.to_string()
+    } else {
+        parts.next()?.to_string()
     };
 
     Some(Declaration {
         kind,
-        name: Identifier::new(name_text, block.span),
+        name: Identifier::new(&name_text, block.span),
         body: block.body.clone(),
         span: block.span,
     })

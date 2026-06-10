@@ -17,7 +17,6 @@ tokens BrandTokens {
 // === Style declarations ===
 grid AppShell {
   columns sidebar content
-  tracks columns rail panel fill
   below mobile {
     columns content
   }

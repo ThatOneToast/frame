@@ -86,7 +86,10 @@ fn ui_element_keywords_match_registry() {
 
     // UI_ELEMENT_KEYWORDS excludes dedicated-rule keywords and also root-only declarations
     // like "tokens" and "keyframes" which do not appear inside view blocks.
-    let ui_exceptions: HashSet<&str> = ["tokens", "keyframes"].iter().copied().collect();
+    let ui_exceptions: HashSet<&str> = ["tokens", "keyframes", "html", "page-body"]
+        .iter()
+        .copied()
+        .collect();
     let registry_minus_dedicated: HashSet<&str> = registry
         .iter()
         .copied()

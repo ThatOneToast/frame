@@ -231,6 +231,8 @@ pub enum DeclarationKind {
     Supports,
     StyleGroup,
     StyleOrder,
+    Html,
+    Body,
     Unknown(String),
 }
 

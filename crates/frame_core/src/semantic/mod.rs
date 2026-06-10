@@ -65,10 +65,21 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
             continue;
         }
 
+        if matches!(
+            declaration.kind,
+            DeclarationKind::Html | DeclarationKind::Body
+        ) {
+            continue;
+        }
+
         validate_statements(declaration, &symbols, &mut diagnostics);
 
         if declaration.kind == DeclarationKind::Area {
             validate_area(declaration, &symbols, &mut diagnostics);
+        }
+
+        if declaration.kind == DeclarationKind::Grid {
+            validate_grid_conflicts(declaration, &mut diagnostics);
         }
 
         if declaration.kind == DeclarationKind::Keyframes {
@@ -691,8 +702,6 @@ mod tests {
                     "AppShell",
                     vec![
                         statement(&["columns", "header", "sidebar", "content", "users"]),
-                        statement(&["tracks", "columns", "rail", "panel", "fill", "side"]),
-                        statement(&["tracks", "rows", "header", "fill", "composer"]),
                         statement(&["areas", "header", "header", "header", "header"]),
                         statement(&["overflow", "hidden"]),
                         statement(&["box", "border"]),

@@ -669,6 +669,56 @@ row NavBar {
             semantic_class: SemanticTokenClass::Keyword,
         },
     LanguageItem {
+            name: "html",
+            kind: LanguageItemKind::Declaration,
+            layer: LanguageLayer::Layout,
+            detail: "html",
+            summary: "Styles the root <html> element.",
+            description: "Styles the root `<html>` element. Use for page-level background, text color, and font settings.",
+            documentation: "",
+            generated_css: Some("Emits a bare `html { ... }` rule (not a class)."),
+            frame_examples: &[r#"html {
+  background #0a0f1a
+  color #e2e8f0
+}"#],
+            svelte_examples: &[],
+            allowed_in: &[FrameScope::Root],
+            related: &["body"],
+            values: &[],
+            aliases: &[],
+            lowers_to: None,
+            docs_anchor: None,
+            status: LanguageItemStatus::Stable,
+            completion_category: CompletionCategory::Declaration,
+            semantic_class: SemanticTokenClass::Keyword,
+        },
+    LanguageItem {
+            name: "page-body",
+            kind: LanguageItemKind::Declaration,
+            layer: LanguageLayer::Layout,
+            detail: "page-body",
+            summary: "Styles the <body> element.",
+            description: "Styles the `<body>` element. Use for page-level layout, margin, min-height, and background.",
+            documentation: "",
+            generated_css: Some("Emits a bare `body { ... }` rule (not a class)."),
+            frame_examples: &[r#"page-body {
+  margin none
+  min-height screen
+  background #0a0f1a
+  color #e2e8f0
+}"#],
+            svelte_examples: &[],
+            allowed_in: &[FrameScope::Root],
+            related: &["html"],
+            values: &[],
+            aliases: &[],
+            lowers_to: None,
+            docs_anchor: None,
+            status: LanguageItemStatus::Stable,
+            completion_category: CompletionCategory::Declaration,
+            semantic_class: SemanticTokenClass::Keyword,
+        },
+    LanguageItem {
             name: "grid",
             kind: LanguageItemKind::Declaration,
             layer: LanguageLayer::Layout,

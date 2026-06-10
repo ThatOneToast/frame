@@ -27,21 +27,30 @@ impl<'a> Parser<'a> {
                 },
             )
         })?;
-        let name_text = parts.next().ok_or_else(|| {
-            ParseError::one(
-                "missing declaration name",
-                Span {
-                    start: line.start,
-                    end: line.end,
-                },
-            )
-        })?;
 
         let kind = declaration_kind(kind_text);
 
-        let name_start = line.start + line.text.find(name_text).unwrap_or(0);
+        let unnamed = matches!(kind, DeclarationKind::Html | DeclarationKind::Body);
+        let name_text = if unnamed {
+            kind_text.to_string()
+        } else {
+            parts
+                .next()
+                .ok_or_else(|| {
+                    ParseError::one(
+                        "missing declaration name",
+                        Span {
+                            start: line.start,
+                            end: line.end,
+                        },
+                    )
+                })?
+                .to_string()
+        };
+
+        let name_start = line.start + line.text.find(&name_text).unwrap_or(0);
         let name = Identifier::new(
-            name_text,
+            &name_text,
             Span {
                 start: name_start,
                 end: name_start + name_text.len(),

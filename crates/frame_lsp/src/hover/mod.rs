@@ -183,6 +183,8 @@ fn declaration_kind_label(kind: &frame_core::symbols::SymbolKind) -> &'static st
         SymbolKind::Declaration(frame_core::DeclarationKind::Supports) => "supports",
         SymbolKind::Declaration(frame_core::DeclarationKind::StyleGroup) => "style-group",
         SymbolKind::Declaration(frame_core::DeclarationKind::StyleOrder) => "style-order",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Html) => "html",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Body) => "body",
         SymbolKind::Declaration(frame_core::DeclarationKind::Unknown(_)) => "declaration",
         SymbolKind::Color => "color token",
         SymbolKind::Gradient => "gradient token",

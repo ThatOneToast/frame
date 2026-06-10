@@ -100,6 +100,17 @@ pub(crate) fn emit_declaration_css(
         DeclarationKind::Supports => emit_supports(css, declaration, symbols),
         DeclarationKind::StyleOrder => emit_style_order(css, declaration),
         DeclarationKind::StyleGroup => emit_style_group(css, declaration, symbols),
+        DeclarationKind::Html => {
+            css.push_str("html {\n");
+            emit_page_root_css(css, &declaration.body);
+            css.push_str("}\n\n");
+        }
+        DeclarationKind::Body => {
+            css.push_str("body {\n");
+            css.push_str("  min-height: 100vh;\n");
+            emit_page_root_css(css, &declaration.body);
+            css.push_str("}\n\n");
+        }
         _ => {}
     }
 }
@@ -363,6 +374,56 @@ pub(crate) fn emit_area_template(css: &mut String, body: &[Node]) {
 
     if !rows.is_empty() {
         css.push_str(&format!("  grid-template-areas: {};\n", rows.join(" ")));
+    }
+}
+pub(crate) fn emit_page_root_css(css: &mut String, body: &[Node]) {
+    for statement in statements(body) {
+        match statement.words.first().map(String::as_str) {
+            Some("background") => {
+                if let Some(value) = statement.words.get(1) {
+                    css.push_str(&format!("  background: {value};\n"));
+                }
+            }
+            Some("color") => {
+                if let Some(value) = statement.words.get(1) {
+                    css.push_str(&format!("  color: {value};\n"));
+                }
+            }
+            Some("margin") => {
+                if let Some(value) = statement.words.get(1) {
+                    let css_value = match value.as_str() {
+                        "none" => "0",
+                        "small" => "var(--frame-space-small)",
+                        "medium" => "var(--frame-space-medium)",
+                        "large" => "var(--frame-space-large)",
+                        "xlarge" => "var(--frame-space-xlarge)",
+                        other => other,
+                    };
+                    css.push_str(&format!("  margin: {css_value};\n"));
+                }
+            }
+            Some("font-family") => {
+                if let Some(value) = statement.words.get(1) {
+                    css.push_str(&format!("  font-family: {value};\n"));
+                }
+            }
+            Some("font-size") => {
+                if let Some(value) = statement.words.get(1) {
+                    css.push_str(&format!("  font-size: {value};\n"));
+                }
+            }
+            Some("min-height") => {
+                if let Some(value) = statement.words.get(1) {
+                    let css_value = match value.as_str() {
+                        "screen" => "100vh",
+                        "fill" => "100%",
+                        other => other,
+                    };
+                    css.push_str(&format!("  min-height: {css_value};\n"));
+                }
+            }
+            _ => {}
+        }
     }
 }
 pub(crate) fn emit_common(
