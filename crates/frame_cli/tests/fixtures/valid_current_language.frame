@@ -1,0 +1,119 @@
+// valid_current_language.frame
+// Comprehensive fixture exercising current valid Frame syntax.
+// Used as a language contract for agents and contributors.
+
+// === Design tokens ===
+tokens BrandTokens {
+  color primary #3B82F6
+  color danger #EF4444
+  gradient hero-gradient {
+    type linear
+    angle 135deg
+    stop blue 0%
+    stop purple 100%
+  }
+}
+
+// === Style declarations ===
+grid AppShell {
+  columns sidebar content
+  tracks columns rail panel fill
+  below mobile {
+    columns content
+  }
+  above desktop {
+    columns sidebar content main
+  }
+  container narrow {
+    columns content
+  }
+}
+
+area Sidebar {
+  in AppShell
+  place sidebar
+}
+
+card Card {
+  surface panel
+  padding medium
+  radius medium
+  hover {
+    lift small
+    glow soft
+  }
+  active {
+    press
+  }
+}
+
+text Body {
+  decoration underline
+  whitespace pre-wrap
+  word-break break-word
+  hyphenate auto
+}
+
+button PrimaryButton {
+  surface panel
+  padding medium
+  radius medium
+}
+
+// === Keyframes and animation ===
+keyframes FadeIn {
+  from {
+    opacity 0
+  }
+  to {
+    opacity 1
+  }
+}
+
+// === Style groups and supports ===
+style-group components {
+  button Primary {
+    surface panel
+  }
+  card Elevated {
+    surface raised
+  }
+}
+
+style-order reset, base, components
+
+supports display grid {
+  grid ResponsiveGrid {
+    columns content
+  }
+}
+
+// === Component with full feature set ===
+component ChatApp {
+  props {
+    title text
+  }
+  state {
+    sending bool = false
+    active bool = true
+  }
+  view {
+    text $title
+
+    panel Main {
+      show when $active
+      stack Content {
+        action Send:PrimaryButton {
+          text "Send"
+          on press @sendMessage
+          disabled when $sending
+          style when $sending = PrimaryButton
+        }
+      }
+    }
+  }
+
+  slot Default {
+    text "Fallback"
+  }
+}
