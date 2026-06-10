@@ -56,12 +56,7 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                     push_word(line, line_index, name, TOKEN_CLASS, &mut raw);
                 }
             }
-        } else if words.len() == 2
-            && matches!(
-                words.get(1).copied(),
-                Some("text" | "string" | "bool" | "number" | "list")
-            )
-        {
+        } else if words.len() == 2 && is_state_type(words.get(1).copied().unwrap_or("")) {
             // Prop or state declaration without a default value: `channel text`
             push_word(line, line_index, first, TOKEN_CLASS, &mut raw);
             if let Some(ty) = words.get(1) {
@@ -81,10 +76,7 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                 }
             }
         } else if words.get(2).copied() == Some("=")
-            && matches!(
-                words.get(1).copied(),
-                Some("text" | "string" | "bool" | "number" | "list")
-            )
+            && is_state_type(words.get(1).copied().unwrap_or(""))
         {
             push_word(line, line_index, first, TOKEN_CLASS, &mut raw);
             if let Some(state_type) = words.get(1) {
@@ -159,37 +151,13 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                     push_word(line, line_index, name, TOKEN_CLASS, &mut raw);
                 }
             }
-        } else if matches!(
-            first,
-            "value"
-                | "bind"
-                | "class"
-                | "data-test-id"
-                | "decorative"
-                | "description"
-                | "disabled"
-                | "draft"
-                | "goto"
-                | "hidden"
-                | "hint"
-                | "id"
-                | "kind"
-                | "label"
-                | "new-window"
-                | "options"
-                | "placeholder"
-                | "poster"
-                | "readonly"
-                | "rel"
-                | "selected"
-                | "send"
-                | "show"
-                | "source"
-                | "sources"
-                | "style"
-                | "checked"
-                | "alt"
-        ) {
+        } else if (language::property_keywords().contains(&first)
+            && !language::declaration_keywords().contains(&first)
+            && !language::ui_primitive_keywords().contains(&first))
+            || language::ui_keywords().contains(&first)
+            || language::state_keywords().contains(&first)
+            || matches!(first, "send" | "bind" | "label" | "alt")
+        {
             push_word(line, line_index, first, TOKEN_PROPERTY, &mut raw);
             for value in words.iter().skip(1) {
                 let value = value.trim_end_matches('{');
@@ -197,7 +165,10 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                     TOKEN_KEYWORD
                 } else if value.starts_with('$') || value.starts_with('@') {
                     TOKEN_VARIABLE
-                } else if value.parse::<f64>().is_ok() {
+                } else if value.ends_with('%')
+                    || value.parse::<f64>().is_ok()
+                    || is_time_value(value)
+                {
                     TOKEN_NUMBER
                 } else {
                     TOKEN_ENUM_MEMBER
@@ -254,21 +225,10 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                     &mut raw,
                 );
             }
-        } else if matches!(
-            first,
-            "hover"
-                | "focus"
-                | "focus-visible"
-                | "focus-within"
-                | "active"
-                | "disabled"
-                | "checked"
-                | "invalid"
-                | "required"
-                | "target"
-                | "from"
-                | "to"
-        ) || first.ends_with('%')
+        } else if language::state_keywords().contains(&first)
+            || first == "from"
+            || first == "to"
+            || first.ends_with('%')
         {
             push_word(line, line_index, first, TOKEN_KEYWORD, &mut raw);
         } else if matches!(first, "below" | "above" | "between" | "container") {
@@ -357,6 +317,10 @@ fn looks_like_component_invocation(content: &str) -> bool {
             .chars()
             .next()
             .is_some_and(|character| character.is_ascii_uppercase())
+}
+
+fn is_state_type(value: &str) -> bool {
+    matches!(value, "text" | "string" | "bool" | "number" | "list")
 }
 
 fn is_known_value(value: &str) -> bool {

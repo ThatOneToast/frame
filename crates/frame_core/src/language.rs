@@ -6474,6 +6474,18 @@ pub fn state_keywords() -> &'static [&'static str] {
     })
 }
 
+pub fn ui_keywords() -> &'static [&'static str] {
+    static CACHE: OnceLock<&'static [&'static str]> = OnceLock::new();
+    CACHE.get_or_init(|| {
+        let names: Vec<&str> = REGISTRY
+            .iter()
+            .filter(|i| i.kind == LanguageItemKind::UiKeyword)
+            .map(|i| i.name)
+            .collect();
+        Box::leak(names.into_boxed_slice())
+    })
+}
+
 pub fn binding_keywords() -> &'static [&'static str] {
     static CACHE: OnceLock<&'static [&'static str]> = OnceLock::new();
     CACHE.get_or_init(|| {

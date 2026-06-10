@@ -1,4 +1,5 @@
 use crate::document_symbols::{collect_document_symbols, DocumentSymbols};
+use frame_core::language;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CompletionScope {
@@ -100,39 +101,15 @@ fn block_stack_before(source: &str, offset: usize) -> Vec<String> {
 
 fn declaration_kind(header: &str) -> Option<&str> {
     let kind = header.split_whitespace().next()?;
-    matches!(
-        kind,
-        "tokens"
-            | "grid"
-            | "area"
-            | "card"
-            | "stack"
-            | "row"
-            | "button"
-            | "text"
-            | "center"
-            | "split"
-            | "overlay"
-            | "dock"
-            | "keyframes"
-    )
-    .then_some(kind)
+    language::declaration_keywords()
+        .iter()
+        .find(|&&k| k == kind)
+        .map(|_| kind)
 }
 
 fn is_state(header: &str) -> bool {
-    matches!(
-        header,
-        "hover"
-            | "focus"
-            | "focus-visible"
-            | "focus-within"
-            | "active"
-            | "disabled"
-            | "checked"
-            | "invalid"
-            | "required"
-            | "target"
-    )
+    let first = header.split_whitespace().next().unwrap_or("");
+    language::state_keywords().contains(&first)
 }
 
 fn area_grid_before(source: &str, offset: usize) -> Option<String> {

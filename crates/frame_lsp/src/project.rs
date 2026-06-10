@@ -5,8 +5,8 @@ use std::{
 };
 
 use frame_core::{
-    symbols::index_document, Document, Node, Span, TextValue, UiComponentArgumentValue, UiNode,
-    UiPropertyValue,
+    language, symbols::index_document, Document, Node, Span, TextValue, UiComponentArgumentValue,
+    UiNode, UiPropertyValue,
 };
 use frame_parser::parse;
 use tower_lsp::lsp_types::{Location, Url};
@@ -261,24 +261,7 @@ fn find_word_span(source: &str, word: &str) -> Option<Span> {
             let parts: Vec<_> = header.split_whitespace().collect();
             if parts.len() >= 2 {
                 if let Some(kind) = parts.first() {
-                    if matches!(
-                        *kind,
-                        "card"
-                            | "stack"
-                            | "row"
-                            | "grid"
-                            | "area"
-                            | "text"
-                            | "button"
-                            | "tokens"
-                            | "center"
-                            | "split"
-                            | "overlay"
-                            | "dock"
-                            | "keyframes"
-                            | "supports"
-                    ) && parts[1] == word
-                    {
+                    if language::declaration_keywords().contains(kind) && parts[1] == word {
                         if let Some(relative) = line.find(word) {
                             let start = search_start + relative;
                             return Some(Span {
@@ -559,15 +542,11 @@ fn collect_argument_value_references(
     spans: &mut Vec<Span>,
 ) {
     match value {
-        UiComponentArgumentValue::Data(data_ref) => {
-            if data_ref.name.text == word {
-                spans.push(data_ref.span);
-            }
+        UiComponentArgumentValue::Data(data_ref) if data_ref.name.text == word => {
+            spans.push(data_ref.span);
         }
-        UiComponentArgumentValue::Bind(data_ref) => {
-            if data_ref.name.text == word {
-                spans.push(data_ref.span);
-            }
+        UiComponentArgumentValue::Bind(data_ref) if data_ref.name.text == word => {
+            spans.push(data_ref.span);
         }
         _ => {}
     }
