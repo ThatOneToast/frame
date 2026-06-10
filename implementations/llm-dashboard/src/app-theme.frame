@@ -1,4 +1,16 @@
 // LLM Dashboard Theme - Dark Glassy Design System
+
+html {
+  background #0A0A0F
+  color #F8FAFC
+}
+
+page-body {
+  margin none
+  background #0A0A0F
+  color #F8FAFC
+}
+
 tokens DashboardTokens {
   color background #0A0A0F
   color surface #12121A
@@ -19,15 +31,16 @@ tokens DashboardTokens {
 
 // App Layout
 grid AppShell {
-  columns sidebar content
-  gap small
+  tracks columns panel fill
+  tracks rows auto fill
+  gap none
   height screen
 }
 
 area Header {
   in AppShell
   row 1
-  col 2
+  span 2
   surface panel
   padding medium
   align center
@@ -37,7 +50,7 @@ area Header {
 
 area Sidebar {
   in AppShell
-  row 1
+  row 2
   col 1
   surface panel
   padding medium
@@ -53,10 +66,11 @@ area Main {
 
 // Navigation Styles
 row NavBar {
-  gap medium
+  gap large
   align center
   justify between
   color text-primary
+  padding small
 }
 
 stack Logo {
@@ -64,6 +78,7 @@ stack Logo {
   gap small
   color text-primary
   weight bold
+  size large
 }
 
 row SearchBar {
@@ -97,6 +112,14 @@ stack NavSection {
   gap small
   padding small
   color text-secondary
+}
+
+// Nav item styling
+text NavItem {
+  padding small
+  radius small
+  color text-secondary
+  transition smooth
 }
 
 // Main Content

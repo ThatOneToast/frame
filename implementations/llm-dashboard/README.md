@@ -62,7 +62,6 @@ src/
 
 ## Known Limitations
 
-- **No body/root styling**: Frame cannot set `body { background }` or `body { color }`. The dark theme only applies to Frame elements, not the document body.
 - **No table primitives**: Tables are built with `row` + `card` patterns, not native table elements.
 - **No real LLM provider connections**: Mock data only.
 - **SVG chart is a placeholder**: No real charting library integration.
