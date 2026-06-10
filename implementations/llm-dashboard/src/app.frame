@@ -1,0 +1,178 @@
+// LLM Operations Dashboard
+component LLMDashboard {
+  state {
+    activeModelId text = "qwen3.6-coder-27b"
+    selectedProvider text = "all"
+    searchQuery text = ""
+    activeTab text = "runs"
+  }
+
+  view {
+    screen AppShell {
+      panel Header {
+        row NavBar {
+          stack Logo {
+            text "LLM Dashboard"
+          }
+          row SearchBar {
+            text "Search models, runs, or metrics..."
+          }
+          row UserInfo {
+            text "admin@local"
+          }
+        }
+      }
+
+      panel SidebarNav {
+        stack Navigation {
+          stack NavSection {
+            text "Overview"
+            text "Models"
+            text "Runs"
+            text "Metrics"
+          }
+          stack NavSection {
+            text "Settings"
+          }
+        }
+      }
+
+      panel MainContent {
+        stack DashboardContent {
+          row MetricRow {
+            card MetricCard:ActiveModel {
+              stack MetricContent {
+                text "Active Model"
+                text "Qwen3.6 Coder 27B"
+              }
+            }
+            card MetricCard:TokensPerSecond {
+              stack MetricContent {
+                text "Tokens/sec"
+                text "42.5"
+              }
+            }
+            card MetricCard:ContextUsed {
+              stack MetricContent {
+                text "Context Used"
+                text "18,432 / 32,768"
+              }
+            }
+            card MetricCard:VRAMUsage {
+              stack MetricContent {
+                text "VRAM Usage"
+                text "14.2 GB / 24.0 GB"
+              }
+            }
+          }
+
+          grid PerformanceGrid {
+            card PerformanceChart {
+              stack ChartHeader {
+                row ChartTitle {
+                  text "Inference Performance"
+                  text "Last 60 minutes"
+                }
+                row ChartLegend {
+                  text "Qwen3.6 Coder 27B"
+                  text "Qwen3.5 0.8B Draft"
+                }
+              }
+              stack ChartArea {
+                text "SVG chart would render here"
+              }
+            }
+
+            card RunPrompt {
+              stack PromptContent {
+                text "Quick Inference Test"
+                stack PromptInput {
+                  text "Enter a test prompt..."
+                }
+                action RunTest:PrimaryButton {
+                  text "Run Inference"
+                  on press @runTest
+                }
+              }
+            }
+          }
+
+          grid DashboardGrid {
+            card InferenceRuns {
+              stack RunsHeader {
+                text "Recent Inference Runs"
+                row RunTabs {
+                  action TabAll {
+                    text "All"
+                    on press @filterRuns
+                  }
+                  action TabLocal {
+                    text "Local"
+                    on press @filterRuns
+                  }
+                  action TabRemote {
+                    text "Remote"
+                    on press @filterRuns
+                  }
+                }
+              }
+              stack RunsTable {
+                row RunRow {
+                  text "Qwen3.6 Coder 27B"
+                  text "Local"
+                  text "42.5 tok/s"
+                  text "23.5ms"
+                  text "18,432"
+                  text "$0.0000"
+                  text "12.4 Wh"
+                }
+                row RunRow {
+                  text "Gemma 3 27B"
+                  text "Local"
+                  text "35.8 tok/s"
+                  text "27.9ms"
+                  text "12,288"
+                  text "$0.0000"
+                  text "15.2 Wh"
+                }
+                row RunRow {
+                  text "Llama 3.1 8B"
+                  text "Remote"
+                  text "28.4 tok/s"
+                  text "35.2ms"
+                  text "45,056"
+                  text "$0.0042"
+                  text "0.0 Wh"
+                }
+              }
+            }
+
+            card TopModels {
+              stack ModelsHeader {
+                text "Top Models"
+              }
+              stack ModelsList {
+                row ModelRow {
+                  text "Qwen3.6 Coder 27B"
+                  text "+11.2%"
+                }
+                row ModelRow {
+                  text "Gemma 3 27B"
+                  text "-0.8%"
+                }
+                row ModelRow {
+                  text "Llama 3.1 8B"
+                  text "+1.8%"
+                }
+                row ModelRow {
+                  text "Phi 3.5 Mini"
+                  text "+2.6%"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

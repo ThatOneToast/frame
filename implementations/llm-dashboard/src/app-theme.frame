@@ -1,0 +1,255 @@
+// LLM Dashboard Theme - Dark Glassy Design System
+tokens DashboardTokens {
+  color background #0A0A0F
+  color surface #12121A
+  color surface-raised #1A1A24
+  color surface-overlay #22222E
+  color border #2A2A36
+  color border-accent #3B82F6
+  color text-primary #F8FAFC
+  color text-secondary #94A3B8
+  color text-muted #64748B
+  color accent #3B82F6
+  color accent-hover #2563EB
+  color success #22C55E
+  color warning #F59E0B
+  color danger #EF4444
+  color info #06B6D4
+}
+
+// App Layout
+grid AppShell {
+  columns sidebar content
+  rows header main
+  gap small
+  height screen
+  tracks columns rail panel fill
+}
+
+area Header {
+  in AppShell
+  row 1
+  col 2
+  surface panel
+  padding medium
+  align center
+  justify between
+}
+
+area Sidebar {
+  in AppShell
+  row 1
+  col 1
+  surface panel
+  padding medium
+}
+
+area Main {
+  in AppShell
+  row 2
+  col 2
+  padding medium
+}
+
+// Navigation Styles
+stack Logo {
+  padding small
+  gap small
+}
+
+row SearchBar {
+  padding medium
+  surface raised
+  radius medium
+  gap medium
+}
+
+row UserInfo {
+  padding small
+  gap small
+}
+
+stack SidebarNav {
+  surface panel
+  padding medium
+}
+
+stack Navigation {
+  gap medium
+  padding medium
+}
+
+stack NavSection {
+  gap small
+  padding small
+}
+
+// Main Content
+stack MainContent {
+  surface main
+  padding medium
+}
+
+// Dashboard Grid
+grid DashboardContent {
+  columns content
+  gap medium
+}
+
+// Metric Cards
+row MetricRow {
+  gap medium
+  align center
+}
+
+card MetricCard {
+  surface raised
+  padding medium
+  radius medium
+  hover {
+    lift small
+  }
+}
+
+stack MetricContent {
+  gap small
+  padding small
+}
+
+// Performance Section
+grid PerformanceGrid {
+  columns content content
+  gap medium
+  below mobile {
+    columns content
+  }
+}
+
+card PerformanceChart {
+  surface raised
+  padding medium
+  radius medium
+}
+
+stack ChartHeader {
+  gap small
+  padding small
+}
+
+row ChartTitle {
+  gap medium
+  align center
+}
+
+row ChartLegend {
+  gap medium
+  align center
+}
+
+stack ChartArea {
+  padding medium
+}
+
+card RunPrompt {
+  surface raised
+  padding medium
+  radius medium
+}
+
+stack PromptContent {
+  gap medium
+  padding medium
+}
+
+stack PromptInput {
+  padding medium
+  surface overlay
+  radius medium
+}
+
+button PrimaryButton {
+  surface accent
+  padding medium
+  radius medium
+}
+
+// Inference Runs Table
+grid DashboardGrid {
+  columns content sidebar
+  gap medium
+  below mobile {
+    columns content
+  }
+}
+
+card InferenceRuns {
+  surface raised
+  padding medium
+  radius medium
+}
+
+stack RunsHeader {
+  gap small
+  padding small
+}
+
+row RunTabs {
+  gap small
+  padding small
+}
+
+button TabAll {
+  padding small
+  radius small
+}
+
+button TabLocal {
+  padding small
+  radius small
+}
+
+button TabRemote {
+  padding small
+  radius small
+}
+
+stack RunsTable {
+  gap small
+  padding small
+}
+
+row RunRow {
+  gap medium
+  padding small
+  align center
+  hover {
+    lift small
+  }
+}
+
+// Top Models Panel
+card TopModels {
+  surface raised
+  padding medium
+  radius medium
+}
+
+stack ModelsHeader {
+  gap small
+  padding small
+}
+
+stack ModelsList {
+  gap small
+  padding small
+}
+
+row ModelRow {
+  gap medium
+  padding small
+  align center
+  justify between
+  hover {
+    lift small
+  }
+}

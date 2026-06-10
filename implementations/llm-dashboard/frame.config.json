@@ -1,0 +1,6 @@
+{
+  "name": "llm-dashboard",
+  "version": "0.1.0",
+  "entry": "src/app.frame",
+  "outDir": "src/generated"
+}

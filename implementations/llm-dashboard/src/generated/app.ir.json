@@ -1,0 +1,2066 @@
+{
+  "version": 1,
+  "components": [
+    {
+      "name": "LLMDashboard",
+      "props": [],
+      "state": [
+        {
+          "name": "activeModelId",
+          "value_type": "Text",
+          "default": {
+            "Text": "qwen3.6-coder-27b"
+          },
+          "source": {
+            "start": 63,
+            "end": 107
+          }
+        },
+        {
+          "name": "selectedProvider",
+          "value_type": "Text",
+          "default": {
+            "Text": "all"
+          },
+          "source": {
+            "start": 108,
+            "end": 141
+          }
+        },
+        {
+          "name": "searchQuery",
+          "value_type": "Text",
+          "default": {
+            "Text": ""
+          },
+          "source": {
+            "start": 142,
+            "end": 167
+          }
+        },
+        {
+          "name": "activeTab",
+          "value_type": "Text",
+          "default": {
+            "Text": "runs"
+          },
+          "source": {
+            "start": 168,
+            "end": 195
+          }
+        }
+      ],
+      "slots": [],
+      "nodes": [
+        {
+          "Element": {
+            "kind": "screen",
+            "semantic_kind": "screen",
+            "render_kind": "div",
+            "name": "AppShell",
+            "style": {
+              "Automatic": {
+                "style": "AppShell",
+                "source": {
+                  "start": 221,
+                  "end": 229
+                }
+              }
+            },
+            "attributes": [],
+            "bindings": [],
+            "events": [],
+            "conditions": [],
+            "children": [
+              {
+                "Element": {
+                  "kind": "panel",
+                  "semantic_kind": "panel",
+                  "render_kind": "div",
+                  "name": "Header",
+                  "style": {
+                    "Automatic": {
+                      "style": "Header",
+                      "source": {
+                        "start": 244,
+                        "end": 250
+                      }
+                    }
+                  },
+                  "attributes": [],
+                  "bindings": [],
+                  "events": [],
+                  "conditions": [],
+                  "children": [
+                    {
+                      "Element": {
+                        "kind": "row",
+                        "semantic_kind": "row",
+                        "render_kind": "div",
+                        "name": "NavBar",
+                        "style": {
+                          "Automatic": {
+                            "style": "NavBar",
+                            "source": {
+                              "start": 265,
+                              "end": 271
+                            }
+                          }
+                        },
+                        "attributes": [],
+                        "bindings": [],
+                        "events": [],
+                        "conditions": [],
+                        "children": [
+                          {
+                            "Element": {
+                              "kind": "stack",
+                              "semantic_kind": "stack",
+                              "render_kind": "div",
+                              "name": "Logo",
+                              "style": {
+                                "Automatic": {
+                                  "style": "Logo",
+                                  "source": {
+                                    "start": 290,
+                                    "end": 294
+                                  }
+                                }
+                              },
+                              "attributes": [],
+                              "bindings": [],
+                              "events": [],
+                              "conditions": [],
+                              "children": [
+                                {
+                                  "Text": {
+                                    "value": {
+                                      "Literal": "LLM Dashboard"
+                                    },
+                                    "source": {
+                                      "start": 297,
+                                      "end": 329
+                                    }
+                                  }
+                                }
+                              ],
+                              "source": {
+                                "start": 274,
+                                "end": 341
+                              }
+                            }
+                          },
+                          {
+                            "Element": {
+                              "kind": "row",
+                              "semantic_kind": "row",
+                              "render_kind": "div",
+                              "name": "SearchBar",
+                              "style": {
+                                "Automatic": {
+                                  "style": "SearchBar",
+                                  "source": {
+                                    "start": 356,
+                                    "end": 365
+                                  }
+                                }
+                              },
+                              "attributes": [],
+                              "bindings": [],
+                              "events": [],
+                              "conditions": [],
+                              "children": [
+                                {
+                                  "Text": {
+                                    "value": {
+                                      "Literal": "Search models, runs, or metrics..."
+                                    },
+                                    "source": {
+                                      "start": 368,
+                                      "end": 421
+                                    }
+                                  }
+                                }
+                              ],
+                              "source": {
+                                "start": 342,
+                                "end": 433
+                              }
+                            }
+                          },
+                          {
+                            "Element": {
+                              "kind": "row",
+                              "semantic_kind": "row",
+                              "render_kind": "div",
+                              "name": "UserInfo",
+                              "style": {
+                                "Automatic": {
+                                  "style": "UserInfo",
+                                  "source": {
+                                    "start": 448,
+                                    "end": 456
+                                  }
+                                }
+                              },
+                              "attributes": [],
+                              "bindings": [],
+                              "events": [],
+                              "conditions": [],
+                              "children": [
+                                {
+                                  "Text": {
+                                    "value": {
+                                      "Literal": "admin@local"
+                                    },
+                                    "source": {
+                                      "start": 459,
+                                      "end": 489
+                                    }
+                                  }
+                                }
+                              ],
+                              "source": {
+                                "start": 434,
+                                "end": 501
+                              }
+                            }
+                          }
+                        ],
+                        "source": {
+                          "start": 253,
+                          "end": 511
+                        }
+                      }
+                    }
+                  ],
+                  "source": {
+                    "start": 232,
+                    "end": 519
+                  }
+                }
+              },
+              {
+                "Element": {
+                  "kind": "panel",
+                  "semantic_kind": "panel",
+                  "render_kind": "div",
+                  "name": "SidebarNav",
+                  "style": {
+                    "Automatic": {
+                      "style": "SidebarNav",
+                      "source": {
+                        "start": 533,
+                        "end": 543
+                      }
+                    }
+                  },
+                  "attributes": [],
+                  "bindings": [],
+                  "events": [],
+                  "conditions": [],
+                  "children": [
+                    {
+                      "Element": {
+                        "kind": "stack",
+                        "semantic_kind": "stack",
+                        "render_kind": "div",
+                        "name": "Navigation",
+                        "style": {
+                          "Automatic": {
+                            "style": "Navigation",
+                            "source": {
+                              "start": 560,
+                              "end": 570
+                            }
+                          }
+                        },
+                        "attributes": [],
+                        "bindings": [],
+                        "events": [],
+                        "conditions": [],
+                        "children": [
+                          {
+                            "Element": {
+                              "kind": "stack",
+                              "semantic_kind": "stack",
+                              "render_kind": "div",
+                              "name": "NavSection",
+                              "style": {
+                                "Automatic": {
+                                  "style": "NavSection",
+                                  "source": {
+                                    "start": 589,
+                                    "end": 599
+                                  }
+                                }
+                              },
+                              "attributes": [],
+                              "bindings": [],
+                              "events": [],
+                              "conditions": [],
+                              "children": [
+                                {
+                                  "Text": {
+                                    "value": {
+                                      "Literal": "Overview"
+                                    },
+                                    "source": {
+                                      "start": 602,
+                                      "end": 629
+                                    }
+                                  }
+                                },
+                                {
+                                  "Text": {
+                                    "value": {
+                                      "Literal": "Models"
+                                    },
+                                    "source": {
+                                      "start": 630,
+                                      "end": 655
+                                    }
+                                  }
+                                },
+                                {
+                                  "Text": {
+                                    "value": {
+                                      "Literal": "Runs"
+                                    },
+                                    "source": {
+                                      "start": 656,
+                                      "end": 679
+                                    }
+                                  }
+                                },
+                                {
+                                  "Text": {
+                                    "value": {
+                                      "Literal": "Metrics"
+                                    },
+                                    "source": {
+                                      "start": 680,
+                                      "end": 706
+                                    }
+                                  }
+                                }
+                              ],
+                              "source": {
+                                "start": 573,
+                                "end": 718
+                              }
+                            }
+                          },
+                          {
+                            "Element": {
+                              "kind": "stack",
+                              "semantic_kind": "stack",
+                              "render_kind": "div",
+                              "name": "NavSection",
+                              "style": {
+                                "Automatic": {
+                                  "style": "NavSection",
+                                  "source": {
+                                    "start": 735,
+                                    "end": 745
+                                  }
+                                }
+                              },
+                              "attributes": [],
+                              "bindings": [],
+                              "events": [],
+                              "conditions": [],
+                              "children": [
+                                {
+                                  "Text": {
+                                    "value": {
+                                      "Literal": "Settings"
+                                    },
+                                    "source": {
+                                      "start": 748,
+                                      "end": 775
+                                    }
+                                  }
+                                }
+                              ],
+                              "source": {
+                                "start": 719,
+                                "end": 787
+                              }
+                            }
+                          }
+                        ],
+                        "source": {
+                          "start": 546,
+                          "end": 797
+                        }
+                      }
+                    }
+                  ],
+                  "source": {
+                    "start": 521,
+                    "end": 805
+                  }
+                }
+              },
+              {
+                "Element": {
+                  "kind": "panel",
+                  "semantic_kind": "panel",
+                  "render_kind": "div",
+                  "name": "MainContent",
+                  "style": {
+                    "Automatic": {
+                      "style": "MainContent",
+                      "source": {
+                        "start": 819,
+                        "end": 830
+                      }
+                    }
+                  },
+                  "attributes": [],
+                  "bindings": [],
+                  "events": [],
+                  "conditions": [],
+                  "children": [
+                    {
+                      "Element": {
+                        "kind": "stack",
+                        "semantic_kind": "stack",
+                        "render_kind": "div",
+                        "name": "DashboardContent",
+                        "style": {
+                          "Automatic": {
+                            "style": "DashboardContent",
+                            "source": {
+                              "start": 847,
+                              "end": 863
+                            }
+                          }
+                        },
+                        "attributes": [],
+                        "bindings": [],
+                        "events": [],
+                        "conditions": [],
+                        "children": [
+                          {
+                            "Element": {
+                              "kind": "row",
+                              "semantic_kind": "row",
+                              "render_kind": "div",
+                              "name": "MetricRow",
+                              "style": {
+                                "Automatic": {
+                                  "style": "MetricRow",
+                                  "source": {
+                                    "start": 880,
+                                    "end": 889
+                                  }
+                                }
+                              },
+                              "attributes": [],
+                              "bindings": [],
+                              "events": [],
+                              "conditions": [],
+                              "children": [
+                                {
+                                  "Element": {
+                                    "kind": "card",
+                                    "semantic_kind": "card",
+                                    "render_kind": "div",
+                                    "name": "MetricCard",
+                                    "style": {
+                                      "Explicit": {
+                                        "style": "ActiveModel",
+                                        "source": {
+                                          "start": 920,
+                                          "end": 931
+                                        }
+                                      }
+                                    },
+                                    "attributes": [],
+                                    "bindings": [],
+                                    "events": [],
+                                    "conditions": [],
+                                    "children": [
+                                      {
+                                        "Element": {
+                                          "kind": "stack",
+                                          "semantic_kind": "stack",
+                                          "render_kind": "div",
+                                          "name": "MetricContent",
+                                          "style": {
+                                            "Automatic": {
+                                              "style": "MetricContent",
+                                              "source": {
+                                                "start": 954,
+                                                "end": 967
+                                              }
+                                            }
+                                          },
+                                          "attributes": [],
+                                          "bindings": [],
+                                          "events": [],
+                                          "conditions": [],
+                                          "children": [
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "Active Model"
+                                                },
+                                                "source": {
+                                                  "start": 970,
+                                                  "end": 1005
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "Qwen3.6 Coder 27B"
+                                                },
+                                                "source": {
+                                                  "start": 1006,
+                                                  "end": 1046
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "source": {
+                                            "start": 934,
+                                            "end": 1062
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "source": {
+                                      "start": 892,
+                                      "end": 1076
+                                    }
+                                  }
+                                },
+                                {
+                                  "Element": {
+                                    "kind": "card",
+                                    "semantic_kind": "card",
+                                    "render_kind": "div",
+                                    "name": "MetricCard",
+                                    "style": {
+                                      "Explicit": {
+                                        "style": "TokensPerSecond",
+                                        "source": {
+                                          "start": 1105,
+                                          "end": 1120
+                                        }
+                                      }
+                                    },
+                                    "attributes": [],
+                                    "bindings": [],
+                                    "events": [],
+                                    "conditions": [],
+                                    "children": [
+                                      {
+                                        "Element": {
+                                          "kind": "stack",
+                                          "semantic_kind": "stack",
+                                          "render_kind": "div",
+                                          "name": "MetricContent",
+                                          "style": {
+                                            "Automatic": {
+                                              "style": "MetricContent",
+                                              "source": {
+                                                "start": 1143,
+                                                "end": 1156
+                                              }
+                                            }
+                                          },
+                                          "attributes": [],
+                                          "bindings": [],
+                                          "events": [],
+                                          "conditions": [],
+                                          "children": [
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "Tokens/sec"
+                                                },
+                                                "source": {
+                                                  "start": 1159,
+                                                  "end": 1192
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "42.5"
+                                                },
+                                                "source": {
+                                                  "start": 1193,
+                                                  "end": 1220
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "source": {
+                                            "start": 1123,
+                                            "end": 1236
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "source": {
+                                      "start": 1077,
+                                      "end": 1250
+                                    }
+                                  }
+                                },
+                                {
+                                  "Element": {
+                                    "kind": "card",
+                                    "semantic_kind": "card",
+                                    "render_kind": "div",
+                                    "name": "MetricCard",
+                                    "style": {
+                                      "Explicit": {
+                                        "style": "ContextUsed",
+                                        "source": {
+                                          "start": 1279,
+                                          "end": 1290
+                                        }
+                                      }
+                                    },
+                                    "attributes": [],
+                                    "bindings": [],
+                                    "events": [],
+                                    "conditions": [],
+                                    "children": [
+                                      {
+                                        "Element": {
+                                          "kind": "stack",
+                                          "semantic_kind": "stack",
+                                          "render_kind": "div",
+                                          "name": "MetricContent",
+                                          "style": {
+                                            "Automatic": {
+                                              "style": "MetricContent",
+                                              "source": {
+                                                "start": 1313,
+                                                "end": 1326
+                                              }
+                                            }
+                                          },
+                                          "attributes": [],
+                                          "bindings": [],
+                                          "events": [],
+                                          "conditions": [],
+                                          "children": [
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "Context Used"
+                                                },
+                                                "source": {
+                                                  "start": 1329,
+                                                  "end": 1364
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "18,432 / 32,768"
+                                                },
+                                                "source": {
+                                                  "start": 1365,
+                                                  "end": 1403
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "source": {
+                                            "start": 1293,
+                                            "end": 1419
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "source": {
+                                      "start": 1251,
+                                      "end": 1433
+                                    }
+                                  }
+                                },
+                                {
+                                  "Element": {
+                                    "kind": "card",
+                                    "semantic_kind": "card",
+                                    "render_kind": "div",
+                                    "name": "MetricCard",
+                                    "style": {
+                                      "Explicit": {
+                                        "style": "VRAMUsage",
+                                        "source": {
+                                          "start": 1462,
+                                          "end": 1471
+                                        }
+                                      }
+                                    },
+                                    "attributes": [],
+                                    "bindings": [],
+                                    "events": [],
+                                    "conditions": [],
+                                    "children": [
+                                      {
+                                        "Element": {
+                                          "kind": "stack",
+                                          "semantic_kind": "stack",
+                                          "render_kind": "div",
+                                          "name": "MetricContent",
+                                          "style": {
+                                            "Automatic": {
+                                              "style": "MetricContent",
+                                              "source": {
+                                                "start": 1494,
+                                                "end": 1507
+                                              }
+                                            }
+                                          },
+                                          "attributes": [],
+                                          "bindings": [],
+                                          "events": [],
+                                          "conditions": [],
+                                          "children": [
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "VRAM Usage"
+                                                },
+                                                "source": {
+                                                  "start": 1510,
+                                                  "end": 1543
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "14.2 GB / 24.0 GB"
+                                                },
+                                                "source": {
+                                                  "start": 1544,
+                                                  "end": 1584
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "source": {
+                                            "start": 1474,
+                                            "end": 1600
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "source": {
+                                      "start": 1434,
+                                      "end": 1614
+                                    }
+                                  }
+                                }
+                              ],
+                              "source": {
+                                "start": 866,
+                                "end": 1626
+                              }
+                            }
+                          },
+                          {
+                            "Element": {
+                              "kind": "grid",
+                              "semantic_kind": "grid",
+                              "render_kind": "div",
+                              "name": "PerformanceGrid",
+                              "style": {
+                                "Automatic": {
+                                  "style": "PerformanceGrid",
+                                  "source": {
+                                    "start": 1643,
+                                    "end": 1658
+                                  }
+                                }
+                              },
+                              "attributes": [],
+                              "bindings": [],
+                              "events": [],
+                              "conditions": [],
+                              "children": [
+                                {
+                                  "Element": {
+                                    "kind": "card",
+                                    "semantic_kind": "card",
+                                    "render_kind": "div",
+                                    "name": "PerformanceChart",
+                                    "style": {
+                                      "Automatic": {
+                                        "style": "PerformanceChart",
+                                        "source": {
+                                          "start": 1678,
+                                          "end": 1694
+                                        }
+                                      }
+                                    },
+                                    "attributes": [],
+                                    "bindings": [],
+                                    "events": [],
+                                    "conditions": [],
+                                    "children": [
+                                      {
+                                        "Element": {
+                                          "kind": "stack",
+                                          "semantic_kind": "stack",
+                                          "render_kind": "div",
+                                          "name": "ChartHeader",
+                                          "style": {
+                                            "Automatic": {
+                                              "style": "ChartHeader",
+                                              "source": {
+                                                "start": 1717,
+                                                "end": 1728
+                                              }
+                                            }
+                                          },
+                                          "attributes": [],
+                                          "bindings": [],
+                                          "events": [],
+                                          "conditions": [],
+                                          "children": [
+                                            {
+                                              "Element": {
+                                                "kind": "row",
+                                                "semantic_kind": "row",
+                                                "render_kind": "div",
+                                                "name": "ChartTitle",
+                                                "style": {
+                                                  "Automatic": {
+                                                    "style": "ChartTitle",
+                                                    "source": {
+                                                      "start": 1751,
+                                                      "end": 1761
+                                                    }
+                                                  }
+                                                },
+                                                "attributes": [],
+                                                "bindings": [],
+                                                "events": [],
+                                                "conditions": [],
+                                                "children": [
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Inference Performance"
+                                                      },
+                                                      "source": {
+                                                        "start": 1764,
+                                                        "end": 1810
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Last 60 minutes"
+                                                      },
+                                                      "source": {
+                                                        "start": 1811,
+                                                        "end": 1851
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "source": {
+                                                  "start": 1731,
+                                                  "end": 1869
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Element": {
+                                                "kind": "row",
+                                                "semantic_kind": "row",
+                                                "render_kind": "div",
+                                                "name": "ChartLegend",
+                                                "style": {
+                                                  "Automatic": {
+                                                    "style": "ChartLegend",
+                                                    "source": {
+                                                      "start": 1890,
+                                                      "end": 1901
+                                                    }
+                                                  }
+                                                },
+                                                "attributes": [],
+                                                "bindings": [],
+                                                "events": [],
+                                                "conditions": [],
+                                                "children": [
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Qwen3.6 Coder 27B"
+                                                      },
+                                                      "source": {
+                                                        "start": 1904,
+                                                        "end": 1946
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Qwen3.5 0.8B Draft"
+                                                      },
+                                                      "source": {
+                                                        "start": 1947,
+                                                        "end": 1990
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "source": {
+                                                  "start": 1870,
+                                                  "end": 2008
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "source": {
+                                            "start": 1697,
+                                            "end": 2024
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "Element": {
+                                          "kind": "stack",
+                                          "semantic_kind": "stack",
+                                          "render_kind": "div",
+                                          "name": "ChartArea",
+                                          "style": {
+                                            "Automatic": {
+                                              "style": "ChartArea",
+                                              "source": {
+                                                "start": 2045,
+                                                "end": 2054
+                                              }
+                                            }
+                                          },
+                                          "attributes": [],
+                                          "bindings": [],
+                                          "events": [],
+                                          "conditions": [],
+                                          "children": [
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "SVG chart would render here"
+                                                },
+                                                "source": {
+                                                  "start": 2057,
+                                                  "end": 2107
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "source": {
+                                            "start": 2025,
+                                            "end": 2123
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "source": {
+                                      "start": 1661,
+                                      "end": 2137
+                                    }
+                                  }
+                                },
+                                {
+                                  "Element": {
+                                    "kind": "card",
+                                    "semantic_kind": "card",
+                                    "render_kind": "div",
+                                    "name": "RunPrompt",
+                                    "style": {
+                                      "Automatic": {
+                                        "style": "RunPrompt",
+                                        "source": {
+                                          "start": 2156,
+                                          "end": 2165
+                                        }
+                                      }
+                                    },
+                                    "attributes": [],
+                                    "bindings": [],
+                                    "events": [],
+                                    "conditions": [],
+                                    "children": [
+                                      {
+                                        "Element": {
+                                          "kind": "stack",
+                                          "semantic_kind": "stack",
+                                          "render_kind": "div",
+                                          "name": "PromptContent",
+                                          "style": {
+                                            "Automatic": {
+                                              "style": "PromptContent",
+                                              "source": {
+                                                "start": 2188,
+                                                "end": 2201
+                                              }
+                                            }
+                                          },
+                                          "attributes": [],
+                                          "bindings": [],
+                                          "events": [],
+                                          "conditions": [],
+                                          "children": [
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "Quick Inference Test"
+                                                },
+                                                "source": {
+                                                  "start": 2204,
+                                                  "end": 2247
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Element": {
+                                                "kind": "stack",
+                                                "semantic_kind": "stack",
+                                                "render_kind": "div",
+                                                "name": "PromptInput",
+                                                "style": {
+                                                  "Automatic": {
+                                                    "style": "PromptInput",
+                                                    "source": {
+                                                      "start": 2270,
+                                                      "end": 2281
+                                                    }
+                                                  }
+                                                },
+                                                "attributes": [],
+                                                "bindings": [],
+                                                "events": [],
+                                                "conditions": [],
+                                                "children": [
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Enter a test prompt..."
+                                                      },
+                                                      "source": {
+                                                        "start": 2284,
+                                                        "end": 2331
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "source": {
+                                                  "start": 2248,
+                                                  "end": 2349
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Element": {
+                                                "kind": "action",
+                                                "semantic_kind": "action",
+                                                "render_kind": "button",
+                                                "name": "RunTest",
+                                                "style": {
+                                                  "Explicit": {
+                                                    "style": "PrimaryButton",
+                                                    "source": {
+                                                      "start": 2381,
+                                                      "end": 2394
+                                                    }
+                                                  }
+                                                },
+                                                "attributes": [],
+                                                "bindings": [],
+                                                "events": [
+                                                  {
+                                                    "event": "press",
+                                                    "modifiers": [],
+                                                    "handler": "runTest",
+                                                    "source": {
+                                                      "start": 2436,
+                                                      "end": 2471
+                                                    }
+                                                  }
+                                                ],
+                                                "conditions": [],
+                                                "children": [
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Run Inference"
+                                                      },
+                                                      "source": {
+                                                        "start": 2397,
+                                                        "end": 2435
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "source": {
+                                                  "start": 2350,
+                                                  "end": 2489
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "source": {
+                                            "start": 2168,
+                                            "end": 2505
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "source": {
+                                      "start": 2139,
+                                      "end": 2519
+                                    }
+                                  }
+                                }
+                              ],
+                              "source": {
+                                "start": 1628,
+                                "end": 2531
+                              }
+                            }
+                          },
+                          {
+                            "Element": {
+                              "kind": "grid",
+                              "semantic_kind": "grid",
+                              "render_kind": "div",
+                              "name": "DashboardGrid",
+                              "style": {
+                                "Automatic": {
+                                  "style": "DashboardGrid",
+                                  "source": {
+                                    "start": 2548,
+                                    "end": 2561
+                                  }
+                                }
+                              },
+                              "attributes": [],
+                              "bindings": [],
+                              "events": [],
+                              "conditions": [],
+                              "children": [
+                                {
+                                  "Element": {
+                                    "kind": "card",
+                                    "semantic_kind": "card",
+                                    "render_kind": "div",
+                                    "name": "InferenceRuns",
+                                    "style": {
+                                      "Automatic": {
+                                        "style": "InferenceRuns",
+                                        "source": {
+                                          "start": 2581,
+                                          "end": 2594
+                                        }
+                                      }
+                                    },
+                                    "attributes": [],
+                                    "bindings": [],
+                                    "events": [],
+                                    "conditions": [],
+                                    "children": [
+                                      {
+                                        "Element": {
+                                          "kind": "stack",
+                                          "semantic_kind": "stack",
+                                          "render_kind": "div",
+                                          "name": "RunsHeader",
+                                          "style": {
+                                            "Automatic": {
+                                              "style": "RunsHeader",
+                                              "source": {
+                                                "start": 2617,
+                                                "end": 2627
+                                              }
+                                            }
+                                          },
+                                          "attributes": [],
+                                          "bindings": [],
+                                          "events": [],
+                                          "conditions": [],
+                                          "children": [
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "Recent Inference Runs"
+                                                },
+                                                "source": {
+                                                  "start": 2630,
+                                                  "end": 2674
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Element": {
+                                                "kind": "row",
+                                                "semantic_kind": "row",
+                                                "render_kind": "div",
+                                                "name": "RunTabs",
+                                                "style": {
+                                                  "Automatic": {
+                                                    "style": "RunTabs",
+                                                    "source": {
+                                                      "start": 2695,
+                                                      "end": 2702
+                                                    }
+                                                  }
+                                                },
+                                                "attributes": [],
+                                                "bindings": [],
+                                                "events": [],
+                                                "conditions": [],
+                                                "children": [
+                                                  {
+                                                    "Element": {
+                                                      "kind": "action",
+                                                      "semantic_kind": "action",
+                                                      "render_kind": "button",
+                                                      "name": "TabAll",
+                                                      "style": {
+                                                        "Automatic": {
+                                                          "style": "TabAll",
+                                                          "source": {
+                                                            "start": 2730,
+                                                            "end": 2736
+                                                          }
+                                                        }
+                                                      },
+                                                      "attributes": [],
+                                                      "bindings": [],
+                                                      "events": [
+                                                        {
+                                                          "event": "press",
+                                                          "modifiers": [],
+                                                          "handler": "filterRuns",
+                                                          "source": {
+                                                            "start": 2770,
+                                                            "end": 2810
+                                                          }
+                                                        }
+                                                      ],
+                                                      "conditions": [],
+                                                      "children": [
+                                                        {
+                                                          "Text": {
+                                                            "value": {
+                                                              "Literal": "All"
+                                                            },
+                                                            "source": {
+                                                              "start": 2739,
+                                                              "end": 2769
+                                                            }
+                                                          }
+                                                        }
+                                                      ],
+                                                      "source": {
+                                                        "start": 2705,
+                                                        "end": 2830
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Element": {
+                                                      "kind": "action",
+                                                      "semantic_kind": "action",
+                                                      "render_kind": "button",
+                                                      "name": "TabLocal",
+                                                      "style": {
+                                                        "Automatic": {
+                                                          "style": "TabLocal",
+                                                          "source": {
+                                                            "start": 2856,
+                                                            "end": 2864
+                                                          }
+                                                        }
+                                                      },
+                                                      "attributes": [],
+                                                      "bindings": [],
+                                                      "events": [
+                                                        {
+                                                          "event": "press",
+                                                          "modifiers": [],
+                                                          "handler": "filterRuns",
+                                                          "source": {
+                                                            "start": 2900,
+                                                            "end": 2940
+                                                          }
+                                                        }
+                                                      ],
+                                                      "conditions": [],
+                                                      "children": [
+                                                        {
+                                                          "Text": {
+                                                            "value": {
+                                                              "Literal": "Local"
+                                                            },
+                                                            "source": {
+                                                              "start": 2867,
+                                                              "end": 2899
+                                                            }
+                                                          }
+                                                        }
+                                                      ],
+                                                      "source": {
+                                                        "start": 2831,
+                                                        "end": 2960
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Element": {
+                                                      "kind": "action",
+                                                      "semantic_kind": "action",
+                                                      "render_kind": "button",
+                                                      "name": "TabRemote",
+                                                      "style": {
+                                                        "Automatic": {
+                                                          "style": "TabRemote",
+                                                          "source": {
+                                                            "start": 2986,
+                                                            "end": 2995
+                                                          }
+                                                        }
+                                                      },
+                                                      "attributes": [],
+                                                      "bindings": [],
+                                                      "events": [
+                                                        {
+                                                          "event": "press",
+                                                          "modifiers": [],
+                                                          "handler": "filterRuns",
+                                                          "source": {
+                                                            "start": 3032,
+                                                            "end": 3072
+                                                          }
+                                                        }
+                                                      ],
+                                                      "conditions": [],
+                                                      "children": [
+                                                        {
+                                                          "Text": {
+                                                            "value": {
+                                                              "Literal": "Remote"
+                                                            },
+                                                            "source": {
+                                                              "start": 2998,
+                                                              "end": 3031
+                                                            }
+                                                          }
+                                                        }
+                                                      ],
+                                                      "source": {
+                                                        "start": 2961,
+                                                        "end": 3092
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "source": {
+                                                  "start": 2675,
+                                                  "end": 3110
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "source": {
+                                            "start": 2597,
+                                            "end": 3126
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "Element": {
+                                          "kind": "stack",
+                                          "semantic_kind": "stack",
+                                          "render_kind": "div",
+                                          "name": "RunsTable",
+                                          "style": {
+                                            "Automatic": {
+                                              "style": "RunsTable",
+                                              "source": {
+                                                "start": 3147,
+                                                "end": 3156
+                                              }
+                                            }
+                                          },
+                                          "attributes": [],
+                                          "bindings": [],
+                                          "events": [],
+                                          "conditions": [],
+                                          "children": [
+                                            {
+                                              "Element": {
+                                                "kind": "row",
+                                                "semantic_kind": "row",
+                                                "render_kind": "div",
+                                                "name": "RunRow",
+                                                "style": {
+                                                  "Automatic": {
+                                                    "style": "RunRow",
+                                                    "source": {
+                                                      "start": 3179,
+                                                      "end": 3185
+                                                    }
+                                                  }
+                                                },
+                                                "attributes": [],
+                                                "bindings": [],
+                                                "events": [],
+                                                "conditions": [],
+                                                "children": [
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Qwen3.6 Coder 27B"
+                                                      },
+                                                      "source": {
+                                                        "start": 3188,
+                                                        "end": 3230
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Local"
+                                                      },
+                                                      "source": {
+                                                        "start": 3231,
+                                                        "end": 3261
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "42.5 tok/s"
+                                                      },
+                                                      "source": {
+                                                        "start": 3262,
+                                                        "end": 3297
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "23.5ms"
+                                                      },
+                                                      "source": {
+                                                        "start": 3298,
+                                                        "end": 3329
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "18,432"
+                                                      },
+                                                      "source": {
+                                                        "start": 3330,
+                                                        "end": 3361
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "$0.0000"
+                                                      },
+                                                      "source": {
+                                                        "start": 3362,
+                                                        "end": 3394
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "12.4 Wh"
+                                                      },
+                                                      "source": {
+                                                        "start": 3395,
+                                                        "end": 3427
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "source": {
+                                                  "start": 3159,
+                                                  "end": 3445
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Element": {
+                                                "kind": "row",
+                                                "semantic_kind": "row",
+                                                "render_kind": "div",
+                                                "name": "RunRow",
+                                                "style": {
+                                                  "Automatic": {
+                                                    "style": "RunRow",
+                                                    "source": {
+                                                      "start": 3466,
+                                                      "end": 3472
+                                                    }
+                                                  }
+                                                },
+                                                "attributes": [],
+                                                "bindings": [],
+                                                "events": [],
+                                                "conditions": [],
+                                                "children": [
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Gemma 3 27B"
+                                                      },
+                                                      "source": {
+                                                        "start": 3475,
+                                                        "end": 3511
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Local"
+                                                      },
+                                                      "source": {
+                                                        "start": 3512,
+                                                        "end": 3542
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "35.8 tok/s"
+                                                      },
+                                                      "source": {
+                                                        "start": 3543,
+                                                        "end": 3578
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "27.9ms"
+                                                      },
+                                                      "source": {
+                                                        "start": 3579,
+                                                        "end": 3610
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "12,288"
+                                                      },
+                                                      "source": {
+                                                        "start": 3611,
+                                                        "end": 3642
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "$0.0000"
+                                                      },
+                                                      "source": {
+                                                        "start": 3643,
+                                                        "end": 3675
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "15.2 Wh"
+                                                      },
+                                                      "source": {
+                                                        "start": 3676,
+                                                        "end": 3708
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "source": {
+                                                  "start": 3446,
+                                                  "end": 3726
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Element": {
+                                                "kind": "row",
+                                                "semantic_kind": "row",
+                                                "render_kind": "div",
+                                                "name": "RunRow",
+                                                "style": {
+                                                  "Automatic": {
+                                                    "style": "RunRow",
+                                                    "source": {
+                                                      "start": 3747,
+                                                      "end": 3753
+                                                    }
+                                                  }
+                                                },
+                                                "attributes": [],
+                                                "bindings": [],
+                                                "events": [],
+                                                "conditions": [],
+                                                "children": [
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Llama 3.1 8B"
+                                                      },
+                                                      "source": {
+                                                        "start": 3756,
+                                                        "end": 3793
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Remote"
+                                                      },
+                                                      "source": {
+                                                        "start": 3794,
+                                                        "end": 3825
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "28.4 tok/s"
+                                                      },
+                                                      "source": {
+                                                        "start": 3826,
+                                                        "end": 3861
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "35.2ms"
+                                                      },
+                                                      "source": {
+                                                        "start": 3862,
+                                                        "end": 3893
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "45,056"
+                                                      },
+                                                      "source": {
+                                                        "start": 3894,
+                                                        "end": 3925
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "$0.0042"
+                                                      },
+                                                      "source": {
+                                                        "start": 3926,
+                                                        "end": 3958
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "0.0 Wh"
+                                                      },
+                                                      "source": {
+                                                        "start": 3959,
+                                                        "end": 3990
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "source": {
+                                                  "start": 3727,
+                                                  "end": 4008
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "source": {
+                                            "start": 3127,
+                                            "end": 4024
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "source": {
+                                      "start": 2564,
+                                      "end": 4038
+                                    }
+                                  }
+                                },
+                                {
+                                  "Element": {
+                                    "kind": "card",
+                                    "semantic_kind": "card",
+                                    "render_kind": "div",
+                                    "name": "TopModels",
+                                    "style": {
+                                      "Automatic": {
+                                        "style": "TopModels",
+                                        "source": {
+                                          "start": 4057,
+                                          "end": 4066
+                                        }
+                                      }
+                                    },
+                                    "attributes": [],
+                                    "bindings": [],
+                                    "events": [],
+                                    "conditions": [],
+                                    "children": [
+                                      {
+                                        "Element": {
+                                          "kind": "stack",
+                                          "semantic_kind": "stack",
+                                          "render_kind": "div",
+                                          "name": "ModelsHeader",
+                                          "style": {
+                                            "Automatic": {
+                                              "style": "ModelsHeader",
+                                              "source": {
+                                                "start": 4089,
+                                                "end": 4101
+                                              }
+                                            }
+                                          },
+                                          "attributes": [],
+                                          "bindings": [],
+                                          "events": [],
+                                          "conditions": [],
+                                          "children": [
+                                            {
+                                              "Text": {
+                                                "value": {
+                                                  "Literal": "Top Models"
+                                                },
+                                                "source": {
+                                                  "start": 4104,
+                                                  "end": 4137
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "source": {
+                                            "start": 4069,
+                                            "end": 4153
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "Element": {
+                                          "kind": "stack",
+                                          "semantic_kind": "stack",
+                                          "render_kind": "div",
+                                          "name": "ModelsList",
+                                          "style": {
+                                            "Automatic": {
+                                              "style": "ModelsList",
+                                              "source": {
+                                                "start": 4174,
+                                                "end": 4184
+                                              }
+                                            }
+                                          },
+                                          "attributes": [],
+                                          "bindings": [],
+                                          "events": [],
+                                          "conditions": [],
+                                          "children": [
+                                            {
+                                              "Element": {
+                                                "kind": "row",
+                                                "semantic_kind": "row",
+                                                "render_kind": "div",
+                                                "name": "ModelRow",
+                                                "style": {
+                                                  "Automatic": {
+                                                    "style": "ModelRow",
+                                                    "source": {
+                                                      "start": 4207,
+                                                      "end": 4215
+                                                    }
+                                                  }
+                                                },
+                                                "attributes": [],
+                                                "bindings": [],
+                                                "events": [],
+                                                "conditions": [],
+                                                "children": [
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Qwen3.6 Coder 27B"
+                                                      },
+                                                      "source": {
+                                                        "start": 4218,
+                                                        "end": 4260
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "+11.2%"
+                                                      },
+                                                      "source": {
+                                                        "start": 4261,
+                                                        "end": 4292
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "source": {
+                                                  "start": 4187,
+                                                  "end": 4310
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Element": {
+                                                "kind": "row",
+                                                "semantic_kind": "row",
+                                                "render_kind": "div",
+                                                "name": "ModelRow",
+                                                "style": {
+                                                  "Automatic": {
+                                                    "style": "ModelRow",
+                                                    "source": {
+                                                      "start": 4331,
+                                                      "end": 4339
+                                                    }
+                                                  }
+                                                },
+                                                "attributes": [],
+                                                "bindings": [],
+                                                "events": [],
+                                                "conditions": [],
+                                                "children": [
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Gemma 3 27B"
+                                                      },
+                                                      "source": {
+                                                        "start": 4342,
+                                                        "end": 4378
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "-0.8%"
+                                                      },
+                                                      "source": {
+                                                        "start": 4379,
+                                                        "end": 4409
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "source": {
+                                                  "start": 4311,
+                                                  "end": 4427
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Element": {
+                                                "kind": "row",
+                                                "semantic_kind": "row",
+                                                "render_kind": "div",
+                                                "name": "ModelRow",
+                                                "style": {
+                                                  "Automatic": {
+                                                    "style": "ModelRow",
+                                                    "source": {
+                                                      "start": 4448,
+                                                      "end": 4456
+                                                    }
+                                                  }
+                                                },
+                                                "attributes": [],
+                                                "bindings": [],
+                                                "events": [],
+                                                "conditions": [],
+                                                "children": [
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Llama 3.1 8B"
+                                                      },
+                                                      "source": {
+                                                        "start": 4459,
+                                                        "end": 4496
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "+1.8%"
+                                                      },
+                                                      "source": {
+                                                        "start": 4497,
+                                                        "end": 4527
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "source": {
+                                                  "start": 4428,
+                                                  "end": 4545
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "Element": {
+                                                "kind": "row",
+                                                "semantic_kind": "row",
+                                                "render_kind": "div",
+                                                "name": "ModelRow",
+                                                "style": {
+                                                  "Automatic": {
+                                                    "style": "ModelRow",
+                                                    "source": {
+                                                      "start": 4566,
+                                                      "end": 4574
+                                                    }
+                                                  }
+                                                },
+                                                "attributes": [],
+                                                "bindings": [],
+                                                "events": [],
+                                                "conditions": [],
+                                                "children": [
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "Phi 3.5 Mini"
+                                                      },
+                                                      "source": {
+                                                        "start": 4577,
+                                                        "end": 4614
+                                                      }
+                                                    }
+                                                  },
+                                                  {
+                                                    "Text": {
+                                                      "value": {
+                                                        "Literal": "+2.6%"
+                                                      },
+                                                      "source": {
+                                                        "start": 4615,
+                                                        "end": 4645
+                                                      }
+                                                    }
+                                                  }
+                                                ],
+                                                "source": {
+                                                  "start": 4546,
+                                                  "end": 4663
+                                                }
+                                              }
+                                            }
+                                          ],
+                                          "source": {
+                                            "start": 4154,
+                                            "end": 4679
+                                          }
+                                        }
+                                      }
+                                    ],
+                                    "source": {
+                                      "start": 4040,
+                                      "end": 4693
+                                    }
+                                  }
+                                }
+                              ],
+                              "source": {
+                                "start": 2533,
+                                "end": 4705
+                              }
+                            }
+                          }
+                        ],
+                        "source": {
+                          "start": 833,
+                          "end": 4715
+                        }
+                      }
+                    }
+                  ],
+                  "source": {
+                    "start": 807,
+                    "end": 4723
+                  }
+                }
+              }
+            ],
+            "source": {
+              "start": 210,
+              "end": 4729
+            }
+          }
+        }
+      ],
+      "capabilities": [
+        "EventBinding"
+      ],
+      "source": {
+        "start": 28,
+        "end": 4735
+      }
+    }
+  ]
+}
