@@ -582,11 +582,11 @@ fn find_property_at_offset(nodes: &[UiNode], offset: usize) -> Option<String> {
                     return Some(found);
                 }
             }
-            UiNode::Loop(loop_node) => {
-                if loop_node.span.start <= offset && loop_node.span.end >= offset {
-                    if let Some(found) = find_property_at_offset(&loop_node.children, offset) {
-                        return Some(found);
-                    }
+            UiNode::Loop(loop_node)
+                if loop_node.span.start <= offset && loop_node.span.end >= offset =>
+            {
+                if let Some(found) = find_property_at_offset(&loop_node.children, offset) {
+                    return Some(found);
                 }
             }
             _ => {}
@@ -607,10 +607,10 @@ fn find_element_kind_at_offset(nodes: &[UiNode], offset: usize) -> Option<String
                 // Cursor is in this element's body
                 return Some(el.kind.text.clone());
             }
-            UiNode::Loop(loop_node) => {
-                if loop_node.span.start <= offset && loop_node.span.end >= offset {
-                    return find_element_kind_at_offset(&loop_node.children, offset);
-                }
+            UiNode::Loop(loop_node)
+                if loop_node.span.start <= offset && loop_node.span.end >= offset =>
+            {
+                return find_element_kind_at_offset(&loop_node.children, offset);
             }
             _ => {}
         }

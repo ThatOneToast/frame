@@ -961,17 +961,17 @@ fn collect_missing_refs(
                                 ));
                             }
                         }
-                        frame_core::UiPropertyValue::Conditional(binding) => {
-                            if !known_names.contains(&binding.condition.name.text) {
-                                missing.push((
-                                    binding.condition.name.text.clone(),
-                                    "bool".to_string(),
-                                    crate::diagnostics::range_for_span(
-                                        source,
-                                        binding.condition.name.span,
-                                    ),
-                                ));
-                            }
+                        frame_core::UiPropertyValue::Conditional(binding)
+                            if !known_names.contains(&binding.condition.name.text) =>
+                        {
+                            missing.push((
+                                binding.condition.name.text.clone(),
+                                "bool".to_string(),
+                                crate::diagnostics::range_for_span(
+                                    source,
+                                    binding.condition.name.span,
+                                ),
+                            ));
                         }
                         _ => {}
                     }
@@ -1029,14 +1029,14 @@ fn collect_missing_props(
                 for arg in &invocation.arguments {
                     match &arg.value {
                         frame_core::UiComponentArgumentValue::Data(data_ref)
-                        | frame_core::UiComponentArgumentValue::Bind(data_ref) => {
-                            if !known_props.contains(&data_ref.name.text) {
-                                missing.push((
-                                    data_ref.name.text.clone(),
-                                    infer_state_type_from_usage(&data_ref.name.text),
-                                    crate::diagnostics::range_for_span(source, data_ref.name.span),
-                                ));
-                            }
+                        | frame_core::UiComponentArgumentValue::Bind(data_ref)
+                            if !known_props.contains(&data_ref.name.text) =>
+                        {
+                            missing.push((
+                                data_ref.name.text.clone(),
+                                infer_state_type_from_usage(&data_ref.name.text),
+                                crate::diagnostics::range_for_span(source, data_ref.name.span),
+                            ));
                         }
                         _ => {}
                     }

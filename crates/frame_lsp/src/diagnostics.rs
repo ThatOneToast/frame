@@ -57,7 +57,7 @@ pub fn cursor_diagnostics(source: &str, offset: usize) -> Vec<FrameDiagnostic> {
     let span = word_span_at(source, offset);
 
     match &cursor.slot {
-        CursorSlot::ViewPrimitive | CursorSlot::ViewBody | CursorSlot::ViewNodeName => {
+        CursorSlot::ViewPrimitive => {
             if let Some(word) = &cursor.word {
                 if !word.starts_with('$')
                     && !word.starts_with('@')
@@ -75,8 +75,83 @@ pub fn cursor_diagnostics(source: &str, offset: usize) -> Vec<FrameDiagnostic> {
                 }
             }
         }
+        CursorSlot::ViewNodeName => {
+            // Node names are user-chosen identifiers, not primitives.
+            // Do not flag them as unknown primitives.
+        }
+        CursorSlot::ViewBody => {
+            // Inside a view body, check if the word is a known primitive or declaration.
+            // If it's not, it might be a component invocation or an unknown element.
+            if let Some(word) = &cursor.word {
+                // Skip loop variable names (for item in $items ...)
+                if let Some(ref block) = cursor.innermost_block {
+                    if block.starts_with("for ") {
+                        return diagnostics;
+                    }
+                }
+                // Also skip if the current line is starting a for loop
+                if cursor.line_prefix.trim().starts_with("for ") {
+                    return diagnostics;
+                }
+                if !word.starts_with('$')
+                    && !word.starts_with('@')
+                    && !word.starts_with('"')
+                    && !word.starts_with('(')
+                    && language::item(word).is_none()
+                    && !cursor
+                        .scope
+                        .local_declarations
+                        .iter()
+                        .any(|d| d.name == *word)
+                {
+                    // Only flag if it looks like it could be a primitive (lowercase, no parens)
+                    // Component names start with uppercase and have ( for invocations
+                    if !word.starts_with(char::is_uppercase)
+                        && cursor.enclosing_declaration.is_none()
+                    {
+                        let message = format!(
+                            "Unknown UI primitive `{word}`. Frame prefers UI-native primitives:\n\
+                             - `panel` for visible content regions\n\
+                             - `stack` for vertical groups\n\
+                             - `dock` for app shell layout\n\
+                             - `action` for clickable intent\n"
+                        );
+                        diagnostics.push(FrameDiagnostic::error(message, span));
+                    }
+                }
+            }
+        }
         CursorSlot::StylePropertyName => {
             if let Some(word) = &cursor.word {
+                // Skip nested block keywords inside declarations
+                if is_declaration_nested_block_keyword(word) {
+                    return diagnostics;
+                }
+                // Skip validation inside nested blocks (gradient, animation, etc.)
+                // where the property keywords are different
+                if let Some(ref block) = cursor.innermost_block {
+                    let block_first = block.split_whitespace().next().unwrap_or("");
+                    if matches!(
+                        block_first,
+                        "gradient"
+                            | "animation"
+                            | "section"
+                            | "from"
+                            | "to"
+                            | "below"
+                            | "above"
+                            | "between"
+                            | "container"
+                    ) || language::state_keywords().contains(&block_first)
+                        || is_percentage_selector(block_first)
+                    {
+                        return diagnostics;
+                    }
+                }
+                // Also skip if the current line is starting a nested block
+                if is_line_starting_nested_block(&cursor.line_prefix) {
+                    return diagnostics;
+                }
                 if !language::property_keywords().contains(&word.as_str()) {
                     let suggestion = closest_match(word, language::property_keywords())
                         .map(|v| format!("\n\nDid you mean `{v}`?"))
@@ -91,6 +166,36 @@ pub fn cursor_diagnostics(source: &str, offset: usize) -> Vec<FrameDiagnostic> {
             }
         }
         CursorSlot::StylePropertyValue { property } => {
+            // Skip validation inside nested blocks (gradient, animation, etc.)
+            // where the property keywords are different
+            if let Some(ref block) = cursor.innermost_block {
+                let block_first = block.split_whitespace().next().unwrap_or("");
+                if matches!(
+                    block_first,
+                    "gradient"
+                        | "animation"
+                        | "section"
+                        | "from"
+                        | "to"
+                        | "below"
+                        | "above"
+                        | "between"
+                        | "container"
+                ) || language::state_keywords().contains(&block_first)
+                    || is_percentage_selector(block_first)
+                {
+                    return diagnostics;
+                }
+            }
+            // Also skip if the current line is starting a nested block
+            if is_line_starting_nested_block(&cursor.line_prefix) {
+                return diagnostics;
+            }
+            // Skip validation for declaration keywords (e.g., "keyframes FloatIn")
+            // These are declaration headers, not property-value pairs
+            if language::declaration_keywords().contains(&property.as_str()) {
+                return diagnostics;
+            }
             if !language::property_keywords().contains(&property.as_str()) {
                 let suggestion = closest_match(property, language::property_keywords())
                     .map(|v| format!("\n\nDid you mean `{v}`?"))
@@ -200,6 +305,42 @@ fn is_word_char(c: char) -> bool {
     c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '$' || c == '@'
 }
 
+fn is_declaration_nested_block_keyword(word: &str) -> bool {
+    // State keywords that appear as nested blocks in declarations
+    if language::state_keywords().contains(&word) {
+        return true;
+    }
+    // Nested block first-word keywords
+    let first = word.split_whitespace().next().unwrap_or(word);
+    matches!(
+        first,
+        "gradient"
+            | "section"
+            | "animation"
+            | "below"
+            | "above"
+            | "between"
+            | "container"
+            | "selected"
+            | "advanced"
+            | "from"
+            | "to"
+    ) || is_percentage_selector(word)
+}
+
+fn is_line_starting_nested_block(line_prefix: &str) -> bool {
+    // Check if the line prefix looks like it's starting a nested block
+    // (e.g., "hover {" or "gradient hero-gradient {")
+    let trimmed = line_prefix.trim();
+    let first = trimmed.split_whitespace().next().unwrap_or("");
+    is_declaration_nested_block_keyword(first)
+}
+
+fn is_percentage_selector(name: &str) -> bool {
+    name.strip_suffix('%')
+        .is_some_and(|number| !number.is_empty() && number.chars().all(|c| c.is_ascii_digit()))
+}
+
 fn closest_match<'a>(needle: &str, candidates: &[&'a str]) -> Option<&'a str> {
     candidates
         .iter()
@@ -253,9 +394,11 @@ fn diagnostics_for_frame_source(source: &str) -> Vec<FrameDiagnostic> {
                 for token in trimmed.split_whitespace() {
                     let check_offset = token_start + token.len() / 2;
                     for d in cursor_diagnostics(source, check_offset) {
-                        let overlaps = diagnostics
-                            .iter()
-                            .any(|existing| spans_overlap(existing.span, d.span));
+                        // Only skip if there's an overlapping diagnostic of same or higher severity
+                        let overlaps = diagnostics.iter().any(|existing| {
+                            spans_overlap(existing.span, d.span)
+                                && existing.severity as u8 <= d.severity as u8
+                        });
                         if !overlaps {
                             diagnostics.push(d);
                         }
@@ -688,6 +831,527 @@ mod tests {
     }
 
     #[test]
+    fn valid_component_with_state_and_props_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  props {
+    messages list
+    title text
+  }
+  state {
+    draft text = \"\"
+    sending bool = false
+  }
+  view {
+    text $title
+    action Send {
+      text \"Send\"
+      on press @sendMessage
+      disabled when $sending
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid component, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_keyed_loop_has_no_diagnostics() {
+        let source = "\
+component MessageList {
+  props {
+    messages list
+  }
+  state {
+    selected text = \"\"
+  }
+  view {
+    for message in $messages key $selected {
+      text $message
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid keyed loop, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_handler_reference_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  state {
+    sending bool = false
+  }
+  view {
+    action Send {
+      text \"Send\"
+      on press @sendMessage
+      disabled when $sending
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid handler reference, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_style_definitions_have_no_diagnostics() {
+        let source = "\
+card PrimaryButton {
+  surface panel
+  padding medium
+  gap small
+}
+
+grid AppShell {
+  columns sidebar content
+  overflow hidden
+}
+
+text MessageText {
+  truncate
+  wrap anywhere
+}
+
+tokens Brand {
+  color brand #7c3aed
+  color panel-bg #181820
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid style definitions, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_nested_view_body_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  state {
+    showPanel bool = false
+  }
+  view {
+    panel Main {
+      show when $showPanel
+      stack Content {
+        text \"Hello\"
+      }
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid nested view body, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_conditional_style_binding_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  state {
+    sending bool = false
+  }
+  view {
+    action Send {
+      text \"Send\"
+      style when $sending = LoadingButton
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid conditional style binding, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_event_modifiers_have_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  view {
+    input MessageInput {
+      on keydown.enter @submitMessage
+      on keydown.escape @cancelMessage
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid event modifiers, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_gradient_blocks_have_no_diagnostics() {
+        let source = "\
+tokens Brand {
+  color brand-purple #7c3aed
+  gradient hero-gradient {
+    type linear
+    angle 135deg
+    stop brand-purple 0%
+    stop #181820 100%
+  }
+}
+
+card Hero {
+  background hero-gradient
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid gradient blocks, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_animation_blocks_have_no_diagnostics() {
+        let source = "\
+keyframes FloatIn {
+  from {
+    opacity 0
+    transform translateY(12px)
+  }
+  to {
+    opacity 1
+    transform translateY(0)
+  }
+}
+
+card Panel {
+  animation FloatIn {
+    duration 240ms
+    delay 0ms
+    ease smooth
+    iteration 1
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid animation blocks, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_responsive_blocks_have_no_diagnostics() {
+        let source = "\
+grid AppShell {
+  columns sidebar content
+  below tablet {
+    columns content
+  }
+  container narrow {
+    columns content
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid responsive blocks, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_slots_have_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  view {
+    card Dialog {
+      text \"Content\"
+    }
+  }
+  slot Header {
+    text \"Title\"
+  }
+  slot Footer {
+    text \"Actions\"
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid slots, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_motion_helpers_have_no_diagnostics() {
+        let source = "\
+card FloatingCard {
+  lift small
+  surface panel
+  hover {
+    lift medium
+    grow slight
+  }
+  active {
+    press
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid motion helpers, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_dotted_data_ref_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  props {
+    user text
+  }
+  view {
+    text $user
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid dotted data ref, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_bind_forms_have_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  state {
+    email text = \"\"
+    active bool = false
+    choice text = \"\"
+  }
+  view {
+    field EmailField {
+      input EmailInput {
+        value bind $email
+      }
+    }
+    toggle ActiveToggle {
+      checked bind $active
+    }
+    select ChoiceSelect {
+      selected bind $choice
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid bind forms, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_style_group_and_supports_have_no_diagnostics() {
+        let source = "\
+style-group components {
+  button PrimaryButton {
+    surface panel
+  }
+}
+
+supports display grid {
+  grid AppShell {
+    columns sidebar content
+  }
+}
+
+style-order reset, base, components, utilities
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid style groups and supports, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_text_interpolation_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  props {
+    username text
+    count number
+  }
+  view {
+    text $username
+    text $count
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid text interpolation, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_component_invocation_with_args_has_no_diagnostics() {
+        let source = "\
+component Greeting {
+  props {
+    name text
+  }
+  view {
+    text $name
+  }
+}
+
+component ChatApp {
+  view {
+    Greeting(name: \"World\")
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid component invocation, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_image_with_alt_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  view {
+    image Avatar {
+      source \"avatar.png\"
+      alt \"User avatar\"
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid image with alt, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
     fn cursor_diagnoses_non_first_word_tokens() {
         // The semantic validator catches $missing, and cursor diagnostics should also
         // detect it (even though it is deduplicated in the final list).
@@ -712,6 +1376,648 @@ mod tests {
         assert_eq!(
             unknown_state_errors, 1,
             "expected one unknown state diagnostic for $missing"
+        );
+    }
+
+    #[test]
+    fn invalid_handler_reports_unknown_handler() {
+        let source = "\
+component ChatApp {
+  state {
+    sending bool = false
+  }
+  view {
+    action Send {
+      text \"Send\"
+      on press @sendMessage
+    }
+    composer MessageComposer {
+      draft bind $sending
+      send @deleteMesssage
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|d| d.message.contains("Unknown handler")),
+            "Expected unknown handler diagnostic, got: {:?}",
+            diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn duplicate_property_reports_only_duplicate_key() {
+        let source = "\
+component ChatApp {
+  view {
+    input MessageInput {
+      id \"name\"
+      id \"email\"
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|d| d.message.contains("Duplicate property")),
+            "Expected duplicate property diagnostic, got: {:?}",
+            diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn unknown_primitive_reports_unknown_primitive() {
+        let source = "\
+component ChatApp {
+  view {
+    unknownPrimitive Broken {
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|d| d.message.contains("Unknown UI primitive")),
+            "Expected unknown primitive diagnostic, got: {:?}",
+            diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn invalid_surface_value_reports_unknown_surface() {
+        let source = "\
+card Demo {
+  surface nonexistent
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|d| d.message.contains("Unknown surface")),
+            "Expected unknown surface diagnostic, got: {:?}",
+            diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn invalid_event_name_reports_unknown_event() {
+        let source = "\
+component ChatApp {
+  view {
+    action Send {
+      on invalidEvent @send
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|d| d.message.contains("Unknown event")),
+            "Expected unknown event diagnostic, got: {:?}",
+            diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn invalid_event_modifier_reports_unknown_modifier() {
+        let source = "\
+component ChatApp {
+  view {
+    action Send {
+      on click.invalidMod @send
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|d| d.message.contains("Unknown event modifier")),
+            "Expected unknown event modifier diagnostic, got: {:?}",
+            diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn duplicate_state_reports_duplicate_state() {
+        let source = "\
+component ChatApp {
+  state {
+    draft text = \"\"
+    draft text = \"\"
+  }
+  view {
+    text $draft
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|d| d.message.contains("Duplicate state")),
+            "Expected duplicate state diagnostic, got: {:?}",
+            diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn unknown_component_reports_unknown_component() {
+        let source = "\
+component ChatApp {
+  view {
+    UnknownComponent()
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|d| d.message.contains("Unknown component")),
+            "Expected unknown component diagnostic, got: {:?}",
+            diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn empty_component_reports_empty_hint() {
+        let source = "\
+component ChatApp {
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|d| d.message.contains("Empty component")),
+            "Expected empty component hint, got: {:?}",
+            diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn missing_required_body_reports_parser_error() {
+        let source = "card Broken {\n  magic {\n  }\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        assert!(
+            diagnostics
+                .iter()
+                .any(|d| d.message.contains("unknown nested block")),
+            "Expected parser error, got: {:?}",
+            diagnostics.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_style_bindings_have_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  view {
+    action Send:PrimaryButton {
+      text \"Send\"
+    }
+    panel Content:GlassPanel {
+      text \"Hello\"
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid style bindings, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_show_when_inside_element_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  state {
+    showPanel bool = false
+  }
+  view {
+    panel Main {
+      show when $showPanel
+      text \"Content\"
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid show when, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_component_invocation_with_bind_arg_has_no_diagnostics() {
+        let source = "\
+component MessageComposer {
+  props {
+    draft text
+  }
+  view {
+    text $draft
+  }
+}
+
+component ChatApp {
+  state {
+    draft text = \"\"
+  }
+  view {
+    MessageComposer(draft bind $draft)
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid component invocation with bind, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_nested_components_in_view_have_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  view {
+    panel Main {
+      stack Content {
+        text \"Hello\"
+        action Send {
+          text \"Send\"
+          on press @sendMessage
+        }
+      }
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for nested components, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_for_loop_with_key_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  state {
+    items list = []
+    selected text = \"\"
+  }
+  view {
+    list ItemList {
+      for item in $items key $selected {
+        item Entry {
+          text $item
+        }
+      }
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid for loop with key, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_multiple_event_modifiers_have_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  view {
+    action Send {
+      text \"Send\"
+      on keydown.ctrl.enter @sendMessage
+      on keydown.escape @cancelMessage
+      on click.once @handleClick
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid multiple event modifiers, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_image_with_source_and_alt_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  view {
+    image Avatar {
+      source \"avatar.png\"
+      alt \"User avatar\"
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid image with source and alt, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_component_with_all_block_types_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  props {
+    title text
+    count number
+  }
+  state {
+    draft text = \"\"
+    sending bool = false
+  }
+  view {
+    text $title
+    action Send {
+      text \"Send\"
+      on press @sendMessage
+      disabled when $sending
+      style when $sending = LoadingButton
+    }
+  }
+  slot Default {
+    text \"Fallback\"
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for complete component, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_style_group_with_nested_declarations_has_no_diagnostics() {
+        let source = "\
+style-group components {
+  button Primary {
+    surface panel
+  }
+  card Elevated {
+    surface raised
+  }
+}
+
+style-order reset, base, components
+
+supports display grid {
+  grid AppShell {
+    columns sidebar content
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid style groups and supports, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_grid_with_areas_and_tracks_has_no_diagnostics() {
+        let source = "\
+grid Dashboard {
+  columns sidebar content
+  tracks columns rail panel fill
+  areas sidebar content
+}
+
+area Sidebar {
+  in Dashboard
+  place sidebar
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid grid with areas and tracks, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_tokens_with_gradients_and_colors_has_no_diagnostics() {
+        let source = "\
+tokens BrandColors {
+  color primary #3B82F6
+  color danger #EF4444
+  gradient hero-gradient {
+    type linear
+    angle 135deg
+    stop blue 0%
+    stop purple 100%
+  }
+}
+
+card Hero {
+  background hero-gradient
+  color primary
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid tokens with gradients, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_keyframes_with_named_animation_has_no_diagnostics() {
+        let source = "\
+keyframes FadeIn {
+  from {
+    opacity 0
+  }
+  to {
+    opacity 1
+  }
+}
+
+card Panel {
+  animation FadeIn {
+    duration 300ms
+    ease smooth
+    fill forwards
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid keyframes with animation, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_responsive_and_container_blocks_have_no_diagnostics() {
+        let source = "\
+grid AppShell {
+  columns sidebar content
+  below mobile {
+    columns content
+  }
+  above desktop {
+    columns sidebar content main
+  }
+  between mobile and tablet {
+    columns content
+  }
+  container narrow {
+    columns content
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid responsive blocks, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_component_with_slot_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  view {
+    card Dialog {
+      text \"Content\"
+    }
+  }
+  slot Header {
+    text \"Title\"
+  }
+  slot Footer {
+    text \"Actions\"
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for component with slots, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_text_interpolation_with_dotted_refs_has_no_diagnostics() {
+        let source = "\
+component ChatApp {
+  props {
+    user text
+    count number
+  }
+  view {
+    text $user
+    text $count
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid text interpolation, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
         );
     }
 }
