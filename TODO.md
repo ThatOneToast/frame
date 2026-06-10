@@ -235,6 +235,7 @@ This file tracks the implementation path. Unchecked implementation items should 
 
 ## Remaining Focused TODOs
 
+- Body/root styling primitive: `body { background, color, font-family, margin }` or equivalent. Required for full-page dark-themed apps. Currently no way to set document-level styles through Frame syntax.
 - Cross-file import-aware completions and diagnostics (local-only for now).
 - Full unused symbol detection across includes (deferred due to cross-file complexity).
 - Advanced style completions from the symbol index.

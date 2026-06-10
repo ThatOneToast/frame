@@ -28,6 +28,15 @@ Sweep note, 2026-06-07: web app workflow was reviewed in this pass, but no new s
 - [x] animations
 - [x] responsive blocks
 - [x] container query blocks
+- [x] interaction states: hover, focus, active, disabled
+
+## Critical Gaps (Blocking Dashboard-Quality UIs)
+
+These gaps were identified during the LLM Dashboard implementation and prevent production-quality full-page applications:
+
+- [ ] **Body/root styling**: No way to set `body { background }`, `body { color }`, `body { font-family }`, or `html { height: 100% }`. The `:root` block only emits CSS custom properties, not presentational styles. The `advanced { css }` escape hatch targets the current class selector, not `body`/`html`. This causes white page backgrounds and unreadable default text color in dark-themed apps.
+- [ ] **Grid column name conflicts**: When `columns` and `tracks` are both specified on a grid, both emit `grid-template-columns` creating a CSS conflict resolved by source order. No diagnostic warns about this. Additionally, duplicate column names (e.g., `columns content content`) cause auto-generated grid areas to overlap children.
+- [ ] **Explicit style bindings to undeclared styles**: Using `card MetricCard:ActiveModel` when `ActiveModel` is not declared generates a non-existent CSS class (`fr-ActiveModel`). The compiler warns but does not error, leading to silently missing styles.
 - [x] advanced CSS escape hatch
 
 ## Display and Box Model
