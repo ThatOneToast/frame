@@ -2,6 +2,22 @@
 
 Use this page when generating Svelte components or setup instructions that involve Frame.
 
+## Web App Template
+
+For new projects, use the web app template:
+
+```bash
+frame new my-app --template web
+```
+
+This creates a standalone Frame project with DOM runtime, not Svelte.
+
+For Svelte integration:
+
+```bash
+frame init svelte
+```
+
 ## Pick The Correct Integration
 
 External `.frame` file:

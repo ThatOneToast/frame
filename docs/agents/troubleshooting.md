@@ -61,8 +61,28 @@ Nested blocks can only be:
 ```txt
 hover
 focus
+focus-visible
+focus-within
 active
 disabled
+checked
+invalid
+required
+target
+gradient
+section
+animation
+below
+above
+between
+container
+from
+to
+0%
+25%
+50%
+75%
+100%
 ```
 
 Bad:
@@ -75,11 +95,21 @@ card ProjectCard {
 }
 ```
 
-Responsive nested blocks are not implemented in the current parser.
+Use `below mobile` instead:
+
+```frame
+card ProjectCard {
+  below mobile {
+    padding small
+  }
+}
+```
 
 ## Semantic Rules
 
-### Unknown Declaration
+### UI Primitive at File Root
+
+`panel` is a UI primitive that belongs inside `view` blocks, not at the file root.
 
 Bad:
 
@@ -89,13 +119,25 @@ panel Sidebar {
 }
 ```
 
-Fix:
+Fix (if this is a styling declaration):
 
 ```frame
 area Sidebar {
   in Dashboard
   place sidebar
   surface panel
+}
+```
+
+Fix (if this is a UI component):
+
+```frame
+component App {
+  view {
+    panel Sidebar {
+      surface panel
+    }
+  }
 }
 ```
 
@@ -337,11 +379,16 @@ If the editor suggests CSS first, verify:
 
 ## Repair Strategy For Agents
 
-1. Identify whether the code is external Frame or inline Svelte Frame.
-2. Check top-level declarations.
-3. Check every `area` against its grid.
-4. Replace raw CSS values with Frame tokens.
-5. Replace invalid nested blocks with supported state blocks.
-6. Use `surface main` for primary content and `surface panel` for secondary regions.
-7. Use `text`, `color`, and `background` semantic tokens.
-8. Prefer complete vertical examples over partial snippets.
+1. Identify whether the code is styling (file root) or UI (inside `component { view { ... } }`).
+2. Check top-level declarations use valid declaration keywords (`grid`, `area`, `card`, `stack`, `row`, `text`, `tokens`, `keyframes`, etc.).
+3. Check UI primitives are inside `view` blocks, not at file root.
+4. Check every `area` against its grid.
+5. Replace raw CSS values with Frame tokens.
+6. Replace invalid nested blocks with supported state blocks.
+7. Use `surface main` for primary content and `surface panel` for secondary regions.
+8. Use `text`, `color`, and `background` semantic tokens.
+9. Check component args use `:` not `=`.
+10. Check loop keys start with `$`.
+11. Check `show when` is inside an element, not standalone.
+12. Check `slot` is at component level, not inside declarations.
+13. Prefer complete vertical examples over partial snippets.

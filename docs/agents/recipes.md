@@ -372,7 +372,158 @@ Before returning Frame code, verify:
 - Percentage columns use numeric `col` placement.
 - Inline Svelte examples use raw `fr-Name` classes.
 - External `.frame` examples import `ui` and `generated.css`.
-- Nested blocks are only `hover`, `focus`, `active`, or `disabled`.
+- Nested blocks are only `hover`, `focus`, `focus-visible`, `focus-within`, `active`, `disabled`, `checked`, `invalid`, `required`, `target`.
 - State blocks contain effects, not declarations.
 - Spacing values are named tokens, not pixels.
 - Percentages are `0%` through `100%`.
+- Component args use `:` not `=`.
+- Loop keys start with `$`.
+- `show when` is inside an element, not standalone.
+- `slot` is at component level, not inside declarations.
+
+## UI Component Recipes
+
+### Simple Component With State
+
+```frame
+component Counter {
+  state {
+    count number = 0
+  }
+  view {
+    text $count
+    action Increment {
+      text "+"
+      on press @increment
+    }
+  }
+}
+```
+
+### Component With Props and Events
+
+```frame
+component Greeting {
+  props {
+    name text
+  }
+  view {
+    text "Hello, {name}"
+  }
+}
+
+component ChatApp {
+  props {
+    title text
+  }
+  state {
+    draft text = ""
+    sending bool = false
+  }
+  view {
+    text $title
+    MessageComposer(draft bind $draft)
+    action Send {
+      text "Send"
+      on press @sendMessage
+      disabled when $sending
+    }
+  }
+}
+```
+
+### Component With Slots
+
+```frame
+component Dialog {
+  view {
+    card Body {
+      text "Default content"
+    }
+  }
+  slot Default {
+    text "Fallback"
+  }
+}
+```
+
+### Component With Conditional Rendering
+
+```frame
+component NotificationBell {
+  state {
+    showDropdown bool = false
+    unreadCount number = 0
+  }
+  view {
+    action Bell {
+      text "Bell"
+      on press @toggleDropdown
+    }
+    panel Dropdown {
+      show when $showDropdown
+      text $unreadCount
+    }
+  }
+}
+```
+
+### Component With Loops
+
+```frame
+component MessageList {
+  state {
+    messages list = []
+    selected text = ""
+  }
+  view {
+    list Container {
+      for message in $messages key $selected {
+        item Message {
+          text $message
+        }
+      }
+      empty EmptyState {
+        text "No messages"
+      }
+    }
+  }
+}
+```
+
+### Component With Style Bindings
+
+```frame
+component SubmitButton {
+  state {
+    sending bool = false
+  }
+  view {
+    action Send:PrimaryButton {
+      text "Send"
+      on press @sendMessage
+      disabled when $sending
+      style when $sending = LoadingButton
+    }
+  }
+}
+```
+
+### Component With Multiple Event Modifiers
+
+```frame
+component SearchInput {
+  state {
+    query text = ""
+  }
+  view {
+    field Search {
+      input QueryInput {
+        value bind $query
+        on keydown.enter @search
+        on keydown.escape @clear
+      }
+    }
+  }
+}
+```

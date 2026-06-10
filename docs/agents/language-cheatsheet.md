@@ -401,8 +401,14 @@ Only use these nested blocks:
 ```txt
 hover
 focus
+focus-visible
+focus-within
 active
 disabled
+checked
+invalid
+required
+target
 ```
 
 Effect values:
@@ -418,6 +424,12 @@ ring
 scale
 fade
 slide
+shift
+grow
+shrink
+tilt
+pop
+smooth
 ```
 
 Examples:
@@ -443,6 +455,138 @@ card PrimaryButton {
   disabled {
     dim medium
   }
+}
+```
+
+## UI Component Syntax
+
+Components are declared with `component` and contain `props`, `state`, `view`, and `slot` blocks.
+
+```frame
+component ChatApp {
+  props {
+    title text
+    count number
+  }
+  state {
+    draft text = ""
+    sending bool = false
+  }
+  view {
+    text $title
+    action Send {
+      text "Send"
+      on press @sendMessage
+      disabled when $sending
+    }
+  }
+  slot Default {
+    text "Fallback"
+  }
+}
+```
+
+### Props vs State
+
+- **Props** have types but no defaults: `props { title text }`
+- **State** has types and defaults: `state { draft text = "" }`
+- Types: `text`, `string`, `bool`, `number`, `list`
+
+### View Block
+
+Inside `view`, use UI primitives:
+
+```frame
+view {
+  panel Main {
+    text "Hello"
+    action Send {
+      text "Send"
+      on press @sendMessage
+    }
+  }
+}
+```
+
+### Data References
+
+- `$name` — references state, props, or loop variables
+- `@name` — references external handler functions
+- Dotted refs work: `$user.name`, `$item.id`
+
+### Event Bindings
+
+```frame
+on press @handler
+on click @handler
+on keydown.enter @handler
+on keydown.ctrl.enter @handler
+on click.once @handler
+```
+
+Modifiers: `enter`, `escape`, `tab`, `space`, `ctrl`, `shift`, `alt`, `meta`, `left`, `right`, `up`, `down`, `prevent`, `stop`, `once`, `capture`, `passive`
+
+### Bindings
+
+```frame
+value bind $state        // two-way binding on input/editor
+checked bind $bool       // two-way binding on toggle/choice
+selected bind $value     // two-way binding on select/choice
+show when $condition     // conditional rendering
+disabled when $flag      // conditional attribute
+style when $flag = Style // conditional style
+```
+
+### Component Invocations
+
+```frame
+Greeting(name: "World")
+MessageComposer(draft bind $draft)
+ChatPanel(channel: $activeChannel)
+```
+
+Arguments use `:` for data, `bind` for two-way binding.
+
+### Loops
+
+```frame
+for item in $items {
+  text $item
+}
+
+for item in $items key $selected {
+  text $item
+}
+```
+
+Loop keys must start with `$`.
+
+### Slots
+
+Slots provide fallback content when a component is used as a container:
+
+```frame
+component Dialog {
+  view {
+    card Body {
+      text "Default content"
+    }
+  }
+  slot Default {
+    text "Fallback"
+  }
+}
+```
+
+### Style Bindings
+
+```frame
+action Send:PrimaryButton {
+  text "Send"
+}
+
+panel Content:GlassPanel {
+  text "Hello"
 }
 ```
 

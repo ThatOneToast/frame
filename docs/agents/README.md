@@ -2,16 +2,20 @@
 
 This folder is written for LLMs and coding agents that need to generate correct Frame code without guessing.
 
-Frame is a design-intent CSS DSL for Svelte projects. It compiles Frame declarations into normal CSS classes and, for external `.frame` files, a TypeScript `ui` class map.
+Frame is an experimental UI-native language for building interfaces through structured, teachable syntax. It compiles `.frame` source through a parser, semantic model, and IR to renderer targets (DOM runtime, static HTML, Tauri/WebView).
+
+Frame is **not stable**. Language, internals, runtime, and docs are expected to change.
 
 ## Agent Decision Tree
 
-Use external `.frame` files when the user wants:
+Use Frame for:
 
-- typed class names
-- shared app layout styles
-- generated `src/lib/frame/generated.ts`
-- generated `src/lib/frame/generated.css`
+- **UI components** with `component`, `view`, `state`, `props`, `slot`
+- **Structured styling** with `grid`, `area`, `card`, `stack`, `row`, etc.
+- **Design tokens** with `tokens` (custom colors, gradients)
+- **Animation** with `keyframes` and `animation` blocks
+- **Responsive design** with `below`, `above`, `between`, `container` blocks
+- **Interaction states** with `hover`, `focus`, `active`, `disabled` blocks
 
 Use Svelte `<style lang="frame">` blocks when the user wants:
 
@@ -19,200 +23,194 @@ Use Svelte `<style lang="frame">` blocks when the user wants:
 - quick examples
 - no generated TypeScript requirement
 
-Do not generate raw CSS-like Frame. Prefer intent words:
+## Core Concepts
 
-```frame
-surface panel
-padding medium
-radius large
-hover {
-  lift small
-  glow accent
-}
-```
+### Two contexts: styling vs UI
 
-Avoid this style:
-
-```frame
-background-color #111
-display grid
-border-radius 12px
-```
-
-Inside `view` blocks, use UI primitives instead of browser tags:
-
-```frame
-action Save { on press @save }
-input Email { label "Email" }
-editor Message { label "Message" }
-```
-
-Avoid browser tags in `view`:
-
-```frame
-button Save { on click @save }      // not valid in view
-input type="email"                 // not valid in view
-```
-
-## Setup Commands
-
-Inside an existing Svelte or SvelteKit project:
-
-```bash
-frame init svelte
-```
-
-Preview setup:
-
-```bash
-frame init svelte --dry-run
-```
-
-Local development from this repository:
-
-```bash
-cargo run -p frame_cli -- init svelte
-```
-
-Compile an external Frame file:
-
-```bash
-frame compile src/lib/frame/app.frame --out src/lib/frame
-```
-
-Check a Frame file:
-
-```bash
-frame check src/lib/frame/app.frame
-```
-
-Format a Frame file:
-
-```bash
-frame format src/lib/frame/app.frame
-```
-
-## Required Mental Model
-
-Top-level declarations create classes:
-
-```frame
-grid Dashboard {
-}
-
-area Sidebar {
-}
-
-card ProjectCard {
-}
-```
-
-Each declaration emits a class:
-
-```txt
-Dashboard -> fr-Dashboard
-Sidebar -> fr-Sidebar
-ProjectCard -> fr-ProjectCard
-```
-
-External `.frame` files also generate:
-
-```ts
-export const ui = {
-  Dashboard: 'fr-Dashboard',
-  Sidebar: 'fr-Sidebar',
-  ProjectCard: 'fr-ProjectCard'
-} as const;
-```
-
-Inline `<style lang="frame">` blocks emit CSS only. Use raw class names like `fr-ProjectCard` in the Svelte markup.
-
-## Core Agent Rules
-
-1. Use `grid` for page structure.
-2. Use `area` for children placed inside a grid.
-3. Every `area` should include `in GridName`.
-4. Use `place name` when the grid has named columns.
-5. Use `col 1`, `col 2`, `col 3` when the grid has percentage columns.
-6. Use `surface main` for primary content regions.
-7. Use `surface panel` for sidebars, inspectors, tool panels, and cards.
-8. Use `text muted` for secondary text and `text bright` for high-emphasis text.
-9. Use `align` for vertical/cross-axis placement.
-10. Use `justify` for horizontal/main-axis distribution.
-11. Use only `hover`, `focus`, `active`, and `disabled` as nested state blocks.
-12. Put braces exactly around declarations and state blocks.
-
-## Minimum Correct Example
-
-```svelte
-<div class="fr-Dashboard">
-  <aside class="fr-Sidebar">Channels</aside>
-  <main class="fr-Content">Messages</main>
-</div>
-
-<style lang="frame">
-  grid Dashboard {
-    columns sidebar content
-    gap medium
-    height screen
-  }
-
-  area Sidebar {
-    in Dashboard
-    place sidebar
-    surface panel
-    padding medium
-  }
-
-  area Content {
-    in Dashboard
-    place content
-    surface main
-    padding large
-  }
-</style>
-```
-
-## Common Failure Modes
-
-Do not suggest values at the file root. Root scope accepts declarations such as `grid`, `area`, `card`, `stack`, and `row`.
-
-Do not put `grid` or `card` inside `hover`:
-
-```frame
-card BadCard {
-  hover {
-    grid NestedGrid
-  }
-}
-```
-
-Use effects inside states:
-
-```frame
-card GoodCard {
-  hover {
-    lift small
-    glow accent
-  }
-}
-```
-
-Do not use `place sidebar` unless the referenced grid defines `sidebar`:
+**Styling context** (file root): declarations like `grid`, `area`, `card`, `stack`, `row`, `tokens`, `keyframes`.
 
 ```frame
 grid Dashboard {
   columns sidebar content
+  gap medium
 }
 
-area Sidebar {
-  in Dashboard
-  place sidebar
+card ProjectCard {
+  surface panel
+  padding medium
+  radius medium
+}
+```
+
+**UI context** (`component { view { ... } }`): UI primitives like `action`, `panel`, `stack`, `text`, `input`, `field`, `toggle`, `select`, `list`, `feed`, `image`, `media`, `dialog`, `popover`.
+
+```frame
+component ChatApp {
+  state {
+    draft text = ""
+  }
+  view {
+    panel Main {
+      text "Hello"
+      action Send {
+        text "Send"
+        on press @sendMessage
+      }
+    }
+  }
+}
+```
+
+### Key syntax rules
+
+1. **No inline JavaScript** — use `@handler` references and `$data` references
+2. **Component args use `:`** — `Greeting(name: "World")`, NOT `Greeting(name = "World")`
+3. **Loop keys must start with `$`** — `for item in $items key $selected`
+4. **`show when` goes inside elements** — not standalone at view level
+5. **`slot` is component-level** — not inside declarations
+6. **Surface values are specific** — `panel`, `main`, `glass`, `flat`, `raised`, `overlay`, `inset`, `sunken`
+7. **Prop types are specific** — `text`, `string`, `bool`, `number`, `list`
+
+## Setup Commands
+
+```bash
+# New web app project
+frame new my-app --template web
+
+# Check a Frame file
+frame check src/app.frame
+
+# Format a Frame file
+frame format src/app.frame
+
+# Compile
+frame build
+
+# Watch mode
+frame watch
+```
+
+## Required Mental Model
+
+### Top-level = styling declarations
+
+```frame
+grid Dashboard { columns sidebar content }
+area Sidebar { in Dashboard; place sidebar }
+card Card { surface panel; padding medium }
+tokens Brand { color primary #3B82F6 }
+keyframes FadeIn { from { opacity 0 } to { opacity 1 } }
+```
+
+### Inside components = UI primitives
+
+```frame
+component ChatApp {
+  props { title text }
+  state { draft text = "" }
+  view {
+    text $title
+    action Send { text "Send"; on press @sendMessage }
+  }
+  slot Default { text "Fallback" }
+}
+```
+
+### Data and handler references
+
+- `$name` — references state, props, or loop variables
+- `@name` — references external handler functions
+- `bind $name` — two-way binding (on `input`, `toggle`, `select`, `choice`)
+
+## Core Agent Rules
+
+1. **Registry is source of truth**: `crates/frame_core/src/language.rs` defines all primitives, properties, values, events, modifiers.
+2. **Use Frame-native syntax**: `surface panel` not `background-color #111`.
+3. **Use UI primitives in view blocks**: `action`, `panel`, `stack`, not `button`, `div`, `span`.
+4. **No inline scripts**: `on press @handler`, not `onclick="handler()"`.
+5. **Security by default**: Text escapes by default. Raw HTML is explicit and unsafe.
+6. **Declarations are classes**: `card Card` generates `fr-Card` CSS class.
+7. **Components are PascalCase**: `component ChatApp { ... }`.
+8. **State types are explicit**: `text`, `bool`, `number`, `list`.
+9. **Props have no defaults**: `props { title text }` (no `= value`).
+10. **State has defaults**: `state { draft text = "" }`.
+
+## Common Failure Modes
+
+### Do not mix styling and UI context
+
+```frame
+// WRONG: card at file root is styling, not UI
+card Dialog {
+  text "Hello"  // text is not a valid styling property
+}
+
+// RIGHT: card inside component view
+component App {
+  view {
+    card Dialog {
+      text "Hello"
+    }
+  }
+}
+```
+
+### Do not use browser words as UI primitives
+
+```frame
+// WRONG
+button Save { on click @save }
+div Container { text "Hello" }
+
+// RIGHT
+action Save { on press @save }
+panel Container { text "Hello" }
+```
+
+### Do not put state blocks inside declarations
+
+```frame
+// WRONG
+card BadCard {
+  hover {
+    grid NestedGrid  // grid is not valid inside hover
+  }
+}
+
+// RIGHT
+card GoodCard {
+  hover {
+    lift small
+    glow soft
+  }
+}
+```
+
+### Do not use `=` for component args
+
+```frame
+// WRONG
+Greeting(name = "World")
+
+// RIGHT
+Greeting(name: "World")
+```
+
+### Do not use standalone `show when`
+
+```frame
+// WRONG
+show when $showPanel
+
+// RIGHT (inside an element)
+panel Main {
+  show when $showPanel
+  text "Content"
 }
 ```
 
 ## Related Agent Docs
 
 - [Language Cheat Sheet](language-cheatsheet.md)
-- [Svelte Patterns](svelte-patterns.md)
 - [Recipes](recipes.md)
+- [Troubleshooting](troubleshooting.md)
