@@ -78,6 +78,7 @@ const PARSER_DECLARATION_KINDS: &[&str] = &[
     "button",
     "text",
     "tokens",
+    "theme",
     "center",
     "split",
     "overlay",

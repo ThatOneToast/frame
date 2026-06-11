@@ -1057,8 +1057,30 @@ Use size, weight, font, and color tokens instead of raw font CSS."#,
             detail: "tokens",
             summary: "tokens",
             description: "",
-            documentation: r#"Defines reusable design tokens for a Frame file.
-Use tokens to name shared visual decisions before applying them to components."#,
+            documentation: r#"Defines a typed token contract namespace.
+Tokens are contracts: typed, named design values (`color`, `surface`, `space`,
+`radius`, `shadow`, `glow`, `breakpoint`, `container`, `gradient`) that
+override or extend Frame's default manifest.
+
+```frame
+tokens default {
+  color text #f5f5f5
+  surface panel #171722
+  space md 1rem
+  radius lg 1rem
+  breakpoint tablet 48rem
+  container content 64rem
+}
+```
+
+Reference tokens anywhere a value is expected with `token(kind.name)`:
+
+```frame
+card Panel {
+  background token(surface.panel)
+  padding token(space.md)
+}
+```"#,
             generated_css: None,
             frame_examples: &[],
             svelte_examples: &[],
@@ -5428,24 +5450,28 @@ Use it for headers, footers, or wide content regions."#,
         },
     LanguageItem {
             name: "theme",
-            kind: LanguageItemKind::Property,
+            kind: LanguageItemKind::Declaration,
             layer: LanguageLayer::Style,
             detail: "theme",
-            summary: "theme",
-            description: "",
-            documentation: "Applies semantic color intent such as danger, success, or warning.",
-            generated_css: None,
-            frame_examples: &[],
-            svelte_examples: &[],
-            allowed_in: &[],
-            related: &[],
+            summary: "Defines a scoped theme of token overrides.",
+            description: "Defines a scoped theme: named token overrides applied through `[data-frame-theme=\"name\"]`. The first declared theme also binds to `:root` as the document default.",
+            documentation: "",
+            generated_css: Some("Emits `[data-frame-theme=\"name\"] { --frame-...: ...; }` custom-property scopes."),
+            frame_examples: &[r#"theme dark uses default {
+  surface app #101014
+  surface panel #171722
+  color text #f5f5f5
+}"#],
+            svelte_examples: &[r#"<body data-frame-theme="dark">"#],
+            allowed_in: &[FrameScope::Root],
+            related: &["tokens", "color", "surface"],
             values: &[],
             aliases: &[],
             lowers_to: None,
-            docs_anchor: None,
+            docs_anchor: Some("docs/language-redesign.md"),
             status: LanguageItemStatus::Stable,
-            completion_category: CompletionCategory::VisualProperty,
-            semantic_class: SemanticTokenClass::Property,
+            completion_category: CompletionCategory::Declaration,
+            semantic_class: SemanticTokenClass::Keyword,
         },
     LanguageItem {
             name: "tone",

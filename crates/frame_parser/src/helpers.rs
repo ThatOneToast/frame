@@ -16,6 +16,7 @@ pub fn declaration_kind(kind: &str) -> DeclarationKind {
             "button" | "action" => DeclarationKind::Button,
             "text" => DeclarationKind::Text,
             "tokens" => DeclarationKind::Tokens,
+            "theme" => DeclarationKind::Theme,
             "center" => DeclarationKind::Center,
             "split" => DeclarationKind::Split,
             "overlay" => DeclarationKind::Overlay,

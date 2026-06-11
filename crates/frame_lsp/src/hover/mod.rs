@@ -202,6 +202,7 @@ fn declaration_kind_label(kind: &frame_core::symbols::SymbolKind) -> &'static st
         SymbolKind::Declaration(frame_core::DeclarationKind::Button) => "button",
         SymbolKind::Declaration(frame_core::DeclarationKind::Text) => "text",
         SymbolKind::Declaration(frame_core::DeclarationKind::Tokens) => "tokens",
+        SymbolKind::Declaration(frame_core::DeclarationKind::Theme) => "theme",
         SymbolKind::Declaration(frame_core::DeclarationKind::Center) => "center",
         SymbolKind::Declaration(frame_core::DeclarationKind::Split) => "split",
         SymbolKind::Declaration(frame_core::DeclarationKind::Overlay) => "overlay",

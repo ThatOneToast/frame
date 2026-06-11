@@ -59,11 +59,18 @@ impl<'a> Parser<'a> {
             },
         );
 
-        // Parse optional `extends BaseName` after the declaration name.
-        let extends = if parts.next() == Some("extends") {
+        // Parse optional `extends BaseName` (styles) or `uses Namespace`
+        // (themes) after the declaration name.
+        let link_keyword = parts.next();
+        let extends = if link_keyword == Some("extends")
+            || (link_keyword == Some("uses") && kind == DeclarationKind::Theme)
+        {
             let base_text = parts.next().ok_or_else(|| {
                 ParseError::one(
-                    "missing base style name after `extends`",
+                    format!(
+                        "missing base name after `{}`",
+                        link_keyword.unwrap_or("extends")
+                    ),
                     Span {
                         start: line.start,
                         end: line.end,

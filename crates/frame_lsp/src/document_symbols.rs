@@ -211,6 +211,7 @@ fn declaration_kind_label(kind: &DeclarationKind) -> &str {
         DeclarationKind::Button => "button",
         DeclarationKind::Text => "text",
         DeclarationKind::Tokens => "tokens",
+        DeclarationKind::Theme => "theme",
         DeclarationKind::Center => "center",
         DeclarationKind::Split => "split",
         DeclarationKind::Overlay => "overlay",
@@ -234,6 +235,7 @@ fn symbol_kind(kind: &DeclarationKind) -> SymbolKind {
         DeclarationKind::Area => SymbolKind::FIELD,
         DeclarationKind::Text => SymbolKind::STRING,
         DeclarationKind::Tokens => SymbolKind::CONSTANT,
+        DeclarationKind::Theme => SymbolKind::CONSTANT,
         _ => SymbolKind::CLASS,
     }
 }

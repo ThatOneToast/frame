@@ -218,7 +218,7 @@ pub(crate) fn validate_statement(
         Some("position") => validate_value(statement, language::POSITIONS, diagnostics),
         Some("anchor") => validate_value(statement, language::ANCHORS, diagnostics),
         Some("z") => validate_value(statement, language::Z_LAYERS, diagnostics),
-        Some("theme" | "color" | "text") => validate_color(statement, symbols, diagnostics),
+        Some("color" | "text") => validate_color(statement, symbols, diagnostics),
         Some("background") => validate_background(statement, symbols, diagnostics),
         Some("columns") => validate_grid_columns(statement, diagnostics),
         Some("flow") => validate_value(statement, language::GRID_FLOWS, diagnostics),
