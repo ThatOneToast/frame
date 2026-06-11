@@ -1856,3 +1856,132 @@ fn dashboard_content_does_not_emit_narrow_max_width() {
         "DashboardContent must emit dashboard max-width (96rem), got: {css}"
     );
 }
+
+// ===== Dashboard Layout Regression Tests =====
+// These tests catch the specific visual issues from the dashboard screenshot regression.
+
+#[test]
+fn metric_row_with_grid_columns_emits_four_equal_columns() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Row,
+            "MetricRow",
+            vec![
+                statement(&["columns", "1fr", "1fr", "1fr", "1fr"]),
+                statement(&["gap", "medium"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(
+        css.contains("display: grid;"),
+        "MetricRow must use grid display, got: {css}"
+    );
+    assert!(
+        css.contains("grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);"),
+        "MetricRow must emit four equal fr columns, got: {css}"
+    );
+}
+
+#[test]
+fn metric_card_base_does_not_rely_on_min_width_percent() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Card,
+            "MetricCardBase",
+            vec![
+                statement(&["padding", "medium"]),
+                statement(&["surface", "raised"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(
+        !css.contains("min-width: 20%"),
+        "MetricCardBase must not use fragile min-width 20%, got: {css}"
+    );
+}
+
+#[test]
+fn main_content_area_emits_min_width_and_overflow() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Area,
+            "MainContent",
+            vec![
+                statement(&["padding", "medium"]),
+                statement(&["overflow", "auto"]),
+                statement(&["min-width", "none"]),
+                statement(&["min-height", "none"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(
+        css.contains("min-width: 0;"),
+        "MainContent must emit min-width 0 for grid child sizing, got: {css}"
+    );
+    assert!(
+        css.contains("min-height: 0;"),
+        "MainContent must emit min-height 0 for grid child sizing, got: {css}"
+    );
+    assert!(
+        css.contains("overflow: auto;"),
+        "MainContent must emit overflow auto for scrolling, got: {css}"
+    );
+}
+
+#[test]
+fn search_bar_max_width_does_not_constrain_dashboard() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Row,
+                "SearchBar",
+                vec![statement(&["max-width", "input"])],
+            ),
+            declaration(
+                DeclarationKind::Stack,
+                "DashboardContent",
+                vec![
+                    statement(&["width", "fill"]),
+                    statement(&["max-width", "dashboard"]),
+                ],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    // SearchBar uses input max-width (32rem)
+    let search_pos = css.find(".fr-SearchBar").unwrap();
+    assert!(
+        css[search_pos..].contains("max-width: 32rem;"),
+        "SearchBar must use input max-width, got: {css}"
+    );
+
+    // DashboardContent uses dashboard max-width (96rem), not input
+    let dash_pos = css.find(".fr-DashboardContent").unwrap();
+    assert!(
+        css[dash_pos..].contains("max-width: 96rem;"),
+        "DashboardContent must use dashboard max-width, not input, got: {css}"
+    );
+    assert!(
+        css[dash_pos..].contains("width: 100%;"),
+        "DashboardContent must use width fill, got: {css}"
+    );
+}
