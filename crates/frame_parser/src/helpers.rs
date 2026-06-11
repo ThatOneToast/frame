@@ -124,11 +124,55 @@ pub fn split_frame_words(content: &str) -> Vec<String> {
 }
 
 pub fn unquote(value: &str) -> String {
-    value
+    let stripped = value
         .strip_prefix('"')
         .and_then(|value| value.strip_suffix('"'))
-        .unwrap_or(value)
-        .to_string()
+        .unwrap_or(value);
+    decode_string_escapes(stripped)
+}
+
+fn decode_string_escapes(input: &str) -> String {
+    let mut result = String::with_capacity(input.len());
+    let mut chars = input.chars();
+    while let Some(ch) = chars.next() {
+        if ch == '\\' {
+            match chars.next() {
+                Some('n') => result.push('\n'),
+                Some('t') => result.push('\t'),
+                Some('r') => result.push('\r'),
+                Some('"') => result.push('"'),
+                Some('\\') => result.push('\\'),
+                Some('0') => result.push('\0'),
+                Some('u') => {
+                    let hex: String = chars.by_ref().take(4).collect();
+                    if hex.len() == 4 {
+                        if let Ok(code_point) = u32::from_str_radix(&hex, 16) {
+                            if let Some(ch) = char::from_u32(code_point) {
+                                result.push(ch);
+                            } else {
+                                result.push_str("\\u");
+                                result.push_str(&hex);
+                            }
+                        } else {
+                            result.push_str("\\u");
+                            result.push_str(&hex);
+                        }
+                    } else {
+                        result.push_str("\\u");
+                        result.push_str(&hex);
+                    }
+                }
+                Some(other) => {
+                    result.push('\\');
+                    result.push(other);
+                }
+                None => result.push('\\'),
+            }
+        } else {
+            result.push(ch);
+        }
+    }
+    result
 }
 
 pub fn is_number_literal(value: &str) -> bool {

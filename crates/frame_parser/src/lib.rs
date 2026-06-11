@@ -740,4 +740,56 @@ component ChatApp {
             .message
             .contains("Components currently support"));
     }
+
+    #[test]
+    fn decodes_unicode_escape_in_text_literal() {
+        let source = r#"
+component Demo {
+  view {
+    stack Root {
+      text "MLX \u00b7 27B"
+    }
+  }
+}
+"#;
+
+        let document = parse(source).expect("parse should succeed");
+        let view = document.components[0].view.as_ref().unwrap();
+        let stack = match &view.nodes[0] {
+            UiNode::Element(element) => element,
+            _ => panic!("expected element"),
+        };
+        let text_node = match &stack.children[0] {
+            UiNode::Text(text) => text,
+            _ => panic!("expected text"),
+        };
+        match &text_node.value {
+            TextValue::Literal(value) => assert_eq!(value, "MLX · 27B"),
+            _ => panic!("expected literal"),
+        }
+    }
+
+    #[test]
+    fn decodes_common_escape_sequences() {
+        let source = r#"
+component Demo {
+  view {
+    text "line1\nline2\ttab\"quoted\\slash"
+  }
+}
+"#;
+
+        let document = parse(source).expect("parse should succeed");
+        let view = document.components[0].view.as_ref().unwrap();
+        let text_node = match &view.nodes[0] {
+            UiNode::Text(text) => text,
+            _ => panic!("expected text"),
+        };
+        match &text_node.value {
+            TextValue::Literal(value) => {
+                assert_eq!(value, "line1\nline2\ttab\"quoted\\slash");
+            }
+            _ => panic!("expected literal"),
+        }
+    }
 }
