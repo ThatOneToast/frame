@@ -3,12 +3,55 @@
 Frame sizing uses high-level values and percentages:
 
 ```txt
-fill content screen auto sidebar narrow wide 25% 33% 50% 66% 75% 100%
+fill content screen auto sidebar narrow wide chart panel 25% 33% 50% 66% 75% 100%
 ```
 
 Use `screen` for viewport-height regions, `fill` for available space, and percentages for explicit dashboard ratios.
 
-Physical sizing properties:
+## Content Sizing Tokens
+
+For content regions that need larger sizes than spacing tokens provide:
+
+| Token | CSS Value | Use Case |
+|-------|-----------|----------|
+| `chart` | `12rem` | Chart panels, data visualizations |
+| `panel` | `16rem` | Side panels, moderate-height regions |
+| `sidebar` | `18rem` | Navigation sidebars |
+| `narrow` | `12rem` | Narrow fixed-width regions |
+| `wide` | `32rem` | Wide content regions |
+
+These are distinct from spacing tokens (`small`, `medium`, `large`) which are designed for padding and gaps.
+
+```frame
+row ChartBars {
+  height chart
+  flex grow 1
+}
+
+stack SidePanel {
+  height panel
+}
+```
+
+## Spacing Tokens (for padding/gap)
+
+```frame
+padding small    // 0.5rem
+padding medium   // 1rem
+padding large    // 1.5rem
+padding xlarge   // 2rem
+```
+
+## Min-height Resets
+
+Use `min-height none` or `min-height zero` to reset min-height:
+
+```frame
+min-height none    // 0
+min-height zero    // 0
+```
+
+## Physical Sizing Properties
 
 ```frame
 width fill
@@ -18,6 +61,8 @@ max-width content
 min-height screen
 max-height 100%
 ```
+
+## Logical Sizing Properties
 
 Logical sizing properties use the same values and emit CSS logical properties:
 

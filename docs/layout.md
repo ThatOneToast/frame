@@ -374,3 +374,76 @@ Text nodes inside components are wrapped in `<span class="fr-FrameText">` elemen
 - **`action`**: Buttons, links, clickable controls
 - **`panel`**: Page sections, sidebar panels
 - **`screen`**: App root container
+
+## Table/Grid-Row Pattern
+
+For table-like layouts where headers and cells must align in columns, use `columns` on `row` declarations. This emits `display: grid` with a shared column template:
+
+```frame
+row TableHeader {
+  columns 2fr 1fr 1fr 1fr 1fr 1fr
+  color text-muted
+  size caption
+  weight semibold
+  case uppercase
+}
+
+row TableRow {
+  columns 2fr 1fr 1fr 1fr 1fr 1fr
+  align center
+  padding y small
+  border bottom soft
+}
+```
+
+Inherited rows share the same column template:
+
+```frame
+row TableRowBase {
+  columns 2fr 1fr 1fr 1fr 1fr 1fr
+  align center
+}
+
+row RunRow1 extends TableRowBase { }
+row RunRow2 extends TableRowBase { }
+```
+
+Generated CSS:
+
+```css
+.fr-TableHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.fr-TableRow {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+}
+```
+
+Without `columns`, rows emit `display: flex; flex-direction: row;` for general-purpose horizontal layouts.
+
+## Gap-Safe Grid Tracks
+
+When using `grid` with `gap`, prefer fractional (`fr`) columns over percentages to prevent overflow:
+
+```frame
+grid PerformanceGrid {
+  columns 3fr 2fr
+  gap medium
+}
+```
+
+This emits:
+
+```css
+.fr-PerformanceGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--frame-space-medium);
+}
+```
+
+Percentage columns (`60% 40%`) plus a gap can overflow the container. Fractional columns with `minmax(0, Nfr)` are gap-safe.

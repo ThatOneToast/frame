@@ -68,4 +68,65 @@ src/
 
 ## Frame Patterns Used
 
-See `docs/agents/ui-implementation-guide.md` for the Frame patterns and anti-patterns demonstrated in this implementation.
+### Grid-Backed Table Rows
+
+The runs table and top models list use `columns` on `row` declarations for column-aligned layouts. This emits `display: grid` with a shared column template instead of flex:
+
+```frame
+row TableRowBase {
+  columns 2fr 1fr 1fr 1fr 1fr 1fr
+  align center
+}
+```
+
+### Content Sizing Tokens
+
+Chart panels use `height chart` (12rem) instead of spacing tokens:
+
+```frame
+row ChartBars {
+  height chart
+  flex grow 1
+}
+```
+
+### Gap-Safe Grid Columns
+
+Dashboard grids use `fr` columns instead of percentages to prevent overflow with gaps:
+
+```frame
+grid PerformanceGrid {
+  columns 3fr 2fr
+  gap medium
+}
+```
+
+### Action and Tab Styling
+
+Tabs are `action` declarations with hover states:
+
+```frame
+action TabAll {
+  surface overlay
+  color text-primary
+  hover {
+    lift tiny
+  }
+}
+```
+
+### Loop-Driven Sections
+
+The top models list uses `for` loops instead of hardcoded rows:
+
+```frame
+for model in $topModels key $model.id {
+  row ModelRow {
+    card RankBadge { text $model.rank }
+    stack ModelInfo { text $model.name }
+    text $model.delta
+  }
+}
+```
+
+See `docs/agents/ui-implementation-guide.md` for more Frame patterns and anti-patterns.
