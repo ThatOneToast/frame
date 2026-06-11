@@ -3,7 +3,7 @@
 Frame sizing uses high-level values and percentages:
 
 ```txt
-fill content screen auto sidebar narrow wide chart panel 25% 33% 50% 66% 75% 100%
+fill content screen auto sidebar narrow wide chart panel input dashboard 25% 33% 50% 66% 75% 100%
 ```
 
 Use `screen` for viewport-height regions, `fill` for available space, and percentages for explicit dashboard ratios.
@@ -18,9 +18,32 @@ For content regions that need larger sizes than spacing tokens provide:
 | `panel` | `16rem` | Side panels, moderate-height regions |
 | `sidebar` | `18rem` | Navigation sidebars |
 | `narrow` | `12rem` | Narrow fixed-width regions |
-| `wide` | `32rem` | Wide content regions |
+| `wide` | `32rem` | Wide content regions (also used for search inputs) |
+| `input` | `32rem` | Search bars, form input containers |
+| `dashboard` | `96rem` | Dashboard content panels, large app content areas |
 
 These are distinct from spacing tokens (`small`, `medium`, `large`) which are designed for padding and gaps.
+
+### When to use `input` vs `dashboard`
+
+The `input` and `dashboard` tokens both set max-width, but for different contexts:
+
+- `max-width input` (32rem): Use for search bars, form inputs, and narrow content containers. This prevents inputs from stretching too wide in large viewports.
+- `max-width dashboard` (96rem): Use for dashboard content areas, main content panels, and app-level containers that need to fill the viewport. Combined with `width fill`, this lets content expand up to 96rem before capping.
+
+```frame
+row SearchBar {
+  max-width input
+  flex grow 1
+}
+
+stack DashboardContent {
+  width fill
+  max-width dashboard
+}
+```
+
+Do **not** use `wide` or `input` for dashboard content containers -- they cap at 32rem, which is too narrow for app layouts.
 
 ```frame
 row ChartBars {

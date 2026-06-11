@@ -35,12 +35,16 @@ width content
 width sidebar
 width narrow
 width wide
+width input
+width dashboard
 width 25%
 width 50%
 height screen
 height 100%
 min-height screen
 max-width content
+max-width input
+max-width dashboard
 ```
 
 Percentages must be `0%` through `100%`.
@@ -447,3 +451,65 @@ This emits:
 ```
 
 Percentage columns (`60% 40%`) plus a gap can overflow the container. Fractional columns with `minmax(0, Nfr)` are gap-safe.
+
+## Desktop App Shell Pattern
+
+For desktop app layouts with sidebar, header, and main content area:
+
+```frame
+grid AppShell {
+  tracks columns panel fill
+  tracks rows header fill
+  gap none
+  height screen
+}
+
+area Header {
+  in AppShell
+  row 1
+  span 2
+  surface glass
+}
+
+area SidebarNav {
+  in AppShell
+  row 2
+  col 1
+  surface panel
+}
+
+area MainContent {
+  in AppShell
+  row 2
+  col 2
+  padding medium
+  overflow auto
+  min-width none
+  min-height none
+}
+```
+
+Key points:
+- `min-width none` and `min-height none` on `MainContent` let it fill its grid cell without overflow.
+- `overflow auto` scrolls content within the main area, not the whole app shell.
+- Use `width fill` and `max-width dashboard` on the content stack inside MainContent.
+
+## Metric Grid Pattern
+
+For metric cards that must stay in a fixed number of columns:
+
+```frame
+row MetricRow {
+  columns 1fr 1fr 1fr 1fr
+  gap medium
+  align stretch
+}
+
+card MetricCardBase {
+  padding medium
+  surface raised
+  radius medium
+}
+```
+
+Using `columns 1fr 1fr 1fr 1fr` on a `row` emits CSS grid with four equal columns. This is more stable than flex wrapping with `min-width` percentages, which can break at viewport boundaries.
