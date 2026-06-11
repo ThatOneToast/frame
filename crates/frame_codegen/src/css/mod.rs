@@ -84,6 +84,11 @@ pub fn generate_css(document: &Document) -> String {
     emit_custom_tokens(&mut css, document);
     css.push_str("}\n\n");
 
+    css.push_str(".fr-FrameText {\n");
+    css.push_str("  display: inline;\n");
+    css.push_str("  white-space: pre-wrap;\n");
+    css.push_str("}\n\n");
+
     for declaration in &document.declarations {
         emit_declaration_css(&mut css, declaration, &symbols, &document.declarations);
     }

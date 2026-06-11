@@ -497,7 +497,10 @@ function renderNode(node: FrameIrNode, context: RenderContext): RenderedBlock {
 }
 
 function renderText(value: FrameIrTextValue, context: RenderContext): RenderedBlock {
+  const span = context.document.createElement('span');
+  span.className = 'fr-FrameText';
   const node = context.document.createTextNode(String(readText(value, context)));
+  span.appendChild(node);
   if ('DataRef' in value) {
     const patch = () => {
       node.nodeValue = String(readText(value, context));
@@ -509,7 +512,7 @@ function renderText(value: FrameIrTextValue, context: RenderContext): RenderedBl
       registerLocalPatch(context, patch);
     }
   }
-  return block([node]);
+  return block([span]);
 }
 
 function renderElement(element: FrameIrElement, context: RenderContext): RenderedBlock {

@@ -356,7 +356,7 @@ test('non-keyed lists update by position', () => {
         item: 'item',
         collection: 'items',
         key: null,
-        children: [element('span', 'Item', { children: [textData('item.label')] })],
+        children: [element('div', 'Item', { children: [textData('item.label')] })],
         source
       }
     }
@@ -369,12 +369,12 @@ test('non-keyed lists update by position', () => {
 
   app.state.set('items', [{ label: 'One' }, { label: 'Two' }]);
   app.flush();
-  const first = target.querySelector('span')!;
+  const first = target.querySelector('.fr-Item')!;
   app.state.set('items', [{ label: 'Uno' }]);
   app.flush();
 
-  assert.equal(target.querySelector('span'), first);
-  assert.equal(target.querySelectorAll('span').length, 1);
+  assert.equal(target.querySelector('.fr-Item'), first);
+  assert.equal(target.querySelectorAll('.fr-Item').length, 1);
   assert.equal(first.textContent, 'Uno');
 });
 
