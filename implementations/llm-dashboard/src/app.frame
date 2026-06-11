@@ -1,11 +1,6 @@
 // LLM Operations Dashboard
 component LLMDashboard {
   state {
-    topModels list = []
-    // activeModelId text = "qwen3.6-coder-27b"
-    // selectedProvider text = "all"
-    // searchQuery text = ""
-    // activeTab text = "runs"
   }
   view {
     screen AppShell {
@@ -269,17 +264,45 @@ component LLMDashboard {
                 text "Ranked by throughput"
               }
               stack ModelsList {
-                for model in $topModels key $model.id {
-                  row ModelRow {
-                    card RankBadge {
-                      text $model.rank
-                    }
-                    stack ModelInfo {
-                      text $model.name
-                      text $model.detail
-                    }
-                    text $model.delta
+                row ModelRow {
+                  card RankBadge {
+                    text "1"
                   }
+                  stack ModelInfo {
+                    text "Qwen3.6 Coder 27B"
+                    text "MLX · 27B params"
+                  }
+                  text "+11.2%"
+                }
+                row ModelRow {
+                  card RankBadge {
+                    text "2"
+                  }
+                  stack ModelInfo {
+                    text "Gemma 3 27B"
+                    text "Ollama · 27B params"
+                  }
+                  text "-0.8%"
+                }
+                row ModelRow {
+                  card RankBadge {
+                    text "3"
+                  }
+                  stack ModelInfo {
+                    text "Llama 3.1 8B"
+                    text "Together · 8B params"
+                  }
+                  text "+1.8%"
+                }
+                row ModelRow {
+                  card RankBadge {
+                    text "4"
+                  }
+                  stack ModelInfo {
+                    text "Phi 3.5 Mini"
+                    text "Ollama · 3.8B params"
+                  }
+                  text "+2.6%"
                 }
               }
             }
