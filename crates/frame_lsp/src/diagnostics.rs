@@ -398,7 +398,7 @@ fn is_percentage_selector(name: &str) -> bool {
 
 fn is_dynamic_grid_value(word: &str, property: &str) -> bool {
     // Grid track properties (columns, rows, tracks) accept dynamic values:
-    // percentages (60%), fr units (2fr), minmax(), fit-content(), etc.
+    // percentages (60%), fr units (2fr), minmax(), fit-content(), named tracks, etc.
     let is_grid_property = matches!(
         property,
         "columns" | "rows" | "tracks" | "grid-columns" | "grid-rows"
@@ -413,11 +413,29 @@ fn is_dynamic_grid_value(word: &str, property: &str) -> bool {
     if let Some(rest) = word.strip_prefix("responsive") {
         return rest.is_empty() || rest.starts_with(' ');
     }
-    matches!(
+    // Allow fr units (1fr, 2fr, etc.)
+    if word.ends_with("fr") {
+        return true;
+    }
+    // Allow percentages
+    if word.ends_with('%') {
+        return true;
+    }
+    // Grid functions and keywords
+    if matches!(
         word,
         "subgrid" | "minmax" | "fit-content" | "auto" | "fill" | "min" | "max"
-    ) || word.ends_with("fr")
-        || word.ends_with('%')
+    ) {
+        return true;
+    }
+    // Named grid track identifiers are valid (e.g. sidebar, content, header, body)
+    // They must be valid identifiers: start with a letter or underscore, contain alphanumeric/dash/underscore
+    if (word.starts_with(char::is_alphabetic) || word.starts_with('_'))
+        && word.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+    {
+        return true;
+    }
+    false
 }
 
 fn closest_match<'a>(needle: &str, candidates: &[&'a str]) -> Option<&'a str> {
@@ -2569,11 +2587,19 @@ grid DashboardGrid {
     // ── Invalid tests ────────────────────────────────────────────────────
 
     #[test]
-    fn lsp_reports_invalid_grid_track_value() {
-        let source = "grid Broken {\n  columns invalid-track\n}\n";
+    fn lsp_accepts_named_grid_tracks() {
+        // Named grid track identifiers are valid in columns/rows
+        let source = "grid Layout {\n  columns sidebar content\n}\n";
         let diagnostics = diagnostics_for_source(source);
-        let has_error = diagnostics.iter().any(|d| d.severity == Severity::Error);
-        assert!(has_error, "Expected error for invalid grid track value");
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for named grid tracks, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
     }
 
     #[test]
@@ -2694,6 +2720,123 @@ grid DashboardGrid {
             errors.is_empty(),
             "Expected no errors for extends grid with tracks, got: {:?}",
             errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_show_when_produces_no_diagnostic() {
+        let source = "\
+component ChatApp {
+  state {
+    isOpen bool = false
+  }
+  view {
+    panel Main {
+      show when $isOpen
+      text \"Content\"
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid show when, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn valid_prop_reference_produces_no_narration_diagnostic() {
+        let source = "\
+component ChatApp {
+  props {
+    title text
+  }
+  view {
+    text $title
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        assert!(
+            !diagnostics.iter().any(|d| d.message.contains("references a prop")),
+            "Should not produce prop narration diagnostic"
+        );
+    }
+
+    #[test]
+    fn valid_handler_produces_no_narration_diagnostic() {
+        let source = "\
+component ChatApp {
+  view {
+    action Send {
+      text \"Send\"
+      on press @sendMessage
+    }
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        assert!(
+            !diagnostics.iter().any(|d| d.message.contains("external handler")),
+            "Should not produce handler narration diagnostic"
+        );
+    }
+
+    #[test]
+    fn named_grid_tracks_are_valid() {
+        let source = "\
+grid PerformanceGrid {
+  columns chart prompt
+  rows header body footer
+  gap medium
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for named grid tracks, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn unused_state_warning_points_at_identifier() {
+        let source = "\
+component ChatApp {
+  state {
+    unusedState text = \"\"
+    activeTab text = \"runs\"
+  }
+  view {
+    text $activeTab
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let unused_diag = diagnostics
+            .iter()
+            .find(|d| d.message.contains("unusedState") && d.message.contains("never referenced"));
+        assert!(
+            unused_diag.is_some(),
+            "Expected unused state diagnostic for unusedState"
+        );
+        let diag = unused_diag.unwrap();
+        // The span should be small (just the identifier), not the whole component
+        assert!(
+            diag.span.end - diag.span.start < 50,
+            "Unused state span should be short (just the identifier), got span {}..{}",
+            diag.span.start,
+            diag.span.end
         );
     }
 }

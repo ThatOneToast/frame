@@ -361,26 +361,30 @@ fn validate_component(
     for slot in &component.slots {
         collect_referenced_names_from_nodes(&slot.nodes, &mut referenced_names);
     }
-    for prop_name in &prop_names {
-        if !referenced_names.contains(prop_name) {
-            diagnostics.push(Diagnostic::info(
-                format!(
-                    "Prop `{}` is never referenced in this component.\n\nIf it is part of the public API, you can ignore this hint.",
-                    prop_name
-                ),
-                component.span,
-            ));
+    if let Some(props) = &component.props {
+        for value in &props.values {
+            if !referenced_names.contains(&value.name.text) {
+                diagnostics.push(Diagnostic::info(
+                    format!(
+                        "Prop `{}` is never referenced in this component.\n\nIf it is part of the public API, you can ignore this hint.",
+                        value.name.text
+                    ),
+                    value.name.span,
+                ));
+            }
         }
     }
-    for state_name in &state_names {
-        if !referenced_names.contains(state_name) {
-            diagnostics.push(Diagnostic::info(
-                format!(
-                    "State `{}` is never referenced in this component.\n\nIf it is reserved for future use, you can ignore this hint.",
-                    state_name
-                ),
-                component.span,
-            ));
+    if let Some(state) = &component.state {
+        for value in &state.values {
+            if !referenced_names.contains(&value.name.text) {
+                diagnostics.push(Diagnostic::info(
+                    format!(
+                        "State `{}` is never referenced in this component.\n\nIf it is reserved for future use, you can ignore this hint.",
+                        value.name.text
+                    ),
+                    value.name.span,
+                ));
+            }
         }
     }
 }
@@ -1657,7 +1661,7 @@ mod tests {
         assert!(diagnostics
             .iter()
             .any(|diagnostic| diagnostic.message.contains("Style `MissingButton`")));
-        assert!(diagnostics
+        assert!(!diagnostics
             .iter()
             .any(|diagnostic| diagnostic.message.contains("@sendMessage references")));
     }

@@ -290,15 +290,9 @@ pub(crate) fn validate_element_accessibility(
 }
 
 pub(crate) fn validate_element_security(element: &UiElement, diagnostics: &mut Vec<Diagnostic>) {
-    if property_literal(element, "new-window")
-        .is_some_and(|value| value.eq_ignore_ascii_case("true"))
-    {
-        diagnostics.push(Diagnostic::info(
-            "`new-window true` records navigation intent. DOM lowering must apply safe external-link behavior."
-                .to_string(),
-            element.kind.span,
-        ));
-    }
+    // Reserved for future security diagnostics.
+    let _ = element;
+    let _ = diagnostics;
 }
 
 pub(crate) fn has_accessible_name(element: &UiElement) -> bool {
@@ -370,22 +364,9 @@ pub(crate) fn validate_ui_property(
         UiPropertyValue::Data(reference) | UiPropertyValue::Bind(reference) => {
             validate_data_ref(reference, all_names, prop_names, diagnostics)
         }
-        UiPropertyValue::Handler(handler) => diagnostics.push(Diagnostic::info(
-            format!(
-                "@{} references an external handler. Frame does not store script bodies inside UI declarations.",
-                handler.name.text
-            ),
-            handler.span,
-        )),
+        UiPropertyValue::Handler(_) => {}
         UiPropertyValue::Conditional(binding) => {
             validate_data_ref(&binding.condition, all_names, prop_names, diagnostics);
-            // Accessibility: flag common properties that should have conditions
-            if property.name.text == "show" {
-                diagnostics.push(Diagnostic::info(
-                    "`show when` records conditional rendering intent. The DOM runtime patches this node's visibility based on the condition.".to_string(),
-                    property.span,
-                ));
-            }
         }
         UiPropertyValue::StyleWhen { condition, style } => {
             validate_data_ref(condition, all_names, prop_names, diagnostics);
@@ -678,13 +659,6 @@ pub(crate) fn validate_event_binding(event: &EventBinding, diagnostics: &mut Vec
             ));
         }
     }
-    diagnostics.push(Diagnostic::info(
-        format!(
-            "@{} references an external handler. Frame does not store script bodies inside UI declarations.",
-            event.handler.name.text
-        ),
-        event.handler.span,
-    ));
 }
 
 pub(crate) fn validate_data_ref(
@@ -700,16 +674,6 @@ pub(crate) fn validate_data_ref(
         .next()
         .unwrap_or(&reference.name.text);
     if all_names.contains(&reference.name.text) || all_names.contains(root) {
-        // If it's a prop, add a soft note for clarity
-        if prop_names.contains(&reference.name.text) || prop_names.contains(root) {
-            diagnostics.push(Diagnostic::info(
-                format!(
-                    "`${}` references a prop. Props are passed from the parent component.",
-                    reference.name.text
-                ),
-                reference.span,
-            ));
-        }
         return;
     }
     let candidates = all_names.iter().map(String::as_str).collect::<Vec<_>>();
