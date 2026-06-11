@@ -151,6 +151,25 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                     push_word(line, line_index, name, TOKEN_CLASS, &mut raw);
                 }
             }
+        } else if (first == "show" || first == "hidden") && words.get(1).map_or(false, |w| *w == "when") {
+            push_word(line, line_index, first, TOKEN_KEYWORD, &mut raw);
+            push_word(line, line_index, "when", TOKEN_KEYWORD, &mut raw);
+            if let Some(condition) = words.get(2) {
+                push_word(line, line_index, condition, TOKEN_VARIABLE, &mut raw);
+            }
+        } else if first == "style" && words.get(1).map_or(false, |w| *w == "when") {
+            push_word(line, line_index, first, TOKEN_KEYWORD, &mut raw);
+            push_word(line, line_index, "when", TOKEN_KEYWORD, &mut raw);
+            if let Some(condition) = words.get(2) {
+                push_word(line, line_index, condition, TOKEN_VARIABLE, &mut raw);
+            }
+            if let Some(eq) = words.get(3) {
+                push_word(line, line_index, eq, TOKEN_KEYWORD, &mut raw);
+            }
+            if let Some(style_name) = words.get(4) {
+                let style_name = style_name.trim_end_matches('{');
+                push_word(line, line_index, style_name, TOKEN_CLASS, &mut raw);
+            }
         } else if (language::property_keywords().contains(&first)
             && !language::declaration_keywords().contains(&first)
             && !language::ui_primitive_keywords().contains(&first))
@@ -224,6 +243,13 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                     TOKEN_CLASS,
                     &mut raw,
                 );
+            }
+            if let Some(pos) = words.iter().position(|w| *w == "extends") {
+                push_word(line, line_index, "extends", TOKEN_KEYWORD, &mut raw);
+                if let Some(base) = words.get(pos + 1) {
+                    let base = base.trim_end_matches('{');
+                    push_word(line, line_index, base, TOKEN_CLASS, &mut raw);
+                }
             }
         } else if language::state_keywords().contains(&first)
             || first == "from"
@@ -589,7 +615,7 @@ mod tests {
         assert!(tokens
             .data
             .iter()
-            .any(|token| token.token_type == TOKEN_PROPERTY && token.length == 5)); // "style"
+            .any(|token| token.token_type == TOKEN_KEYWORD && token.length == 5)); // "style"
         assert!(tokens
             .data
             .iter()
@@ -601,7 +627,7 @@ mod tests {
         assert!(tokens
             .data
             .iter()
-            .any(|token| token.token_type == TOKEN_ENUM_MEMBER && token.length == 13));
+            .any(|token| token.token_type == TOKEN_CLASS && token.length == 13));
         // "LoadingButton"
     }
 
@@ -691,5 +717,65 @@ mod tests {
             !primitive_tokens.is_empty(),
             "semantic primitives should produce keyword tokens"
         );
+    }
+
+    #[test]
+    fn emits_tokens_for_show_when_and_hidden_when() {
+        let tokens = semantic_tokens(
+            "component Demo {\n  state {\n    isOpen bool = false\n    isLoading bool = false\n  }\n  view {\n    panel Main {\n      show when $isOpen\n      hidden when $isLoading\n    }\n  }\n}\n",
+        );
+
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_KEYWORD && token.length == 4)); // "show"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_KEYWORD && token.length == 6)); // "hidden"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_VARIABLE && token.length == 7)); // "$isOpen"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_VARIABLE && token.length == 10)); // "$isLoading"
+    }
+
+    #[test]
+    fn emits_tokens_for_extends_in_declaration_header() {
+        let tokens = semantic_tokens("card MetricCard extends BaseCard {\n  padding medium\n}\n");
+
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_KEYWORD && token.length == 4)); // "card"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_CLASS && token.length == 10)); // "MetricCard"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_KEYWORD && token.length == 7)); // "extends"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_CLASS && token.length == 8)); // "BaseCard"
+    }
+
+    #[test]
+    fn emits_tokens_for_named_grid_tracks() {
+        let tokens = semantic_tokens("grid Dashboard {\n  columns sidebar content\n}\n");
+
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_PROPERTY)); // "columns"
+        assert!(tokens
+            .data
+            .iter()
+            .any(|token| token.token_type == TOKEN_ENUM_MEMBER)); // "sidebar" / "content"
     }
 }
