@@ -235,6 +235,31 @@ text "Send"
 text $username
 ```
 
+### String Escapes
+
+Frame string literals support common escape sequences:
+
+| Escape | Result |
+|--------|--------|
+| `\n` | Newline |
+| `\t` | Tab |
+| `\r` | Carriage return |
+| `\"` | Double quote |
+| `\\` | Backslash |
+| `\0` | Null character |
+| `\uXXXX` | Unicode character (4 hex digits) |
+
+Examples:
+
+```frame
+text "Line 1\nLine 2"
+text "Tab\there"
+text "MLX \u00b7 27B params"
+text "Quote: \"hello\""
+```
+
+The `\uXXXX` escape decodes to the corresponding Unicode character. For example, `\u00b7` renders as `·` (middle dot).
+
 Data references use `$valueName` and are validated against component props and state. Handler references use `@handlerName`; Frame records them as external references and does not allow inline JavaScript or TypeScript bodies.
 
 Events validate the event name and modifiers:

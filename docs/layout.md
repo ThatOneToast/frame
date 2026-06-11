@@ -317,3 +317,60 @@ dock AppDock {
   padding medium
 }
 ```
+
+## Layout Primitive Defaults
+
+Frame primitives have sensible CSS defaults:
+
+| Primitive | Default Display | HTML Tag | Notes |
+|-----------|----------------|----------|-------|
+| `screen` | `div` | `div` | App root container |
+| `panel` | `section` | `section` | Section-like region |
+| `stack` | `flex column` | `div` | Vertical layout |
+| `row` | `flex row` | `div` | Horizontal layout |
+| `grid` | `grid` | `div` | CSS grid |
+| `card` | `flex column` | `div` | Block container |
+| `action` | `inline-flex row` | `button` | Button with reset |
+| `input` | `input` | `input` | Input element |
+| `text` | `span` | `span` | Inline text |
+
+### Button Reset
+
+`action` elements rendered as `<button>` receive automatic CSS reset:
+
+- `appearance: none`
+- `background: none`
+- `border: none`
+- `cursor: pointer`
+- `font: inherit`
+- `color: inherit`
+- `display: inline-flex`
+- `flex-direction: row`
+- `gap: var(--frame-space-small)`
+
+This ensures buttons look like Frame-styled controls, not browser defaults.
+
+### Text Node Wrapping
+
+Text nodes inside components are wrapped in `<span class="fr-FrameText">` elements. This allows them to:
+
+- Participate in flex/grid gap spacing
+- Receive CSS styling
+- Be targeted by selectors
+
+```css
+.fr-FrameText {
+  display: inline;
+  white-space: pre-wrap;
+}
+```
+
+### When to Use Each Primitive
+
+- **`stack`**: Vertical lists, sidebar groups, form fields
+- **`row`**: Horizontal bars, nav bars, table rows
+- **`grid`**: Dashboard layouts, card grids, multi-column layouts
+- **`card`**: Contained panels, metric cards, list items
+- **`action`**: Buttons, links, clickable controls
+- **`panel`**: Page sections, sidebar panels
+- **`screen`**: App root container
