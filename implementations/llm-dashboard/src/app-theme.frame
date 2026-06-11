@@ -74,9 +74,8 @@ row NavBar {
   color text-primary
 }
 
-stack Logo {
+text LLMOps {
   padding x small
-  gap none
   color accent
   weight bold
   size heading

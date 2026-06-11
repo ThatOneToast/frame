@@ -10,10 +10,7 @@ component LLMDashboard {
     screen AppShell {
       panel Header {
         row NavBar {
-          stack Logo {
-            text "LLM"
-            text "Ops"
-          }
+          text "LLMOps"
           row SearchBar {
             text "Search models, runs, or metrics..."
           }
@@ -137,16 +134,16 @@ component LLMDashboard {
               }
               stack ChartArea {
                 row ChartBars {
-                }
-                card ChartBar1 {
-                }
-                card ChartBar2 {
-                }
-                card ChartBar3 {
-                }
-                card ChartBar4 {
-                }
-                card ChartBar5 {
+                  card ChartBar1 {
+                  }
+                  card ChartBar2 {
+                  }
+                  card ChartBar3 {
+                  }
+                  card ChartBar4 {
+                  }
+                  card ChartBar5 {
+                  }
                 }
                 row ChartAxis {
                   text "14:00"
