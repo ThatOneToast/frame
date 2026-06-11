@@ -45,7 +45,8 @@ This unified model ensures completions, hover, diagnostics, and references share
 - Document links from supported concepts to markdown docs.
 - Code actions for common typo fixes and safe layout scaffolds.
 - Semantic tokens for declarations, names, properties, values, colors,
-  percentages, includes, and comments.
+  percentages, includes, comments, `extends`, `show when`, `hidden when`,
+  and `style when`.
 - Folding ranges for declarations and nested state blocks.
 
 ## Scope-Aware Completions

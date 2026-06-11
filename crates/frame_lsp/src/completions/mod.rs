@@ -610,7 +610,7 @@ pub fn completions_at_with_includes(
         // Root-level completions
         CursorSlot::RootDeclaration => {
             // Check if we're on a declaration header line with extends or after a name
-            if let Some(extends_items) = extends_completions(&line, &cursor, &symbols) {
+            if let Some(extends_items) = extends_completions(line, &cursor, &symbols) {
                 return extends_items;
             }
             let mut items = snippet_suggestions(SnippetScope::Root);
@@ -631,7 +631,7 @@ pub fn completions_at_with_includes(
             items
         }
         CursorSlot::DeclarationName => {
-            if let Some(extends_items) = extends_completions(&line, &cursor, &symbols) {
+            if let Some(extends_items) = extends_completions(line, &cursor, &symbols) {
                 return extends_items;
             }
             let mut items = snippet_suggestions(SnippetScope::Root);
@@ -898,10 +898,7 @@ fn extends_completions(
             .map(|d| CompletionSuggestion {
                 label: d.name.clone(),
                 detail: "base style",
-                documentation: format!(
-                    "Inherit properties from {} `{}`.",
-                    kind_keyword, d.name
-                ),
+                documentation: format!("Inherit properties from {} `{}`.", kind_keyword, d.name),
                 insert_text: Some(d.name.clone()),
                 is_snippet: false,
                 category: CompletionCategory::Declaration,
@@ -923,10 +920,7 @@ fn extends_completions(
         return Some(vec![CompletionSuggestion {
             label: "extends".to_string(),
             detail: "keyword",
-            documentation: format!(
-                "Inherit properties from another {} style.",
-                kind_keyword
-            ),
+            documentation: format!("Inherit properties from another {} style.", kind_keyword),
             insert_text: Some("extends ".to_string()),
             is_snippet: false,
             category: CompletionCategory::Value,

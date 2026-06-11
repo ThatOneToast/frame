@@ -151,13 +151,15 @@ pub fn semantic_tokens(source: &str) -> SemanticTokens {
                     push_word(line, line_index, name, TOKEN_CLASS, &mut raw);
                 }
             }
-        } else if (first == "show" || first == "hidden") && words.get(1).map_or(false, |w| *w == "when") {
+        } else if (first == "show" || first == "hidden")
+            && words.get(1).is_some_and(|w| *w == "when")
+        {
             push_word(line, line_index, first, TOKEN_KEYWORD, &mut raw);
             push_word(line, line_index, "when", TOKEN_KEYWORD, &mut raw);
             if let Some(condition) = words.get(2) {
                 push_word(line, line_index, condition, TOKEN_VARIABLE, &mut raw);
             }
-        } else if first == "style" && words.get(1).map_or(false, |w| *w == "when") {
+        } else if first == "style" && words.get(1).is_some_and(|w| *w == "when") {
             push_word(line, line_index, first, TOKEN_KEYWORD, &mut raw);
             push_word(line, line_index, "when", TOKEN_KEYWORD, &mut raw);
             if let Some(condition) = words.get(2) {
@@ -740,7 +742,8 @@ mod tests {
         assert!(tokens
             .data
             .iter()
-            .any(|token| token.token_type == TOKEN_VARIABLE && token.length == 10)); // "$isLoading"
+            .any(|token| token.token_type == TOKEN_VARIABLE && token.length == 10));
+        // "$isLoading"
     }
 
     #[test]
@@ -762,7 +765,8 @@ mod tests {
         assert!(tokens
             .data
             .iter()
-            .any(|token| token.token_type == TOKEN_CLASS && token.length == 8)); // "BaseCard"
+            .any(|token| token.token_type == TOKEN_CLASS && token.length == 8));
+        // "BaseCard"
     }
 
     #[test]

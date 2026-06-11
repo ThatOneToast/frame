@@ -664,7 +664,7 @@ pub(crate) fn validate_event_binding(event: &EventBinding, diagnostics: &mut Vec
 pub(crate) fn validate_data_ref(
     reference: &DataRef,
     all_names: &HashSet<String>,
-    prop_names: &HashSet<String>,
+    _prop_names: &HashSet<String>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let root = reference

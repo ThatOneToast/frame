@@ -45,6 +45,31 @@ export const ui = {
 } as const;
 ```
 
+### Inheritance with extends
+
+Declarations can inherit from a base style using `extends`:
+
+```frame
+card PanelBase {
+  padding medium
+  radius medium
+  border soft
+}
+
+card MetricCard extends PanelBase {
+  color accent
+}
+
+card StatusCard extends PanelBase {
+  color success
+}
+```
+
+Rules:
+- Base and child must have the same declaration kind (`card extends card`, `grid extends grid`)
+- Multi-level inheritance is supported (`A extends B extends C`)
+- Empty bodies are supported: `card Foo extends Bar { }`
+
 ## Statements
 
 Statements are line-based:
