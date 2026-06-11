@@ -56,6 +56,11 @@ pub(crate) fn emit_declaration_css(
                 DeclarationKind::Row => {
                     if has_columns_statement(&resolved_body) {
                         css.push_str("  display: grid;\n");
+                        for statement in statements(&resolved_body) {
+                            if statement.words.first().map(String::as_str) == Some("columns") {
+                                emit_columns(css, statement, false);
+                            }
+                        }
                     } else {
                         css.push_str("  display: flex;\n  flex-direction: row;\n");
                     }
@@ -226,7 +231,6 @@ pub(crate) fn emit_grid(css: &mut String, body: &[Node]) {
             Some("rows") => emit_rows(css, statement),
             Some("tracks") => emit_tracks(css, statement),
             Some("areas") => {}
-            Some("gap") => emit_space_property(css, "gap", statement),
             Some("height") if statement.words.get(1).map(String::as_str) == Some("screen") => {
                 css.push_str("  min-height: 100vh;\n");
             }
@@ -519,7 +523,6 @@ pub(crate) fn emit_common(
             Some("border") => emit_border(css, statement),
             Some("outline") => emit_outline(css, statement),
             Some("layout") => emit_layout(css, statement),
-            Some("columns") => emit_columns(css, statement, false),
             Some("overflow") => emit_overflow(css, statement),
             Some("scroll") => emit_scroll(css, statement),
             Some("scrollbar") => emit_scrollbar(css, statement),
