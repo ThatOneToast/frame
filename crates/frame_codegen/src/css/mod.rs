@@ -85,7 +85,7 @@ pub fn generate_css(document: &Document) -> String {
     css.push_str("}\n\n");
 
     for declaration in &document.declarations {
-        emit_declaration_css(&mut css, declaration, &symbols);
+        emit_declaration_css(&mut css, declaration, &symbols, &document.declarations);
     }
 
     emit_keyframes(&mut css);

@@ -290,6 +290,7 @@ pub(crate) fn declaration_from_block(block: &crate::Block) -> Option<Declaration
     Some(Declaration {
         kind,
         name: Identifier::new(name_text, block.span),
+        extends: None,
         body: block.body.clone(),
         span: block.span,
     })

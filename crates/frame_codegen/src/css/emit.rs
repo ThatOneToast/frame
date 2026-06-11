@@ -5,45 +5,39 @@ pub(crate) fn emit_declaration_css(
     css: &mut String,
     declaration: &Declaration,
     symbols: &SymbolIndex,
+    all_declarations: &[Declaration],
 ) {
     let class_name = format!("fr-{}", declaration.name.text);
+
+    // Resolve inherited body: base properties first, child properties override.
+    let resolved_body = resolve_inherited_body(declaration, all_declarations);
 
     match declaration.kind {
         DeclarationKind::Grid => {
             css.push_str(&format!(".{class_name} {{\n  display: grid;\n"));
-            emit_grid(css, &declaration.body);
-            emit_common(css, &declaration.body, symbols);
+            emit_grid(css, &resolved_body);
+            emit_common(css, &resolved_body, symbols);
             css.push_str("}\n\n");
-            emit_grid_section_rules(css, &class_name, &declaration.body);
-            emit_condition_blocks(
-                css,
-                &class_name,
-                declaration.kind.clone(),
-                &declaration.body,
-            );
+            emit_grid_section_rules(css, &class_name, &resolved_body);
+            emit_condition_blocks(css, &class_name, declaration.kind.clone(), &resolved_body);
         }
         DeclarationKind::Area => {
             css.push_str(&format!(".{class_name} {{\n"));
-            emit_common(css, &declaration.body, symbols);
-            if let Some(value) = find_statement_value(&declaration.body, "place") {
+            emit_common(css, &resolved_body, symbols);
+            if let Some(value) = find_statement_value(&resolved_body, "place") {
                 css.push_str(&format!("  grid-area: {value};\n"));
             }
-            if let Some(value) = find_statement_value(&declaration.body, "col") {
+            if let Some(value) = find_statement_value(&resolved_body, "col") {
                 css.push_str(&format!("  grid-column: {value};\n"));
             }
-            if let Some(value) = find_statement_value(&declaration.body, "row") {
+            if let Some(value) = find_statement_value(&resolved_body, "row") {
                 css.push_str(&format!("  grid-row: {value};\n"));
             }
-            if let Some(value) = find_statement_value(&declaration.body, "span") {
+            if let Some(value) = find_statement_value(&resolved_body, "span") {
                 css.push_str(&format!("  grid-column: span {value};\n"));
             }
             css.push_str("}\n\n");
-            emit_condition_blocks(
-                css,
-                &class_name,
-                declaration.kind.clone(),
-                &declaration.body,
-            );
+            emit_condition_blocks(css, &class_name, declaration.kind.clone(), &resolved_body);
         }
         DeclarationKind::Card
         | DeclarationKind::Stack
@@ -74,10 +68,10 @@ pub(crate) fn emit_declaration_css(
                 }
                 _ => {}
             }
-            emit_common(css, &declaration.body, symbols);
+            emit_common(css, &resolved_body, symbols);
             css.push_str("}\n\n");
 
-            for node in &declaration.body {
+            for node in &resolved_body {
                 if let Node::Block(block) = node {
                     let Some(selector) = state_selector(&block.name) else {
                         continue;
@@ -87,33 +81,78 @@ pub(crate) fn emit_declaration_css(
                     css.push_str("}\n\n");
                 }
             }
-            emit_condition_blocks(
-                css,
-                &class_name,
-                declaration.kind.clone(),
-                &declaration.body,
-            );
+            emit_condition_blocks(css, &class_name, declaration.kind.clone(), &resolved_body);
         }
         DeclarationKind::Keyframes => {
-            emit_custom_keyframes(css, &declaration.name.text, &declaration.body);
+            emit_custom_keyframes(css, &declaration.name.text, &resolved_body);
         }
         DeclarationKind::Supports => emit_supports(css, declaration, symbols),
         DeclarationKind::StyleOrder => emit_style_order(css, declaration),
         DeclarationKind::StyleGroup => emit_style_group(css, declaration, symbols),
         DeclarationKind::Html => {
             css.push_str("html {\n");
-            emit_page_root_css(css, &declaration.body);
+            emit_page_root_css(css, &resolved_body);
             css.push_str("}\n\n");
         }
         DeclarationKind::Body => {
             css.push_str("body {\n");
             css.push_str("  min-height: 100vh;\n");
-            emit_page_root_css(css, &declaration.body);
+            emit_page_root_css(css, &resolved_body);
             css.push_str("}\n\n");
         }
         _ => {}
     }
 }
+
+/// Resolve the effective body for a declaration with inheritance.
+/// Base properties come first; child properties override by statement word[0].
+fn resolve_inherited_body(
+    declaration: &Declaration,
+    all_declarations: &[Declaration],
+) -> Vec<Node> {
+    let Some(ref base_name) = declaration.extends else {
+        return declaration.body.clone();
+    };
+    // Find the base declaration.
+    let Some(base_decl) = all_declarations
+        .iter()
+        .find(|d| d.name.text == base_name.text)
+    else {
+        return declaration.body.clone();
+    };
+    // Recursively resolve the base's body (supports multi-level inheritance).
+    let base_body = resolve_inherited_body(base_decl, all_declarations);
+
+    // Merge: start with base, then override with child statements.
+    // Child statements override base statements where word[0] matches.
+    let mut merged = base_body;
+    for node in &declaration.body {
+        if let Node::Statement(stmt) = node {
+            let key = stmt.words.first().cloned().unwrap_or_default();
+            // Remove any base statement with the same key.
+            merged.retain(|existing| {
+                if let Node::Statement(existing_stmt) = existing {
+                    existing_stmt.words.first() != Some(&key)
+                } else {
+                    true
+                }
+            });
+        }
+        // Also handle blocks (hover, focus, active, etc.) by name.
+        if let Node::Block(block) = node {
+            merged.retain(|existing| {
+                if let Node::Block(existing_block) = existing {
+                    existing_block.name != block.name
+                } else {
+                    true
+                }
+            });
+        }
+        merged.push(node.clone());
+    }
+    merged
+}
+
 pub(crate) fn emit_style_order(css: &mut String, declaration: &Declaration) {
     let names = style_order_names(&declaration.name.text);
     if !names.is_empty() {
@@ -133,7 +172,7 @@ pub(crate) fn emit_style_group(css: &mut String, declaration: &Declaration, symb
         let Some(nested) = declaration_from_block(block) else {
             continue;
         };
-        emit_declaration_css(&mut nested_css, &nested, symbols);
+        emit_declaration_css(&mut nested_css, &nested, symbols, &[]);
     }
     for line in nested_css.lines() {
         if line.is_empty() {
@@ -160,7 +199,7 @@ pub(crate) fn emit_supports(css: &mut String, declaration: &Declaration, symbols
         let Some(nested) = declaration_from_block(block) else {
             continue;
         };
-        emit_declaration_css(&mut nested_css, &nested, symbols);
+        emit_declaration_css(&mut nested_css, &nested, symbols, &[]);
     }
     for line in nested_css.lines() {
         if line.is_empty() {
@@ -468,16 +507,9 @@ pub(crate) fn emit_common(
             Some("visibility") => emit_visibility(css, statement),
             Some("flex") => emit_flex(css, statement),
             Some("gap") => emit_space_property(css, "gap", statement),
-            Some("radius") => {
-                if let Some(value) = statement.words.get(1) {
-                    css.push_str(&format!("  border-radius: var(--frame-radius-{value});\n"));
-                }
-            }
-            Some("shadow") => {
-                if let Some(value) = statement.words.get(1) {
-                    css.push_str(&format!("  box-shadow: var(--frame-shadow-{value});\n"));
-                }
-            }
+            Some("opacity") => emit_opacity(css, statement),
+            Some("shadow") => emit_shadow(css, statement),
+            Some("radius") => emit_radius(css, statement),
             Some("border") => emit_border(css, statement),
             Some("outline") => emit_outline(css, statement),
             Some("layout") => emit_layout(css, statement),

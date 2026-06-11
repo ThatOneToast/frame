@@ -43,6 +43,7 @@ pub(crate) fn declaration_from_block(block: &frame_core::Block) -> Option<Declar
     Some(Declaration {
         kind,
         name: Identifier::new(&name_text, block.span),
+        extends: None,
         body: block.body.clone(),
         span: block.span,
     })
@@ -69,6 +70,7 @@ pub(crate) fn grid_section_names(body: &[Node]) -> Vec<String> {
                 .filter(|name| {
                     !matches!(name.as_str(), "responsive" | "cards" | "auto" | "fill")
                         && !name.ends_with('%')
+                        && !is_fr(name)
                 })
                 .cloned()
                 .collect()
@@ -282,13 +284,14 @@ pub(crate) fn is_inline_axis_property(property: &str) -> bool {
 pub(crate) fn is_block_axis_property(property: &str) -> bool {
     property.contains("height") || property.contains("block-size")
 }
-pub(crate) fn column_css_value(value: &str) -> &str {
+pub(crate) fn column_css_value(value: &str) -> String {
     match value {
-        value if is_percentage(value) => value,
-        "auto" => "auto",
-        "fill" => "minmax(0, 1fr)",
-        "subgrid" => "subgrid",
-        _ => "minmax(0, 1fr)",
+        value if is_percentage(value) => value.to_string(),
+        "auto" => "auto".to_string(),
+        "fill" => "minmax(0, 1fr)".to_string(),
+        "subgrid" => "subgrid".to_string(),
+        value if is_fr(value) => fr_to_css(value),
+        _ => "minmax(0, 1fr)".to_string(),
     }
 }
 pub(crate) fn track_css_value(value: &str) -> String {
@@ -302,6 +305,7 @@ pub(crate) fn track_css_value(value: &str) -> String {
         "auto" => "auto".to_string(),
         "content" => "max-content".to_string(),
         value if is_percentage(value) => value.to_string(),
+        value if is_fr(value) => fr_to_css(value),
         _ => "minmax(0, 1fr)".to_string(),
     }
 }
@@ -309,6 +313,16 @@ pub(crate) fn is_percentage(value: &str) -> bool {
     value
         .strip_suffix('%')
         .is_some_and(|number| !number.is_empty() && number.chars().all(|c| c.is_ascii_digit()))
+}
+pub(crate) fn is_fr(value: &str) -> bool {
+    value.ends_with("fr")
+        && value
+            .strip_suffix("fr")
+            .is_some_and(|number| !number.is_empty() && number.chars().all(|c| c.is_ascii_digit()))
+}
+pub(crate) fn fr_to_css(value: &str) -> String {
+    let number = value.strip_suffix("fr").unwrap_or("1");
+    format!("minmax(0, {number}fr)")
 }
 pub(crate) fn is_identifier_grid_name(value: &str) -> bool {
     if value == "subgrid" {

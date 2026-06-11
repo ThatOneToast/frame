@@ -72,6 +72,11 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
             continue;
         }
 
+        // Validate `extends` inheritance.
+        if let Some(ref base) = declaration.extends {
+            validate_extends(declaration, base, &document.declarations, &mut diagnostics);
+        }
+
         validate_statements(declaration, &symbols, &mut diagnostics);
 
         if declaration.kind == DeclarationKind::Area {
@@ -90,6 +95,70 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
     validate_components(document, &symbols, &mut diagnostics);
 
     diagnostics
+}
+
+fn validate_extends(
+    declaration: &crate::Declaration,
+    base: &crate::Identifier,
+    all_declarations: &[crate::Declaration],
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    // Find the base declaration.
+    let base_decl = all_declarations.iter().find(|d| d.name.text == base.text);
+    if base_decl.is_none() {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown base style `{}`.\n\nDeclare `{} {} {{ ... }}` before using `extends {}`.",
+                base.text,
+                declaration.kind.kind_keyword(),
+                base.text,
+                base.text,
+            ),
+            base.span,
+        ));
+        return;
+    }
+    let base_decl = base_decl.unwrap();
+
+    // Check that the base style has the same kind.
+    if base_decl.kind != declaration.kind {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Cannot extend `{}` ({}) with `{} ({})`.\n\nInheritance requires matching declaration kinds.",
+                base.text,
+                base_decl.kind.kind_keyword(),
+                declaration.name.text,
+                declaration.kind.kind_keyword(),
+            ),
+            base.span,
+        ));
+        return;
+    }
+
+    // Check for cycles (A extends B extends A).
+    let mut visited = HashSet::new();
+    visited.insert(declaration.name.text.clone());
+    visited.insert(base.text.clone());
+    let mut current = base_decl;
+    while let Some(ref next_base) = current.extends {
+        if !visited.insert(next_base.text.clone()) {
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "Inheritance cycle detected: `{}` extends `{}` extends `{}`.\n\nRemove one `extends` to break the cycle.",
+                    declaration.name.text, base.text, next_base.text,
+                ),
+                base.span,
+            ));
+            return;
+        }
+        match all_declarations
+            .iter()
+            .find(|d| d.name.text == next_base.text)
+        {
+            Some(found) => current = found,
+            None => break,
+        }
+    }
 }
 
 fn validate_components(
@@ -384,6 +453,7 @@ mod tests {
         Declaration {
             kind,
             name: Identifier::new(name, Span::default()),
+            extends: None,
             body,
             span: Span::default(),
         }

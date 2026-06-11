@@ -6,7 +6,9 @@ impl<'a> Parser<'a> {
         let line = self.current_line().expect("parse_declaration needs a line");
         let content = content_without_comment(line.text);
 
-        if !content.ends_with('{') {
+        // Support both `card Foo {` (multi-line) and `card Foo { }` (empty single-line).
+        let empty_body = content.ends_with("{ }") || content.ends_with("{}");
+        if !content.ends_with('{') && !empty_body {
             return Err(ParseError::one(
                 format!("expected declaration ending with `{{`, found `{content}`"),
                 Span {
@@ -57,16 +59,47 @@ impl<'a> Parser<'a> {
             },
         );
 
+        // Parse optional `extends BaseName` after the declaration name.
+        let extends = if parts.next() == Some("extends") {
+            let base_text = parts.next().ok_or_else(|| {
+                ParseError::one(
+                    "missing base style name after `extends`",
+                    Span {
+                        start: line.start,
+                        end: line.end,
+                    },
+                )
+            })?;
+            let base_start = line.start + line.text.find(base_text).unwrap_or(0);
+            Some(Identifier::new(
+                base_text,
+                Span {
+                    start: base_start,
+                    end: base_start + base_text.len(),
+                },
+            ))
+        } else {
+            None
+        };
+
         self.advance();
-        let body = self.parse_nodes_until_close()?;
-        let end = self
-            .previous_line()
-            .map(|line| line.end)
-            .unwrap_or(line.end);
+        let body = if empty_body {
+            Vec::new()
+        } else {
+            self.parse_nodes_until_close()?
+        };
+        let end = if empty_body {
+            line.end
+        } else {
+            self.previous_line()
+                .map(|line| line.end)
+                .unwrap_or(line.end)
+        };
 
         Ok(Declaration {
             kind,
             name,
+            extends,
             body,
             span: Span {
                 start: line.start,
@@ -131,6 +164,7 @@ impl<'a> Parser<'a> {
                     end: name_start + name_text.len(),
                 },
             ),
+            extends: None,
             body,
             span: Span {
                 start: line.start,
@@ -168,6 +202,7 @@ impl<'a> Parser<'a> {
                     end: order_start + order.len(),
                 },
             ),
+            extends: None,
             body: Vec::new(),
             span: Span {
                 start: line.start,

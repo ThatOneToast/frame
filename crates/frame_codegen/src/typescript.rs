@@ -52,6 +52,7 @@ mod tests {
             declarations: vec![Declaration {
                 kind: DeclarationKind::Card,
                 name: Identifier::new("QuickLinkCard", Span::default()),
+                extends: None,
                 body: vec![],
                 span: Span::default(),
             }],

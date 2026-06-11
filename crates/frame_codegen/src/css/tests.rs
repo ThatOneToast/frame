@@ -5,6 +5,7 @@ fn declaration(kind: DeclarationKind, name: &str, body: Vec<Node>) -> Declaratio
     Declaration {
         kind,
         name: Identifier::new(name, Span::default()),
+        extends: None,
         body,
         span: Span::default(),
     }
@@ -946,4 +947,122 @@ fn html_and_page_body_do_not_emit_component_classes() {
     assert!(!css.contains(".fr-page-body"));
     assert!(css.contains("html {"));
     assert!(css.contains("body {"));
+}
+
+#[test]
+fn emits_opacity_with_abstract_values() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Stack,
+            "FadeBox",
+            vec![
+                statement(&["opacity", "half"]),
+                statement(&["opacity", "strong"]),
+                statement(&["opacity", "none"]),
+                statement(&["opacity", "full"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("opacity: 0.5;"));
+    assert!(css.contains("opacity: 0.75;"));
+    assert!(css.contains("opacity: 0;"));
+    assert!(css.contains("opacity: 1.0;"));
+}
+
+#[test]
+fn emits_shadow_with_css_variable() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Card,
+            "ShadowCard",
+            vec![statement(&["shadow", "medium"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("box-shadow: var(--frame-shadow-medium);"));
+}
+
+#[test]
+fn emits_radius_with_css_variable() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Card,
+            "RoundCard",
+            vec![statement(&["radius", "large"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("border-radius: var(--frame-radius-large);"));
+}
+
+#[test]
+fn emits_z_index_for_named_layers() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Stack,
+            "ZStack",
+            vec![
+                statement(&["z", "overlay"]),
+                statement(&["z", "modal"]),
+                statement(&["z", "base"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("z-index: 50;"));
+    assert!(css.contains("z-index: 100;"));
+    assert!(css.contains("z-index: 0;"));
+}
+
+#[test]
+fn emits_surface_background_for_named_surfaces() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Card,
+            "GlassCard",
+            vec![statement(&["surface", "glass"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("background: var(--frame-surface-glass);"));
+}
+
+#[test]
+fn emits_grid_columns_with_fr_proportions() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Grid,
+            "ProportionalGrid",
+            vec![statement(&["columns", "2fr", "1fr"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);"));
+    assert!(!css.contains("grid-area: 2fr"));
+    assert!(!css.contains("grid-area: 1fr"));
 }

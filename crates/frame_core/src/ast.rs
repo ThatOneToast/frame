@@ -18,6 +18,7 @@ pub struct Include {
 pub struct Declaration {
     pub kind: DeclarationKind,
     pub name: Identifier,
+    pub extends: Option<Identifier>,
     pub body: Vec<Node>,
     pub span: Span,
 }
@@ -234,6 +235,32 @@ pub enum DeclarationKind {
     Html,
     Body,
     Unknown(String),
+}
+
+impl DeclarationKind {
+    pub fn kind_keyword(&self) -> &str {
+        match self {
+            Self::Grid => "grid",
+            Self::Area => "area",
+            Self::Card => "card",
+            Self::Stack => "stack",
+            Self::Row => "row",
+            Self::Button => "button",
+            Self::Text => "text",
+            Self::Tokens => "tokens",
+            Self::Center => "center",
+            Self::Split => "split",
+            Self::Overlay => "overlay",
+            Self::Dock => "dock",
+            Self::Keyframes => "keyframes",
+            Self::Supports => "supports",
+            Self::StyleGroup => "style-group",
+            Self::StyleOrder => "style-order",
+            Self::Html => "html",
+            Self::Body => "page-body",
+            Self::Unknown(s) => s,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
