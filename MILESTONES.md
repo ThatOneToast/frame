@@ -370,6 +370,31 @@ Success criteria:
 
 ---
 
+## Milestone 11B — Style Inheritance
+
+Goal: support declaration-level style reuse through `extends` inheritance.
+
+Status: **Complete.**
+
+Deliverables:
+
+- [x] Parser support for `extends` keyword in style declarations.
+- [x] Semantic validation of inheritance kind matching (card extends card, grid extends grid).
+- [x] Cycle detection and error diagnostics for circular inheritance.
+- [x] Diagnostics for unknown base style references.
+- [x] Property merging from parent declarations into child declarations.
+- [x] CSS output includes both base and overridden properties.
+- [x] LSP diagnostics for invalid inheritance.
+- [x] Tests covering single-level, multi-level, cycle, and kind mismatch cases.
+
+Success criteria:
+
+- `card Child extends Parent { ... }` compiles with inherited CSS output.
+- Invalid inheritance produces actionable diagnostics.
+- Multi-level chains resolve correctly.
+
+---
+
 ## Milestone 12 — LSP Teacher Experience for UI
 
 Goal: make Frame's editor support teach the semantic UI language.

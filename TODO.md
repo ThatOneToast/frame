@@ -151,6 +151,10 @@ This file tracks the implementation path. Unchecked implementation items should 
 - [x] Support automatic style inheritance by node name.
 - [x] Support explicit style override with `Name:StyleName`.
 - [x] Support reactive style patches.
+- [x] Support explicit `extends` keyword for style inheritance between declarations.
+- [x] Detect inheritance cycles and report errors.
+- [x] Validate base kind matches child kind in `extends` expressions.
+- [x] Merge parent properties into child CSS output with correct overrides.
 - [x] Track remaining CSS coverage in `TODO-CSS.md`.
 - [x] Add CSS output tests for new style binding behavior.
 

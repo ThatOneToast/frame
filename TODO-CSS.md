@@ -37,6 +37,7 @@ These gaps were identified during the LLM Dashboard implementation and prevent p
 - [x] **Body/root styling**: `html { background, color }` and `page-body { background, color, margin, min-height }` declarations now emit bare `html`/`body` CSS rules. Not class-based.
 - [x] **Grid column name conflicts**: Both `columns` + `tracks` conflict and duplicate column names now produce compiler errors.
 - [ ] **Explicit style bindings to undeclared styles**: Using `card MetricCard:ActiveModel` when `ActiveModel` is not declared generates a non-existent CSS class (`fr-ActiveModel`). The compiler warns but does not error, leading to silently missing styles.
+- [x] **Style inheritance**: `extends` keyword allows declarations to inherit and override parent properties. CSS output merges base and child properties correctly.
 - [x] advanced CSS escape hatch
 
 ## Display and Box Model

@@ -219,6 +219,44 @@ Use `dock`, `stack`, `flow`, `grid`, `overlay`, `scroll`, and `split` as intent-
 
 Use intent-based controls and groups: `field`, `input`, `editor`, `toggle`, `choice`, `select`, and `action`. Labels, hints, descriptions, validation messages, required state, disabled state, and bindings should be first-class and accessible by default.
 
+## Style Inheritance
+
+Frame supports style inheritance via the `extends` keyword. A child declaration inherits all properties from its base and can override specific ones.
+
+### Syntax
+
+```frame
+card DashboardPanel {
+  padding medium
+  radius medium
+  border soft
+  color text-primary
+}
+
+card MetricCard extends DashboardPanel {
+  gap small
+}
+
+card ChartPanel extends DashboardPanel {
+  gap medium
+}
+```
+
+### Rules
+- Base and child must have the same declaration kind (card extends card, grid extends grid)
+- Child properties override base properties with the same statement key
+- Multi-level inheritance is supported (A extends B extends C)
+- Cycles are detected and reported as errors
+- Unknown base styles are reported as errors
+- Empty bodies are supported: `card Foo extends Bar { }`
+
+### CSS Output
+The generated CSS for a child includes both base and overridden properties:
+```css
+.fr-DashboardPanel { padding: 1rem; border-radius: 0.625rem; ... }
+.fr-MetricCard { padding: 1rem; border-radius: 0.625rem; ... gap: 0.5rem; }
+```
+
 ### Migration Strategy
 
 Use semantic primitives now. Keep browser terms internal to compiler/runtime lowering and explicit unsafe escape hatches.
