@@ -519,10 +519,7 @@ row ModelRowBase {
   }
 }
 
-row ModelRow1 extends ModelRowBase { }
-row ModelRow2 extends ModelRowBase { }
-row ModelRow3 extends ModelRowBase { }
-row ModelRow4 extends ModelRowBase { }
+row ModelRow extends ModelRowBase { }
 
 card RankBadgeBase {
   padding small
@@ -532,17 +529,11 @@ card RankBadgeBase {
   weight bold
 }
 
-card RankBadge1 extends RankBadgeBase { }
-card RankBadge2 extends RankBadgeBase { }
-card RankBadge3 extends RankBadgeBase { }
-card RankBadge4 extends RankBadgeBase { }
+card RankBadge extends RankBadgeBase { }
 
 stack ModelInfoBase {
   gap none
   color text-primary
 }
 
-stack ModelInfo1 extends ModelInfoBase { }
-stack ModelInfo2 extends ModelInfoBase { }
-stack ModelInfo3 extends ModelInfoBase { }
-stack ModelInfo4 extends ModelInfoBase { }
+stack ModelInfo extends ModelInfoBase { }

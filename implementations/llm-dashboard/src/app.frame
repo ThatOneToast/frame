@@ -1,6 +1,7 @@
 // LLM Operations Dashboard
 component LLMDashboard {
   state {
+    topModels list = []
     // activeModelId text = "qwen3.6-coder-27b"
     // selectedProvider text = "all"
     // searchQuery text = ""
@@ -268,45 +269,17 @@ component LLMDashboard {
                 text "Ranked by throughput"
               }
               stack ModelsList {
-                row ModelRow1 {
-                  card RankBadge1 {
-                    text "1"
+                for model in $topModels key $model.id {
+                  row ModelRow {
+                    card RankBadge {
+                      text $model.rank
+                    }
+                    stack ModelInfo {
+                      text $model.name
+                      text $model.detail
+                    }
+                    text $model.delta
                   }
-                  stack ModelInfo1 {
-                    text "Qwen3.6 Coder 27B"
-                    text "MLX \u00b7 27B"
-                  }
-                  text "+11.2%"
-                }
-                row ModelRow2 {
-                  card RankBadge2 {
-                    text "2"
-                  }
-                  stack ModelInfo2 {
-                    text "Gemma 3 27B"
-                    text "Ollama \u00b7 27B"
-                  }
-                  text "-0.8%"
-                }
-                row ModelRow3 {
-                  card RankBadge3 {
-                    text "3"
-                  }
-                  stack ModelInfo3 {
-                    text "Llama 3.1 8B"
-                    text "Together \u00b7 8B"
-                  }
-                  text "+1.8%"
-                }
-                row ModelRow4 {
-                  card RankBadge4 {
-                    text "4"
-                  }
-                  stack ModelInfo4 {
-                    text "Phi 3.5 Mini"
-                    text "Azure \u00b7 3.8B"
-                  }
-                  text "+2.6%"
                 }
               }
             }
