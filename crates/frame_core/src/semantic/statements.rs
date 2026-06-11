@@ -987,6 +987,12 @@ pub(crate) fn validate_size_value(statement: &Statement, diagnostics: &mut Vec<D
         return;
     }
 
+    // Allow 'none' for min- properties (maps to CSS 0)
+    let property = statement.words[0].as_str();
+    if property.starts_with("min-") && value == "none" {
+        return;
+    }
+
     diagnostics.push(Diagnostic::error(
         format!("`{value}` is not a valid {} value.\n\nUse size values like `fill`, `content`, `screen`, `auto`, or percentages like `25%`, `50%`, and `100%`.\n\nCompiler detail: use a percentage from `0%` to `100%`.", statement.words[0]),
         statement.span,
