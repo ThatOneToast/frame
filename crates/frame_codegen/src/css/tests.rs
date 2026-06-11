@@ -741,7 +741,7 @@ fn generates_responsive_and_container_rules() {
 
     let css = generate_css(&document);
 
-    assert!(css.contains("@media (max-width: 1023px)"));
+    assert!(css.contains("@media (max-width: 47.9375rem)"));
     assert!(css.contains("@container (max-width: 42rem)"));
     assert!(css.contains(".fr-AppShell"));
 }
@@ -1218,16 +1218,38 @@ fn generated_css_includes_frame_text_default() {
 fn generated_css_includes_button_reset() {
     let document = Document {
         includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Button,
+            "PrimaryButton",
+            vec![statement(&["surface", "panel"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("@layer frame-reset {"));
+    assert!(css.contains(".fr-PrimaryButton {"));
+    assert!(css.contains("appearance: none;"));
+    assert!(css.contains("cursor: pointer;"));
+    // Broad attribute resets and !important are gone.
+    assert!(!css.contains("[class*=\"fr-\"]"));
+    assert!(!css.contains("!important"));
+}
+
+#[test]
+fn reset_layer_omits_button_reset_without_buttons() {
+    let document = Document {
+        includes: Vec::new(),
         declarations: vec![],
         components: Vec::new(),
     };
 
     let css = generate_css(&document);
 
-    assert!(css.contains("appearance: none;"));
-    assert!(css.contains("cursor: pointer;"));
-    assert!(css.contains("button[class*=\"fr-\"]"));
-    assert!(css.contains("flex-direction: row !important;"));
+    assert!(css.contains("@layer frame-reset {"));
+    assert!(css.contains(".fr-FrameText"));
+    assert!(!css.contains("appearance: none;"));
 }
 
 #[test]
