@@ -505,6 +505,7 @@ pub const BORDER_LINE_STYLES: &[&str] = &[
 pub const Z_LAYERS: &[&str] = &[
     "base", "above", "dropdown", "sticky", "overlay", "modal", "toast",
 ];
+pub const OPACITIES: &[&str] = &["none", "slight", "subtle", "half", "strong", "full"];
 
 pub static REGISTRY: &[LanguageItem] = &[LanguageItem {
             name: "area",
@@ -4978,17 +4979,31 @@ Generated CSS writes `min-inline-size`."#,
             kind: LanguageItemKind::Property,
             layer: LanguageLayer::Style,
             detail: "opacity",
-            summary: "opacity",
-            description: "",
-            documentation: r#"Animates opacity in keyframes.
+            summary: "Controls element opacity.",
+            description: "Controls element opacity using named levels that map to numeric values: none (0), slight (0.1), subtle (0.25), half (0.5), strong (0.75), full (1.0).",
+            documentation: r#"Controls element opacity using named levels.
 
-Generated CSS writes `opacity: ...`."#,
+Common values:
+- `none` → 0
+- `slight` → 0.1
+- `subtle` → 0.25
+- `half` → 0.5
+- `strong` → 0.75
+- `full` → 1.0
+
+Generated CSS writes `opacity: ...`.
+
+```frame
+card FadedCard {
+  opacity subtle
+}
+```"#,
             generated_css: None,
             frame_examples: &[],
             svelte_examples: &[],
-            allowed_in: &[],
-            related: &[],
-            values: &[],
+            allowed_in: &[FrameScope::Component, FrameScope::State],
+            related: &["fade", "visibility"],
+            values: &["none", "slight", "subtle", "half", "strong", "full"],
             aliases: &[],
             lowers_to: None,
             docs_anchor: None,
@@ -5387,7 +5402,7 @@ Use it for headers, footers, or wide content regions."#,
             svelte_examples: &[r#"<div class="fr-ProjectCard">Project details</div>"#],
             allowed_in: &[FrameScope::Grid, FrameScope::Area, FrameScope::Component],
             related: &["panel", "main", "glass", "shadow", "border"],
-            values: &["main", "panel", "glass", "raised", "flat", "gradient dusk"],
+            values: &["main", "panel", "glass", "raised", "flat", "overlay", "inset", "sunken", "gradient", "gradient dusk"],
             aliases: &[],
             lowers_to: None,
             docs_anchor: Some("docs/surfaces.md"),

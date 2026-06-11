@@ -32,12 +32,21 @@ pub fn diagnostics_for_uri(source: &str, uri: &Url) -> Vec<FrameDiagnostic> {
 
 fn diagnostics_for_source_with_imports(source: &str, uri: &Url) -> Vec<FrameDiagnostic> {
     let prefix = included_source_prefix(source, uri);
-    if prefix.is_empty() {
+    // Also merge the implicit theme file if it exists and isn't already included.
+    let theme_prefix = theme_source_prefix(source, uri);
+    let full_prefix = if prefix.is_empty() {
+        theme_prefix
+    } else if theme_prefix.is_empty() {
+        prefix
+    } else {
+        format!("{prefix}\n{theme_prefix}")
+    };
+    if full_prefix.is_empty() {
         return diagnostics_for_source(source);
     }
 
-    let prefix_len = prefix.len() + 1;
-    let merged = format!("{prefix}\n{source}");
+    let prefix_len = full_prefix.len() + 1;
+    let merged = format!("{full_prefix}\n{source}");
     diagnostics_for_source(&merged)
         .into_iter()
         .filter_map(|mut diagnostic| {
@@ -212,6 +221,7 @@ pub fn cursor_diagnostics(source: &str, offset: usize) -> Vec<FrameDiagnostic> {
                         if !item.values.is_empty()
                             && !item.values.contains(&word.as_str())
                             && !language::is_known_value(word)
+                            && !is_dynamic_grid_value(word, property)
                         {
                             let values = item
                                 .values
@@ -336,9 +346,78 @@ fn is_line_starting_nested_block(line_prefix: &str) -> bool {
     is_declaration_nested_block_keyword(first)
 }
 
+fn quote_aware_tokens(line: &str, line_offset: usize) -> Vec<(&str, usize)> {
+    let mut tokens = Vec::new();
+    let mut in_quote = false;
+    let mut token_start = None;
+    for (i, c) in line.char_indices() {
+        if c == '"' {
+            if in_quote {
+                // Closing quote — end of quoted segment, skip it entirely
+                in_quote = false;
+                token_start = None;
+            } else {
+                // Opening quote — start skipping; also capture any preceding unquoted token
+                if let Some(start) = token_start.take() {
+                    let tok = &line[start..i];
+                    if !tok.is_empty() {
+                        tokens.push((tok, line_offset + start));
+                    }
+                }
+                in_quote = true;
+            }
+        } else if !in_quote {
+            if c.is_whitespace() {
+                if let Some(start) = token_start.take() {
+                    let tok = &line[start..i];
+                    if !tok.is_empty() {
+                        tokens.push((tok, line_offset + start));
+                    }
+                }
+            } else if token_start.is_none() {
+                token_start = Some(i);
+            }
+        }
+    }
+    // Flush trailing unquoted token
+    if !in_quote {
+        if let Some(start) = token_start {
+            let tok = &line[start..];
+            if !tok.is_empty() {
+                tokens.push((tok, line_offset + start));
+            }
+        }
+    }
+    tokens
+}
+
 fn is_percentage_selector(name: &str) -> bool {
     name.strip_suffix('%')
         .is_some_and(|number| !number.is_empty() && number.chars().all(|c| c.is_ascii_digit()))
+}
+
+fn is_dynamic_grid_value(word: &str, property: &str) -> bool {
+    // Grid track properties (columns, rows, tracks) accept dynamic values:
+    // percentages (60%), fr units (2fr), minmax(), fit-content(), etc.
+    let is_grid_property = matches!(
+        property,
+        "columns" | "rows" | "tracks" | "grid-columns" | "grid-rows"
+    );
+    if !is_grid_property {
+        return false;
+    }
+    // Allow bare numbers (cursor may strip %), fr units, and grid functions
+    if word.chars().all(|c| c.is_ascii_digit()) {
+        return true;
+    }
+    if let Some(rest) = word.strip_prefix("responsive") {
+        return rest.is_empty() || rest.starts_with(' ');
+    }
+    matches!(
+        word,
+        "subgrid" | "minmax" | "fit-content" | "auto" | "fill" | "min" | "max"
+    ) || word.ends_with("fr")
+        || word.ends_with('%')
 }
 
 fn closest_match<'a>(needle: &str, candidates: &[&'a str]) -> Option<&'a str> {
@@ -388,10 +467,10 @@ fn diagnostics_for_frame_source(source: &str) -> Vec<FrameDiagnostic> {
             let line_end = offset + line.len();
             let trimmed = line.trim_start();
             if !trimmed.is_empty() && !trimmed.starts_with('#') && !trimmed.starts_with("//") {
-                // Check every token on the line, not just the first word.
-                // This catches issues in `value bind $draft`, `for msg in $messages`, etc.
-                let mut token_start = offset + (line.len() - trimmed.len());
-                for token in trimmed.split_whitespace() {
+                // Use a quote-aware token splitter to avoid checking words
+                // inside quoted strings (e.g. `text "4 models online"`).
+                let line_offset = offset + (line.len() - trimmed.len());
+                for (token, token_start) in quote_aware_tokens(trimmed, line_offset) {
                     let check_offset = token_start + token.len() / 2;
                     for d in cursor_diagnostics(source, check_offset) {
                         // Only skip if there's an overlapping diagnostic of same or higher severity
@@ -403,7 +482,6 @@ fn diagnostics_for_frame_source(source: &str) -> Vec<FrameDiagnostic> {
                             diagnostics.push(d);
                         }
                     }
-                    token_start += token.len() + 1; // +1 for the whitespace separator
                 }
             }
             offset = line_end + 1;
@@ -592,6 +670,38 @@ fn included_source_prefix(source: &str, uri: &Url) -> String {
         })
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+fn theme_source_prefix(source: &str, uri: &Url) -> String {
+    let Ok(path) = uri.to_file_path() else {
+        return String::new();
+    };
+    let Some(parent) = path.parent() else {
+        return String::new();
+    };
+    // Don't merge theme if this file IS the theme file
+    if path.file_name().is_some_and(|n| n == "app-theme.frame") {
+        return String::new();
+    }
+    let theme = parent.join("app-theme.frame");
+    if !theme.exists() {
+        return String::new();
+    }
+    // Don't merge if the source already includes this file
+    let canonical_theme = fs::canonicalize(&theme).unwrap_or(theme.clone());
+    let already_included = source.lines().any(|line| {
+        let trimmed = line.trim_start();
+        if !trimmed.starts_with("#include") {
+            return false;
+        }
+        let target = trimmed.split_whitespace().nth(1).unwrap_or("");
+        let candidate = include_candidate(parent, target);
+        fs::canonicalize(&candidate).unwrap_or(candidate) == canonical_theme
+    });
+    if already_included {
+        return String::new();
+    }
+    fs::read_to_string(&theme).unwrap_or_default()
 }
 
 fn read_include_recursive(path: &Path, seen: &mut HashSet<std::path::PathBuf>) -> Option<String> {
@@ -2080,6 +2190,509 @@ component ChatApp {
         assert!(
             errors.is_empty(),
             "Expected no errors for valid text interpolation, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    // ── Real dashboard file diagnostics ──────────────────────────────────
+
+    fn dashboard_path(file: &str) -> std::path::PathBuf {
+        let manifest = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+        let path = std::path::PathBuf::from(manifest)
+            .join("../../implementations/llm-dashboard/src")
+            .join(file);
+        std::fs::canonicalize(&path).unwrap_or(path)
+    }
+
+    fn read_dashboard(file: &str) -> String {
+        let path = dashboard_path(file);
+        std::fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("Failed to read {}: {}", path.display(), e))
+    }
+
+    #[test]
+    fn llm_dashboard_app_has_no_lsp_errors() {
+        let source = read_dashboard("app.frame");
+        let uri = Url::from_file_path(dashboard_path("app.frame")).expect("valid uri");
+        let diagnostics = diagnostics_for_uri(&source, &uri);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "LLM dashboard app.frame LSP errors: {:?}",
+            errors
+                .iter()
+                .map(|d| format!("[{:?}] {}", d.severity, d.message))
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn llm_dashboard_theme_has_no_lsp_errors() {
+        let source = read_dashboard("app-theme.frame");
+        let uri = Url::from_file_path(dashboard_path("app-theme.frame")).expect("valid uri");
+        let diagnostics = diagnostics_for_uri(&source, &uri);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "LLM dashboard app-theme.frame LSP errors: {:?}",
+            errors
+                .iter()
+                .map(|d| format!("[{:?}] {}", d.severity, d.message))
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn llm_dashboard_app_has_no_lsp_warnings() {
+        let source = read_dashboard("app.frame");
+        let uri = Url::from_file_path(dashboard_path("app.frame")).expect("valid uri");
+        let diagnostics = diagnostics_for_uri(&source, &uri);
+        let warnings: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Warning)
+            .collect();
+        assert!(
+            warnings.is_empty(),
+            "LLM dashboard app.frame LSP warnings: {:?}",
+            warnings
+                .iter()
+                .map(|d| format!("[{:?}] {}", d.severity, d.message))
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn llm_dashboard_theme_has_no_lsp_warnings() {
+        let source = read_dashboard("app-theme.frame");
+        let uri = Url::from_file_path(dashboard_path("app-theme.frame")).expect("valid uri");
+        let diagnostics = diagnostics_for_uri(&source, &uri);
+        let warnings: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Warning)
+            .collect();
+        assert!(
+            warnings.is_empty(),
+            "LLM dashboard app-theme.frame LSP warnings: {:?}",
+            warnings
+                .iter()
+                .map(|d| format!("[{:?}] {}", d.severity, d.message))
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn llm_dashboard_lsp_matches_cli_diagnostics() {
+        let app_source = read_dashboard("app.frame");
+        let app_uri = Url::from_file_path(dashboard_path("app.frame")).expect("valid uri");
+        let app_diags = diagnostics_for_uri(&app_source, &app_uri);
+        let app_errors: Vec<_> = app_diags
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            app_errors.is_empty(),
+            "CLI reports 0 warnings for app.frame but LSP reports {} errors: {:?}",
+            app_errors.len(),
+            app_errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+
+        let theme_source = read_dashboard("app-theme.frame");
+        let theme_uri = Url::from_file_path(dashboard_path("app-theme.frame")).expect("valid uri");
+        let theme_diags = diagnostics_for_uri(&theme_source, &theme_uri);
+        let theme_errors: Vec<_> = theme_diags
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            theme_errors.is_empty(),
+            "CLI reports 0 warnings for app-theme.frame but LSP reports {} errors: {:?}",
+            theme_errors.len(),
+            theme_errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    // ── Positive regression tests for dashboard-safe syntax ──────────────
+
+    #[test]
+    fn lsp_accepts_html_root_declaration() {
+        let source = "html {\n  background #0A0A0F\n  color #F8FAFC\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for html root, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_page_body_declaration() {
+        let source = "page-body {\n  margin none\n  background #0A0A0F\n  color #F8FAFC\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for page-body, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_fr_grid_tracks() {
+        let source = "grid AppShell {\n  tracks columns panel fill\n  tracks rows header fill\n  gap none\n  height screen\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for fr grid tracks, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_area_declarations() {
+        let source = "grid AppShell {\n  tracks columns panel fill\n  tracks rows header fill\n  gap none\n  height screen\n}\narea Header {\n  in AppShell\n  row 1\n  span 2\n  padding x small\n  align center\n  justify between\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for area declarations, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_abstract_opacity_values() {
+        let source = "card Test {\n  opacity none\n  opacity slight\n  opacity subtle\n  opacity half\n  opacity strong\n  opacity full\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for abstract opacity, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_shadow_radius_surface_values() {
+        let source = "card Test {\n  shadow small\n  shadow medium\n  shadow large\n  radius small\n  radius medium\n  radius large\n  surface raised\n  surface overlay\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for shadow/radius/surface, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_page_root_declarations() {
+        let source = "html {\n  background #0A0A0F\n}\npage-body {\n  margin none\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for page root declarations, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_dashboard_area_placement() {
+        let source = "\
+grid AppShell {
+  tracks columns panel fill
+  tracks rows header fill
+  gap none
+  height screen
+}
+area Header {
+  in AppShell
+  row 1
+  span 2
+}
+area Sidebar {
+  in AppShell
+  row 2
+  col 1
+}
+area Main {
+  in AppShell
+  row 2
+  col 2
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for dashboard area placement, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_dashboard_style_declarations() {
+        let source = "\
+row NavBar {
+  gap large
+  align center
+  justify between
+  color accent
+}
+stack Logo {
+  padding x small
+  gap none
+  color accent
+  weight bold
+  size heading
+}
+card StatusBadge {
+  padding x small
+  padding y small
+  radius small
+  color success
+  border soft
+  size caption
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for dashboard style declarations, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_hover_focus_active_blocks() {
+        let source = "\
+card Button {
+  padding medium
+  radius medium
+  hover {
+    lift small
+  }
+  focus {
+    glow
+  }
+  active {
+    press
+  }
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for hover/focus/active blocks, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_hex_color_values() {
+        let source = "html {\n  background #0A0A0F\n  color #F8FAFC\n}\npage-body {\n  background #0A0A0F\n  color #F8FAFC\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for hex colors in root, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_dashboard_grid_columns() {
+        let source = "\
+grid PerformanceGrid {
+  columns 60% 40%
+  gap medium
+}
+grid DashboardGrid {
+  columns 2fr 1fr
+  gap medium
+}
+";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for dashboard grid columns, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    // ── Invalid tests ────────────────────────────────────────────────────
+
+    #[test]
+    fn lsp_reports_invalid_grid_track_value() {
+        let source = "grid Broken {\n  columns invalid-track\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let has_error = diagnostics.iter().any(|d| d.severity == Severity::Error);
+        assert!(has_error, "Expected error for invalid grid track value");
+    }
+
+    #[test]
+    fn lsp_reports_unknown_surface_value() {
+        let source = "card Test {\n  surface nonexistent\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let has_error = diagnostics
+            .iter()
+            .any(|d| d.severity == Severity::Error && d.message.contains("surface"));
+        assert!(has_error, "Expected error for unknown surface value");
+    }
+
+    #[test]
+    fn lsp_reports_invalid_page_body_property() {
+        let source = "page-body {\n  nonexistent-prop value\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let has_error = diagnostics.iter().any(|d| d.severity == Severity::Error);
+        assert!(has_error, "Expected error for invalid page-body property");
+    }
+
+    #[test]
+    fn lsp_reports_unknown_style_binding() {
+        let source =
+            "component Test {\n  view {\n    card MyCard:NonexistentStyle {\n    }\n  }\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let has_warning = diagnostics.iter().any(|d| d.severity == Severity::Warning);
+        assert!(has_warning, "Expected warning for unknown style binding");
+    }
+
+    // ── Style inheritance tests ──────────────────────────────────────────
+
+    #[test]
+    fn lsp_accepts_valid_extends() {
+        let source = "card Base {\n  padding medium\n  radius medium\n}\ncard Child extends Base {\n  border soft\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for valid extends, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_reports_unknown_base_style() {
+        let source = "card Child extends MissingBase {\n  padding medium\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let has_error = diagnostics
+            .iter()
+            .any(|d| d.severity == Severity::Error && d.message.contains("Unknown base style"));
+        assert!(has_error, "Expected error for unknown base style");
+    }
+
+    #[test]
+    fn lsp_reports_kind_mismatch_on_extends() {
+        let source =
+            "grid Base {\n  gap medium\n}\ncard Child extends Base {\n  padding medium\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let has_error = diagnostics.iter().any(|d| {
+            d.severity == Severity::Error && d.message.contains("matching declaration kinds")
+        });
+        assert!(has_error, "Expected error for kind mismatch on extends");
+    }
+
+    #[test]
+    fn lsp_reports_inheritance_cycle() {
+        let source =
+            "card A extends B {\n  padding medium\n}\ncard B extends A {\n  radius medium\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let has_error = diagnostics
+            .iter()
+            .any(|d| d.severity == Severity::Error && d.message.contains("cycle"));
+        assert!(has_error, "Expected error for inheritance cycle");
+    }
+
+    #[test]
+    fn lsp_accepts_multi_level_inheritance() {
+        let source = "card GrandBase {\n  padding medium\n}\ncard Base extends GrandBase {\n  radius medium\n}\ncard Child extends Base {\n  border soft\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for multi-level inheritance, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_extends_with_hover_blocks() {
+        let source = "card Base {\n  padding medium\n  hover {\n    lift small\n  }\n}\ncard Child extends Base {\n  radius medium\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for extends with hover blocks, got: {:?}",
+            errors.iter().map(|d| &d.message).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lsp_accepts_extends_grid_with_tracks() {
+        let source = "grid Base {\n  tracks columns panel fill\n  gap medium\n}\ngrid Child extends Base {\n  tracks rows header fill\n}\n";
+        let diagnostics = diagnostics_for_source(source);
+        let errors: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.severity == Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "Expected no errors for extends grid with tracks, got: {:?}",
             errors.iter().map(|d| &d.message).collect::<Vec<_>>()
         );
     }

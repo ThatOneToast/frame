@@ -33,6 +33,10 @@ pub fn resolve_includes(
     source: &str,
 ) -> Vec<(PathBuf, String, Document, frame_core::symbols::SymbolIndex)> {
     let mut seen = HashSet::new();
+    // Mark the current file as seen to prevent self-inclusion via implicit theme resolution.
+    if let Ok(canonical) = fs::canonicalize(current_path) {
+        seen.insert(canonical);
+    }
     let mut results = Vec::new();
     collect_includes(current_path, source, &mut seen, &mut results);
     // Append implicit theme file after explicit includes so local symbols take precedence.
