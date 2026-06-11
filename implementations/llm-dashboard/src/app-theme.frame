@@ -222,7 +222,7 @@ card DeltaVram extends DeltaBadgeBase { }
 
 // Performance Section
 grid PerformanceGrid {
-  columns 60% 40%
+  columns 3fr 2fr
   gap medium
 }
 

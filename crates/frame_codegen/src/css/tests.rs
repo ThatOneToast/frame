@@ -1349,3 +1349,62 @@ fn invalid_height_token_falls_back_to_spacing_variable() {
 
     assert!(css.contains("height: var(--frame-space-bogus);"));
 }
+
+#[test]
+fn fractional_columns_emit_gap_safe_tracks() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Grid,
+            "PerformanceGrid",
+            vec![
+                statement(&["columns", "3fr", "2fr"]),
+                statement(&["gap", "medium"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);"));
+    assert!(!css.contains("60%"));
+    assert!(!css.contains("40%"));
+}
+
+#[test]
+fn percentage_columns_do_not_get_wrapped_in_minmax() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Grid,
+            "PercentGrid",
+            vec![statement(&["columns", "60%", "40%"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("grid-template-columns: 60% 40%;"));
+}
+
+#[test]
+fn dashboard_grid_produces_gap_safe_tracks() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Grid,
+            "DashboardGrid",
+            vec![
+                statement(&["columns", "2fr", "1fr"]),
+                statement(&["gap", "medium"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);"));
+}
