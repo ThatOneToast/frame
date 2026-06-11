@@ -608,7 +608,32 @@ pub fn completions_at_with_includes(
         }
 
         // Root-level completions
-        CursorSlot::RootDeclaration | CursorSlot::DeclarationName | CursorSlot::Unknown => {
+        CursorSlot::RootDeclaration => {
+            // Check if we're on a declaration header line with extends or after a name
+            if let Some(extends_items) = extends_completions(&line, &cursor, &symbols) {
+                return extends_items;
+            }
+            let mut items = snippet_suggestions(SnippetScope::Root);
+            items.extend(registry_item_suggestions(
+                language::items_by_kind(language::LanguageItemKind::Declaration),
+                "declaration",
+                "Starts a Frame declaration.",
+            ));
+            items.push(CompletionSuggestion {
+                label: "#include".to_string(),
+                detail: "include",
+                documentation: include_documentation(),
+                insert_text: Some("#include ".to_string()),
+                is_snippet: false,
+                category: CompletionCategory::Include,
+                sort_text: None,
+            });
+            items
+        }
+        CursorSlot::DeclarationName => {
+            if let Some(extends_items) = extends_completions(&line, &cursor, &symbols) {
+                return extends_items;
+            }
             let mut items = snippet_suggestions(SnippetScope::Root);
             items.extend(registry_item_suggestions(
                 language::items_by_kind(language::LanguageItemKind::Declaration),
@@ -846,6 +871,70 @@ fn primitive_body_docs(label: &str) -> String {
         "hidden when $condition" => "Conditionally hides this node when the condition is truthy.",
         _ => "Common UI property for this primitive.",
     }.to_string()
+}
+
+fn extends_completions(
+    line: &str,
+    _cursor: &SemanticCursor,
+    symbols: &frame_core::symbols::SymbolIndex,
+) -> Option<Vec<CompletionSuggestion>> {
+    let trimmed = line.trim();
+    let words: Vec<&str> = trimmed.split_whitespace().collect();
+
+    // Detect: "card Child extends |" — suggest compatible base styles
+    if words.len() >= 3 && words[2] == "extends" {
+        let kind_keyword = words[0];
+        // Find declarations of the same kind that could be base styles
+        let compatible: Vec<CompletionSuggestion> = symbols
+            .declarations
+            .values()
+            .filter(|d| {
+                if let frame_core::symbols::SymbolKind::Declaration(ref dk) = d.kind {
+                    dk.kind_keyword() == kind_keyword
+                } else {
+                    false
+                }
+            })
+            .map(|d| CompletionSuggestion {
+                label: d.name.clone(),
+                detail: "base style",
+                documentation: format!(
+                    "Inherit properties from {} `{}`.",
+                    kind_keyword, d.name
+                ),
+                insert_text: Some(d.name.clone()),
+                is_snippet: false,
+                category: CompletionCategory::Declaration,
+                sort_text: Some(format!("0_{}", d.name)),
+            })
+            .collect();
+        if !compatible.is_empty() {
+            return Some(compatible);
+        }
+    }
+
+    // Detect: "card Child |" (after name, before {) — suggest extends keyword
+    if words.len() >= 2
+        && language::declaration_keywords().contains(&words[0])
+        && !line.contains('{')
+        && !line.contains("extends")
+    {
+        let kind_keyword = words[0];
+        return Some(vec![CompletionSuggestion {
+            label: "extends".to_string(),
+            detail: "keyword",
+            documentation: format!(
+                "Inherit properties from another {} style.",
+                kind_keyword
+            ),
+            insert_text: Some("extends ".to_string()),
+            is_snippet: false,
+            category: CompletionCategory::Value,
+            sort_text: Some("0_extends".to_string()),
+        }]);
+    }
+
+    None
 }
 
 #[cfg(test)]
@@ -1593,6 +1682,16 @@ mod tests {
         assert!(
             !labels.contains(&"for item in $items {".to_string()),
             "text primitive should not suggest for loop"
+        );
+    }
+
+    #[test]
+    fn declaration_header_suggests_extends_keyword() {
+        let labels = labels_for("card MetricCard ");
+        assert!(
+            labels.contains(&"extends".to_string()),
+            "expected extends keyword in {:?}",
+            labels
         );
     }
 }
