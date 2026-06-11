@@ -279,7 +279,7 @@ row ChartBars {
   gap small
   align end
   padding y medium
-  height large
+  height chart
   flex grow 1
   overflow hidden
 }

@@ -1263,3 +1263,89 @@ fn extends_inheritance_preserves_base_properties() {
     let nav_group_dash_pos = css.find(".fr-NavGroupDash").unwrap();
     assert!(nav_group_dash_pos > nav_group_base_pos);
 }
+
+#[test]
+fn emits_chart_height_for_content_sizing() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Row,
+            "ChartBars",
+            vec![statement(&["height", "chart"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("height: 12rem;"));
+    assert!(!css.contains("height: var(--frame-space-chart);"));
+}
+
+#[test]
+fn emits_min_height_chart() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Row,
+            "ChartPanel",
+            vec![statement(&["min-height", "chart"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("min-height: 12rem;"));
+}
+
+#[test]
+fn emits_min_height_none_as_zero() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Row,
+            "FlexRow",
+            vec![statement(&["min-height", "none"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("min-height: 0;"));
+}
+
+#[test]
+fn emits_panel_height() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Stack,
+            "SidePanel",
+            vec![statement(&["height", "panel"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("height: 16rem;"));
+}
+
+#[test]
+fn invalid_height_token_falls_back_to_spacing_variable() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Row,
+            "TestRow",
+            vec![statement(&["height", "bogus"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("height: var(--frame-space-bogus);"));
+}

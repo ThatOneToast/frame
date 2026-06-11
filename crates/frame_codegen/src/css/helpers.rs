@@ -266,10 +266,13 @@ pub(crate) fn size_css_value(property: &str, value: &str) -> String {
         "fill" => "100%".to_string(),
         "content" => "max-content".to_string(),
         "auto" => "auto".to_string(),
+        "chart" => "12rem".to_string(),
+        "panel" => "16rem".to_string(),
         "sidebar" => "18rem".to_string(),
         "narrow" => "12rem".to_string(),
         "wide" => "32rem".to_string(),
         "zero" if property.starts_with("min-") => "0".to_string(),
+        "none" if property.starts_with("min-") => "0".to_string(),
         "modal" if property == "width" || property == "inline-size" => {
             "min(42rem, 100%)".to_string()
         }
