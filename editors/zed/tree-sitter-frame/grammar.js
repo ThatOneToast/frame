@@ -314,6 +314,7 @@ module.exports = grammar({
       seq(
         field("kind", $.declaration_keyword),
         field("name", $.declaration_name),
+        optional(seq("extends", field("base", $.declaration_name))),
         $.block,
       ),
 

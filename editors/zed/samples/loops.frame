@@ -1,0 +1,24 @@
+// Loop syntax tests
+component MessageList {
+  props {
+    messages list
+  }
+  state {
+    selected text = ""
+  }
+  view {
+    list Messages {
+      for message in $messages key $message.id {
+        item MessageItem {
+          text $message.name
+        }
+      }
+      for tag in $messages {
+        text $tag
+      }
+      empty EmptyState {
+        text "No messages"
+      }
+    }
+  }
+}

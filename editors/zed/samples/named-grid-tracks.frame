@@ -1,0 +1,12 @@
+// Named grid tracks
+grid PerformanceGrid {
+  columns chart prompt
+  rows header body footer
+  gap medium
+}
+
+grid DashboardGrid {
+  columns sidebar content inspector
+  rows header body
+  gap small
+}

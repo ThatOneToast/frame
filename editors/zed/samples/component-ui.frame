@@ -1,0 +1,22 @@
+// Component and UI syntax tests
+component Dashboard {
+  state {
+    activeTab text = "runs"
+    sending bool = false
+    searchQuery text = ""
+  }
+  props {
+    title text
+    count number
+  }
+  view {
+    screen AppShell {
+      panel Header {
+        text $title
+      }
+      panel MainContent {
+        text "Dashboard"
+      }
+    }
+  }
+}

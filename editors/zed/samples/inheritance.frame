@@ -1,0 +1,18 @@
+// Inheritance tests
+card MetricCardBase {
+  padding medium
+  radius medium
+  border soft
+}
+
+card MetricCardModel extends MetricCardBase { }
+card MetricCardTps extends MetricCardBase { }
+card EmptyChild extends MetricCardBase { }
+
+stack NavGroupBase {
+  gap none
+  padding x small
+}
+stack NavGroupDash extends NavGroupBase { }
+stack NavGroupAnalytics extends NavGroupBase { }
+stack NavGroupSystem extends NavGroupBase { }

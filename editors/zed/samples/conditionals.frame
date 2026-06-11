@@ -1,0 +1,22 @@
+// Conditional syntax tests
+component ChatApp {
+  state {
+    isOpen bool = false
+    isLoading bool = false
+    activeTab text = "runs"
+    sending bool = false
+  }
+  view {
+    panel Main {
+      show when $isOpen
+      hidden when $isLoading
+      style ActiveTab when $activeTab
+      text "Content"
+    }
+    action Send {
+      text "Send"
+      disabled when $sending
+      style when $sending = LoadingButton
+    }
+  }
+}

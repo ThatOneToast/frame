@@ -5,6 +5,10 @@
   kind: (declaration_keyword) @keyword
   name: (declaration_name) @type)
 
+(declaration
+  "extends" @keyword
+  base: (declaration_name) @type)
+
 (supports_block
   "supports" @keyword
   predicate: (support_predicate (identifier) @constant))

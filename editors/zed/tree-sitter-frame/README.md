@@ -18,17 +18,36 @@ npx tree-sitter parse --grammar-path . ../samples/app.frame
 npx tree-sitter parse --grammar-path . ../samples/grid.frame
 npx tree-sitter parse --grammar-path . ../samples/card.frame
 npx tree-sitter parse --grammar-path . ../samples/states.frame
+npx tree-sitter parse --grammar-path . ../samples/inheritance.frame
+npx tree-sitter parse --grammar-path . ../samples/component-ui.frame
+npx tree-sitter parse --grammar-path . ../samples/loops.frame
+npx tree-sitter parse --grammar-path . ../samples/conditionals.frame
+npx tree-sitter parse --grammar-path . ../samples/bindings.frame
+npx tree-sitter parse --grammar-path . ../samples/named-grid-tracks.frame
+npx tree-sitter parse --grammar-path . ../samples/llm-dashboard-snippet.frame
 ```
 
 ## Validate Highlighting
 
-The canonical validation command is:
+```bash
+cd editors/zed/tree-sitter-frame
+npx tree-sitter highlight --grammar-path . ../samples/inheritance.frame
+npx tree-sitter highlight --grammar-path . ../samples/component-ui.frame
+npx tree-sitter highlight --grammar-path . ../samples/loops.frame
+npx tree-sitter highlight --grammar-path . ../samples/conditionals.frame
+npx tree-sitter highlight --grammar-path . ../samples/bindings.frame
+npx tree-sitter highlight --grammar-path . ../samples/named-grid-tracks.frame
+npx tree-sitter highlight --grammar-path . ../samples/llm-dashboard-snippet.frame
+```
+
+## All Samples
+
+Parse and highlight all samples:
 
 ```bash
 cd editors/zed/tree-sitter-frame
-tree-sitter generate
-tree-sitter parse ../samples/highlighting.frame
-tree-sitter highlight ../samples/highlighting.frame
+for f in ../samples/*.frame; do
+  echo "=== $f ==="
+  npx tree-sitter parse --grammar-path . "$f" 2>/dev/null | grep -c ERROR || echo "0 errors"
+done
 ```
-
-Note: `tree-sitter highlight --check` expects a `test/highlight/` directory with expected highlight files, which this repository does not currently include.

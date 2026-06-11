@@ -1,0 +1,21 @@
+// Binding syntax tests
+component ChatInput {
+  state {
+    email text = ""
+    active bool = false
+    choice text = ""
+  }
+  view {
+    field EmailField {
+      input EmailInput {
+        value bind $email
+      }
+    }
+    toggle ActiveToggle {
+      checked bind $active
+    }
+    select ChoiceSelect {
+      selected bind $choice
+    }
+  }
+}

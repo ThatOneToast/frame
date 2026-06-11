@@ -306,6 +306,16 @@
     "type": "declaration",
     "named": true,
     "fields": {
+      "base": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "declaration_name",
+            "named": true
+          }
+        ]
+      },
       "kind": {
         "multiple": false,
         "required": true,
@@ -1638,6 +1648,10 @@
     "named": false
   },
   {
+    "type": "extends",
+    "named": false
+  },
+  {
     "type": "fade",
     "named": false
   },
@@ -1735,6 +1749,10 @@
   },
   {
     "type": "hover",
+    "named": false
+  },
+  {
+    "type": "html",
     "named": false
   },
   {
@@ -1966,6 +1984,10 @@
     "named": false
   },
   {
+    "type": "page-body",
+    "named": false
+  },
+  {
     "type": "palette",
     "named": false
   },
@@ -2039,6 +2061,10 @@
   },
   {
     "type": "readonly",
+    "named": false
+  },
+  {
+    "type": "rel",
     "named": false
   },
   {

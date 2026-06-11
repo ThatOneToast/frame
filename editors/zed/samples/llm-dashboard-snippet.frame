@@ -1,0 +1,71 @@
+// LLM Dashboard snippet - representative syntax
+component LLMDashboard {
+  state {
+    activeTab text = "runs"
+    searchQuery text = ""
+  }
+  view {
+    screen AppShell {
+      panel Header {
+        row NavBar {
+          stack Logo {
+            text "LLM"
+            text "Ops"
+          }
+          row SearchBar {
+            text "Search models, runs, or metrics..."
+          }
+        }
+      }
+      panel SidebarNav {
+        stack Navigation {
+          text "Dashboard"
+          text "Models"
+        }
+      }
+      panel MainContent {
+        stack DashboardContent {
+          row MetricRow {
+            card MetricCardModel {
+              text "Active Model"
+            }
+            card MetricCardTps {
+              text "Tokens/sec"
+            }
+          }
+          grid PerformanceGrid {
+            card PerformanceChart {
+              stack ChartArea {
+                row ChartGrid {
+                  for bar in $performanceBars key $bar.id {
+                    stack PerformanceBar {
+                      row PerformanceSegment {
+                        text " "
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          grid DashboardGrid {
+            card InferenceRuns {
+              stack RunsTable {
+                for run in $runs key $run.id {
+                  row RunRow {
+                    text $run.name
+                    text $run.speed
+                    text $run.latency
+                  }
+                }
+              }
+            }
+            card TopModels {
+              text "Top Models"
+            }
+          }
+        }
+      }
+    }
+  }
+}
