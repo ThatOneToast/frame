@@ -1882,7 +1882,9 @@ fn metric_row_with_grid_columns_emits_four_equal_columns() {
         "MetricRow must use grid display, got: {css}"
     );
     assert!(
-        css.contains("grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);"),
+        css.contains(
+            "grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);"
+        ),
         "MetricRow must emit four equal fr columns, got: {css}"
     );
 }
