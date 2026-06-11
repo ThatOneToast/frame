@@ -351,7 +351,7 @@ pub const GLOWS: &[&str] = &[
 ];
 pub const SIZES: &[&str] = &[
     "screen", "fill", "content", "auto", "sidebar", "narrow", "wide", "chart", "panel", "small",
-    "medium", "large", "xlarge", "zero", "modal", "icon",
+    "medium", "large", "xlarge", "zero", "modal", "icon", "input", "dashboard",
 ];
 pub const TRACKS: &[&str] = &[
     "rail", "panel", "side", "header", "composer", "fill", "auto", "content",

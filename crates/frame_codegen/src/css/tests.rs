@@ -1422,7 +1422,10 @@ fn action_declaration_emits_button_class() {
                 statement(&["radius", "medium"]),
                 Node::Block(frame_core::Block {
                     name: "hover".to_string(),
-                    body: vec![statement(&["lift", "small"]), statement(&["glow", "accent"])],
+                    body: vec![
+                        statement(&["lift", "small"]),
+                        statement(&["glow", "accent"]),
+                    ],
                     span: Span::default(),
                 }),
                 Node::Block(frame_core::Block {
@@ -1567,7 +1570,10 @@ fn chart_bars_emit_real_chart_height_not_spacing() {
         !css.contains("var(--frame-space-chart)"),
         "chart height must not use spacing token"
     );
-    assert!(!css.contains("var(--frame-space-large)"), "chart height must not fall back to spacing large");
+    assert!(
+        !css.contains("var(--frame-space-large)"),
+        "chart height must not fall back to spacing large"
+    );
 }
 
 #[test]
@@ -1612,9 +1618,9 @@ fn run_table_rows_emit_grid_columns() {
     let header = declaration(
         DeclarationKind::Row,
         "RunColHeaders",
-        vec![
-            statement(&["columns", "2fr", "1fr", "1fr", "1fr", "1fr", "1fr"]),
-        ],
+        vec![statement(&[
+            "columns", "2fr", "1fr", "1fr", "1fr", "1fr", "1fr",
+        ])],
     );
     let child = Declaration {
         kind: DeclarationKind::Row,
@@ -1654,7 +1660,10 @@ fn primary_button_emits_background_and_hover_state() {
                 statement(&["radius", "medium"]),
                 Node::Block(frame_core::Block {
                     name: "hover".to_string(),
-                    body: vec![statement(&["lift", "small"]), statement(&["glow", "accent"])],
+                    body: vec![
+                        statement(&["lift", "small"]),
+                        statement(&["glow", "accent"]),
+                    ],
                     span: Span::default(),
                 }),
             ],
@@ -1731,4 +1740,119 @@ fn dashboard_header_logo_text_is_visible() {
     assert!(css.contains("color: var(--frame-color-accent);"));
     assert!(css.contains("font-weight: 700;"));
     assert!(css.contains("font-size: 2rem;"));
+}
+
+// ===== Sizing Token Regression Tests =====
+// These tests verify that new max-width tokens produce correct CSS values.
+
+#[test]
+fn max_width_input_token_emits_32rem() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Row,
+            "SearchBar",
+            vec![statement(&["max-width", "input"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(
+        css.contains("max-width: 32rem;"),
+        "input token must emit 32rem, got: {css}"
+    );
+}
+
+#[test]
+fn max_width_wide_token_emits_32rem() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Stack,
+            "WidePanel",
+            vec![statement(&["max-width", "wide"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(
+        css.contains("max-width: 32rem;"),
+        "wide token must emit 32rem, got: {css}"
+    );
+}
+
+#[test]
+fn max_width_dashboard_token_emits_96rem() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Stack,
+            "DashboardContent",
+            vec![statement(&["max-width", "dashboard"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(
+        css.contains("max-width: 96rem;"),
+        "dashboard token must emit 96rem, got: {css}"
+    );
+}
+
+#[test]
+fn width_fill_emits_100_percent() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Stack,
+            "FullWidth",
+            vec![statement(&["width", "fill"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(
+        css.contains("width: 100%;"),
+        "width fill must emit 100%, got: {css}"
+    );
+}
+
+#[test]
+fn dashboard_content_does_not_emit_narrow_max_width() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Stack,
+            "DashboardContent",
+            vec![
+                statement(&["gap", "large"]),
+                statement(&["width", "fill"]),
+                statement(&["max-width", "dashboard"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(
+        !css.contains("max-width: 32rem;"),
+        "DashboardContent must not emit narrow 32rem max-width, got: {css}"
+    );
+    assert!(
+        css.contains("width: 100%;"),
+        "DashboardContent must emit width fill (100%), got: {css}"
+    );
+    assert!(
+        css.contains("max-width: 96rem;"),
+        "DashboardContent must emit dashboard max-width (96rem), got: {css}"
+    );
 }

@@ -271,6 +271,8 @@ pub(crate) fn size_css_value(property: &str, value: &str) -> String {
         "sidebar" => "18rem".to_string(),
         "narrow" => "12rem".to_string(),
         "wide" => "32rem".to_string(),
+        "input" => "32rem".to_string(),
+        "dashboard" => "96rem".to_string(),
         "zero" if property.starts_with("min-") => "0".to_string(),
         "none" if property.starts_with("min-") => "0".to_string(),
         "modal" if property == "width" || property == "inline-size" => {
