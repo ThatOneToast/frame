@@ -40,12 +40,13 @@ area Header {
   in AppShell
   row 1
   span 2
-  padding x medium
+  padding x large
   padding y small
   align center
   justify between
   surface glass
   border bottom soft
+  min-height large
 }
 
 area SidebarNav {
@@ -71,6 +72,7 @@ row NavBar {
   gap large
   align center
   justify between
+  width fill
   color text-primary
 }
 
@@ -90,6 +92,7 @@ row SearchBar {
   border soft
   surface inset
   max-width wide
+  flex grow 1
 }
 
 row StatusCluster {
@@ -157,6 +160,7 @@ row UserStatus {
 // Main Content
 stack DashboardContent {
   gap large
+  max-width wide
 }
 
 // Metric Cards
@@ -175,6 +179,7 @@ card MetricCardBase {
   transition smooth
   flex grow 1
   min-width 20%
+  shadow soft
 }
 
 card MetricCardModel extends MetricCardBase { }
@@ -232,6 +237,7 @@ card PanelCardBase {
   border soft
   surface raised
   color text-primary
+  shadow soft
 }
 
 card PerformanceChart extends PanelCardBase { }
@@ -465,6 +471,9 @@ row TableRowBase {
   border bottom soft
   color text-secondary
   transition smooth
+  hover {
+    brighten subtle
+  }
 }
 
 row RunRow1 extends TableRowBase { }
@@ -505,6 +514,9 @@ row ModelRowBase {
   border bottom soft
   color text-secondary
   transition smooth
+  hover {
+    brighten subtle
+  }
 }
 
 row ModelRow1 extends ModelRowBase { }
