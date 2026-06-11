@@ -359,6 +359,16 @@ card PrimaryButton {
   color white
   weight semibold
   transition smooth
+  hover {
+    lift small
+    glow accent
+  }
+  active {
+    press
+  }
+  focus {
+    ring accent
+  }
 }
 
 stack PromptMeta {
@@ -390,29 +400,44 @@ row RunTabs {
   gap small
 }
 
-card TabAll {
-  padding x small
+action TabAll {
+  padding x medium
   padding y small
   radius small
   color text-primary
   surface overlay
   size caption
+  weight semibold
+  transition smooth
+  hover {
+    lift tiny
+  }
 }
 
-card TabLocal {
-  padding x small
+action TabLocal {
+  padding x medium
   padding y small
   radius small
   color text-secondary
   size caption
+  transition smooth
+  hover {
+    lift tiny
+    brighten subtle
+  }
 }
 
-card TabRemote {
-  padding x small
+action TabRemote {
+  padding x medium
   padding y small
   radius small
   color text-secondary
   size caption
+  transition smooth
+  hover {
+    lift tiny
+    brighten subtle
+  }
 }
 
 stack RunsTableHeader {

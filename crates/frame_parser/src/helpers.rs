@@ -13,7 +13,7 @@ pub fn declaration_kind(kind: &str) -> DeclarationKind {
             "card" => DeclarationKind::Card,
             "stack" => DeclarationKind::Stack,
             "row" => DeclarationKind::Row,
-            "button" => DeclarationKind::Button,
+            "button" | "action" => DeclarationKind::Button,
             "text" => DeclarationKind::Text,
             "tokens" => DeclarationKind::Tokens,
             "center" => DeclarationKind::Center,

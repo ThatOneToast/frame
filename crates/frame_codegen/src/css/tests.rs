@@ -1410,6 +1410,44 @@ fn dashboard_grid_produces_gap_safe_tracks() {
 }
 
 #[test]
+fn action_declaration_emits_button_class() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Button,
+            "PrimaryButton",
+            vec![
+                statement(&["surface", "panel"]),
+                statement(&["color", "white"]),
+                statement(&["radius", "medium"]),
+                Node::Block(frame_core::Block {
+                    name: "hover".to_string(),
+                    body: vec![statement(&["lift", "small"]), statement(&["glow", "accent"])],
+                    span: Span::default(),
+                }),
+                Node::Block(frame_core::Block {
+                    name: "active".to_string(),
+                    body: vec![statement(&["press"])],
+                    span: Span::default(),
+                }),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains(".fr-PrimaryButton"));
+    assert!(css.contains("background: var(--frame-surface-panel);"));
+    assert!(css.contains("color: var(--frame-color-white);"));
+    assert!(css.contains(".fr-PrimaryButton:hover"));
+    assert!(css.contains("transform: translateY(-4px);"));
+    assert!(css.contains("box-shadow: var(--frame-glow-accent);"));
+    assert!(css.contains(".fr-PrimaryButton:active"));
+    assert!(css.contains("transform: translateY(1px);"));
+}
+
+#[test]
 fn row_with_columns_emits_grid_display() {
     let document = Document {
         includes: Vec::new(),
