@@ -67,9 +67,7 @@ pub fn hover_doc_at_with_symbols(
             if let Some(sym) = cursor.scope.handlers.iter().find(|s| s.name == name) {
                 return Some(format!(
                     "## `@{}`\n\nHandler reference `{}`.\n\n{}",
-                    sym.name,
-                    sym.name,
-                    sym.detail
+                    sym.name, sym.name, sym.detail
                 ));
             }
             return hover_doc(word);
@@ -157,10 +155,7 @@ pub fn hover_doc_at_with_symbols(
             declaration_kind_label(&declaration.kind)
         );
         if !inherited_by.is_empty() {
-            result.push_str(&format!(
-                "\n\nInherited by: {}.",
-                inherited_by.join(", ")
-            ));
+            result.push_str(&format!("\n\nInherited by: {}.", inherited_by.join(", ")));
         }
         return Some(result);
     }
@@ -184,15 +179,16 @@ pub fn hover_doc(word: &str) -> Option<String> {
         return Some(doc);
     }
 
-    Some(match word {
-        _ if word.starts_with('$') => {
-            "$value reads typed component state, props, or loop variables."
+    Some(
+        match word {
+            _ if word.starts_with('$') => {
+                "$value reads typed component state, props, or loop variables."
+            }
+            _ if word.starts_with('@') => "@handler references an external event handler.",
+            _ => return None,
         }
-        _ if word.starts_with('@') => {
-            "@handler references an external event handler."
-        }
-        _ => return None,
-    }.to_string())
+        .to_string(),
+    )
 }
 
 fn declaration_kind_label(kind: &frame_core::symbols::SymbolKind) -> &'static str {

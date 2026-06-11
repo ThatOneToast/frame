@@ -1074,7 +1074,10 @@ fn stack_emits_flex_column_layout() {
         declarations: vec![declaration(
             DeclarationKind::Stack,
             "NavGroup",
-            vec![statement(&["gap", "small"]), statement(&["padding", "x", "small"])],
+            vec![
+                statement(&["gap", "small"]),
+                statement(&["padding", "x", "small"]),
+            ],
         )],
         components: Vec::new(),
     };
@@ -1093,7 +1096,10 @@ fn row_emits_flex_row_layout() {
         declarations: vec![declaration(
             DeclarationKind::Row,
             "NavBar",
-            vec![statement(&["gap", "large"]), statement(&["align", "center"])],
+            vec![
+                statement(&["gap", "large"]),
+                statement(&["align", "center"]),
+            ],
         )],
         components: Vec::new(),
     };
@@ -1113,7 +1119,10 @@ fn grid_emits_css_grid_layout() {
         declarations: vec![declaration(
             DeclarationKind::Grid,
             "DashboardGrid",
-            vec![statement(&["columns", "2fr", "1fr"]), statement(&["gap", "medium"])],
+            vec![
+                statement(&["columns", "2fr", "1fr"]),
+                statement(&["gap", "medium"]),
+            ],
         )],
         components: Vec::new(),
     };
@@ -1132,7 +1141,10 @@ fn card_emits_flex_column_with_surface() {
         declarations: vec![declaration(
             DeclarationKind::Card,
             "MetricCard",
-            vec![statement(&["padding", "medium"]), statement(&["surface", "raised"])],
+            vec![
+                statement(&["padding", "medium"]),
+                statement(&["surface", "raised"]),
+            ],
         )],
         components: Vec::new(),
     };
@@ -1152,7 +1164,10 @@ fn text_declaration_emits_common_properties() {
         declarations: vec![declaration(
             DeclarationKind::Text,
             "MutedText",
-            vec![statement(&["color", "text-muted"]), statement(&["size", "caption"])],
+            vec![
+                statement(&["color", "text-muted"]),
+                statement(&["size", "caption"]),
+            ],
         )],
         components: Vec::new(),
     };
@@ -1170,7 +1185,10 @@ fn button_declaration_emits_common_properties() {
         declarations: vec![declaration(
             DeclarationKind::Button,
             "PrimaryButton",
-            vec![statement(&["background", "accent"]), statement(&["radius", "medium"])],
+            vec![
+                statement(&["background", "accent"]),
+                statement(&["radius", "medium"]),
+            ],
         )],
         components: Vec::new(),
     };
@@ -1209,7 +1227,7 @@ fn generated_css_includes_button_reset() {
     assert!(css.contains("appearance: none;"));
     assert!(css.contains("cursor: pointer;"));
     assert!(css.contains("button[class*=\"fr-\"]"));
-    assert!(css.contains("flex-direction: row;"));
+    assert!(css.contains("flex-direction: row !important;"));
 }
 
 #[test]
@@ -1217,7 +1235,10 @@ fn extends_inheritance_preserves_base_properties() {
     let base = declaration(
         DeclarationKind::Stack,
         "NavGroupBase",
-        vec![statement(&["gap", "small"]), statement(&["color", "text-secondary"])],
+        vec![
+            statement(&["gap", "small"]),
+            statement(&["color", "text-secondary"]),
+        ],
     );
     let child = Declaration {
         kind: DeclarationKind::Stack,

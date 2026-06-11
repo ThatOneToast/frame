@@ -136,6 +136,18 @@ component LLMDashboard {
                 }
               }
               stack ChartArea {
+                row ChartBars {
+                }
+                card ChartBar1 {
+                }
+                card ChartBar2 {
+                }
+                card ChartBar3 {
+                }
+                card ChartBar4 {
+                }
+                card ChartBar5 {
+                }
                 row ChartAxis {
                   text "14:00"
                   text "14:15"

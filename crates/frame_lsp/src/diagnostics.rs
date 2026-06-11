@@ -431,7 +431,9 @@ fn is_dynamic_grid_value(word: &str, property: &str) -> bool {
     // Named grid track identifiers are valid (e.g. sidebar, content, header, body)
     // They must be valid identifiers: start with a letter or underscore, contain alphanumeric/dash/underscore
     if (word.starts_with(char::is_alphabetic) || word.starts_with('_'))
-        && word.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+        && word
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
     {
         return true;
     }
@@ -2764,7 +2766,9 @@ component ChatApp {
 ";
         let diagnostics = diagnostics_for_source(source);
         assert!(
-            !diagnostics.iter().any(|d| d.message.contains("references a prop")),
+            !diagnostics
+                .iter()
+                .any(|d| d.message.contains("references a prop")),
             "Should not produce prop narration diagnostic"
         );
     }
@@ -2783,7 +2787,9 @@ component ChatApp {
 ";
         let diagnostics = diagnostics_for_source(source);
         assert!(
-            !diagnostics.iter().any(|d| d.message.contains("external handler")),
+            !diagnostics
+                .iter()
+                .any(|d| d.message.contains("external handler")),
             "Should not produce handler narration diagnostic"
         );
     }

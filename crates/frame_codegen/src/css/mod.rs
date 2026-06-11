@@ -103,10 +103,10 @@ pub fn generate_css(document: &Document) -> String {
 
     css.push_str("button[class*=\"fr-\"],\n");
     css.push_str("a[class*=\"fr-\"] {\n");
-    css.push_str("  display: inline-flex;\n");
-    css.push_str("  align-items: center;\n");
-    css.push_str("  gap: var(--frame-space-small);\n");
-    css.push_str("  flex-direction: row;\n");
+    css.push_str("  display: inline-flex !important;\n");
+    css.push_str("  align-items: center !important;\n");
+    css.push_str("  gap: var(--frame-space-small) !important;\n");
+    css.push_str("  flex-direction: row !important;\n");
     css.push_str("}\n\n");
 
     for declaration in &document.declarations {

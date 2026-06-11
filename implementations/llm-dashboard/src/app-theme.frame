@@ -48,7 +48,7 @@ area Header {
   border bottom soft
 }
 
-area Sidebar {
+area SidebarNav {
   in AppShell
   row 2
   col 1
@@ -58,7 +58,7 @@ area Sidebar {
   surface panel
 }
 
-area Main {
+area MainContent {
   in AppShell
   row 2
   col 2
@@ -115,11 +115,6 @@ row UserInfo {
 }
 
 // Sidebar Navigation
-stack SidebarNav {
-  padding y medium
-  padding x small
-}
-
 stack Navigation {
   gap small
   padding x small
@@ -161,11 +156,6 @@ row UserStatus {
 }
 
 // Main Content
-stack MainContent {
-  color text-primary
-}
-
-// Dashboard Content
 stack DashboardContent {
   gap large
 }
@@ -174,6 +164,7 @@ stack DashboardContent {
 row MetricRow {
   gap medium
   align stretch
+  flex wrap wrap
 }
 
 card MetricCardBase {
@@ -183,6 +174,8 @@ card MetricCardBase {
   surface raised
   color text-primary
   transition smooth
+  flex grow 1
+  min-width 20%
 }
 
 card MetricCardModel extends MetricCardBase { }
@@ -281,6 +274,55 @@ row LegendItemB extends LegendItemBase { }
 
 stack ChartArea {
   padding y medium
+}
+
+row ChartBars {
+  gap small
+  align end
+  padding y medium
+  height large
+  flex grow 1
+  overflow hidden
+}
+
+card ChartBar1 {
+  width fill
+  surface accent
+  radius small
+  height 60%
+  flex grow 1
+}
+
+card ChartBar2 {
+  width fill
+  surface accent
+  radius small
+  height 80%
+  flex grow 1
+}
+
+card ChartBar3 {
+  width fill
+  surface accent
+  radius small
+  height 45%
+  flex grow 1
+}
+
+card ChartBar4 {
+  width fill
+  surface accent
+  radius small
+  height 90%
+  flex grow 1
+}
+
+card ChartBar5 {
+  width fill
+  surface accent
+  radius small
+  height 70%
+  flex grow 1
 }
 
 row ChartAxis {

@@ -1,7 +1,6 @@
 // dashboard-layout.frame
 // Tests dashboard-specific layout patterns: app shell, card grid, text color, borders.
 // Used as a regression fixture for UI implementation quality.
-
 // === Design tokens for dark theme ===
 tokens DarkTheme {
   color background #0A0A0F
@@ -11,14 +10,12 @@ tokens DarkTheme {
   color text-secondary #94A3B8
   color accent #3B82F6
 }
-
 // === App shell with 2-column grid ===
 grid AppShell {
   columns sidebar content
   gap small
   height screen
 }
-
 // === Header spanning content column ===
 area Header {
   in AppShell
@@ -28,7 +25,6 @@ area Header {
   padding medium
   border soft
 }
-
 // === Sidebar in first column ===
 area Sidebar {
   in AppShell
@@ -38,7 +34,6 @@ area Sidebar {
   padding medium
   border soft
 }
-
 // === Main content area ===
 area Main {
   in AppShell
@@ -46,7 +41,6 @@ area Main {
   col 2
   padding medium
 }
-
 // === Card with full visual styling ===
 card MetricCard {
   surface raised
@@ -56,25 +50,23 @@ card MetricCard {
   shadow small
   color text-primary
   transition smooth
+
   hover {
     lift small
     glow soft
   }
 }
-
 // === Card content with secondary text ===
 stack MetricContent {
   gap small
   padding small
   color text-secondary
 }
-
 // === Grid with unique column names ===
 grid PerformanceGrid {
   columns chart prompt
   gap medium
 }
-
 // === Table-like row with border ===
 row RunRow {
   gap medium
@@ -83,11 +75,11 @@ row RunRow {
   border soft
   color text-secondary
   transition smooth
+
   hover {
     lift small
   }
 }
-
 // === Button with styling ===
 button PrimaryButton {
   surface accent
@@ -95,6 +87,7 @@ button PrimaryButton {
   radius medium
   color text-primary
   transition smooth
+
   hover {
     glow soft
   }
