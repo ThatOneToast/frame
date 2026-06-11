@@ -1543,3 +1543,192 @@ fn inherited_row_columns_share_template() {
     let child_pos = css.find(".fr-RunRow1").unwrap();
     assert!(child_pos > base_pos);
 }
+
+// ===== Visual / Layout Regression Tests =====
+// These tests catch the specific visual issues identified in the dashboard review.
+
+#[test]
+fn chart_bars_emit_real_chart_height_not_spacing() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Row,
+            "ChartBars",
+            vec![statement(&["height", "chart"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    // Must emit a real content height, not a spacing variable
+    assert!(css.contains("height: 12rem;"));
+    assert!(
+        !css.contains("var(--frame-space-chart)"),
+        "chart height must not use spacing token"
+    );
+    assert!(!css.contains("var(--frame-space-large)"), "chart height must not fall back to spacing large");
+}
+
+#[test]
+fn performance_grid_does_not_emit_percentage_columns_with_gap() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Grid,
+            "PerformanceGrid",
+            vec![
+                statement(&["columns", "3fr", "2fr"]),
+                statement(&["gap", "medium"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    // Must use gap-safe fr tracks, not percentages
+    assert!(css.contains("grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);"));
+    assert!(
+        !css.contains("60%"),
+        "must not use percentage columns that overflow with gaps"
+    );
+    assert!(
+        !css.contains("40%"),
+        "must not use percentage columns that overflow with gaps"
+    );
+}
+
+#[test]
+fn run_table_rows_emit_grid_columns() {
+    let base = declaration(
+        DeclarationKind::Row,
+        "TableRowBase",
+        vec![
+            statement(&["columns", "2fr", "1fr", "1fr", "1fr", "1fr", "1fr"]),
+            statement(&["align", "center"]),
+        ],
+    );
+    let header = declaration(
+        DeclarationKind::Row,
+        "RunColHeaders",
+        vec![
+            statement(&["columns", "2fr", "1fr", "1fr", "1fr", "1fr", "1fr"]),
+        ],
+    );
+    let child = Declaration {
+        kind: DeclarationKind::Row,
+        name: Identifier::new("RunRow1", Span::default()),
+        extends: Some(Identifier::new("TableRowBase", Span::default())),
+        body: vec![],
+        span: Span::default(),
+    };
+
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![base, header, child],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    // All table rows must share the same grid column template
+    assert!(css.contains(".fr-TableRowBase"));
+    assert!(css.contains("display: grid;"));
+    assert!(css.contains("grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);"));
+
+    // Inherited rows must also be grid
+    let run_row_pos = css.find(".fr-RunRow1").unwrap();
+    assert!(css[run_row_pos..].contains("display: grid;"));
+}
+
+#[test]
+fn primary_button_emits_background_and_hover_state() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Button,
+            "PrimaryButton",
+            vec![
+                statement(&["surface", "panel"]),
+                statement(&["radius", "medium"]),
+                Node::Block(frame_core::Block {
+                    name: "hover".to_string(),
+                    body: vec![statement(&["lift", "small"]), statement(&["glow", "accent"])],
+                    span: Span::default(),
+                }),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    // Must have background and hover state
+    assert!(css.contains(".fr-PrimaryButton"));
+    assert!(css.contains("background: var(--frame-surface-panel);"));
+    assert!(css.contains("border-radius: var(--frame-radius-medium);"));
+    assert!(css.contains(".fr-PrimaryButton:hover"));
+    assert!(css.contains("transform: translateY(-4px);"));
+    assert!(css.contains("box-shadow: var(--frame-glow-accent);"));
+}
+
+#[test]
+fn tabs_are_emitted_as_button_action_nodes() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Button,
+                "TabAll",
+                vec![
+                    statement(&["surface", "overlay"]),
+                    statement(&["color", "text-primary"]),
+                    statement(&["radius", "small"]),
+                ],
+            ),
+            declaration(
+                DeclarationKind::Button,
+                "TabLocal",
+                vec![
+                    statement(&["color", "text-secondary"]),
+                    statement(&["radius", "small"]),
+                ],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    // Tabs must be emitted as button/action classes with styling
+    assert!(css.contains(".fr-TabAll"));
+    assert!(css.contains("background: var(--frame-surface-overlay);"));
+    assert!(css.contains(".fr-TabLocal"));
+    assert!(css.contains("color: var(--frame-color-text-secondary);"));
+}
+
+#[test]
+fn dashboard_header_logo_text_is_visible() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Text,
+            "LLMOps",
+            vec![
+                statement(&["color", "accent"]),
+                statement(&["weight", "bold"]),
+                statement(&["size", "heading"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    // Logo text must have explicit size and weight
+    assert!(css.contains(".fr-LLMOps"));
+    assert!(css.contains("color: var(--frame-color-accent);"));
+    assert!(css.contains("font-weight: 700;"));
+    assert!(css.contains("font-size: 2rem;"));
+}
