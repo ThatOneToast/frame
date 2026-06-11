@@ -1066,3 +1066,179 @@ fn emits_grid_columns_with_fr_proportions() {
     assert!(!css.contains("grid-area: 2fr"));
     assert!(!css.contains("grid-area: 1fr"));
 }
+
+#[test]
+fn stack_emits_flex_column_layout() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Stack,
+            "NavGroup",
+            vec![statement(&["gap", "small"]), statement(&["padding", "x", "small"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("display: flex;"));
+    assert!(css.contains("flex-direction: column;"));
+    assert!(css.contains("gap: var(--frame-space-small);"));
+}
+
+#[test]
+fn row_emits_flex_row_layout() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Row,
+            "NavBar",
+            vec![statement(&["gap", "large"]), statement(&["align", "center"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("display: flex;"));
+    assert!(css.contains("flex-direction: row;"));
+    assert!(css.contains("gap: var(--frame-space-large);"));
+    assert!(css.contains("align-items: center;"));
+}
+
+#[test]
+fn grid_emits_css_grid_layout() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Grid,
+            "DashboardGrid",
+            vec![statement(&["columns", "2fr", "1fr"]), statement(&["gap", "medium"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("display: grid;"));
+    assert!(css.contains("grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);"));
+    assert!(css.contains("gap: var(--frame-space-medium);"));
+}
+
+#[test]
+fn card_emits_flex_column_with_surface() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Card,
+            "MetricCard",
+            vec![statement(&["padding", "medium"]), statement(&["surface", "raised"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("display: flex;"));
+    assert!(css.contains("flex-direction: column;"));
+    assert!(css.contains("padding: var(--frame-space-medium);"));
+    assert!(css.contains("background: var(--frame-surface-raised);"));
+}
+
+#[test]
+fn text_declaration_emits_common_properties() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Text,
+            "MutedText",
+            vec![statement(&["color", "text-muted"]), statement(&["size", "caption"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("color: var(--frame-color-text-muted);"));
+    assert!(css.contains("font-size: 0.875rem;"));
+}
+
+#[test]
+fn button_declaration_emits_common_properties() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Button,
+            "PrimaryButton",
+            vec![statement(&["background", "accent"]), statement(&["radius", "medium"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("background: var(--frame-color-accent);"));
+    assert!(css.contains("border-radius: var(--frame-radius-medium);"));
+}
+
+#[test]
+fn generated_css_includes_frame_text_default() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains(".fr-FrameText"));
+    assert!(css.contains("display: inline;"));
+    assert!(css.contains("white-space: pre-wrap;"));
+}
+
+#[test]
+fn generated_css_includes_button_reset() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("appearance: none;"));
+    assert!(css.contains("cursor: pointer;"));
+    assert!(css.contains("button[class*=\"fr-\"]"));
+    assert!(css.contains("flex-direction: row;"));
+}
+
+#[test]
+fn extends_inheritance_preserves_base_properties() {
+    let base = declaration(
+        DeclarationKind::Stack,
+        "NavGroupBase",
+        vec![statement(&["gap", "small"]), statement(&["color", "text-secondary"])],
+    );
+    let child = Declaration {
+        kind: DeclarationKind::Stack,
+        name: Identifier::new("NavGroupDash", Span::default()),
+        extends: Some(Identifier::new("NavGroupBase", Span::default())),
+        body: vec![],
+        span: Span::default(),
+    };
+
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![base, child],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("gap: var(--frame-space-small);"));
+    assert!(css.contains("color: var(--frame-color-text-secondary);"));
+    // Both base and child should have the inherited properties
+    let nav_group_base_pos = css.find(".fr-NavGroupBase").unwrap();
+    let nav_group_dash_pos = css.find(".fr-NavGroupDash").unwrap();
+    assert!(nav_group_dash_pos > nav_group_base_pos);
+}
