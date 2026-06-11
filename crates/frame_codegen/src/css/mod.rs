@@ -89,6 +89,26 @@ pub fn generate_css(document: &Document) -> String {
     css.push_str("  white-space: pre-wrap;\n");
     css.push_str("}\n\n");
 
+    css.push_str("[class*=\"fr-\"][type=\"button\"],\n");
+    css.push_str("[class*=\"fr-\"][type=\"submit\"],\n");
+    css.push_str("[class*=\"fr-\"][type=\"reset\"] {\n");
+    css.push_str("  appearance: none;\n");
+    css.push_str("  background: none;\n");
+    css.push_str("  border: none;\n");
+    css.push_str("  cursor: pointer;\n");
+    css.push_str("  font: inherit;\n");
+    css.push_str("  color: inherit;\n");
+    css.push_str("  padding: 0;\n");
+    css.push_str("}\n\n");
+
+    css.push_str("button[class*=\"fr-\"],\n");
+    css.push_str("a[class*=\"fr-\"] {\n");
+    css.push_str("  display: inline-flex;\n");
+    css.push_str("  align-items: center;\n");
+    css.push_str("  gap: var(--frame-space-small);\n");
+    css.push_str("  flex-direction: row;\n");
+    css.push_str("}\n\n");
+
     for declaration in &document.declarations {
         emit_declaration_css(&mut css, declaration, &symbols, &document.declarations);
     }
