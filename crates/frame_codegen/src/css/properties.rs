@@ -398,18 +398,22 @@ pub(crate) fn emit_position_edge(css: &mut String, edge: Option<&str>) {
         _ => {}
     }
 }
+pub(crate) const Z_LAYERS: [(&str, i32); 7] = [
+    ("base", 0),
+    ("above", 10),
+    ("dropdown", 40),
+    ("sticky", 45),
+    ("overlay", 50),
+    ("modal", 100),
+    ("toast", 110),
+];
 pub(crate) fn emit_z(css: &mut String, statement: &Statement) {
     if let Some(value) = statement.words.get(1) {
-        let z = match value.as_str() {
-            "base" => 0,
-            "above" => 10,
-            "dropdown" => 40,
-            "sticky" => 45,
-            "overlay" => 50,
-            "modal" => 100,
-            "toast" => 110,
-            _ => 1,
-        };
+        let z = Z_LAYERS
+            .iter()
+            .find(|(name, _)| *name == value.as_str())
+            .map(|(_, z)| *z)
+            .unwrap_or(1);
         css.push_str(&format!("  z-index: {z};\n"));
     }
 }
@@ -434,5 +438,29 @@ pub(crate) fn emit_weight(css: &mut String, statement: &Statement) {
             _ => 400,
         };
         css.push_str(&format!("  font-weight: {weight};\n"));
+    }
+}
+pub(crate) fn emit_opacity(css: &mut String, statement: &Statement) {
+    if let Some(value) = statement.words.get(1) {
+        let opacity = match value.as_str() {
+            "none" => "0",
+            "slight" => "0.1",
+            "subtle" => "0.25",
+            "half" => "0.5",
+            "strong" => "0.75",
+            "full" => "1.0",
+            _ => value.as_str(),
+        };
+        css.push_str(&format!("  opacity: {opacity};\n"));
+    }
+}
+pub(crate) fn emit_shadow(css: &mut String, statement: &Statement) {
+    if let Some(value) = statement.words.get(1) {
+        css.push_str(&format!("  box-shadow: var(--frame-shadow-{value});\n"));
+    }
+}
+pub(crate) fn emit_radius(css: &mut String, statement: &Statement) {
+    if let Some(value) = statement.words.get(1) {
+        css.push_str(&format!("  border-radius: var(--frame-radius-{value});\n"));
     }
 }
