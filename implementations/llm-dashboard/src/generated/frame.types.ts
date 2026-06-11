@@ -18,10 +18,6 @@ export type FrameKeyboardEvent<TState, TProps> = FrameEventContext<TState, TProp
 export type FrameFormEvent<TState, TProps> = FrameEventContext<TState, TProps>;
 
 export type LLMDashboardState = {
-  activeModelId: string;
-  selectedProvider: string;
-  searchQuery: string;
-  activeTab: string;
 };
 
 export type LLMDashboardHandlers = {

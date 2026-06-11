@@ -1,91 +1,217 @@
 // LLM Operations Dashboard
 component LLMDashboard {
   state {
-    activeModelId text = "qwen3.6-coder-27b"
-    selectedProvider text = "all"
-    searchQuery text = ""
-    activeTab text = "runs"
+    // activeModelId text = "qwen3.6-coder-27b"
+    // selectedProvider text = "all"
+    // searchQuery text = ""
+    // activeTab text = "runs"
   }
-
   view {
     screen AppShell {
       panel Header {
         row NavBar {
           stack Logo {
-            text "LLM Dashboard"
+            text "LLM"
+            text "Ops"
           }
           row SearchBar {
             text "Search models, runs, or metrics..."
           }
-          row UserInfo {
-            text "admin@local"
+          row StatusCluster {
+            card StatusBadge {
+              text "4 models online"
+            }
+            row UserInfo {
+              text "admin@local"
+            }
           }
         }
       }
-
       panel SidebarNav {
         stack Navigation {
           stack NavSection {
-            text "Overview"
+            text "NAVIGATE"
+          }
+          stack NavGroupDash {
+            text "Dashboard"
             text "Models"
-            text "Runs"
-            text "Metrics"
+            text "Inference"
+            text "Agents"
           }
           stack NavSection {
+            text "ANALYTICS"
+          }
+          stack NavGroupAnalytics {
+            text "Benchmarks"
+            text "Context"
+            text "Prompts"
+          }
+          stack NavSection {
+            text "SYSTEM"
+          }
+          stack NavGroupSystem {
+            text "Logs"
             text "Settings"
           }
         }
+        stack SidebarFooter {
+          row UserStatus {
+            text "admin@local"
+          }
+          text "v0.4.2"
+        }
       }
-
       panel MainContent {
         stack DashboardContent {
           row MetricRow {
-            card MetricCard {
-              stack MetricContent {
+            card MetricCardModel {
+              stack MetricIconModel {
+                text "MODEL"
+              }
+              stack MetricContentModel {
                 text "Active Model"
                 text "Qwen3.6 Coder 27B"
+                text "MLX \u00b7 27B params"
+              }
+              card DeltaModel {
+                text "Healthy"
               }
             }
-            card MetricCard {
-              stack MetricContent {
+            card MetricCardTps {
+              stack MetricIconTps {
+                text "TPS"
+              }
+              stack MetricContentTps {
                 text "Tokens/sec"
                 text "42.5"
+                text "peak 51.2"
+              }
+              card DeltaTps {
+                text "+8.3%"
               }
             }
-            card MetricCard {
-              stack MetricContent {
-                text "Context Used"
+            card MetricCardCtx {
+              stack MetricIconCtx {
+                text "CTX"
+              }
+              stack MetricContentCtx {
+                text "Context Window"
                 text "18,432 / 32,768"
+                text "56.3% utilized"
+              }
+              card DeltaCtx {
+                text "normal"
               }
             }
-            card MetricCard {
-              stack MetricContent {
-                text "VRAM Usage"
+            card MetricCardVram {
+              stack MetricIconVram {
+                text "VRAM"
+              }
+              stack MetricContentVram {
+                text "GPU Memory"
                 text "14.2 GB / 24.0 GB"
+                text "NVIDIA RTX 4090"
+              }
+              card DeltaVram {
+                text "59.2%"
               }
             }
           }
-
           grid PerformanceGrid {
             card PerformanceChart {
               stack ChartHeader {
                 row ChartTitle {
                   text "Inference Performance"
-                  text "Last 60 minutes"
+                  card ChartRange {
+                    text "60m"
+                  }
                 }
                 row ChartLegend {
-                  text "Qwen3.6 Coder 27B"
-                  text "Qwen3.5 0.8B Draft"
+                  row LegendItemA {
+                    text "Qwen3.6 Coder 27B"
+                  }
+                  row LegendItemB {
+                    text "Qwen3.5 0.8B Draft"
+                  }
                 }
               }
               stack ChartArea {
-                text "SVG chart would render here"
+                row ChartGrid {
+                  stack Bar1 {
+                    row BarSeg1 {
+                      text " "
+                    }
+                  }
+                  stack Bar2 {
+                    row BarSeg2 {
+                      text " "
+                    }
+                  }
+                  stack Bar3 {
+                    row BarSeg3 {
+                      text " "
+                    }
+                  }
+                  stack Bar4 {
+                    row BarSeg4 {
+                      text " "
+                    }
+                  }
+                  stack Bar5 {
+                    row BarSeg5 {
+                      text " "
+                    }
+                  }
+                  stack Bar6 {
+                    row BarSeg6 {
+                      text " "
+                    }
+                  }
+                  stack Bar7 {
+                    row BarSeg7 {
+                      text " "
+                    }
+                  }
+                  stack Bar8 {
+                    row BarSeg8 {
+                      text " "
+                    }
+                  }
+                  stack Bar9 {
+                    row BarSeg9 {
+                      text " "
+                    }
+                  }
+                  stack Bar10 {
+                    row BarSeg10 {
+                      text " "
+                    }
+                  }
+                  stack Bar11 {
+                    row BarSeg11 {
+                      text " "
+                    }
+                  }
+                  stack Bar12 {
+                    row BarSeg12 {
+                      text " "
+                    }
+                  }
+                }
+                row ChartAxis {
+                  text "14:00"
+                  text "14:15"
+                  text "14:30"
+                  text "14:45"
+                  text "14:55"
+                }
               }
             }
-
             card RunPrompt {
-              stack PromptContent {
+              stack PromptHeader {
                 text "Quick Inference Test"
+              }
+              stack PromptContent {
                 stack PromptInput {
                   text "Enter a test prompt..."
                 }
@@ -94,13 +220,18 @@ component LLMDashboard {
                   on press @runTest
                 }
               }
+              stack PromptMeta {
+                text "Model: Qwen3.6 Coder 27B"
+                text "Provider: Local MLX"
+              }
             }
           }
-
           grid DashboardGrid {
             card InferenceRuns {
               stack RunsHeader {
-                text "Recent Inference Runs"
+                row RunsTitleRow {
+                  text "Recent Inference Runs"
+                }
                 row RunTabs {
                   action TabAll {
                     text "All"
@@ -116,56 +247,118 @@ component LLMDashboard {
                   }
                 }
               }
+              stack RunsTableHeader {
+                row RunColHeaders {
+                  text "Model"
+                  text "Provider"
+                  text "Speed"
+                  text "Latency"
+                  text "Tokens"
+                  text "Cost"
+                }
+              }
               stack RunsTable {
-                row RunRow {
-                  text "Qwen3.6 Coder 27B"
+                row RunRow1 {
+                  stack RunModel1 {
+                    text "Qwen3.6 Coder 27B"
+                    text "MLX local"
+                  }
                   text "Local"
                   text "42.5 tok/s"
                   text "23.5ms"
                   text "18,432"
                   text "$0.0000"
-                  text "12.4 Wh"
                 }
-                row RunRow {
-                  text "Gemma 3 27B"
+                row RunRow2 {
+                  stack RunModel2 {
+                    text "Gemma 3 27B"
+                    text "Ollama local"
+                  }
                   text "Local"
                   text "35.8 tok/s"
                   text "27.9ms"
                   text "12,288"
                   text "$0.0000"
-                  text "15.2 Wh"
                 }
-                row RunRow {
-                  text "Llama 3.1 8B"
+                row RunRow3 {
+                  stack RunModel3 {
+                    text "Llama 3.1 8B"
+                    text "Together API"
+                  }
                   text "Remote"
                   text "28.4 tok/s"
                   text "35.2ms"
                   text "45,056"
                   text "$0.0042"
-                  text "0.0 Wh"
+                }
+                row RunRow4 {
+                  stack RunModel4 {
+                    text "DeepSeek Coder 6.7B"
+                    text "Local GPU"
+                  }
+                  text "Local"
+                  text "31.2 tok/s"
+                  text "19.8ms"
+                  text "8,192"
+                  text "$0.0000"
+                }
+                row RunRow5 {
+                  stack RunModel5 {
+                    text "Phi 3.5 Mini"
+                    text "Azure endpoint"
+                  }
+                  text "Remote"
+                  text "52.1 tok/s"
+                  text "12.4ms"
+                  text "4,096"
+                  text "$0.0001"
                 }
               }
             }
-
             card TopModels {
-              stack ModelsHeader {
+              stack TopModelsHeader {
                 text "Top Models"
+                text "Ranked by throughput"
               }
               stack ModelsList {
-                row ModelRow {
-                  text "Qwen3.6 Coder 27B"
+                row ModelRow1 {
+                  card RankBadge1 {
+                    text "1"
+                  }
+                  stack ModelInfo1 {
+                    text "Qwen3.6 Coder 27B"
+                    text "MLX \u00b7 27B"
+                  }
                   text "+11.2%"
                 }
-                row ModelRow {
-                  text "Gemma 3 27B"
+                row ModelRow2 {
+                  card RankBadge2 {
+                    text "2"
+                  }
+                  stack ModelInfo2 {
+                    text "Gemma 3 27B"
+                    text "Ollama \u00b7 27B"
+                  }
                   text "-0.8%"
                 }
-                row ModelRow {
-                  text "Llama 3.1 8B"
+                row ModelRow3 {
+                  card RankBadge3 {
+                    text "3"
+                  }
+                  stack ModelInfo3 {
+                    text "Llama 3.1 8B"
+                    text "Together \u00b7 8B"
+                  }
                   text "+1.8%"
                 }
-                row ModelRow {
-                  text "Phi 3.5 Mini"
+                row ModelRow4 {
+                  card RankBadge4 {
+                    text "4"
+                  }
+                  stack ModelInfo4 {
+                    text "Phi 3.5 Mini"
+                    text "Azure \u00b7 3.8B"
+                  }
                   text "+2.6%"
                 }
               }
