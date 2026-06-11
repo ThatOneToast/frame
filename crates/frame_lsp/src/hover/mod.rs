@@ -40,9 +40,24 @@ pub fn hover_doc_at_with_symbols(
                 .chain(&cursor.scope.loop_vars)
                 .find(|s| s.name == name)
             {
+                let kind_label = match sym.kind {
+                    super::ide::cursor::SymbolKind::State => "state",
+                    super::ide::cursor::SymbolKind::Prop => "prop",
+                    super::ide::cursor::SymbolKind::LoopVar => "loop variable",
+                    _ => "variable",
+                };
                 return Some(format!(
-                    "## `${}`\n\n{}\n\nReferenced in a Frame view node. Text interpolation escapes by default.",
-                    sym.name, sym.detail
+                    "## `${}`\n\n{} {}\n\n{}",
+                    sym.name,
+                    kind_label,
+                    sym.detail,
+                    if kind_label == "prop" {
+                        "Props are passed from the parent component."
+                    } else if kind_label == "loop variable" {
+                        "Loop variable scoped to this iteration."
+                    } else {
+                        "Text interpolation escapes by default."
+                    }
                 ));
             }
             return hover_doc(word);
@@ -51,8 +66,10 @@ pub fn hover_doc_at_with_symbols(
             let name = word.strip_prefix('@').unwrap_or(word);
             if let Some(sym) = cursor.scope.handlers.iter().find(|s| s.name == name) {
                 return Some(format!(
-                    "## `@{}`\n\n{}\n\nExternal handler reference. Frame stores the handler name, not inline script bodies.",
-                    sym.name, sym.detail
+                    "## `@{}`\n\nHandler reference `{}`.\n\n{}",
+                    sym.name,
+                    sym.name,
+                    sym.detail
                 ));
             }
             return hover_doc(word);
@@ -127,11 +144,25 @@ pub fn hover_doc_at_with_symbols(
     }
 
     if let Some(declaration) = symbols.declarations.get(word) {
-        return Some(format!(
+        // Check if this is used as a base style by another declaration
+        let inherited_by: Vec<&str> = symbols
+            .declarations
+            .values()
+            .filter(|d| d.base.as_deref() == Some(word))
+            .map(|d| d.name.as_str())
+            .collect();
+        let mut result = format!(
             "## `{}`\n\nFrame style declaration.\n\nKind: `{}`\n\nUse it as a style binding or automatic style lookup target in UI nodes.",
             declaration.name,
             declaration_kind_label(&declaration.kind)
-        ));
+        );
+        if !inherited_by.is_empty() {
+            result.push_str(&format!(
+                "\n\nInherited by: {}.",
+                inherited_by.join(", ")
+            ));
+        }
+        return Some(result);
     }
 
     if let Some(component) = symbols.components.get(word) {
@@ -155,10 +186,10 @@ pub fn hover_doc(word: &str) -> Option<String> {
 
     Some(match word {
         _ if word.starts_with('$') => {
-            "$value reads typed component state or props. Text insertion is escaped by default in future renderers."
+            "$value reads typed component state, props, or loop variables."
         }
         _ if word.starts_with('@') => {
-            "@handler references an external handler. Frame does not store script bodies inside UI declarations."
+            "@handler references an external event handler."
         }
         _ => return None,
     }.to_string())
@@ -215,10 +246,10 @@ mod tests {
             .contains("on press @handler"));
         assert!(hover_doc("$draft")
             .expect("data ref docs")
-            .contains("escaped by default"));
+            .contains("typed component state"));
         assert!(hover_doc("@sendMessage")
             .expect("handler docs")
-            .contains("external handler"));
+            .contains("external event handler"));
     }
 
     #[test]
@@ -345,8 +376,7 @@ mod tests {
         let doc = hover_doc_at(source, offset).expect("handler hover should exist");
 
         assert!(doc.contains("@sendMessage"));
-        assert!(doc.contains("on press"));
-        assert!(doc.contains("External handler reference"));
+        assert!(doc.contains("Handler reference"));
     }
 
     #[test]
@@ -366,5 +396,30 @@ mod tests {
         let doc = hover_doc("in").expect("in should have docs");
         assert!(doc.contains("for"));
         assert!(doc.contains("loop"));
+    }
+
+    #[test]
+    fn returns_inherited_base_style_hover() {
+        let source = "card MetricCardBase {\n  padding medium\n}\ncard MetricCardModel extends MetricCardBase {\n}\n";
+        let document = frame_parser::parse(source).expect("parse");
+        let symbols = frame_core::symbols::index_document(source, &document);
+        let offset = source.find("MetricCardBase").unwrap() + 1;
+        let doc = hover_doc_at_with_symbols(source, offset, Some(&symbols)).expect("hover doc");
+
+        assert!(doc.contains("MetricCardBase"));
+        assert!(doc.contains("Inherited by"));
+        assert!(doc.contains("MetricCardModel"));
+    }
+
+    #[test]
+    fn returns_named_grid_track_hover() {
+        let source = "grid Dashboard {\n  columns sidebar content\n}\n";
+        let document = frame_parser::parse(source).expect("parse");
+        let symbols = frame_core::symbols::index_document(source, &document);
+        let offset = source.find("sidebar").unwrap() + 1;
+        let doc = hover_doc_at_with_symbols(source, offset, Some(&symbols)).expect("hover doc");
+
+        assert!(doc.contains("sidebar"));
+        assert!(doc.contains("Grid column value"));
     }
 }

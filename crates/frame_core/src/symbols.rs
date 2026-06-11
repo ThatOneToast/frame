@@ -17,6 +17,7 @@ pub struct FrameSymbol {
     pub kind: SymbolKind,
     pub span: Span,
     pub value: Option<String>,
+    pub base: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -69,6 +70,7 @@ pub fn index_document(source: &str, document: &Document) -> SymbolIndex {
             kind: SymbolKind::Declaration(declaration.kind.clone()),
             span: declaration.name.span,
             value: None,
+            base: declaration.extends.as_ref().map(|e| e.text.clone()),
         };
         index
             .declarations
@@ -94,6 +96,7 @@ pub fn index_document(source: &str, document: &Document) -> SymbolIndex {
                     kind: SymbolKind::Keyframes,
                     span: declaration.name.span,
                     value: Some(format!("@keyframes frame-{}", declaration.name.text)),
+                    base: None,
                 },
             );
         }
@@ -111,6 +114,7 @@ pub fn index_document(source: &str, document: &Document) -> SymbolIndex {
                 kind: SymbolKind::Declaration(DeclarationKind::Unknown("component".to_string())),
                 span: component.name.span,
                 value: None,
+                base: None,
             },
         );
     }
@@ -135,6 +139,7 @@ fn collect_token_symbols(source: &str, body: &[Node], index: &mut SymbolIndex) {
                         kind: SymbolKind::Color,
                         span,
                         value: statement.words.get(2).cloned(),
+                        base: None,
                     },
                 );
             }
@@ -150,6 +155,7 @@ fn collect_token_symbols(source: &str, body: &[Node], index: &mut SymbolIndex) {
                         kind: SymbolKind::Gradient,
                         span,
                         value: gradient_css_preview(&block.body),
+                        base: None,
                     },
                 );
             }
@@ -186,6 +192,7 @@ fn collect_grid_sections(source: &str, grid: &str, body: &[Node], index: &mut Sy
                         },
                         span,
                         value: None,
+                        base: None,
                     },
                 );
         }
