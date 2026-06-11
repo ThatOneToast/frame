@@ -392,3 +392,6 @@ pub(crate) fn statements(body: &[Node]) -> impl Iterator<Item = &Statement> {
         }
     })
 }
+pub(crate) fn has_columns_statement(body: &[Node]) -> bool {
+    statements(body).any(|s| s.words.first().map(String::as_str) == Some("columns"))
+}

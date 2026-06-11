@@ -53,7 +53,13 @@ pub(crate) fn emit_declaration_css(
                 DeclarationKind::Card | DeclarationKind::Stack => {
                     css.push_str("  display: flex;\n  flex-direction: column;\n")
                 }
-                DeclarationKind::Row => css.push_str("  display: flex;\n  flex-direction: row;\n"),
+                DeclarationKind::Row => {
+                    if has_columns_statement(&resolved_body) {
+                        css.push_str("  display: grid;\n");
+                    } else {
+                        css.push_str("  display: flex;\n  flex-direction: row;\n");
+                    }
+                }
                 DeclarationKind::Center => {
                     css.push_str("  display: grid;\n  place-items: center;\n")
                 }
@@ -513,6 +519,7 @@ pub(crate) fn emit_common(
             Some("border") => emit_border(css, statement),
             Some("outline") => emit_outline(css, statement),
             Some("layout") => emit_layout(css, statement),
+            Some("columns") => emit_columns(css, statement, false),
             Some("overflow") => emit_overflow(css, statement),
             Some("scroll") => emit_scroll(css, statement),
             Some("scrollbar") => emit_scrollbar(css, statement),

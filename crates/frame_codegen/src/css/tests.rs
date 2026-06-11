@@ -1408,3 +1408,100 @@ fn dashboard_grid_produces_gap_safe_tracks() {
 
     assert!(css.contains("grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);"));
 }
+
+#[test]
+fn row_with_columns_emits_grid_display() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Row,
+            "RunRowBase",
+            vec![
+                statement(&["columns", "2fr", "1fr", "1fr", "1fr", "1fr", "1fr"]),
+                statement(&["align", "center"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+    eprintln!("GENERATED CSS:\n{css}");
+
+    assert!(css.contains("display: grid;"));
+    assert!(css.contains("grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);"));
+    assert!(!css.contains("flex-direction: row;"));
+    assert!(css.contains("align-items: center;"));
+}
+
+#[test]
+fn row_without_columns_emits_flex_display() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Row,
+            "NavBar",
+            vec![
+                statement(&["gap", "large"]),
+                statement(&["align", "center"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("display: flex;"));
+    assert!(css.contains("flex-direction: row;"));
+    assert!(!css.contains("grid-template-columns:"));
+}
+
+#[test]
+fn row_columns_support_fr_tracks() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Row,
+            "ModelRowBase",
+            vec![statement(&["columns", "auto", "1fr", "auto"])],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("display: grid;"));
+    assert!(css.contains("grid-template-columns: auto minmax(0, 1fr) auto;"));
+}
+
+#[test]
+fn inherited_row_columns_share_template() {
+    let base = declaration(
+        DeclarationKind::Row,
+        "TableRowBase",
+        vec![
+            statement(&["columns", "2fr", "1fr", "1fr"]),
+            statement(&["align", "center"]),
+        ],
+    );
+    let child = Declaration {
+        kind: DeclarationKind::Row,
+        name: Identifier::new("RunRow1", Span::default()),
+        extends: Some(Identifier::new("TableRowBase", Span::default())),
+        body: vec![],
+        span: Span::default(),
+    };
+
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![base, child],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+    eprintln!("INHERITED CSS:\n{css}");
+
+    assert!(css.contains("grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);"));
+    let base_pos = css.find(".fr-TableRowBase").unwrap();
+    let child_pos = css.find(".fr-RunRow1").unwrap();
+    assert!(child_pos > base_pos);
+}

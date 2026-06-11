@@ -421,7 +421,7 @@ stack RunsTableHeader {
 }
 
 row RunColHeaders {
-  gap medium
+  columns 2fr 1fr 1fr 1fr 1fr 1fr
   color text-muted
   size caption
   weight semibold
@@ -433,7 +433,7 @@ stack RunsTable {
 }
 
 row TableRowBase {
-  gap medium
+  columns 2fr 1fr 1fr 1fr 1fr 1fr
   padding y small
   padding x small
   align center
@@ -472,10 +472,20 @@ stack ModelsList {
   gap none
 }
 
-row ModelRow1 extends TableRowBase { }
-row ModelRow2 extends TableRowBase { }
-row ModelRow3 extends TableRowBase { }
-row ModelRow4 extends TableRowBase { }
+row ModelRowBase {
+  columns auto 1fr auto
+  padding y small
+  padding x small
+  align center
+  border bottom soft
+  color text-secondary
+  transition smooth
+}
+
+row ModelRow1 extends ModelRowBase { }
+row ModelRow2 extends ModelRowBase { }
+row ModelRow3 extends ModelRowBase { }
+row ModelRow4 extends ModelRowBase { }
 
 card RankBadgeBase {
   padding small
