@@ -864,7 +864,7 @@ const ir = defineFrameIrDocument({
                                             {
                                               "Text": {
                                                 "value": {
-                                                  "Literal": "MLX \\u00b7 27B params"
+                                                  "Literal": "MLX · 27B params"
                                                 },
                                                 "source": {
                                                   "start": 1787,
@@ -1691,820 +1691,13 @@ const ir = defineFrameIrDocument({
                                                 "kind": "row",
                                                 "semantic_kind": "row",
                                                 "render_kind": "div",
-                                                "name": "ChartGrid",
-                                                "style": {
-                                                  "Automatic": {
-                                                    "style": "ChartGrid",
-                                                    "source": {
-                                                      "start": 3662,
-                                                      "end": 3671
-                                                    }
-                                                  }
-                                                },
-                                                "attributes": [],
-                                                "bindings": [],
-                                                "events": [],
-                                                "conditions": [],
-                                                "children": [
-                                                  {
-                                                    "Element": {
-                                                      "kind": "stack",
-                                                      "semantic_kind": "stack",
-                                                      "render_kind": "div",
-                                                      "name": "Bar1",
-                                                      "style": {
-                                                        "Automatic": {
-                                                          "style": "Bar1",
-                                                          "source": {
-                                                            "start": 3698,
-                                                            "end": 3702
-                                                          }
-                                                        }
-                                                      },
-                                                      "attributes": [],
-                                                      "bindings": [],
-                                                      "events": [],
-                                                      "conditions": [],
-                                                      "children": [
-                                                        {
-                                                          "Element": {
-                                                            "kind": "row",
-                                                            "semantic_kind": "row",
-                                                            "render_kind": "div",
-                                                            "name": "BarSeg1",
-                                                            "style": {
-                                                              "Automatic": {
-                                                                "style": "BarSeg1",
-                                                                "source": {
-                                                                  "start": 3729,
-                                                                  "end": 3736
-                                                                }
-                                                              }
-                                                            },
-                                                            "attributes": [],
-                                                            "bindings": [],
-                                                            "events": [],
-                                                            "conditions": [],
-                                                            "children": [
-                                                              {
-                                                                "Text": {
-                                                                  "value": {
-                                                                    "Literal": " "
-                                                                  },
-                                                                  "source": {
-                                                                    "start": 3739,
-                                                                    "end": 3769
-                                                                  }
-                                                                }
-                                                              }
-                                                            ],
-                                                            "source": {
-                                                              "start": 3705,
-                                                              "end": 3791
-                                                            }
-                                                          }
-                                                        }
-                                                      ],
-                                                      "source": {
-                                                        "start": 3674,
-                                                        "end": 3811
-                                                      }
-                                                    }
-                                                  },
-                                                  {
-                                                    "Element": {
-                                                      "kind": "stack",
-                                                      "semantic_kind": "stack",
-                                                      "render_kind": "div",
-                                                      "name": "Bar2",
-                                                      "style": {
-                                                        "Automatic": {
-                                                          "style": "Bar2",
-                                                          "source": {
-                                                            "start": 3836,
-                                                            "end": 3840
-                                                          }
-                                                        }
-                                                      },
-                                                      "attributes": [],
-                                                      "bindings": [],
-                                                      "events": [],
-                                                      "conditions": [],
-                                                      "children": [
-                                                        {
-                                                          "Element": {
-                                                            "kind": "row",
-                                                            "semantic_kind": "row",
-                                                            "render_kind": "div",
-                                                            "name": "BarSeg2",
-                                                            "style": {
-                                                              "Automatic": {
-                                                                "style": "BarSeg2",
-                                                                "source": {
-                                                                  "start": 3867,
-                                                                  "end": 3874
-                                                                }
-                                                              }
-                                                            },
-                                                            "attributes": [],
-                                                            "bindings": [],
-                                                            "events": [],
-                                                            "conditions": [],
-                                                            "children": [
-                                                              {
-                                                                "Text": {
-                                                                  "value": {
-                                                                    "Literal": " "
-                                                                  },
-                                                                  "source": {
-                                                                    "start": 3877,
-                                                                    "end": 3907
-                                                                  }
-                                                                }
-                                                              }
-                                                            ],
-                                                            "source": {
-                                                              "start": 3843,
-                                                              "end": 3929
-                                                            }
-                                                          }
-                                                        }
-                                                      ],
-                                                      "source": {
-                                                        "start": 3812,
-                                                        "end": 3949
-                                                      }
-                                                    }
-                                                  },
-                                                  {
-                                                    "Element": {
-                                                      "kind": "stack",
-                                                      "semantic_kind": "stack",
-                                                      "render_kind": "div",
-                                                      "name": "Bar3",
-                                                      "style": {
-                                                        "Automatic": {
-                                                          "style": "Bar3",
-                                                          "source": {
-                                                            "start": 3974,
-                                                            "end": 3978
-                                                          }
-                                                        }
-                                                      },
-                                                      "attributes": [],
-                                                      "bindings": [],
-                                                      "events": [],
-                                                      "conditions": [],
-                                                      "children": [
-                                                        {
-                                                          "Element": {
-                                                            "kind": "row",
-                                                            "semantic_kind": "row",
-                                                            "render_kind": "div",
-                                                            "name": "BarSeg3",
-                                                            "style": {
-                                                              "Automatic": {
-                                                                "style": "BarSeg3",
-                                                                "source": {
-                                                                  "start": 4005,
-                                                                  "end": 4012
-                                                                }
-                                                              }
-                                                            },
-                                                            "attributes": [],
-                                                            "bindings": [],
-                                                            "events": [],
-                                                            "conditions": [],
-                                                            "children": [
-                                                              {
-                                                                "Text": {
-                                                                  "value": {
-                                                                    "Literal": " "
-                                                                  },
-                                                                  "source": {
-                                                                    "start": 4015,
-                                                                    "end": 4045
-                                                                  }
-                                                                }
-                                                              }
-                                                            ],
-                                                            "source": {
-                                                              "start": 3981,
-                                                              "end": 4067
-                                                            }
-                                                          }
-                                                        }
-                                                      ],
-                                                      "source": {
-                                                        "start": 3950,
-                                                        "end": 4087
-                                                      }
-                                                    }
-                                                  },
-                                                  {
-                                                    "Element": {
-                                                      "kind": "stack",
-                                                      "semantic_kind": "stack",
-                                                      "render_kind": "div",
-                                                      "name": "Bar4",
-                                                      "style": {
-                                                        "Automatic": {
-                                                          "style": "Bar4",
-                                                          "source": {
-                                                            "start": 4112,
-                                                            "end": 4116
-                                                          }
-                                                        }
-                                                      },
-                                                      "attributes": [],
-                                                      "bindings": [],
-                                                      "events": [],
-                                                      "conditions": [],
-                                                      "children": [
-                                                        {
-                                                          "Element": {
-                                                            "kind": "row",
-                                                            "semantic_kind": "row",
-                                                            "render_kind": "div",
-                                                            "name": "BarSeg4",
-                                                            "style": {
-                                                              "Automatic": {
-                                                                "style": "BarSeg4",
-                                                                "source": {
-                                                                  "start": 4143,
-                                                                  "end": 4150
-                                                                }
-                                                              }
-                                                            },
-                                                            "attributes": [],
-                                                            "bindings": [],
-                                                            "events": [],
-                                                            "conditions": [],
-                                                            "children": [
-                                                              {
-                                                                "Text": {
-                                                                  "value": {
-                                                                    "Literal": " "
-                                                                  },
-                                                                  "source": {
-                                                                    "start": 4153,
-                                                                    "end": 4183
-                                                                  }
-                                                                }
-                                                              }
-                                                            ],
-                                                            "source": {
-                                                              "start": 4119,
-                                                              "end": 4205
-                                                            }
-                                                          }
-                                                        }
-                                                      ],
-                                                      "source": {
-                                                        "start": 4088,
-                                                        "end": 4225
-                                                      }
-                                                    }
-                                                  },
-                                                  {
-                                                    "Element": {
-                                                      "kind": "stack",
-                                                      "semantic_kind": "stack",
-                                                      "render_kind": "div",
-                                                      "name": "Bar5",
-                                                      "style": {
-                                                        "Automatic": {
-                                                          "style": "Bar5",
-                                                          "source": {
-                                                            "start": 4250,
-                                                            "end": 4254
-                                                          }
-                                                        }
-                                                      },
-                                                      "attributes": [],
-                                                      "bindings": [],
-                                                      "events": [],
-                                                      "conditions": [],
-                                                      "children": [
-                                                        {
-                                                          "Element": {
-                                                            "kind": "row",
-                                                            "semantic_kind": "row",
-                                                            "render_kind": "div",
-                                                            "name": "BarSeg5",
-                                                            "style": {
-                                                              "Automatic": {
-                                                                "style": "BarSeg5",
-                                                                "source": {
-                                                                  "start": 4281,
-                                                                  "end": 4288
-                                                                }
-                                                              }
-                                                            },
-                                                            "attributes": [],
-                                                            "bindings": [],
-                                                            "events": [],
-                                                            "conditions": [],
-                                                            "children": [
-                                                              {
-                                                                "Text": {
-                                                                  "value": {
-                                                                    "Literal": " "
-                                                                  },
-                                                                  "source": {
-                                                                    "start": 4291,
-                                                                    "end": 4321
-                                                                  }
-                                                                }
-                                                              }
-                                                            ],
-                                                            "source": {
-                                                              "start": 4257,
-                                                              "end": 4343
-                                                            }
-                                                          }
-                                                        }
-                                                      ],
-                                                      "source": {
-                                                        "start": 4226,
-                                                        "end": 4363
-                                                      }
-                                                    }
-                                                  },
-                                                  {
-                                                    "Element": {
-                                                      "kind": "stack",
-                                                      "semantic_kind": "stack",
-                                                      "render_kind": "div",
-                                                      "name": "Bar6",
-                                                      "style": {
-                                                        "Automatic": {
-                                                          "style": "Bar6",
-                                                          "source": {
-                                                            "start": 4388,
-                                                            "end": 4392
-                                                          }
-                                                        }
-                                                      },
-                                                      "attributes": [],
-                                                      "bindings": [],
-                                                      "events": [],
-                                                      "conditions": [],
-                                                      "children": [
-                                                        {
-                                                          "Element": {
-                                                            "kind": "row",
-                                                            "semantic_kind": "row",
-                                                            "render_kind": "div",
-                                                            "name": "BarSeg6",
-                                                            "style": {
-                                                              "Automatic": {
-                                                                "style": "BarSeg6",
-                                                                "source": {
-                                                                  "start": 4419,
-                                                                  "end": 4426
-                                                                }
-                                                              }
-                                                            },
-                                                            "attributes": [],
-                                                            "bindings": [],
-                                                            "events": [],
-                                                            "conditions": [],
-                                                            "children": [
-                                                              {
-                                                                "Text": {
-                                                                  "value": {
-                                                                    "Literal": " "
-                                                                  },
-                                                                  "source": {
-                                                                    "start": 4429,
-                                                                    "end": 4459
-                                                                  }
-                                                                }
-                                                              }
-                                                            ],
-                                                            "source": {
-                                                              "start": 4395,
-                                                              "end": 4481
-                                                            }
-                                                          }
-                                                        }
-                                                      ],
-                                                      "source": {
-                                                        "start": 4364,
-                                                        "end": 4501
-                                                      }
-                                                    }
-                                                  },
-                                                  {
-                                                    "Element": {
-                                                      "kind": "stack",
-                                                      "semantic_kind": "stack",
-                                                      "render_kind": "div",
-                                                      "name": "Bar7",
-                                                      "style": {
-                                                        "Automatic": {
-                                                          "style": "Bar7",
-                                                          "source": {
-                                                            "start": 4526,
-                                                            "end": 4530
-                                                          }
-                                                        }
-                                                      },
-                                                      "attributes": [],
-                                                      "bindings": [],
-                                                      "events": [],
-                                                      "conditions": [],
-                                                      "children": [
-                                                        {
-                                                          "Element": {
-                                                            "kind": "row",
-                                                            "semantic_kind": "row",
-                                                            "render_kind": "div",
-                                                            "name": "BarSeg7",
-                                                            "style": {
-                                                              "Automatic": {
-                                                                "style": "BarSeg7",
-                                                                "source": {
-                                                                  "start": 4557,
-                                                                  "end": 4564
-                                                                }
-                                                              }
-                                                            },
-                                                            "attributes": [],
-                                                            "bindings": [],
-                                                            "events": [],
-                                                            "conditions": [],
-                                                            "children": [
-                                                              {
-                                                                "Text": {
-                                                                  "value": {
-                                                                    "Literal": " "
-                                                                  },
-                                                                  "source": {
-                                                                    "start": 4567,
-                                                                    "end": 4597
-                                                                  }
-                                                                }
-                                                              }
-                                                            ],
-                                                            "source": {
-                                                              "start": 4533,
-                                                              "end": 4619
-                                                            }
-                                                          }
-                                                        }
-                                                      ],
-                                                      "source": {
-                                                        "start": 4502,
-                                                        "end": 4639
-                                                      }
-                                                    }
-                                                  },
-                                                  {
-                                                    "Element": {
-                                                      "kind": "stack",
-                                                      "semantic_kind": "stack",
-                                                      "render_kind": "div",
-                                                      "name": "Bar8",
-                                                      "style": {
-                                                        "Automatic": {
-                                                          "style": "Bar8",
-                                                          "source": {
-                                                            "start": 4664,
-                                                            "end": 4668
-                                                          }
-                                                        }
-                                                      },
-                                                      "attributes": [],
-                                                      "bindings": [],
-                                                      "events": [],
-                                                      "conditions": [],
-                                                      "children": [
-                                                        {
-                                                          "Element": {
-                                                            "kind": "row",
-                                                            "semantic_kind": "row",
-                                                            "render_kind": "div",
-                                                            "name": "BarSeg8",
-                                                            "style": {
-                                                              "Automatic": {
-                                                                "style": "BarSeg8",
-                                                                "source": {
-                                                                  "start": 4695,
-                                                                  "end": 4702
-                                                                }
-                                                              }
-                                                            },
-                                                            "attributes": [],
-                                                            "bindings": [],
-                                                            "events": [],
-                                                            "conditions": [],
-                                                            "children": [
-                                                              {
-                                                                "Text": {
-                                                                  "value": {
-                                                                    "Literal": " "
-                                                                  },
-                                                                  "source": {
-                                                                    "start": 4705,
-                                                                    "end": 4735
-                                                                  }
-                                                                }
-                                                              }
-                                                            ],
-                                                            "source": {
-                                                              "start": 4671,
-                                                              "end": 4757
-                                                            }
-                                                          }
-                                                        }
-                                                      ],
-                                                      "source": {
-                                                        "start": 4640,
-                                                        "end": 4777
-                                                      }
-                                                    }
-                                                  },
-                                                  {
-                                                    "Element": {
-                                                      "kind": "stack",
-                                                      "semantic_kind": "stack",
-                                                      "render_kind": "div",
-                                                      "name": "Bar9",
-                                                      "style": {
-                                                        "Automatic": {
-                                                          "style": "Bar9",
-                                                          "source": {
-                                                            "start": 4802,
-                                                            "end": 4806
-                                                          }
-                                                        }
-                                                      },
-                                                      "attributes": [],
-                                                      "bindings": [],
-                                                      "events": [],
-                                                      "conditions": [],
-                                                      "children": [
-                                                        {
-                                                          "Element": {
-                                                            "kind": "row",
-                                                            "semantic_kind": "row",
-                                                            "render_kind": "div",
-                                                            "name": "BarSeg9",
-                                                            "style": {
-                                                              "Automatic": {
-                                                                "style": "BarSeg9",
-                                                                "source": {
-                                                                  "start": 4833,
-                                                                  "end": 4840
-                                                                }
-                                                              }
-                                                            },
-                                                            "attributes": [],
-                                                            "bindings": [],
-                                                            "events": [],
-                                                            "conditions": [],
-                                                            "children": [
-                                                              {
-                                                                "Text": {
-                                                                  "value": {
-                                                                    "Literal": " "
-                                                                  },
-                                                                  "source": {
-                                                                    "start": 4843,
-                                                                    "end": 4873
-                                                                  }
-                                                                }
-                                                              }
-                                                            ],
-                                                            "source": {
-                                                              "start": 4809,
-                                                              "end": 4895
-                                                            }
-                                                          }
-                                                        }
-                                                      ],
-                                                      "source": {
-                                                        "start": 4778,
-                                                        "end": 4915
-                                                      }
-                                                    }
-                                                  },
-                                                  {
-                                                    "Element": {
-                                                      "kind": "stack",
-                                                      "semantic_kind": "stack",
-                                                      "render_kind": "div",
-                                                      "name": "Bar10",
-                                                      "style": {
-                                                        "Automatic": {
-                                                          "style": "Bar10",
-                                                          "source": {
-                                                            "start": 4940,
-                                                            "end": 4945
-                                                          }
-                                                        }
-                                                      },
-                                                      "attributes": [],
-                                                      "bindings": [],
-                                                      "events": [],
-                                                      "conditions": [],
-                                                      "children": [
-                                                        {
-                                                          "Element": {
-                                                            "kind": "row",
-                                                            "semantic_kind": "row",
-                                                            "render_kind": "div",
-                                                            "name": "BarSeg10",
-                                                            "style": {
-                                                              "Automatic": {
-                                                                "style": "BarSeg10",
-                                                                "source": {
-                                                                  "start": 4972,
-                                                                  "end": 4980
-                                                                }
-                                                              }
-                                                            },
-                                                            "attributes": [],
-                                                            "bindings": [],
-                                                            "events": [],
-                                                            "conditions": [],
-                                                            "children": [
-                                                              {
-                                                                "Text": {
-                                                                  "value": {
-                                                                    "Literal": " "
-                                                                  },
-                                                                  "source": {
-                                                                    "start": 4983,
-                                                                    "end": 5013
-                                                                  }
-                                                                }
-                                                              }
-                                                            ],
-                                                            "source": {
-                                                              "start": 4948,
-                                                              "end": 5035
-                                                            }
-                                                          }
-                                                        }
-                                                      ],
-                                                      "source": {
-                                                        "start": 4916,
-                                                        "end": 5055
-                                                      }
-                                                    }
-                                                  },
-                                                  {
-                                                    "Element": {
-                                                      "kind": "stack",
-                                                      "semantic_kind": "stack",
-                                                      "render_kind": "div",
-                                                      "name": "Bar11",
-                                                      "style": {
-                                                        "Automatic": {
-                                                          "style": "Bar11",
-                                                          "source": {
-                                                            "start": 5080,
-                                                            "end": 5085
-                                                          }
-                                                        }
-                                                      },
-                                                      "attributes": [],
-                                                      "bindings": [],
-                                                      "events": [],
-                                                      "conditions": [],
-                                                      "children": [
-                                                        {
-                                                          "Element": {
-                                                            "kind": "row",
-                                                            "semantic_kind": "row",
-                                                            "render_kind": "div",
-                                                            "name": "BarSeg11",
-                                                            "style": {
-                                                              "Automatic": {
-                                                                "style": "BarSeg11",
-                                                                "source": {
-                                                                  "start": 5112,
-                                                                  "end": 5120
-                                                                }
-                                                              }
-                                                            },
-                                                            "attributes": [],
-                                                            "bindings": [],
-                                                            "events": [],
-                                                            "conditions": [],
-                                                            "children": [
-                                                              {
-                                                                "Text": {
-                                                                  "value": {
-                                                                    "Literal": " "
-                                                                  },
-                                                                  "source": {
-                                                                    "start": 5123,
-                                                                    "end": 5153
-                                                                  }
-                                                                }
-                                                              }
-                                                            ],
-                                                            "source": {
-                                                              "start": 5088,
-                                                              "end": 5175
-                                                            }
-                                                          }
-                                                        }
-                                                      ],
-                                                      "source": {
-                                                        "start": 5056,
-                                                        "end": 5195
-                                                      }
-                                                    }
-                                                  },
-                                                  {
-                                                    "Element": {
-                                                      "kind": "stack",
-                                                      "semantic_kind": "stack",
-                                                      "render_kind": "div",
-                                                      "name": "Bar12",
-                                                      "style": {
-                                                        "Automatic": {
-                                                          "style": "Bar12",
-                                                          "source": {
-                                                            "start": 5220,
-                                                            "end": 5225
-                                                          }
-                                                        }
-                                                      },
-                                                      "attributes": [],
-                                                      "bindings": [],
-                                                      "events": [],
-                                                      "conditions": [],
-                                                      "children": [
-                                                        {
-                                                          "Element": {
-                                                            "kind": "row",
-                                                            "semantic_kind": "row",
-                                                            "render_kind": "div",
-                                                            "name": "BarSeg12",
-                                                            "style": {
-                                                              "Automatic": {
-                                                                "style": "BarSeg12",
-                                                                "source": {
-                                                                  "start": 5252,
-                                                                  "end": 5260
-                                                                }
-                                                              }
-                                                            },
-                                                            "attributes": [],
-                                                            "bindings": [],
-                                                            "events": [],
-                                                            "conditions": [],
-                                                            "children": [
-                                                              {
-                                                                "Text": {
-                                                                  "value": {
-                                                                    "Literal": " "
-                                                                  },
-                                                                  "source": {
-                                                                    "start": 5263,
-                                                                    "end": 5293
-                                                                  }
-                                                                }
-                                                              }
-                                                            ],
-                                                            "source": {
-                                                              "start": 5228,
-                                                              "end": 5315
-                                                            }
-                                                          }
-                                                        }
-                                                      ],
-                                                      "source": {
-                                                        "start": 5196,
-                                                        "end": 5335
-                                                      }
-                                                    }
-                                                  }
-                                                ],
-                                                "source": {
-                                                  "start": 3642,
-                                                  "end": 5353
-                                                }
-                                              }
-                                            },
-                                            {
-                                              "Element": {
-                                                "kind": "row",
-                                                "semantic_kind": "row",
-                                                "render_kind": "div",
                                                 "name": "ChartAxis",
                                                 "style": {
                                                   "Automatic": {
                                                     "style": "ChartAxis",
                                                     "source": {
-                                                      "start": 5374,
-                                                      "end": 5383
+                                                      "start": 3662,
+                                                      "end": 3671
                                                     }
                                                   }
                                                 },
@@ -2519,8 +1712,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "14:00"
                                                       },
                                                       "source": {
-                                                        "start": 5386,
-                                                        "end": 5416
+                                                        "start": 3674,
+                                                        "end": 3704
                                                       }
                                                     }
                                                   },
@@ -2530,8 +1723,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "14:15"
                                                       },
                                                       "source": {
-                                                        "start": 5417,
-                                                        "end": 5447
+                                                        "start": 3705,
+                                                        "end": 3735
                                                       }
                                                     }
                                                   },
@@ -2541,8 +1734,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "14:30"
                                                       },
                                                       "source": {
-                                                        "start": 5448,
-                                                        "end": 5478
+                                                        "start": 3736,
+                                                        "end": 3766
                                                       }
                                                     }
                                                   },
@@ -2552,8 +1745,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "14:45"
                                                       },
                                                       "source": {
-                                                        "start": 5479,
-                                                        "end": 5509
+                                                        "start": 3767,
+                                                        "end": 3797
                                                       }
                                                     }
                                                   },
@@ -2563,29 +1756,29 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "14:55"
                                                       },
                                                       "source": {
-                                                        "start": 5510,
-                                                        "end": 5540
+                                                        "start": 3798,
+                                                        "end": 3828
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 5354,
-                                                  "end": 5558
+                                                  "start": 3642,
+                                                  "end": 3846
                                                 }
                                               }
                                             }
                                           ],
                                           "source": {
                                             "start": 3610,
-                                            "end": 5574
+                                            "end": 3862
                                           }
                                         }
                                       }
                                     ],
                                     "source": {
                                       "start": 3084,
-                                      "end": 5588
+                                      "end": 3876
                                     }
                                   }
                                 },
@@ -2599,8 +1792,8 @@ const ir = defineFrameIrDocument({
                                       "Automatic": {
                                         "style": "RunPrompt",
                                         "source": {
-                                          "start": 5606,
-                                          "end": 5615
+                                          "start": 3894,
+                                          "end": 3903
                                         }
                                       }
                                     },
@@ -2619,8 +1812,8 @@ const ir = defineFrameIrDocument({
                                             "Automatic": {
                                               "style": "PromptHeader",
                                               "source": {
-                                                "start": 5638,
-                                                "end": 5650
+                                                "start": 3926,
+                                                "end": 3938
                                               }
                                             }
                                           },
@@ -2635,15 +1828,15 @@ const ir = defineFrameIrDocument({
                                                   "Literal": "Quick Inference Test"
                                                 },
                                                 "source": {
-                                                  "start": 5653,
-                                                  "end": 5696
+                                                  "start": 3941,
+                                                  "end": 3984
                                                 }
                                               }
                                             }
                                           ],
                                           "source": {
-                                            "start": 5618,
-                                            "end": 5712
+                                            "start": 3906,
+                                            "end": 4000
                                           }
                                         }
                                       },
@@ -2657,8 +1850,8 @@ const ir = defineFrameIrDocument({
                                             "Automatic": {
                                               "style": "PromptContent",
                                               "source": {
-                                                "start": 5733,
-                                                "end": 5746
+                                                "start": 4021,
+                                                "end": 4034
                                               }
                                             }
                                           },
@@ -2677,8 +1870,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "PromptInput",
                                                     "source": {
-                                                      "start": 5771,
-                                                      "end": 5782
+                                                      "start": 4059,
+                                                      "end": 4070
                                                     }
                                                   }
                                                 },
@@ -2693,15 +1886,15 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Enter a test prompt..."
                                                       },
                                                       "source": {
-                                                        "start": 5785,
-                                                        "end": 5832
+                                                        "start": 4073,
+                                                        "end": 4120
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 5749,
-                                                  "end": 5850
+                                                  "start": 4037,
+                                                  "end": 4138
                                                 }
                                               }
                                             },
@@ -2715,8 +1908,8 @@ const ir = defineFrameIrDocument({
                                                   "Explicit": {
                                                     "style": "PrimaryButton",
                                                     "source": {
-                                                      "start": 5882,
-                                                      "end": 5895
+                                                      "start": 4170,
+                                                      "end": 4183
                                                     }
                                                   }
                                                 },
@@ -2728,8 +1921,8 @@ const ir = defineFrameIrDocument({
                                                     "modifiers": [],
                                                     "handler": "runTest",
                                                     "source": {
-                                                      "start": 5937,
-                                                      "end": 5972
+                                                      "start": 4225,
+                                                      "end": 4260
                                                     }
                                                   }
                                                 ],
@@ -2741,22 +1934,22 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Run Inference"
                                                       },
                                                       "source": {
-                                                        "start": 5898,
-                                                        "end": 5936
+                                                        "start": 4186,
+                                                        "end": 4224
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 5851,
-                                                  "end": 5990
+                                                  "start": 4139,
+                                                  "end": 4278
                                                 }
                                               }
                                             }
                                           ],
                                           "source": {
-                                            "start": 5713,
-                                            "end": 6006
+                                            "start": 4001,
+                                            "end": 4294
                                           }
                                         }
                                       },
@@ -2770,8 +1963,8 @@ const ir = defineFrameIrDocument({
                                             "Automatic": {
                                               "style": "PromptMeta",
                                               "source": {
-                                                "start": 6027,
-                                                "end": 6037
+                                                "start": 4315,
+                                                "end": 4325
                                               }
                                             }
                                           },
@@ -2786,8 +1979,8 @@ const ir = defineFrameIrDocument({
                                                   "Literal": "Model: Qwen3.6 Coder 27B"
                                                 },
                                                 "source": {
-                                                  "start": 6040,
-                                                  "end": 6087
+                                                  "start": 4328,
+                                                  "end": 4375
                                                 }
                                               }
                                             },
@@ -2797,29 +1990,29 @@ const ir = defineFrameIrDocument({
                                                   "Literal": "Provider: Local MLX"
                                                 },
                                                 "source": {
-                                                  "start": 6088,
-                                                  "end": 6130
+                                                  "start": 4376,
+                                                  "end": 4418
                                                 }
                                               }
                                             }
                                           ],
                                           "source": {
-                                            "start": 6007,
-                                            "end": 6146
+                                            "start": 4295,
+                                            "end": 4434
                                           }
                                         }
                                       }
                                     ],
                                     "source": {
-                                      "start": 5589,
-                                      "end": 6160
+                                      "start": 3877,
+                                      "end": 4448
                                     }
                                   }
                                 }
                               ],
                               "source": {
                                 "start": 3051,
-                                "end": 6172
+                                "end": 4460
                               }
                             }
                           },
@@ -2833,8 +2026,8 @@ const ir = defineFrameIrDocument({
                                 "Automatic": {
                                   "style": "DashboardGrid",
                                   "source": {
-                                    "start": 6188,
-                                    "end": 6201
+                                    "start": 4476,
+                                    "end": 4489
                                   }
                                 }
                               },
@@ -2853,8 +2046,8 @@ const ir = defineFrameIrDocument({
                                       "Automatic": {
                                         "style": "InferenceRuns",
                                         "source": {
-                                          "start": 6221,
-                                          "end": 6234
+                                          "start": 4509,
+                                          "end": 4522
                                         }
                                       }
                                     },
@@ -2873,8 +2066,8 @@ const ir = defineFrameIrDocument({
                                             "Automatic": {
                                               "style": "RunsHeader",
                                               "source": {
-                                                "start": 6257,
-                                                "end": 6267
+                                                "start": 4545,
+                                                "end": 4555
                                               }
                                             }
                                           },
@@ -2893,8 +2086,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "RunsTitleRow",
                                                     "source": {
-                                                      "start": 6290,
-                                                      "end": 6302
+                                                      "start": 4578,
+                                                      "end": 4590
                                                     }
                                                   }
                                                 },
@@ -2909,15 +2102,15 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Recent Inference Runs"
                                                       },
                                                       "source": {
-                                                        "start": 6305,
-                                                        "end": 6351
+                                                        "start": 4593,
+                                                        "end": 4639
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 6270,
-                                                  "end": 6369
+                                                  "start": 4558,
+                                                  "end": 4657
                                                 }
                                               }
                                             },
@@ -2931,8 +2124,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "RunTabs",
                                                     "source": {
-                                                      "start": 6390,
-                                                      "end": 6397
+                                                      "start": 4678,
+                                                      "end": 4685
                                                     }
                                                   }
                                                 },
@@ -2951,8 +2144,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "TabAll",
                                                           "source": {
-                                                            "start": 6425,
-                                                            "end": 6431
+                                                            "start": 4713,
+                                                            "end": 4719
                                                           }
                                                         }
                                                       },
@@ -2964,8 +2157,8 @@ const ir = defineFrameIrDocument({
                                                           "modifiers": [],
                                                           "handler": "filterRuns",
                                                           "source": {
-                                                            "start": 6465,
-                                                            "end": 6505
+                                                            "start": 4753,
+                                                            "end": 4793
                                                           }
                                                         }
                                                       ],
@@ -2977,15 +2170,15 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "All"
                                                             },
                                                             "source": {
-                                                              "start": 6434,
-                                                              "end": 6464
+                                                              "start": 4722,
+                                                              "end": 4752
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 6400,
-                                                        "end": 6525
+                                                        "start": 4688,
+                                                        "end": 4813
                                                       }
                                                     }
                                                   },
@@ -2999,8 +2192,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "TabLocal",
                                                           "source": {
-                                                            "start": 6551,
-                                                            "end": 6559
+                                                            "start": 4839,
+                                                            "end": 4847
                                                           }
                                                         }
                                                       },
@@ -3012,8 +2205,8 @@ const ir = defineFrameIrDocument({
                                                           "modifiers": [],
                                                           "handler": "filterRuns",
                                                           "source": {
-                                                            "start": 6595,
-                                                            "end": 6635
+                                                            "start": 4883,
+                                                            "end": 4923
                                                           }
                                                         }
                                                       ],
@@ -3025,15 +2218,15 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Local"
                                                             },
                                                             "source": {
-                                                              "start": 6562,
-                                                              "end": 6594
+                                                              "start": 4850,
+                                                              "end": 4882
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 6526,
-                                                        "end": 6655
+                                                        "start": 4814,
+                                                        "end": 4943
                                                       }
                                                     }
                                                   },
@@ -3047,8 +2240,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "TabRemote",
                                                           "source": {
-                                                            "start": 6681,
-                                                            "end": 6690
+                                                            "start": 4969,
+                                                            "end": 4978
                                                           }
                                                         }
                                                       },
@@ -3060,8 +2253,8 @@ const ir = defineFrameIrDocument({
                                                           "modifiers": [],
                                                           "handler": "filterRuns",
                                                           "source": {
-                                                            "start": 6727,
-                                                            "end": 6767
+                                                            "start": 5015,
+                                                            "end": 5055
                                                           }
                                                         }
                                                       ],
@@ -3073,29 +2266,29 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Remote"
                                                             },
                                                             "source": {
-                                                              "start": 6693,
-                                                              "end": 6726
+                                                              "start": 4981,
+                                                              "end": 5014
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 6656,
-                                                        "end": 6787
+                                                        "start": 4944,
+                                                        "end": 5075
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 6370,
-                                                  "end": 6805
+                                                  "start": 4658,
+                                                  "end": 5093
                                                 }
                                               }
                                             }
                                           ],
                                           "source": {
-                                            "start": 6237,
-                                            "end": 6821
+                                            "start": 4525,
+                                            "end": 5109
                                           }
                                         }
                                       },
@@ -3109,8 +2302,8 @@ const ir = defineFrameIrDocument({
                                             "Automatic": {
                                               "style": "RunsTableHeader",
                                               "source": {
-                                                "start": 6842,
-                                                "end": 6857
+                                                "start": 5130,
+                                                "end": 5145
                                               }
                                             }
                                           },
@@ -3129,8 +2322,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "RunColHeaders",
                                                     "source": {
-                                                      "start": 6880,
-                                                      "end": 6893
+                                                      "start": 5168,
+                                                      "end": 5181
                                                     }
                                                   }
                                                 },
@@ -3145,8 +2338,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Model"
                                                       },
                                                       "source": {
-                                                        "start": 6896,
-                                                        "end": 6926
+                                                        "start": 5184,
+                                                        "end": 5214
                                                       }
                                                     }
                                                   },
@@ -3156,8 +2349,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Provider"
                                                       },
                                                       "source": {
-                                                        "start": 6927,
-                                                        "end": 6960
+                                                        "start": 5215,
+                                                        "end": 5248
                                                       }
                                                     }
                                                   },
@@ -3167,8 +2360,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Speed"
                                                       },
                                                       "source": {
-                                                        "start": 6961,
-                                                        "end": 6991
+                                                        "start": 5249,
+                                                        "end": 5279
                                                       }
                                                     }
                                                   },
@@ -3178,8 +2371,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Latency"
                                                       },
                                                       "source": {
-                                                        "start": 6992,
-                                                        "end": 7024
+                                                        "start": 5280,
+                                                        "end": 5312
                                                       }
                                                     }
                                                   },
@@ -3189,8 +2382,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Tokens"
                                                       },
                                                       "source": {
-                                                        "start": 7025,
-                                                        "end": 7056
+                                                        "start": 5313,
+                                                        "end": 5344
                                                       }
                                                     }
                                                   },
@@ -3200,22 +2393,22 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Cost"
                                                       },
                                                       "source": {
-                                                        "start": 7057,
-                                                        "end": 7086
+                                                        "start": 5345,
+                                                        "end": 5374
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 6860,
-                                                  "end": 7104
+                                                  "start": 5148,
+                                                  "end": 5392
                                                 }
                                               }
                                             }
                                           ],
                                           "source": {
-                                            "start": 6822,
-                                            "end": 7120
+                                            "start": 5110,
+                                            "end": 5408
                                           }
                                         }
                                       },
@@ -3229,8 +2422,8 @@ const ir = defineFrameIrDocument({
                                             "Automatic": {
                                               "style": "RunsTable",
                                               "source": {
-                                                "start": 7141,
-                                                "end": 7150
+                                                "start": 5429,
+                                                "end": 5438
                                               }
                                             }
                                           },
@@ -3249,8 +2442,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "RunRow1",
                                                     "source": {
-                                                      "start": 7173,
-                                                      "end": 7180
+                                                      "start": 5461,
+                                                      "end": 5468
                                                     }
                                                   }
                                                 },
@@ -3269,8 +2462,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "RunModel1",
                                                           "source": {
-                                                            "start": 7207,
-                                                            "end": 7216
+                                                            "start": 5495,
+                                                            "end": 5504
                                                           }
                                                         }
                                                       },
@@ -3285,8 +2478,8 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Qwen3.6 Coder 27B"
                                                             },
                                                             "source": {
-                                                              "start": 7219,
-                                                              "end": 7263
+                                                              "start": 5507,
+                                                              "end": 5551
                                                             }
                                                           }
                                                         },
@@ -3296,15 +2489,15 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "MLX local"
                                                             },
                                                             "source": {
-                                                              "start": 7264,
-                                                              "end": 7300
+                                                              "start": 5552,
+                                                              "end": 5588
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 7183,
-                                                        "end": 7320
+                                                        "start": 5471,
+                                                        "end": 5608
                                                       }
                                                     }
                                                   },
@@ -3314,8 +2507,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Local"
                                                       },
                                                       "source": {
-                                                        "start": 7321,
-                                                        "end": 7351
+                                                        "start": 5609,
+                                                        "end": 5639
                                                       }
                                                     }
                                                   },
@@ -3325,8 +2518,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "42.5 tok/s"
                                                       },
                                                       "source": {
-                                                        "start": 7352,
-                                                        "end": 7387
+                                                        "start": 5640,
+                                                        "end": 5675
                                                       }
                                                     }
                                                   },
@@ -3336,8 +2529,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "23.5ms"
                                                       },
                                                       "source": {
-                                                        "start": 7388,
-                                                        "end": 7419
+                                                        "start": 5676,
+                                                        "end": 5707
                                                       }
                                                     }
                                                   },
@@ -3347,8 +2540,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "18,432"
                                                       },
                                                       "source": {
-                                                        "start": 7420,
-                                                        "end": 7451
+                                                        "start": 5708,
+                                                        "end": 5739
                                                       }
                                                     }
                                                   },
@@ -3358,15 +2551,15 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "$0.0000"
                                                       },
                                                       "source": {
-                                                        "start": 7452,
-                                                        "end": 7484
+                                                        "start": 5740,
+                                                        "end": 5772
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 7153,
-                                                  "end": 7502
+                                                  "start": 5441,
+                                                  "end": 5790
                                                 }
                                               }
                                             },
@@ -3380,8 +2573,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "RunRow2",
                                                     "source": {
-                                                      "start": 7523,
-                                                      "end": 7530
+                                                      "start": 5811,
+                                                      "end": 5818
                                                     }
                                                   }
                                                 },
@@ -3400,8 +2593,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "RunModel2",
                                                           "source": {
-                                                            "start": 7557,
-                                                            "end": 7566
+                                                            "start": 5845,
+                                                            "end": 5854
                                                           }
                                                         }
                                                       },
@@ -3416,8 +2609,8 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Gemma 3 27B"
                                                             },
                                                             "source": {
-                                                              "start": 7569,
-                                                              "end": 7607
+                                                              "start": 5857,
+                                                              "end": 5895
                                                             }
                                                           }
                                                         },
@@ -3427,15 +2620,15 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Ollama local"
                                                             },
                                                             "source": {
-                                                              "start": 7608,
-                                                              "end": 7647
+                                                              "start": 5896,
+                                                              "end": 5935
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 7533,
-                                                        "end": 7667
+                                                        "start": 5821,
+                                                        "end": 5955
                                                       }
                                                     }
                                                   },
@@ -3445,8 +2638,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Local"
                                                       },
                                                       "source": {
-                                                        "start": 7668,
-                                                        "end": 7698
+                                                        "start": 5956,
+                                                        "end": 5986
                                                       }
                                                     }
                                                   },
@@ -3456,8 +2649,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "35.8 tok/s"
                                                       },
                                                       "source": {
-                                                        "start": 7699,
-                                                        "end": 7734
+                                                        "start": 5987,
+                                                        "end": 6022
                                                       }
                                                     }
                                                   },
@@ -3467,8 +2660,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "27.9ms"
                                                       },
                                                       "source": {
-                                                        "start": 7735,
-                                                        "end": 7766
+                                                        "start": 6023,
+                                                        "end": 6054
                                                       }
                                                     }
                                                   },
@@ -3478,8 +2671,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "12,288"
                                                       },
                                                       "source": {
-                                                        "start": 7767,
-                                                        "end": 7798
+                                                        "start": 6055,
+                                                        "end": 6086
                                                       }
                                                     }
                                                   },
@@ -3489,15 +2682,15 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "$0.0000"
                                                       },
                                                       "source": {
-                                                        "start": 7799,
-                                                        "end": 7831
+                                                        "start": 6087,
+                                                        "end": 6119
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 7503,
-                                                  "end": 7849
+                                                  "start": 5791,
+                                                  "end": 6137
                                                 }
                                               }
                                             },
@@ -3511,8 +2704,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "RunRow3",
                                                     "source": {
-                                                      "start": 7870,
-                                                      "end": 7877
+                                                      "start": 6158,
+                                                      "end": 6165
                                                     }
                                                   }
                                                 },
@@ -3531,8 +2724,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "RunModel3",
                                                           "source": {
-                                                            "start": 7904,
-                                                            "end": 7913
+                                                            "start": 6192,
+                                                            "end": 6201
                                                           }
                                                         }
                                                       },
@@ -3547,8 +2740,8 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Llama 3.1 8B"
                                                             },
                                                             "source": {
-                                                              "start": 7916,
-                                                              "end": 7955
+                                                              "start": 6204,
+                                                              "end": 6243
                                                             }
                                                           }
                                                         },
@@ -3558,15 +2751,15 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Together API"
                                                             },
                                                             "source": {
-                                                              "start": 7956,
-                                                              "end": 7995
+                                                              "start": 6244,
+                                                              "end": 6283
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 7880,
-                                                        "end": 8015
+                                                        "start": 6168,
+                                                        "end": 6303
                                                       }
                                                     }
                                                   },
@@ -3576,8 +2769,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Remote"
                                                       },
                                                       "source": {
-                                                        "start": 8016,
-                                                        "end": 8047
+                                                        "start": 6304,
+                                                        "end": 6335
                                                       }
                                                     }
                                                   },
@@ -3587,8 +2780,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "28.4 tok/s"
                                                       },
                                                       "source": {
-                                                        "start": 8048,
-                                                        "end": 8083
+                                                        "start": 6336,
+                                                        "end": 6371
                                                       }
                                                     }
                                                   },
@@ -3598,8 +2791,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "35.2ms"
                                                       },
                                                       "source": {
-                                                        "start": 8084,
-                                                        "end": 8115
+                                                        "start": 6372,
+                                                        "end": 6403
                                                       }
                                                     }
                                                   },
@@ -3609,8 +2802,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "45,056"
                                                       },
                                                       "source": {
-                                                        "start": 8116,
-                                                        "end": 8147
+                                                        "start": 6404,
+                                                        "end": 6435
                                                       }
                                                     }
                                                   },
@@ -3620,15 +2813,15 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "$0.0042"
                                                       },
                                                       "source": {
-                                                        "start": 8148,
-                                                        "end": 8180
+                                                        "start": 6436,
+                                                        "end": 6468
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 7850,
-                                                  "end": 8198
+                                                  "start": 6138,
+                                                  "end": 6486
                                                 }
                                               }
                                             },
@@ -3642,8 +2835,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "RunRow4",
                                                     "source": {
-                                                      "start": 8219,
-                                                      "end": 8226
+                                                      "start": 6507,
+                                                      "end": 6514
                                                     }
                                                   }
                                                 },
@@ -3662,8 +2855,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "RunModel4",
                                                           "source": {
-                                                            "start": 8253,
-                                                            "end": 8262
+                                                            "start": 6541,
+                                                            "end": 6550
                                                           }
                                                         }
                                                       },
@@ -3678,8 +2871,8 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "DeepSeek Coder 6.7B"
                                                             },
                                                             "source": {
-                                                              "start": 8265,
-                                                              "end": 8311
+                                                              "start": 6553,
+                                                              "end": 6599
                                                             }
                                                           }
                                                         },
@@ -3689,15 +2882,15 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Local GPU"
                                                             },
                                                             "source": {
-                                                              "start": 8312,
-                                                              "end": 8348
+                                                              "start": 6600,
+                                                              "end": 6636
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 8229,
-                                                        "end": 8368
+                                                        "start": 6517,
+                                                        "end": 6656
                                                       }
                                                     }
                                                   },
@@ -3707,8 +2900,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Local"
                                                       },
                                                       "source": {
-                                                        "start": 8369,
-                                                        "end": 8399
+                                                        "start": 6657,
+                                                        "end": 6687
                                                       }
                                                     }
                                                   },
@@ -3718,8 +2911,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "31.2 tok/s"
                                                       },
                                                       "source": {
-                                                        "start": 8400,
-                                                        "end": 8435
+                                                        "start": 6688,
+                                                        "end": 6723
                                                       }
                                                     }
                                                   },
@@ -3729,8 +2922,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "19.8ms"
                                                       },
                                                       "source": {
-                                                        "start": 8436,
-                                                        "end": 8467
+                                                        "start": 6724,
+                                                        "end": 6755
                                                       }
                                                     }
                                                   },
@@ -3740,8 +2933,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "8,192"
                                                       },
                                                       "source": {
-                                                        "start": 8468,
-                                                        "end": 8498
+                                                        "start": 6756,
+                                                        "end": 6786
                                                       }
                                                     }
                                                   },
@@ -3751,15 +2944,15 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "$0.0000"
                                                       },
                                                       "source": {
-                                                        "start": 8499,
-                                                        "end": 8531
+                                                        "start": 6787,
+                                                        "end": 6819
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 8199,
-                                                  "end": 8549
+                                                  "start": 6487,
+                                                  "end": 6837
                                                 }
                                               }
                                             },
@@ -3773,8 +2966,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "RunRow5",
                                                     "source": {
-                                                      "start": 8570,
-                                                      "end": 8577
+                                                      "start": 6858,
+                                                      "end": 6865
                                                     }
                                                   }
                                                 },
@@ -3793,8 +2986,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "RunModel5",
                                                           "source": {
-                                                            "start": 8604,
-                                                            "end": 8613
+                                                            "start": 6892,
+                                                            "end": 6901
                                                           }
                                                         }
                                                       },
@@ -3809,8 +3002,8 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Phi 3.5 Mini"
                                                             },
                                                             "source": {
-                                                              "start": 8616,
-                                                              "end": 8655
+                                                              "start": 6904,
+                                                              "end": 6943
                                                             }
                                                           }
                                                         },
@@ -3820,15 +3013,15 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Azure endpoint"
                                                             },
                                                             "source": {
-                                                              "start": 8656,
-                                                              "end": 8697
+                                                              "start": 6944,
+                                                              "end": 6985
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 8580,
-                                                        "end": 8717
+                                                        "start": 6868,
+                                                        "end": 7005
                                                       }
                                                     }
                                                   },
@@ -3838,8 +3031,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "Remote"
                                                       },
                                                       "source": {
-                                                        "start": 8718,
-                                                        "end": 8749
+                                                        "start": 7006,
+                                                        "end": 7037
                                                       }
                                                     }
                                                   },
@@ -3849,8 +3042,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "52.1 tok/s"
                                                       },
                                                       "source": {
-                                                        "start": 8750,
-                                                        "end": 8785
+                                                        "start": 7038,
+                                                        "end": 7073
                                                       }
                                                     }
                                                   },
@@ -3860,8 +3053,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "12.4ms"
                                                       },
                                                       "source": {
-                                                        "start": 8786,
-                                                        "end": 8817
+                                                        "start": 7074,
+                                                        "end": 7105
                                                       }
                                                     }
                                                   },
@@ -3871,8 +3064,8 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "4,096"
                                                       },
                                                       "source": {
-                                                        "start": 8818,
-                                                        "end": 8848
+                                                        "start": 7106,
+                                                        "end": 7136
                                                       }
                                                     }
                                                   },
@@ -3882,29 +3075,29 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "$0.0001"
                                                       },
                                                       "source": {
-                                                        "start": 8849,
-                                                        "end": 8881
+                                                        "start": 7137,
+                                                        "end": 7169
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 8550,
-                                                  "end": 8899
+                                                  "start": 6838,
+                                                  "end": 7187
                                                 }
                                               }
                                             }
                                           ],
                                           "source": {
-                                            "start": 7121,
-                                            "end": 8915
+                                            "start": 5409,
+                                            "end": 7203
                                           }
                                         }
                                       }
                                     ],
                                     "source": {
-                                      "start": 6204,
-                                      "end": 8929
+                                      "start": 4492,
+                                      "end": 7217
                                     }
                                   }
                                 },
@@ -3918,8 +3111,8 @@ const ir = defineFrameIrDocument({
                                       "Automatic": {
                                         "style": "TopModels",
                                         "source": {
-                                          "start": 8947,
-                                          "end": 8956
+                                          "start": 7235,
+                                          "end": 7244
                                         }
                                       }
                                     },
@@ -3938,8 +3131,8 @@ const ir = defineFrameIrDocument({
                                             "Automatic": {
                                               "style": "TopModelsHeader",
                                               "source": {
-                                                "start": 8979,
-                                                "end": 8994
+                                                "start": 7267,
+                                                "end": 7282
                                               }
                                             }
                                           },
@@ -3954,8 +3147,8 @@ const ir = defineFrameIrDocument({
                                                   "Literal": "Top Models"
                                                 },
                                                 "source": {
-                                                  "start": 8997,
-                                                  "end": 9030
+                                                  "start": 7285,
+                                                  "end": 7318
                                                 }
                                               }
                                             },
@@ -3965,15 +3158,15 @@ const ir = defineFrameIrDocument({
                                                   "Literal": "Ranked by throughput"
                                                 },
                                                 "source": {
-                                                  "start": 9031,
-                                                  "end": 9074
+                                                  "start": 7319,
+                                                  "end": 7362
                                                 }
                                               }
                                             }
                                           ],
                                           "source": {
-                                            "start": 8959,
-                                            "end": 9090
+                                            "start": 7247,
+                                            "end": 7378
                                           }
                                         }
                                       },
@@ -3987,8 +3180,8 @@ const ir = defineFrameIrDocument({
                                             "Automatic": {
                                               "style": "ModelsList",
                                               "source": {
-                                                "start": 9111,
-                                                "end": 9121
+                                                "start": 7399,
+                                                "end": 7409
                                               }
                                             }
                                           },
@@ -4007,8 +3200,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "ModelRow1",
                                                     "source": {
-                                                      "start": 9144,
-                                                      "end": 9153
+                                                      "start": 7432,
+                                                      "end": 7441
                                                     }
                                                   }
                                                 },
@@ -4027,8 +3220,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "RankBadge1",
                                                           "source": {
-                                                            "start": 9179,
-                                                            "end": 9189
+                                                            "start": 7467,
+                                                            "end": 7477
                                                           }
                                                         }
                                                       },
@@ -4043,15 +3236,15 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "1"
                                                             },
                                                             "source": {
-                                                              "start": 9192,
-                                                              "end": 9220
+                                                              "start": 7480,
+                                                              "end": 7508
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 9156,
-                                                        "end": 9240
+                                                        "start": 7444,
+                                                        "end": 7528
                                                       }
                                                     }
                                                   },
@@ -4065,8 +3258,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "ModelInfo1",
                                                           "source": {
-                                                            "start": 9265,
-                                                            "end": 9275
+                                                            "start": 7553,
+                                                            "end": 7563
                                                           }
                                                         }
                                                       },
@@ -4081,26 +3274,26 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Qwen3.6 Coder 27B"
                                                             },
                                                             "source": {
-                                                              "start": 9278,
-                                                              "end": 9322
+                                                              "start": 7566,
+                                                              "end": 7610
                                                             }
                                                           }
                                                         },
                                                         {
                                                           "Text": {
                                                             "value": {
-                                                              "Literal": "MLX \\u00b7 27B"
+                                                              "Literal": "MLX · 27B"
                                                             },
                                                             "source": {
-                                                              "start": 9323,
-                                                              "end": 9364
+                                                              "start": 7611,
+                                                              "end": 7652
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 9241,
-                                                        "end": 9384
+                                                        "start": 7529,
+                                                        "end": 7672
                                                       }
                                                     }
                                                   },
@@ -4110,15 +3303,15 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "+11.2%"
                                                       },
                                                       "source": {
-                                                        "start": 9385,
-                                                        "end": 9416
+                                                        "start": 7673,
+                                                        "end": 7704
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 9124,
-                                                  "end": 9434
+                                                  "start": 7412,
+                                                  "end": 7722
                                                 }
                                               }
                                             },
@@ -4132,8 +3325,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "ModelRow2",
                                                     "source": {
-                                                      "start": 9455,
-                                                      "end": 9464
+                                                      "start": 7743,
+                                                      "end": 7752
                                                     }
                                                   }
                                                 },
@@ -4152,8 +3345,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "RankBadge2",
                                                           "source": {
-                                                            "start": 9490,
-                                                            "end": 9500
+                                                            "start": 7778,
+                                                            "end": 7788
                                                           }
                                                         }
                                                       },
@@ -4168,15 +3361,15 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "2"
                                                             },
                                                             "source": {
-                                                              "start": 9503,
-                                                              "end": 9531
+                                                              "start": 7791,
+                                                              "end": 7819
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 9467,
-                                                        "end": 9551
+                                                        "start": 7755,
+                                                        "end": 7839
                                                       }
                                                     }
                                                   },
@@ -4190,8 +3383,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "ModelInfo2",
                                                           "source": {
-                                                            "start": 9576,
-                                                            "end": 9586
+                                                            "start": 7864,
+                                                            "end": 7874
                                                           }
                                                         }
                                                       },
@@ -4206,26 +3399,26 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Gemma 3 27B"
                                                             },
                                                             "source": {
-                                                              "start": 9589,
-                                                              "end": 9627
+                                                              "start": 7877,
+                                                              "end": 7915
                                                             }
                                                           }
                                                         },
                                                         {
                                                           "Text": {
                                                             "value": {
-                                                              "Literal": "Ollama \\u00b7 27B"
+                                                              "Literal": "Ollama · 27B"
                                                             },
                                                             "source": {
-                                                              "start": 9628,
-                                                              "end": 9672
+                                                              "start": 7916,
+                                                              "end": 7960
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 9552,
-                                                        "end": 9692
+                                                        "start": 7840,
+                                                        "end": 7980
                                                       }
                                                     }
                                                   },
@@ -4235,15 +3428,15 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "-0.8%"
                                                       },
                                                       "source": {
-                                                        "start": 9693,
-                                                        "end": 9723
+                                                        "start": 7981,
+                                                        "end": 8011
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 9435,
-                                                  "end": 9741
+                                                  "start": 7723,
+                                                  "end": 8029
                                                 }
                                               }
                                             },
@@ -4257,8 +3450,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "ModelRow3",
                                                     "source": {
-                                                      "start": 9762,
-                                                      "end": 9771
+                                                      "start": 8050,
+                                                      "end": 8059
                                                     }
                                                   }
                                                 },
@@ -4277,8 +3470,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "RankBadge3",
                                                           "source": {
-                                                            "start": 9797,
-                                                            "end": 9807
+                                                            "start": 8085,
+                                                            "end": 8095
                                                           }
                                                         }
                                                       },
@@ -4293,15 +3486,15 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "3"
                                                             },
                                                             "source": {
-                                                              "start": 9810,
-                                                              "end": 9838
+                                                              "start": 8098,
+                                                              "end": 8126
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 9774,
-                                                        "end": 9858
+                                                        "start": 8062,
+                                                        "end": 8146
                                                       }
                                                     }
                                                   },
@@ -4315,8 +3508,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "ModelInfo3",
                                                           "source": {
-                                                            "start": 9883,
-                                                            "end": 9893
+                                                            "start": 8171,
+                                                            "end": 8181
                                                           }
                                                         }
                                                       },
@@ -4331,26 +3524,26 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Llama 3.1 8B"
                                                             },
                                                             "source": {
-                                                              "start": 9896,
-                                                              "end": 9935
+                                                              "start": 8184,
+                                                              "end": 8223
                                                             }
                                                           }
                                                         },
                                                         {
                                                           "Text": {
                                                             "value": {
-                                                              "Literal": "Together \\u00b7 8B"
+                                                              "Literal": "Together · 8B"
                                                             },
                                                             "source": {
-                                                              "start": 9936,
-                                                              "end": 9981
+                                                              "start": 8224,
+                                                              "end": 8269
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 9859,
-                                                        "end": 10001
+                                                        "start": 8147,
+                                                        "end": 8289
                                                       }
                                                     }
                                                   },
@@ -4360,15 +3553,15 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "+1.8%"
                                                       },
                                                       "source": {
-                                                        "start": 10002,
-                                                        "end": 10032
+                                                        "start": 8290,
+                                                        "end": 8320
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 9742,
-                                                  "end": 10050
+                                                  "start": 8030,
+                                                  "end": 8338
                                                 }
                                               }
                                             },
@@ -4382,8 +3575,8 @@ const ir = defineFrameIrDocument({
                                                   "Automatic": {
                                                     "style": "ModelRow4",
                                                     "source": {
-                                                      "start": 10071,
-                                                      "end": 10080
+                                                      "start": 8359,
+                                                      "end": 8368
                                                     }
                                                   }
                                                 },
@@ -4402,8 +3595,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "RankBadge4",
                                                           "source": {
-                                                            "start": 10106,
-                                                            "end": 10116
+                                                            "start": 8394,
+                                                            "end": 8404
                                                           }
                                                         }
                                                       },
@@ -4418,15 +3611,15 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "4"
                                                             },
                                                             "source": {
-                                                              "start": 10119,
-                                                              "end": 10147
+                                                              "start": 8407,
+                                                              "end": 8435
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 10083,
-                                                        "end": 10167
+                                                        "start": 8371,
+                                                        "end": 8455
                                                       }
                                                     }
                                                   },
@@ -4440,8 +3633,8 @@ const ir = defineFrameIrDocument({
                                                         "Automatic": {
                                                           "style": "ModelInfo4",
                                                           "source": {
-                                                            "start": 10192,
-                                                            "end": 10202
+                                                            "start": 8480,
+                                                            "end": 8490
                                                           }
                                                         }
                                                       },
@@ -4456,26 +3649,26 @@ const ir = defineFrameIrDocument({
                                                               "Literal": "Phi 3.5 Mini"
                                                             },
                                                             "source": {
-                                                              "start": 10205,
-                                                              "end": 10244
+                                                              "start": 8493,
+                                                              "end": 8532
                                                             }
                                                           }
                                                         },
                                                         {
                                                           "Text": {
                                                             "value": {
-                                                              "Literal": "Azure \\u00b7 3.8B"
+                                                              "Literal": "Azure · 3.8B"
                                                             },
                                                             "source": {
-                                                              "start": 10245,
-                                                              "end": 10289
+                                                              "start": 8533,
+                                                              "end": 8577
                                                             }
                                                           }
                                                         }
                                                       ],
                                                       "source": {
-                                                        "start": 10168,
-                                                        "end": 10309
+                                                        "start": 8456,
+                                                        "end": 8597
                                                       }
                                                     }
                                                   },
@@ -4485,57 +3678,57 @@ const ir = defineFrameIrDocument({
                                                         "Literal": "+2.6%"
                                                       },
                                                       "source": {
-                                                        "start": 10310,
-                                                        "end": 10340
+                                                        "start": 8598,
+                                                        "end": 8628
                                                       }
                                                     }
                                                   }
                                                 ],
                                                 "source": {
-                                                  "start": 10051,
-                                                  "end": 10358
+                                                  "start": 8339,
+                                                  "end": 8646
                                                 }
                                               }
                                             }
                                           ],
                                           "source": {
-                                            "start": 9091,
-                                            "end": 10374
+                                            "start": 7379,
+                                            "end": 8662
                                           }
                                         }
                                       }
                                     ],
                                     "source": {
-                                      "start": 8930,
-                                      "end": 10388
+                                      "start": 7218,
+                                      "end": 8676
                                     }
                                   }
                                 }
                               ],
                               "source": {
-                                "start": 6173,
-                                "end": 10400
+                                "start": 4461,
+                                "end": 8688
                               }
                             }
                           }
                         ],
                         "source": {
                           "start": 1492,
-                          "end": 10410
+                          "end": 8698
                         }
                       }
                     }
                   ],
                   "source": {
                     "start": 1466,
-                    "end": 10418
+                    "end": 8706
                   }
                 }
               }
             ],
             "source": {
               "start": 221,
-              "end": 10424
+              "end": 8712
             }
           }
         }
@@ -4545,7 +3738,7 @@ const ir = defineFrameIrDocument({
       ],
       "source": {
         "start": 28,
-        "end": 10430
+        "end": 8718
       }
     }
   ]

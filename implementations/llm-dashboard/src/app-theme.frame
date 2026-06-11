@@ -27,6 +27,7 @@ tokens DashboardTokens {
   color danger #EF4444
   color info #06B6D4
 }
+
 // App Layout
 grid AppShell {
   tracks columns panel fill
@@ -39,19 +40,22 @@ area Header {
   in AppShell
   row 1
   span 2
-  padding x small
+  padding x medium
   padding y small
   align center
   justify between
+  surface glass
+  border bottom soft
 }
 
 area Sidebar {
   in AppShell
   row 2
   col 1
-  padding y small
+  padding y medium
   padding x small
   border right soft
+  surface panel
 }
 
 area Main {
@@ -61,6 +65,7 @@ area Main {
   padding medium
   overflow auto
 }
+
 // Navigation Styles
 row NavBar {
   gap large
@@ -84,6 +89,8 @@ row SearchBar {
   gap medium
   color text-muted
   border soft
+  surface inset
+  max-width wide
 }
 
 row StatusCluster {
@@ -106,9 +113,10 @@ row UserInfo {
   radius small
   color text-secondary
 }
+
 // Sidebar Navigation
 stack SidebarNav {
-  padding y small
+  padding y medium
   padding x small
 }
 
@@ -129,13 +137,15 @@ stack NavSection {
 }
 
 stack NavGroupBase {
-  gap none
+  gap small
   padding x small
   color text-secondary
 }
+
 stack NavGroupDash extends NavGroupBase { }
 stack NavGroupAnalytics extends NavGroupBase { }
 stack NavGroupSystem extends NavGroupBase { }
+
 // Sidebar Footer
 stack SidebarFooter {
   gap small
@@ -149,14 +159,17 @@ row UserStatus {
   gap small
   color text-secondary
 }
+
 // Main Content
 stack MainContent {
   color text-primary
 }
+
 // Dashboard Content
 stack DashboardContent {
-  gap medium
+  gap large
 }
+
 // Metric Cards
 row MetricRow {
   gap medium
@@ -167,13 +180,16 @@ card MetricCardBase {
   padding medium
   radius medium
   border soft
+  surface raised
   color text-primary
   transition smooth
 }
+
 card MetricCardModel extends MetricCardBase { }
 card MetricCardTps extends MetricCardBase { }
 card MetricCardCtx extends MetricCardBase { }
 card MetricCardVram extends MetricCardBase { }
+
 stack MetricIconBase {
   padding small
   radius small
@@ -182,19 +198,23 @@ stack MetricIconBase {
   weight bold
   case uppercase
 }
+
 stack MetricIconModel extends MetricIconBase { }
 stack MetricIconTps extends MetricIconBase { }
 stack MetricIconCtx extends MetricIconBase { }
 stack MetricIconVram extends MetricIconBase { }
+
 stack MetricContentBase {
-  gap none
+  gap small
   padding y small
   color text-primary
 }
+
 stack MetricContentModel extends MetricContentBase { }
 stack MetricContentTps extends MetricContentBase { }
 stack MetricContentCtx extends MetricContentBase { }
 stack MetricContentVram extends MetricContentBase { }
+
 card DeltaBadgeBase {
   padding x small
   padding y small
@@ -202,10 +222,12 @@ card DeltaBadgeBase {
   color success
   size caption
 }
+
 card DeltaModel extends DeltaBadgeBase { }
 card DeltaTps extends DeltaBadgeBase { }
 card DeltaCtx extends DeltaBadgeBase { }
 card DeltaVram extends DeltaBadgeBase { }
+
 // Performance Section
 grid PerformanceGrid {
   columns 60% 40%
@@ -216,9 +238,12 @@ card PanelCardBase {
   padding medium
   radius medium
   border soft
+  surface raised
   color text-primary
 }
+
 card PerformanceChart extends PanelCardBase { }
+
 stack ChartHeader {
   gap small
   padding y small
@@ -250,55 +275,24 @@ row LegendItemBase {
   size caption
   color text-muted
 }
+
 row LegendItemA extends LegendItemBase { }
 row LegendItemB extends LegendItemBase { }
+
 stack ChartArea {
   padding y medium
 }
 
-row ChartGrid {
-  gap small
-  align end
-}
-
-stack BarBase {
-  padding x small
-}
-stack Bar1 extends BarBase { }
-stack Bar2 extends BarBase { }
-stack Bar3 extends BarBase { }
-stack Bar4 extends BarBase { }
-stack Bar5 extends BarBase { }
-stack Bar6 extends BarBase { }
-stack Bar7 extends BarBase { }
-stack Bar8 extends BarBase { }
-stack Bar9 extends BarBase { }
-stack Bar10 extends BarBase { }
-stack Bar11 extends BarBase { }
-stack Bar12 extends BarBase { }
-row BarSegBase {
-  width fill
-}
-row BarSeg1 extends BarSegBase { }
-row BarSeg2 extends BarSegBase { }
-row BarSeg3 extends BarSegBase { }
-row BarSeg4 extends BarSegBase { }
-row BarSeg5 extends BarSegBase { }
-row BarSeg6 extends BarSegBase { }
-row BarSeg7 extends BarSegBase { }
-row BarSeg8 extends BarSegBase { }
-row BarSeg9 extends BarSegBase { }
-row BarSeg10 extends BarSegBase { }
-row BarSeg11 extends BarSegBase { }
-row BarSeg12 extends BarSegBase { }
-stack ChartAxis {
+row ChartAxis {
   gap medium
   padding y small
   color text-muted
   size caption
   justify between
 }
+
 card RunPrompt extends PanelCardBase { }
+
 stack PromptHeader {
   padding y small
   color text-primary
@@ -314,28 +308,33 @@ stack PromptInput {
   radius medium
   color text-muted
   border soft
+  surface inset
 }
 
 card PrimaryButton {
   padding medium
   radius medium
-  color text-primary
+  surface accent
+  color white
   weight semibold
   transition smooth
 }
 
 stack PromptMeta {
-  gap none
+  gap small
   padding y small
   color text-muted
   size caption
 }
+
 // Inference Runs Table
 grid DashboardGrid {
   columns 2fr 1fr
   gap medium
 }
+
 card InferenceRuns extends PanelCardBase { }
+
 stack RunsHeader {
   gap small
   padding y small
@@ -355,6 +354,7 @@ card TabAll {
   padding y small
   radius small
   color text-primary
+  surface overlay
   size caption
 }
 
@@ -400,22 +400,27 @@ row TableRowBase {
   color text-secondary
   transition smooth
 }
+
 row RunRow1 extends TableRowBase { }
 row RunRow2 extends TableRowBase { }
 row RunRow3 extends TableRowBase { }
 row RunRow4 extends TableRowBase { }
 row RunRow5 extends TableRowBase { }
+
 stack RunModelInfoBase {
   gap none
   color text-primary
 }
+
 stack RunModel1 extends RunModelInfoBase { }
 stack RunModel2 extends RunModelInfoBase { }
 stack RunModel3 extends RunModelInfoBase { }
 stack RunModel4 extends RunModelInfoBase { }
 stack RunModel5 extends RunModelInfoBase { }
+
 // Top Models Panel
 card TopModels extends PanelCardBase { }
+
 stack TopModelsHeader {
   gap small
   padding y small
@@ -425,10 +430,12 @@ stack TopModelsHeader {
 stack ModelsList {
   gap none
 }
+
 row ModelRow1 extends TableRowBase { }
 row ModelRow2 extends TableRowBase { }
 row ModelRow3 extends TableRowBase { }
 row ModelRow4 extends TableRowBase { }
+
 card RankBadgeBase {
   padding small
   radius small
@@ -436,14 +443,17 @@ card RankBadgeBase {
   size caption
   weight bold
 }
+
 card RankBadge1 extends RankBadgeBase { }
 card RankBadge2 extends RankBadgeBase { }
 card RankBadge3 extends RankBadgeBase { }
 card RankBadge4 extends RankBadgeBase { }
+
 stack ModelInfoBase {
   gap none
   color text-primary
 }
+
 stack ModelInfo1 extends ModelInfoBase { }
 stack ModelInfo2 extends ModelInfoBase { }
 stack ModelInfo3 extends ModelInfoBase { }

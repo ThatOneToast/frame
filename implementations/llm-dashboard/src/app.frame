@@ -136,68 +136,6 @@ component LLMDashboard {
                 }
               }
               stack ChartArea {
-                row ChartGrid {
-                  stack Bar1 {
-                    row BarSeg1 {
-                      text " "
-                    }
-                  }
-                  stack Bar2 {
-                    row BarSeg2 {
-                      text " "
-                    }
-                  }
-                  stack Bar3 {
-                    row BarSeg3 {
-                      text " "
-                    }
-                  }
-                  stack Bar4 {
-                    row BarSeg4 {
-                      text " "
-                    }
-                  }
-                  stack Bar5 {
-                    row BarSeg5 {
-                      text " "
-                    }
-                  }
-                  stack Bar6 {
-                    row BarSeg6 {
-                      text " "
-                    }
-                  }
-                  stack Bar7 {
-                    row BarSeg7 {
-                      text " "
-                    }
-                  }
-                  stack Bar8 {
-                    row BarSeg8 {
-                      text " "
-                    }
-                  }
-                  stack Bar9 {
-                    row BarSeg9 {
-                      text " "
-                    }
-                  }
-                  stack Bar10 {
-                    row BarSeg10 {
-                      text " "
-                    }
-                  }
-                  stack Bar11 {
-                    row BarSeg11 {
-                      text " "
-                    }
-                  }
-                  stack Bar12 {
-                    row BarSeg12 {
-                      text " "
-                    }
-                  }
-                }
                 row ChartAxis {
                   text "14:00"
                   text "14:15"
