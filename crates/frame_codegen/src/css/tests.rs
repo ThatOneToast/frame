@@ -2576,3 +2576,120 @@ fn recipes_emit_base_and_variant_classes() {
     assert!(css.contains(".fr-Button--size-sm {"));
     assert!(css.contains(".fr-Button--size-lg {"));
 }
+
+// ---------------------------------------------------------------------------
+// Experimental atomic backend
+// ---------------------------------------------------------------------------
+
+/// Collect (selector, declaration) pairs from top-level flat CSS rules,
+/// expanding grouped selector lists. At-rule blocks (including their nested
+/// rules) are skipped with proper brace counting.
+fn flat_rule_pairs(css: &str) -> std::collections::BTreeSet<(String, String)> {
+    let mut pairs = std::collections::BTreeSet::new();
+    let bytes = css.as_bytes();
+    let mut index = 0;
+    let mut rule_start = 0;
+
+    while index < bytes.len() {
+        if bytes[index] != b'{' {
+            index += 1;
+            continue;
+        }
+        let selector_text = css[rule_start..index].trim().to_string();
+        // Find the matching close brace.
+        let mut depth = 1;
+        let mut cursor = index + 1;
+        while cursor < bytes.len() && depth > 0 {
+            match bytes[cursor] {
+                b'{' => depth += 1,
+                b'}' => depth -= 1,
+                _ => {}
+            }
+            cursor += 1;
+        }
+        let body = &css[index + 1..cursor.saturating_sub(1)];
+        if !selector_text.starts_with('@') && !body.contains('{') {
+            for selector in selector_text.split(',') {
+                let selector = selector.trim();
+                if !selector.starts_with(".fr-") {
+                    continue;
+                }
+                for line in body.lines() {
+                    let line = line.trim().trim_end_matches(';');
+                    if !line.is_empty() {
+                        pairs.insert((selector.to_string(), line.to_string()));
+                    }
+                }
+            }
+        }
+        index = cursor;
+        rule_start = cursor;
+    }
+    pairs
+}
+
+fn atomic_parity_document() -> Document {
+    Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Card,
+                "PanelA",
+                vec![
+                    statement(&["surface", "panel"]),
+                    statement(&["padding", "medium"]),
+                    statement(&["radius", "large"]),
+                ],
+            ),
+            declaration(
+                DeclarationKind::Card,
+                "PanelB",
+                vec![
+                    statement(&["surface", "panel"]),
+                    statement(&["padding", "medium"]),
+                    statement(&["radius", "large"]),
+                ],
+            ),
+            declaration(
+                DeclarationKind::Button,
+                "Action",
+                vec![
+                    statement(&["background", "accent"]),
+                    statement(&["padding", "medium"]),
+                    Node::Block(frame_core::Block {
+                        name: "hover".to_string(),
+                        body: vec![statement(&["lift", "small"])],
+                        span: Span::default(),
+                    }),
+                ],
+            ),
+        ],
+        components: Vec::new(),
+    }
+}
+
+#[test]
+fn atomic_backend_matches_semantic_declarations_per_class() {
+    let document = atomic_parity_document();
+
+    let semantic = flat_rule_pairs(&generate_css(&document));
+    let atomic = flat_rule_pairs(&generate_css_with_backend(&document, CssBackend::Atomic));
+
+    assert_eq!(semantic, atomic);
+}
+
+#[test]
+fn atomic_backend_groups_shared_declarations() {
+    let document = atomic_parity_document();
+    let css = generate_css_with_backend(&document, CssBackend::Atomic);
+
+    // Shared declarations collapse into one grouped rule.
+    assert!(css.contains(".fr-PanelA,\n.fr-PanelB {"));
+    let semantic = generate_css(&document);
+    assert!(
+        css.len() < semantic.len(),
+        "atomic output should be smaller for repetitive documents ({} vs {})",
+        css.len(),
+        semantic.len()
+    );
+}

@@ -45,6 +45,7 @@ pub fn init_svelte(dry_run: bool, force: bool, _yes: bool) -> anyhow::Result<()>
         &frame_file,
         &frame_dir,
         std::slice::from_ref(&frame_dir),
+        frame_codegen::CssBackend::Semantic,
     )?;
 
     update_svelte_config(&svelte_config)?;

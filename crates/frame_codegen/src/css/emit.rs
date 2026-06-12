@@ -189,8 +189,10 @@ fn resolve_style_inner(
     base.merge_child(own)
 }
 
-/// Write facts as CSS declarations, merging transform/filter fragments.
-pub(crate) fn write_facts(css: &mut String, facts: &[StyleFact], indent: &str) {
+/// Render facts to `property: value;` lines, merging transform/filter
+/// fragments. Shared by the semantic and atomic backends.
+pub(crate) fn fact_lines(facts: &[StyleFact]) -> Vec<String> {
+    let mut lines = Vec::new();
     let mut transforms: Vec<&str> = Vec::new();
     let mut filters: Vec<&str> = Vec::new();
 
@@ -200,18 +202,24 @@ pub(crate) fn write_facts(css: &mut String, facts: &[StyleFact], indent: &str) {
                 TRANSFORM_PART => transforms.push(&decl.value),
                 FILTER_PART => filters.push(&decl.value),
                 property if property.starts_with('@') => {}
-                property => {
-                    css.push_str(&format!("{indent}{property}: {};\n", decl.value));
-                }
+                property => lines.push(format!("{property}: {};", decl.value)),
             }
         }
     }
 
     if !transforms.is_empty() {
-        css.push_str(&format!("{indent}transform: {};\n", transforms.join(" ")));
+        lines.push(format!("transform: {};", transforms.join(" ")));
     }
     if !filters.is_empty() {
-        css.push_str(&format!("{indent}filter: {};\n", filters.join(" ")));
+        lines.push(format!("filter: {};", filters.join(" ")));
+    }
+    lines
+}
+
+/// Write facts as CSS declarations, merging transform/filter fragments.
+pub(crate) fn write_facts(css: &mut String, facts: &[StyleFact], indent: &str) {
+    for line in fact_lines(facts) {
+        css.push_str(&format!("{indent}{line}\n"));
     }
 }
 

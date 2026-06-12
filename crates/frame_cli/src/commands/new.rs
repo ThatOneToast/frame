@@ -70,6 +70,7 @@ fn init_svelte_template(root: &Path) -> anyhow::Result<()> {
         &frame_dir.join("app.frame"),
         &frame_dir,
         std::slice::from_ref(&frame_dir),
+        frame_codegen::CssBackend::Semantic,
     )?;
 
     Ok(())

@@ -23,6 +23,9 @@ pub enum Command {
         out: PathBuf,
         #[arg(long = "include")]
         includes: Vec<PathBuf>,
+        /// CSS generation strategy: `semantic` (default) or `atomic` (experimental).
+        #[arg(long = "css-backend", default_value = "semantic")]
+        css_backend: String,
     },
     CompileStdin {
         #[arg(long)]
@@ -63,6 +66,9 @@ pub enum Command {
     Build {
         #[arg(long)]
         watch: bool,
+        /// CSS generation strategy: `semantic` (default) or `atomic` (experimental).
+        #[arg(long = "css-backend", default_value = "semantic")]
+        css_backend: String,
     },
     Doctor,
     New {

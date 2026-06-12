@@ -1,10 +1,17 @@
 use std::path::{Path, PathBuf};
 
-pub fn build_project() -> anyhow::Result<()> {
-    build_project_at(Path::new("."))
+pub fn build_project(css_backend: frame_codegen::CssBackend) -> anyhow::Result<()> {
+    build_project_at_with(Path::new("."), css_backend)
 }
 
 pub fn build_project_at(root: &Path) -> anyhow::Result<()> {
+    build_project_at_with(root, frame_codegen::CssBackend::Semantic)
+}
+
+pub fn build_project_at_with(
+    root: &Path,
+    css_backend: frame_codegen::CssBackend,
+) -> anyhow::Result<()> {
     let config_path = root.join("frame.config.json");
     if !config_path.exists() {
         anyhow::bail!(
@@ -45,7 +52,7 @@ pub fn build_project_at(root: &Path) -> anyhow::Result<()> {
     let mut outputs = vec![
         write_generated_file(
             out_path.join("generated.css"),
-            frame_codegen::generate_css(&document),
+            frame_codegen::generate_css_with_backend(&document, css_backend),
         )?,
         write_generated_file(
             out_path.join("generated.ts"),

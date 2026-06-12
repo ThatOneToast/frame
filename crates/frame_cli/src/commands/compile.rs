@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use frame_codegen::{generate_css, generate_typescript};
+use frame_codegen::{generate_css_with_backend, generate_typescript, CssBackend};
 use frame_core::semantic::validate;
 
 use crate::diagnostics::{has_error_diagnostics, print_diagnostics};
@@ -10,11 +10,15 @@ pub fn compile_file(
     file: &Path,
     out: &Path,
     includes: &[std::path::PathBuf],
+    css_backend: CssBackend,
 ) -> anyhow::Result<()> {
     let document = compile_file_document(file, includes)?;
 
     std::fs::create_dir_all(out)?;
-    std::fs::write(out.join("generated.css"), generate_css(&document))?;
+    std::fs::write(
+        out.join("generated.css"),
+        generate_css_with_backend(&document, css_backend),
+    )?;
     std::fs::write(out.join("generated.ts"), generate_typescript(&document))?;
     println!("generated {}", out.display());
     Ok(())

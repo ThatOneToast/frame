@@ -1,6 +1,7 @@
 use frame_core::style::{document_contract, document_motions, document_themes, StyleContext};
 use frame_core::Document;
 
+mod atomic;
 mod emit;
 mod helpers;
 
@@ -9,7 +10,33 @@ mod tests;
 
 pub(crate) use emit::*;
 
+/// The CSS generation strategy.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum CssBackend {
+    /// One rule per generated class (the default).
+    #[default]
+    Semantic,
+    /// Experimental: deduplicate identical declarations across classes by
+    /// grouping selectors. Same class names, smaller output, but intra-rule
+    /// cascade ordering may differ; see `css/atomic.rs`.
+    Atomic,
+}
+
+impl CssBackend {
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "semantic" => Some(Self::Semantic),
+            "atomic" => Some(Self::Atomic),
+            _ => None,
+        }
+    }
+}
+
 pub fn generate_css(document: &Document) -> String {
+    generate_css_with_backend(document, CssBackend::Semantic)
+}
+
+pub fn generate_css_with_backend(document: &Document, backend: CssBackend) -> String {
     let mut css = String::new();
     let contract = document_contract(document);
     let themes = document_themes(document);
@@ -43,8 +70,15 @@ pub fn generate_css(document: &Document) -> String {
 
     emit_reset_layer(&mut css, document);
 
-    for declaration in &document.declarations {
-        emit_declaration_css(&mut css, declaration, &ctx, &document.declarations);
+    match backend {
+        CssBackend::Semantic => {
+            for declaration in &document.declarations {
+                emit_declaration_css(&mut css, declaration, &ctx, &document.declarations);
+            }
+        }
+        CssBackend::Atomic => {
+            atomic::emit_atomic_declarations(&mut css, document, &ctx);
+        }
     }
 
     emit_keyframes(&mut css);

@@ -9,6 +9,6 @@ pub mod ir_json;
 pub mod typescript;
 
 pub use contracts::{generate_contracts, generate_skeletons};
-pub use css::generate_css;
+pub use css::{generate_css, generate_css_with_backend, CssBackend};
 pub use ir_json::{generate_ir_json, generate_ir_typescript};
 pub use typescript::generate_typescript;

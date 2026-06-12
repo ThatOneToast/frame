@@ -102,7 +102,7 @@ pub fn watch_project(root: &Path) -> anyhow::Result<()> {
 }
 
 fn compile_once_for_watch(file: &Path, out: &Path, includes: &[PathBuf]) {
-    match compile_file(file, out, includes) {
+    match compile_file(file, out, includes, frame_codegen::CssBackend::Semantic) {
         Ok(()) => println!("Frame compiled successfully"),
         Err(error) => eprintln!("Frame build failed\n{error:#}"),
     }
