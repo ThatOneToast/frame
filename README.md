@@ -213,11 +213,64 @@ Frame -> Frame IR -> DOM runtime -> Tauri WebView
 
 Native renderers can come later once the IR is stable.
 
-## Existing styling syntax
+## Styling system
 
-The current styling syntax remains valuable and should not be thrown away.
+Frame is not CSS shorthand. Frame is a semantic UI language that compiles into
+efficient platform output. Styling flows through a normalized style layer
+(`crates/frame_core/src/style/`): statements lower to typed style facts,
+token/theme contracts resolve, and a CSS backend emits static output
+(`frame build --css-backend semantic|atomic`).
 
-Example:
+The high-level vocabulary:
+
+```frame
+tokens default {
+  color text #f5f5f5
+  surface panel #171722
+  space md 1rem
+  breakpoint tablet 48rem
+}
+
+theme dark uses default {
+  surface app #101014
+}
+
+layout DashboardShell {
+  shell {
+    sidebar left fixed 18rem
+    main fluid
+  }
+  gap large
+  below tablet { shell stacked }
+}
+
+motion Pressable {
+  enter fade up soft
+  hover lift sm
+  duration normal
+  easing smooth
+}
+
+recipe Button {
+  base {
+    align center
+    radius medium
+    motion Pressable
+  }
+  variant tone {
+    primary { background token(color.accent) }
+    ghost { background transparent }
+  }
+}
+```
+
+Tokens are typed contracts with did-you-mean diagnostics; themes scope token
+overrides behind `[data-frame-theme]`; motions expand at compile time (no
+runtime styling); recipes compile to static variant classes plus typed
+TypeScript metadata. `extends` inheritance merges by property path
+(`border.width`, `layout.display`), not by first word.
+
+Structured declarations remain for precise control:
 
 ```frame
 grid AppShell {

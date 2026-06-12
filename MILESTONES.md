@@ -505,3 +505,21 @@ Potential targets:
 Success criteria:
 
 - Native target decisions are based on the stable IR, not premature assumptions.
+
+## Milestone — Semantic Styling Overhaul (2026-06)
+
+Status: shipped (first batch).
+
+- Normalized style layer (`frame_core::style`): schema, tokens, theme,
+  properties, normalize, motion, layout, recipes, diagnostics.
+- CSS backends consume normalized style facts; the hard-coded `:root` token
+  block, first-word inheritance merging, and `[class*="fr-"]` resets are gone.
+- New language surface: namespaced `tokens` contracts, `theme ... uses ...`,
+  `layout` shells, `motion`, `recipe`/`variant`, `token(kind.name)` references.
+- Experimental atomic CSS backend behind `--css-backend atomic`.
+- Parser, semantic validation, codegen, LSP, tree-sitter grammar, docs, and
+  tests updated together; grammar/registry drift tests keep them aligned.
+
+Remaining follow-ups: recipe TS call-style API, inline Svelte source maps,
+broader migration of size keywords (`sidebar`, `chart`, ...) into the token
+contract.

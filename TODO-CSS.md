@@ -4,6 +4,24 @@ Frame styling should expose the power of CSS through structured, discoverable sy
 
 Do not mark an item complete until parser support, semantic validation, codegen, docs, and tests exist.
 
+## Semantic Styling Overhaul (2026-06)
+
+The normalized style layer landed (`crates/frame_core/src/style/`). Status:
+
+- [x] normalized style facts with property paths between AST and CSS emission
+- [x] typed token contracts (`tokens default { space md 1rem ... }`) replacing hard-coded codegen tokens
+- [x] `token(kind.name)` typed references with contract validation
+- [x] scoped themes (`theme dark uses default { ... }` -> `[data-frame-theme]`) with TS helpers
+- [x] breakpoint/container tokens with did-you-mean diagnostics and raw-length escape hatch
+- [x] property-path inheritance replacing first-word override merging
+- [x] explicit `@layer frame-reset` replacing `[class*="fr-"]` resets and `!important`
+- [x] semantic layout (`layout` + `shell` regions + `below tablet { shell stacked }`)
+- [x] semantic motion (`motion` declarations expanded at compile time)
+- [x] recipes and variants (`recipe`/`base`/`variant` -> `fr-Name--group-option` classes + TS metadata)
+- [x] experimental atomic backend (`frame build --css-backend atomic`) with parity tests
+- [ ] recipe TS call-style API (`ui.Button({ tone: "primary" })`) — wait for schema stabilization
+- [ ] source maps for inline `<style lang="frame">` in frame-svelte
+
 ## Current Baseline
 
 Existing Frame styling already covers a useful subset:

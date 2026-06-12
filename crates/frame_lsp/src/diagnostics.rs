@@ -60,6 +60,23 @@ fn diagnostics_for_source_with_imports(source: &str, uri: &Url) -> Vec<FrameDiag
         .collect()
 }
 
+/// Declarations whose statements use their own grammar (token entries,
+/// motion intent, shell regions, recipe blocks); the semantic validator in
+/// frame_core owns their diagnostics.
+fn declaration_owns_statement_grammar(cursor: &SemanticCursor) -> bool {
+    matches!(
+        cursor.enclosing_declaration,
+        Some((
+            _,
+            frame_core::DeclarationKind::Tokens
+                | frame_core::DeclarationKind::Theme
+                | frame_core::DeclarationKind::Motion
+                | frame_core::DeclarationKind::Layout
+                | frame_core::DeclarationKind::Recipe
+        ))
+    )
+}
+
 pub fn cursor_diagnostics(source: &str, offset: usize) -> Vec<FrameDiagnostic> {
     let cursor = SemanticCursor::at(source, offset);
     let mut diagnostics = Vec::new();
@@ -131,6 +148,9 @@ pub fn cursor_diagnostics(source: &str, offset: usize) -> Vec<FrameDiagnostic> {
             }
         }
         CursorSlot::StylePropertyName => {
+            if declaration_owns_statement_grammar(&cursor) {
+                return diagnostics;
+            }
             if let Some(word) = &cursor.word {
                 // Skip nested block keywords inside declarations
                 if is_declaration_nested_block_keyword(word) {
@@ -175,6 +195,9 @@ pub fn cursor_diagnostics(source: &str, offset: usize) -> Vec<FrameDiagnostic> {
             }
         }
         CursorSlot::StylePropertyValue { property } => {
+            if declaration_owns_statement_grammar(&cursor) {
+                return diagnostics;
+            }
             // Skip validation inside nested blocks (gradient, animation, etc.)
             // where the property keywords are different
             if let Some(ref block) = cursor.innermost_block {

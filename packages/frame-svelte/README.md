@@ -96,6 +96,9 @@ FRAME_BIN="cargo run -p frame_cli --quiet --" npm run dev
 ## Limitations
 
 - Inline style blocks currently emit CSS only.
+- The full styling system (tokens contracts, themes, `layout`, `motion`,
+  `recipe`) compiles inline too, but theme/recipe TypeScript helpers are only
+  generated for external `.frame` files.
 - Inline blocks do not generate `generated.ts`.
 - For typed class names, use external `.frame` files.
 - Raw class names like `fr-QuickLinkCard` are valid for inline styles.

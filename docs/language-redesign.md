@@ -244,7 +244,7 @@ card ChartPanel extends DashboardPanel {
 
 ### Rules
 - Base and child must have the same declaration kind (card extends card, grid extends grid)
-- Child properties override base properties with the same statement key
+- Child facts override base facts by normalized property path (see the Semantic Styling Overhaul section)
 - Multi-level inheritance is supported (A extends B extends C)
 - Cycles are detected and reported as errors
 - Unknown base styles are reported as errors
@@ -260,3 +260,151 @@ The generated CSS for a child includes both base and overridden properties:
 ### Migration Strategy
 
 Use semantic primitives now. Keep browser terms internal to compiler/runtime lowering and explicit unsafe escape hatches.
+
+## Semantic Styling Overhaul (2026-06)
+
+Frame is not CSS shorthand. Frame is a semantic UI language that compiles into
+efficient platform output. The styling pipeline now runs through a normalized
+style layer in `crates/frame_core/src/style/`:
+
+```text
+.frame source
+  -> parser AST
+  -> semantic validation
+  -> normalized style facts (property paths)
+  -> token/theme contract resolution
+  -> motion expansion + recipes/variants
+  -> backend selection (semantic | atomic)
+  -> generated.css + generated.ts contracts
+```
+
+### Tokens are contracts
+
+`tokens <namespace> { ... }` declares typed design values. The default
+manifest (spacing, radii, surfaces, colors, shadows, glows, gradients,
+breakpoints, containers) lives in `frame_core::style::tokens` and any entry
+can be overridden:
+
+```frame
+tokens default {
+  color text #f5f5f5
+  surface panel #171722
+  space md 1rem
+  radius lg 1rem
+  breakpoint tablet 48rem
+  container content 64rem
+}
+```
+
+Reference tokens anywhere a value is expected with `token(kind.name)`:
+
+```frame
+card Panel {
+  background token(surface.panel)
+  padding token(space.md)
+  radius token(radius.lg)
+}
+```
+
+Unknown tokens, kinds, and breakpoints produce did-you-mean diagnostics
+("Unknown breakpoint `desktoop`. Did you mean `desktop`?").
+
+### Themes are scoped
+
+```frame
+theme dark uses default {
+  surface app #101014
+  color main #f5f5f5
+}
+
+theme light uses default {
+  surface app #ffffff
+  color main #111111
+}
+```
+
+The first theme binds to `:root` as the document default; every theme emits a
+`[data-frame-theme="name"]` scope. Generated TypeScript exports `themes`,
+`defaultTheme`, and `applyTheme()`.
+
+### Layout is intent-based
+
+```frame
+layout DashboardShell {
+  shell {
+    sidebar left fixed 18rem
+    main fluid
+    inspector right clamp(20rem, 28vw, 28rem)
+  }
+  gap large
+  density comfortable
+  below tablet { shell stacked }
+}
+```
+
+Shell regions lower to a grid with named areas; children attach by source
+order or `data-frame-section="name"`. Advanced grids remain available through
+`grid`/`tracks` for full track control — that path is the escape hatch, not
+the default.
+
+### Motion is semantic
+
+```frame
+motion Pressable {
+  enter fade up soft
+  hover lift sm
+  active press
+  focus ring accent
+  duration normal
+  easing smooth
+}
+
+button PrimaryButton {
+  background accent
+  motion Pressable
+}
+```
+
+Motions expand at compile time into the declarations that reference them;
+explicit state effects win by property path. Custom `keyframes` remain for
+advanced cases.
+
+### Recipes and variants
+
+```frame
+recipe Button {
+  base {
+    align center
+    gap small
+    radius medium
+    motion Pressable
+  }
+  variant tone {
+    primary { background token(color.accent) }
+    ghost { background transparent }
+  }
+}
+```
+
+compiles to `.fr-Button`, `.fr-Button--tone-primary`, `.fr-Button--tone-ghost`
+plus a typed `recipes` export in generated TypeScript.
+
+### Property-path inheritance
+
+`extends` now merges by hierarchical property path (`border`, `border.width`,
+`layout.display`, `motion.transition.duration`) instead of the first statement
+word. Re-declaring `border` supersedes an inherited `border.width`; declaring
+`border width large` after an inherited `border accent` refines it instead of
+clobbering it. `surface` and `background` share the `background` path, so they
+override each other correctly.
+
+### Resets and backends
+
+Broad `[class*="fr-"]` selectors and `!important` are gone; resets live in an
+explicit `@layer frame-reset` that targets generated classes. CSS generation
+supports two backends:
+
+```bash
+frame build --css-backend semantic   # default: one rule per class
+frame build --css-backend atomic     # experimental: dedupe shared declarations
+```

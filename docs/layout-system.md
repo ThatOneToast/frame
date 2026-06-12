@@ -255,3 +255,31 @@ The compiler and LSP should report:
 - `split resize` without keyboard-accessible resize controls
 - ambiguous `grid` used for data when `table` or `data` is intended
 - raw `display flex` suggestions when a `stack` or `flow` primitive is clearer
+
+## Semantic App Shells (`layout`)
+
+For app shells, prefer the intent-based `layout` declaration over raw track
+strings:
+
+```frame
+layout DashboardShell {
+  shell {
+    sidebar left fixed 18rem
+    main fluid
+    inspector right clamp(20rem, 28vw, 28rem)
+  }
+  gap large
+  density comfortable
+  below tablet { shell stacked }
+}
+```
+
+- Region lines read `<name> [left|right] [fixed <size> | fluid | <size-expr>]`.
+- Regions order left -> main -> right and lower to `grid-template-columns`
+  plus `grid-template-areas`.
+- Children attach by source order or `data-frame-section="<region>"`.
+- `density compact|comfortable|spacious` sets the shell padding scale.
+- Inside responsive conditions, `shell stacked` stacks regions vertically.
+
+Advanced grids (`grid` with `tracks`/`columns`) remain for layouts that need
+full track control; treat raw track strings as the escape hatch.

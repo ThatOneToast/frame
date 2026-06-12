@@ -203,6 +203,21 @@ Advanced
 Project symbols include grids, grid sections, colors, gradients, and custom
 keyframes gathered from the current file and direct includes.
 
+## Styling Overhaul Scopes
+
+The LSP understands the semantic styling declarations:
+
+- `tokens` and `theme` bodies complete the typed token kinds (`color`,
+  `surface`, `space`, `radius`, `shadow`, `glow`, `breakpoint`, `container`).
+- `motion` bodies complete `enter`, interaction states, `duration`, `easing`.
+- `layout` bodies complete `shell`, `gap`, `density`; shell region lines
+  complete `left`/`right`/`fixed`/`fluid`.
+- `recipe` bodies complete `base`/`variant`; base and option bodies complete
+  component properties.
+- Diagnostics validate token references (`token(kind.name)`), theme
+  namespaces, motion references, and breakpoint/container names with
+  did-you-mean suggestions.
+
 ## Hover Docs
 
 Hover docs teach the concept before describing syntax. For example, hovering

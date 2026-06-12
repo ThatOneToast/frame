@@ -9,6 +9,29 @@ page-body {
   background #0A0A0F
   color #F8FAFC
 }
+// Token contract: typed design values, scoped by the dark theme below.
+tokens default {
+  surface app #0A0A0F
+  surface panel #12121A
+  surface raised #1A1A24
+  surface overlay #22222E
+  space xs 0.25rem
+  radius xl 1.25rem
+  breakpoint tablet 48rem
+  container content 64rem
+}
+
+theme dark uses default {
+  surface app #0A0A0F
+  color main #F8FAFC
+}
+
+motion Pressable {
+  hover lift sm
+  active press
+  duration fast
+  easing smooth
+}
 
 tokens DashboardTokens {
   color background #0A0A0F
@@ -90,7 +113,7 @@ row SearchBar {
   gap medium
   color text-muted
   border soft
-  surface inset
+  background token(surface.raised)
   max-width input
   flex grow 1
 }
@@ -107,6 +130,7 @@ card StatusBadge {
   color success
   border soft
   size caption
+  motion Pressable
 }
 
 row UserInfo {

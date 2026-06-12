@@ -614,3 +614,70 @@ Inline Svelte Frame:
 ```
 
 Inline blocks emit CSS only. They do not generate `generated.ts`.
+
+## Semantic Styling (2026-06 overhaul)
+
+```frame
+tokens default {
+  color text #f5f5f5
+  surface panel #171722
+  space md 1rem
+  radius lg 1rem
+  breakpoint tablet 48rem
+  container content 64rem
+}
+
+theme dark uses default {
+  surface app #101014
+}
+
+layout DashboardShell {
+  shell {
+    sidebar left fixed 18rem
+    main fluid
+    inspector right clamp(20rem, 28vw, 28rem)
+  }
+  gap large
+  density comfortable
+  below tablet { shell stacked }
+}
+
+motion Pressable {
+  enter fade up soft
+  hover lift sm
+  active press
+  focus ring accent
+  duration normal
+  easing smooth
+}
+
+recipe Button {
+  base {
+    align center
+    gap small
+    radius medium
+    motion Pressable
+  }
+  variant tone {
+    primary { background token(color.accent) }
+    ghost { background transparent }
+  }
+}
+
+card Panel {
+  background token(surface.panel)
+  padding token(space.md)
+  motion Pressable
+}
+```
+
+Notes:
+
+- `token(kind.name)` works in any value position and is validated against the
+  resolved contract.
+- The first `theme` binds to `:root`; apply others with
+  `data-frame-theme="name"` or the generated `applyTheme()` helper.
+- `extends` merges by property path (`border.width` refines an inherited
+  `border accent` instead of clobbering it).
+- Effects accept t-shirt sizes (`lift sm`) alongside the named scales.
+- `frame build --css-backend atomic` is experimental; semantic is the default.
