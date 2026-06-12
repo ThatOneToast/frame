@@ -6657,6 +6657,9 @@ pub fn declaration_keywords() -> &'static [&'static str] {
             })
             .map(|i| i.name)
             .collect();
+        // `layout` is registered as a style property, but it is also a
+        // declaration keyword (`layout DashboardShell { ... }`).
+        names.push("layout");
         names.sort();
         names.dedup();
         Box::leak(names.into_boxed_slice())

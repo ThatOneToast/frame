@@ -257,7 +257,28 @@ const COMMON_PROPERTIES: &[&str] = &[
     "advanced",
 ];
 
-const TOKEN_PROPERTIES: &[&str] = &["color", "gradient"];
+const TOKEN_PROPERTIES: &[&str] = &[
+    "color",
+    "surface",
+    "gradient",
+    "space",
+    "radius",
+    "shadow",
+    "glow",
+    "breakpoint",
+    "container",
+];
+const MOTION_DECL_PROPERTIES: &[&str] = &[
+    "enter",
+    "hover",
+    "active",
+    "focus",
+    "focus-within",
+    "duration",
+    "easing",
+];
+const LAYOUT_DECL_PROPERTIES: &[&str] = &["shell", "gap", "density", "padding", "background"];
+const RECIPE_BLOCKS: &[&str] = &["base", "variant"];
 const GRADIENT_PROPERTIES: &[&str] = &["type", "angle", "stop", "corner"];
 const ANIMATION_PROPERTIES: &[&str] = &[
     "duration",
@@ -552,6 +573,7 @@ pub fn completions_at_with_includes(
                 "declaration",
                 "Starts a Frame declaration.",
             ));
+            items.push(layout_declaration_suggestion());
             items.extend(registry_item_suggestions(
                 language::items_by_kind(language::LanguageItemKind::UiKeyword),
                 "ui keyword",
@@ -619,6 +641,7 @@ pub fn completions_at_with_includes(
                 "declaration",
                 "Starts a Frame declaration.",
             ));
+            items.push(layout_declaration_suggestion());
             items.push(CompletionSuggestion {
                 label: "#include".to_string(),
                 detail: "include",
@@ -640,6 +663,7 @@ pub fn completions_at_with_includes(
                 "declaration",
                 "Starts a Frame declaration.",
             ));
+            items.push(layout_declaration_suggestion());
             items.push(CompletionSuggestion {
                 label: "#include".to_string(),
                 detail: "include",
@@ -660,8 +684,23 @@ pub fn completions_at_with_includes(
                 "declaration",
                 "Starts a Frame declaration.",
             ));
+            items.push(layout_declaration_suggestion());
             items
         }
+    }
+}
+
+/// `layout` is registered as a style property, so the declaration form needs
+/// its own root completion.
+fn layout_declaration_suggestion() -> CompletionSuggestion {
+    CompletionSuggestion {
+        label: "layout".to_string(),
+        detail: "declaration",
+        documentation: "Defines a semantic app-shell layout.\n\n```frame\nlayout DashboardShell {\n  shell {\n    sidebar left fixed 18rem\n    main fluid\n  }\n  gap large\n  below tablet { shell stacked }\n}\n```".to_string(),
+        insert_text: Some("layout ".to_string()),
+        is_snippet: false,
+        category: CompletionCategory::Declaration,
+        sort_text: None,
     }
 }
 
@@ -675,6 +714,21 @@ fn declaration_completions(
     if let Some(ref block) = cursor.innermost_block {
         let block_first = block.split_whitespace().next().unwrap_or("");
         match block_first {
+            "base" => {
+                return property_suggestions(
+                    CARD_PROPERTIES,
+                    "recipe property",
+                    "Property inside a recipe base or variant option.",
+                );
+            }
+            "shell" => {
+                return suggestions_with_category(
+                    &["left", "right", "fixed", "fluid"],
+                    "shell region keyword",
+                    "Region lines read `<name> [left|right] [fixed <size> | fluid | <size-expr>]`.",
+                    CompletionCategory::LayoutProperty,
+                );
+            }
             "gradient" => {
                 if let Some(property) = line_words.first() {
                     return value_completions(property, line_words, symbols);
@@ -780,11 +834,29 @@ fn declaration_completions(
     }
 
     match kind.as_str() {
-        "tokens" => suggestions_with_category(
+        "tokens" | "theme" => suggestions_with_category(
             TOKEN_PROPERTIES,
-            "token property",
-            "Token definition for reusable colors and gradients.",
+            "token kind",
+            "Typed token contract entry (color, surface, space, radius, shadow, glow, breakpoint, container).",
             CompletionCategory::TokenProperty,
+        ),
+        "motion" => suggestions_with_category(
+            MOTION_DECL_PROPERTIES,
+            "motion statement",
+            "Motion intent: enter animation, interaction states, and transition feel.",
+            CompletionCategory::MotionProperty,
+        ),
+        "layout" => suggestions_with_category(
+            LAYOUT_DECL_PROPERTIES,
+            "layout statement",
+            "Semantic app-shell layout: shell regions, gap, and density.",
+            CompletionCategory::LayoutProperty,
+        ),
+        "recipe" => suggestions_with_category(
+            RECIPE_BLOCKS,
+            "recipe block",
+            "Recipes contain one `base { ... }` block plus `variant <group> { ... }` blocks.",
+            CompletionCategory::StateBlock,
         ),
         "grid" => {
             let mut items = snippet_suggestions(SnippetScope::Grid);
@@ -1687,5 +1759,62 @@ mod tests {
             "expected extends keyword in {:?}",
             labels
         );
+    }
+
+    #[test]
+    fn suggests_typed_token_kinds_in_tokens_and_themes() {
+        let labels = labels_for("tokens default {\n  ");
+        for kind in [
+            "color",
+            "surface",
+            "space",
+            "radius",
+            "breakpoint",
+            "container",
+        ] {
+            assert!(
+                labels.contains(&kind.to_string()),
+                "missing {kind}: {labels:?}"
+            );
+        }
+
+        let labels = labels_for("theme dark uses default {\n  ");
+        assert!(labels.contains(&"surface".to_string()));
+        assert!(labels.contains(&"breakpoint".to_string()));
+    }
+
+    #[test]
+    fn suggests_motion_statements_and_recipe_blocks() {
+        let labels = labels_for("motion Pressable {\n  ");
+        for word in ["enter", "hover", "duration", "easing"] {
+            assert!(
+                labels.contains(&word.to_string()),
+                "missing {word}: {labels:?}"
+            );
+        }
+
+        let labels = labels_for("recipe Button {\n  ");
+        assert!(labels.contains(&"base".to_string()), "{labels:?}");
+        assert!(labels.contains(&"variant".to_string()), "{labels:?}");
+
+        let labels = labels_for("recipe Button {\n  base {\n    ");
+        assert!(labels.contains(&"radius".to_string()), "{labels:?}");
+    }
+
+    #[test]
+    fn suggests_layout_declaration_and_shell_keywords() {
+        let labels = labels_for("");
+        assert!(labels.contains(&"layout".to_string()), "{labels:?}");
+        assert!(labels.contains(&"theme".to_string()), "{labels:?}");
+        assert!(labels.contains(&"motion".to_string()), "{labels:?}");
+        assert!(labels.contains(&"recipe".to_string()), "{labels:?}");
+
+        let labels = labels_for("layout Shell {\n  ");
+        assert!(labels.contains(&"shell".to_string()), "{labels:?}");
+        assert!(labels.contains(&"density".to_string()), "{labels:?}");
+
+        let labels = labels_for("layout Shell {\n  shell {\n    sidebar ");
+        assert!(labels.contains(&"left".to_string()), "{labels:?}");
+        assert!(labels.contains(&"fixed".to_string()), "{labels:?}");
     }
 }
