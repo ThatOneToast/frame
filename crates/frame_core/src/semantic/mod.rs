@@ -22,6 +22,7 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
     let mut names = HashSet::new();
     let symbols = index_document("", document);
+    let contract = crate::style::document_contract(document);
 
     for declaration in &document.declarations {
         if !matches!(
@@ -51,12 +52,12 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
         }
 
         if declaration.kind == DeclarationKind::Supports {
-            validate_supports_declaration(declaration, &symbols, &mut diagnostics);
+            validate_supports_declaration(declaration, &symbols, &contract, &mut diagnostics);
             continue;
         }
 
         if declaration.kind == DeclarationKind::StyleGroup {
-            validate_style_group_declaration(declaration, &symbols, &mut diagnostics);
+            validate_style_group_declaration(declaration, &symbols, &contract, &mut diagnostics);
             continue;
         }
 
@@ -72,12 +73,18 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
             continue;
         }
 
+        if declaration.kind == DeclarationKind::Theme {
+            validate_theme_declaration(declaration, document, &mut diagnostics);
+            validate_statements(declaration, &symbols, &contract, &mut diagnostics);
+            continue;
+        }
+
         // Validate `extends` inheritance.
         if let Some(ref base) = declaration.extends {
             validate_extends(declaration, base, &document.declarations, &mut diagnostics);
         }
 
-        validate_statements(declaration, &symbols, &mut diagnostics);
+        validate_statements(declaration, &symbols, &contract, &mut diagnostics);
 
         if declaration.kind == DeclarationKind::Area {
             validate_area(declaration, &symbols, &mut diagnostics);
@@ -95,6 +102,42 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
     validate_components(document, &symbols, &mut diagnostics);
 
     diagnostics
+}
+
+fn validate_theme_declaration(
+    declaration: &crate::Declaration,
+    document: &Document,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let Some(ref uses) = declaration.extends else {
+        return;
+    };
+    if uses.text == "default" {
+        return;
+    }
+    let namespace_exists = document.declarations.iter().any(|candidate| {
+        candidate.kind == DeclarationKind::Tokens && candidate.name.text == uses.text
+    });
+    if !namespace_exists {
+        let mut namespaces: Vec<String> = document
+            .declarations
+            .iter()
+            .filter(|candidate| candidate.kind == DeclarationKind::Tokens)
+            .map(|candidate| candidate.name.text.clone())
+            .collect();
+        namespaces.push("default".to_string());
+        let suggestion =
+            crate::style::closest_name(&uses.text, namespaces.iter().map(String::as_str))
+                .map(|value| format!("\n\nDid you mean `{value}`?"))
+                .unwrap_or_default();
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown token namespace `{}`.{suggestion}\n\nA theme refines a token contract. Use `uses default` for the built-in contract, or declare `tokens {} {{ ... }}` first.",
+                uses.text, uses.text
+            ),
+            uses.span,
+        ));
+    }
 }
 
 fn validate_extends(
@@ -2505,5 +2548,203 @@ mod tests {
             .iter()
             .any(|d| d.message.contains("Name collision")
                 && d.message.contains("component and a UI primitive")));
+    }
+
+    #[test]
+    fn validates_typed_token_kinds() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Tokens,
+                "default",
+                vec![
+                    statement(&["color", "accent", "#8ab4ff"]),
+                    statement(&["surface", "app", "#101014"]),
+                    statement(&["space", "md", "1rem"]),
+                    statement(&["breakpoint", "tablet", "48rem"]),
+                    statement(&["container", "content", "64rem"]),
+                    statement(&["shadow", "panel", "soft"]),
+                ],
+            )],
+            components: Vec::new(),
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn rejects_unknown_token_kind_with_suggestion() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Tokens,
+                "default",
+                vec![statement(&["spcae", "md", "1rem"])],
+            )],
+            components: Vec::new(),
+        };
+
+        let diagnostics = validate(&document);
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("Unknown token kind `spcae`"));
+        assert!(diagnostics[0].message.contains("Did you mean `space`?"));
+    }
+
+    #[test]
+    fn rejects_invalid_token_values() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Tokens,
+                "default",
+                vec![
+                    statement(&["space", "md", "huge"]),
+                    statement(&["color", "accent", "blueish"]),
+                ],
+            )],
+            components: Vec::new(),
+        };
+
+        let diagnostics = validate(&document);
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics[0]
+            .message
+            .contains("not a valid space token value"));
+        assert!(diagnostics[1]
+            .message
+            .contains("not a valid color token value"));
+    }
+
+    #[test]
+    fn validates_theme_namespace_reference() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![Declaration {
+                kind: DeclarationKind::Theme,
+                name: Identifier::new("dark", Span::default()),
+                extends: Some(Identifier::new("defualt", Span::default())),
+                body: vec![statement(&["surface", "panel", "#171722"])],
+                span: Span::default(),
+            }],
+            components: Vec::new(),
+        };
+
+        let diagnostics = validate(&document);
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("Unknown token namespace `defualt`"));
+        assert!(diagnostics[0].message.contains("Did you mean `default`?"));
+    }
+
+    #[test]
+    fn theme_uses_default_namespace_is_valid() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![Declaration {
+                kind: DeclarationKind::Theme,
+                name: Identifier::new("dark", Span::default()),
+                extends: Some(Identifier::new("default", Span::default())),
+                body: vec![statement(&["color", "main", "#f5f5f5"])],
+                span: Span::default(),
+            }],
+            components: Vec::new(),
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn validates_token_references_in_statements() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "Panel",
+                vec![
+                    statement(&["background", "token(surface.app)"]),
+                    statement(&["padding", "token(space.medium)"]),
+                ],
+            )],
+            components: Vec::new(),
+        };
+
+        let diagnostics = validate(&document);
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("Unknown surface token `app`"));
+    }
+
+    #[test]
+    fn accepts_token_references_declared_in_contract() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Tokens,
+                    "default",
+                    vec![statement(&["surface", "app", "#101014"])],
+                ),
+                declaration(
+                    DeclarationKind::Card,
+                    "Panel",
+                    vec![
+                        statement(&["background", "token(surface.app)"]),
+                        statement(&["padding", "token(space.medium)"]),
+                    ],
+                ),
+            ],
+            components: Vec::new(),
+        };
+
+        assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn breakpoint_did_you_mean_uses_contract() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![declaration(
+                DeclarationKind::Card,
+                "Panel",
+                vec![block(
+                    "below desktoop",
+                    vec![statement(&["padding", "small"])],
+                )],
+            )],
+            components: Vec::new(),
+        };
+
+        let diagnostics = validate(&document);
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("Unknown breakpoint `desktoop`"));
+        assert!(diagnostics[0].message.contains("Did you mean `desktop`?"));
+    }
+
+    #[test]
+    fn custom_space_tokens_validate_in_spacing_positions() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Tokens,
+                    "default",
+                    vec![statement(&["space", "xs", "0.25rem"])],
+                ),
+                declaration(
+                    DeclarationKind::Card,
+                    "Panel",
+                    vec![statement(&["gap", "xs"]), statement(&["padding", "xs"])],
+                ),
+            ],
+            components: Vec::new(),
+        };
+
+        assert!(validate(&document).is_empty());
     }
 }

@@ -1,3 +1,4 @@
+use crate::style::tokens::{token_reference, TokenContract, TokenKind};
 use crate::{
     language, symbols::SymbolIndex, Declaration, DeclarationKind, Diagnostic, Node, Statement,
 };
@@ -8,22 +9,29 @@ use super::helpers::*;
 pub(crate) fn validate_statements(
     declaration: &Declaration,
     symbols: &SymbolIndex,
+    contract: &TokenContract,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
+    let token_owner = matches!(
+        declaration.kind,
+        DeclarationKind::Tokens | DeclarationKind::Theme
+    );
     for node in &declaration.body {
         match node {
-            Node::Statement(statement) if declaration.kind == DeclarationKind::Tokens => {
+            Node::Statement(statement) if token_owner => {
                 super::declarations::validate_token_statement(statement, symbols, diagnostics);
             }
-            Node::Statement(statement) => validate_statement(statement, symbols, diagnostics),
-            Node::Block(block) if declaration.kind == DeclarationKind::Tokens => {
+            Node::Statement(statement) => {
+                validate_statement(statement, symbols, contract, diagnostics)
+            }
+            Node::Block(block) if token_owner => {
                 super::declarations::validate_token_block(block, symbols, diagnostics);
             }
             Node::Block(block)
                 if declaration.kind == DeclarationKind::Grid
                     && block.name.starts_with("section ") =>
             {
-                super::declarations::validate_section_block(block, diagnostics);
+                super::declarations::validate_section_block(block, contract, diagnostics);
             }
             Node::Block(block) if block.name == "advanced" => {
                 super::declarations::validate_advanced_block(block, diagnostics);
@@ -32,7 +40,7 @@ pub(crate) fn validate_statements(
                 validate_animation_block(block, symbols, diagnostics);
             }
             Node::Block(block) if is_condition_block(&block.name) => {
-                validate_condition_block(declaration, block, symbols, diagnostics);
+                validate_condition_block(declaration, block, symbols, contract, diagnostics);
             }
             Node::Block(block) if declaration.kind == DeclarationKind::Keyframes => {
                 validate_keyframe_block(block, diagnostics);
@@ -52,52 +60,105 @@ pub(crate) fn validate_condition_block(
     declaration: &Declaration,
     block: &crate::Block,
     symbols: &SymbolIndex,
+    contract: &TokenContract,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    validate_condition_header(&block.name, diagnostics, block.span);
+    validate_condition_header(&block.name, contract, diagnostics, block.span);
     for node in &block.body {
         let Node::Statement(statement) = node else {
             continue;
         };
         match declaration.kind {
-            DeclarationKind::Grid => validate_statement(statement, symbols, diagnostics),
-            DeclarationKind::Area => validate_statement(statement, symbols, diagnostics),
-            _ => validate_statement(statement, symbols, diagnostics),
+            DeclarationKind::Grid => validate_statement(statement, symbols, contract, diagnostics),
+            DeclarationKind::Area => validate_statement(statement, symbols, contract, diagnostics),
+            _ => validate_statement(statement, symbols, contract, diagnostics),
         }
     }
 }
 
+fn known_breakpoint(name: &str, contract: &TokenContract) -> bool {
+    contract.get(TokenKind::Breakpoint, name).is_some() || is_css_length(name)
+}
+
+fn breakpoint_error(name: &str, contract: &TokenContract) -> String {
+    let suggestion = crate::style::closest_name(name, contract.names(TokenKind::Breakpoint))
+        .map(|value| format!(" Did you mean `{value}`?"))
+        .unwrap_or_default();
+    let known = contract
+        .names(TokenKind::Breakpoint)
+        .iter()
+        .map(|value| format!("`{value}`"))
+        .collect::<Vec<_>>()
+        .join(", ");
+    format!(
+        "Unknown breakpoint `{name}`.{suggestion}\n\nUse a breakpoint token ({known}), declare `breakpoint {name} <length>` in a `tokens` block, or use a raw length like `48rem`."
+    )
+}
+
 pub(crate) fn validate_condition_header(
     name: &str,
+    contract: &TokenContract,
     diagnostics: &mut Vec<Diagnostic>,
     span: crate::Span,
 ) {
     let words = name.split_whitespace().collect::<Vec<_>>();
     match words.as_slice() {
-        ["below" | "above", breakpoint] if language::BREAKPOINTS.contains(breakpoint) => {}
-        ["between", start, end]
-            if language::BREAKPOINTS.contains(start) && language::BREAKPOINTS.contains(end) => {}
-        ["container", container] if language::CONTAINERS.contains(container) => {}
-        ["below" | "above", breakpoint] => diagnostics.push(Diagnostic::error(
-            format!(
-                "Unknown breakpoint `{breakpoint}`.\n\nUse `mobile`, `tablet`, `desktop`, or `wide`."
-            ),
-            span,
-        )),
-        ["between", start, end] => diagnostics.push(Diagnostic::error(
-            format!(
-                "Unknown breakpoint range `{start} {end}`.\n\nUse `between tablet desktop` or another known breakpoint pair."
-            ),
-            span,
-        )),
-        ["container", container] => diagnostics.push(Diagnostic::error(
-            format!(
-                "Unknown container size `{container}`.\n\nUse `narrow`, `content`, or `wide`."
-            ),
-            span,
-        )),
+        ["below" | "above", breakpoint] => {
+            if !known_breakpoint(breakpoint, contract) {
+                diagnostics.push(Diagnostic::error(
+                    breakpoint_error(breakpoint, contract),
+                    span,
+                ));
+            }
+        }
+        ["between", start, end] => {
+            for breakpoint in [start, end] {
+                if !known_breakpoint(breakpoint, contract) {
+                    diagnostics.push(Diagnostic::error(
+                        breakpoint_error(breakpoint, contract),
+                        span,
+                    ));
+                }
+            }
+        }
+        ["container", container]
+            if contract.get(TokenKind::Container, container).is_none()
+                && !is_css_length(container) =>
+        {
+            let suggestion =
+                crate::style::closest_name(container, contract.names(TokenKind::Container))
+                    .map(|value| format!(" Did you mean `{value}`?"))
+                    .unwrap_or_default();
+            let known = contract
+                .names(TokenKind::Container)
+                .iter()
+                .map(|value| format!("`{value}`"))
+                .collect::<Vec<_>>()
+                .join(", ");
+            diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Unknown container size `{container}`.{suggestion}\n\nUse a container token ({known}), declare `container {container} <length>` in a `tokens` block, or use a raw length."
+                    ),
+                    span,
+                ));
+        }
         _ => {}
     }
+}
+
+/// Accepts `0` or a number with a CSS length unit.
+pub(crate) fn is_css_length(value: &str) -> bool {
+    if value == "0" {
+        return true;
+    }
+    const UNITS: &[&str] = &[
+        "rem", "em", "px", "vh", "vw", "svh", "svw", "dvh", "dvw", "ch", "ex", "%",
+    ];
+    UNITS.iter().any(|unit| {
+        value
+            .strip_suffix(unit)
+            .is_some_and(|number| !number.is_empty() && number.parse::<f64>().is_ok())
+    })
 }
 
 pub(crate) fn validate_animation_block(
@@ -144,14 +205,71 @@ pub(crate) fn validate_animation_block(
     }
 }
 
+/// Validate every `token(kind.name)` reference in a statement against the
+/// resolved contract. Returns `true` when the statement used token references
+/// (which replace keyword-specific value validation).
+pub(crate) fn validate_token_references(
+    statement: &Statement,
+    contract: &TokenContract,
+    diagnostics: &mut Vec<Diagnostic>,
+) -> bool {
+    let mut found = false;
+    for word in statement.words.iter().skip(1) {
+        if !word.starts_with("token(") {
+            continue;
+        }
+        found = true;
+        let Some((kind, name)) = token_reference(word) else {
+            let kinds = TokenKind::ALL
+                .iter()
+                .map(|kind| format!("`{}`", kind.keyword()))
+                .collect::<Vec<_>>()
+                .join(", ");
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "Malformed token reference `{word}`.\n\nUse `token(kind.name)` where kind is one of: {kinds}."
+                ),
+                statement.span,
+            ));
+            continue;
+        };
+        if contract.get(kind, name).is_none() {
+            let suggestion = crate::style::closest_name(name, contract.names(kind))
+                .map(|value| format!(" Did you mean `token({}.{value})`?", kind.keyword()))
+                .unwrap_or_default();
+            diagnostics.push(Diagnostic::error(
+                format!(
+                    "Unknown {} token `{name}`.{suggestion}\n\nDeclare `{} {name} <value>` in a `tokens` block before referencing it.",
+                    kind.keyword(),
+                    kind.keyword()
+                ),
+                statement.span,
+            ));
+        }
+    }
+    found
+}
+
+/// Whether a bare value names a user-declared token of the given kind.
+pub(crate) fn contract_value(contract: &TokenContract, kind: TokenKind, value: &str) -> bool {
+    contract.get(kind, value).is_some()
+}
+
 pub(crate) fn validate_statement(
     statement: &Statement,
     symbols: &SymbolIndex,
+    contract: &TokenContract,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let Some(keyword) = first_word(statement) else {
         return;
     };
+
+    if language::property_keywords().contains(&keyword)
+        && validate_token_references(statement, contract, diagnostics)
+    {
+        return;
+    }
 
     if !language::property_keywords().contains(&keyword) {
         if let Some(alias) = css_property_alias(keyword) {
@@ -178,21 +296,39 @@ pub(crate) fn validate_statement(
     }
 
     match first_word(statement) {
-        Some("padding" | "margin") => validate_box_space(statement, diagnostics),
+        Some("padding" | "margin") => validate_box_space(statement, contract, diagnostics),
         Some("display") => validate_value(statement, language::DISPLAY, diagnostics),
         Some("visibility") => validate_value(statement, language::VISIBILITY, diagnostics),
         Some("flex") => validate_flex(statement, diagnostics),
-        Some("gap") => validate_value(statement, language::SPACING, diagnostics),
-        Some("radius") => validate_value(statement, language::RADII, diagnostics),
-        Some("surface") => validate_surface(statement, symbols, diagnostics),
-        Some("shadow") => validate_value(statement, language::SHADOWS, diagnostics),
+        Some("gap") => validate_value_with_tokens(
+            statement,
+            language::SPACING,
+            TokenKind::Space,
+            contract,
+            diagnostics,
+        ),
+        Some("radius") => validate_value_with_tokens(
+            statement,
+            language::RADII,
+            TokenKind::Radius,
+            contract,
+            diagnostics,
+        ),
+        Some("surface") => validate_surface(statement, symbols, contract, diagnostics),
+        Some("shadow") => validate_value_with_tokens(
+            statement,
+            language::SHADOWS,
+            TokenKind::Shadow,
+            contract,
+            diagnostics,
+        ),
         Some("border") => validate_border(statement, symbols, diagnostics),
         Some("outline") => validate_outline(statement, symbols, diagnostics),
         Some(
             "height" | "width" | "min-height" | "max-height" | "min-width" | "max-width"
             | "inline-size" | "block-size" | "min-inline-size" | "max-inline-size"
             | "min-block-size" | "max-block-size",
-        ) => validate_size_value(statement, diagnostics),
+        ) => validate_size_value(statement, contract, diagnostics),
         Some("align") => validate_value(statement, language::ALIGN, diagnostics),
         Some("justify") => validate_value(statement, language::JUSTIFY, diagnostics),
         Some("tracks") => validate_tracks(statement, diagnostics),
@@ -218,8 +354,8 @@ pub(crate) fn validate_statement(
         Some("position") => validate_value(statement, language::POSITIONS, diagnostics),
         Some("anchor") => validate_value(statement, language::ANCHORS, diagnostics),
         Some("z") => validate_value(statement, language::Z_LAYERS, diagnostics),
-        Some("color" | "text") => validate_color(statement, symbols, diagnostics),
-        Some("background") => validate_background(statement, symbols, diagnostics),
+        Some("color" | "text") => validate_color(statement, symbols, contract, diagnostics),
+        Some("background") => validate_background(statement, symbols, contract, diagnostics),
         Some("columns") => validate_grid_columns(statement, diagnostics),
         Some("flow") => validate_value(statement, language::GRID_FLOWS, diagnostics),
         Some("transition") => validate_value(statement, language::TRANSITIONS, diagnostics),
@@ -535,6 +671,7 @@ pub(crate) fn validate_tuned_amount_at(
 pub(crate) fn validate_surface(
     statement: &Statement,
     symbols: &SymbolIndex,
+    contract: &TokenContract,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let Some(value) = statement.words.get(1) else {
@@ -545,7 +682,12 @@ pub(crate) fn validate_surface(
         return;
     };
 
-    if symbols.gradients.contains_key(value) || symbols.colors.contains_key(value) {
+    if symbols.gradients.contains_key(value)
+        || symbols.colors.contains_key(value)
+        || contract_value(contract, TokenKind::Surface, value)
+        || contract_value(contract, TokenKind::Gradient, value)
+        || contract_value(contract, TokenKind::Color, value)
+    {
         return;
     }
 
@@ -588,6 +730,7 @@ pub(crate) fn validate_surface(
 pub(crate) fn validate_background(
     statement: &Statement,
     symbols: &SymbolIndex,
+    contract: &TokenContract,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let Some(value) = statement.words.get(1) else {
@@ -602,6 +745,9 @@ pub(crate) fn validate_background(
         || language::SURFACES.contains(&value.as_str())
         || symbols.colors.contains_key(value)
         || symbols.gradients.contains_key(value)
+        || contract_value(contract, TokenKind::Surface, value)
+        || contract_value(contract, TokenKind::Gradient, value)
+        || contract_value(contract, TokenKind::Color, value)
     {
         return;
     }
@@ -626,6 +772,7 @@ pub(crate) fn validate_background(
 pub(crate) fn validate_color(
     statement: &Statement,
     symbols: &SymbolIndex,
+    contract: &TokenContract,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let Some(value) = statement.words.get(1) else {
@@ -639,7 +786,10 @@ pub(crate) fn validate_color(
         return;
     };
 
-    if language::COLORS.contains(&value.as_str()) || symbols.colors.contains_key(value) {
+    if language::COLORS.contains(&value.as_str())
+        || symbols.colors.contains_key(value)
+        || contract_value(contract, TokenKind::Color, value)
+    {
         return;
     }
 
@@ -891,6 +1041,23 @@ pub(crate) fn validate_value(
     }
 }
 
+/// Like [`validate_value`], but also accepts names declared in the token
+/// contract for the given kind (e.g. a custom `space xs` token for `gap xs`).
+pub(crate) fn validate_value_with_tokens(
+    statement: &Statement,
+    allowed: &[&str],
+    kind: TokenKind,
+    contract: &TokenContract,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if let Some(value) = statement.words.get(1) {
+        if contract_value(contract, kind, value) {
+            return;
+        }
+    }
+    validate_value(statement, allowed, diagnostics);
+}
+
 pub(crate) fn validate_animation_time(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
     let Some(value) = statement.words.get(1) else {
         diagnostics.push(Diagnostic::error(
@@ -939,7 +1106,11 @@ pub(crate) fn validate_animation_iteration(
     ));
 }
 
-pub(crate) fn validate_box_space(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
+pub(crate) fn validate_box_space(
+    statement: &Statement,
+    contract: &TokenContract,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     let Some(value) = statement.words.get(1) else {
         diagnostics.push(Diagnostic::error(
             format!("{} expects a value", statement.words[0]),
@@ -948,7 +1119,9 @@ pub(crate) fn validate_box_space(statement: &Statement, diagnostics: &mut Vec<Di
         return;
     };
 
-    if language::SPACING.contains(&value.as_str()) {
+    if language::SPACING.contains(&value.as_str())
+        || contract_value(contract, TokenKind::Space, value)
+    {
         return;
     }
 
@@ -960,7 +1133,9 @@ pub(crate) fn validate_box_space(statement: &Statement, diagnostics: &mut Vec<Di
             ));
             return;
         };
-        if language::SPACING.contains(&amount.as_str()) {
+        if language::SPACING.contains(&amount.as_str())
+            || contract_value(contract, TokenKind::Space, amount)
+        {
             return;
         }
     }
@@ -974,7 +1149,11 @@ pub(crate) fn validate_box_space(statement: &Statement, diagnostics: &mut Vec<Di
     ));
 }
 
-pub(crate) fn validate_size_value(statement: &Statement, diagnostics: &mut Vec<Diagnostic>) {
+pub(crate) fn validate_size_value(
+    statement: &Statement,
+    contract: &TokenContract,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     let Some(value) = statement.words.get(1) else {
         diagnostics.push(Diagnostic::error(
             format!("{} expects a value", statement.words[0]),
@@ -983,7 +1162,10 @@ pub(crate) fn validate_size_value(statement: &Statement, diagnostics: &mut Vec<D
         return;
     };
 
-    if is_valid_percentage(value) || language::SIZES.contains(&value.as_str()) {
+    if is_valid_percentage(value)
+        || language::SIZES.contains(&value.as_str())
+        || contract_value(contract, TokenKind::Space, value)
+    {
         return;
     }
 

@@ -792,4 +792,34 @@ component Demo {
             _ => panic!("expected literal"),
         }
     }
+
+    #[test]
+    fn parses_theme_with_uses_namespace() {
+        let source =
+            "theme dark uses default {\n  surface panel #171722\n  color main #f5f5f5\n}\n";
+
+        let document = parse(source).expect("parse should succeed");
+
+        assert_eq!(document.declarations.len(), 1);
+        let theme = &document.declarations[0];
+        assert_eq!(theme.kind, DeclarationKind::Theme);
+        assert_eq!(theme.name.text, "dark");
+        assert_eq!(
+            theme.extends.as_ref().map(|e| e.text.as_str()),
+            Some("default")
+        );
+        assert_eq!(theme.body.len(), 2);
+    }
+
+    #[test]
+    fn parses_namespaced_token_contract() {
+        let source = "tokens default {\n  color text #f5f5f5\n  space xs 0.25rem\n  breakpoint tablet 48rem\n}\n";
+
+        let document = parse(source).expect("parse should succeed");
+
+        assert_eq!(document.declarations.len(), 1);
+        assert_eq!(document.declarations[0].kind, DeclarationKind::Tokens);
+        assert_eq!(document.declarations[0].name.text, "default");
+        assert_eq!(document.declarations[0].body.len(), 3);
+    }
 }

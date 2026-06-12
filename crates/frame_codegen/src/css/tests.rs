@@ -2009,3 +2009,387 @@ fn search_bar_max_width_does_not_constrain_dashboard() {
         "DashboardContent must use width fill, got: {css}"
     );
 }
+
+// ---------------------------------------------------------------------------
+// Token contracts, themes, and property-path inheritance
+// ---------------------------------------------------------------------------
+
+fn extended(kind: DeclarationKind, name: &str, base: &str, body: Vec<Node>) -> Declaration {
+    Declaration {
+        kind,
+        name: Identifier::new(name, Span::default()),
+        extends: Some(Identifier::new(base, Span::default())),
+        body,
+        span: Span::default(),
+    }
+}
+
+#[test]
+fn token_contract_overrides_default_manifest() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Tokens,
+            "default",
+            vec![
+                statement(&["color", "accent", "#ff00ff"]),
+                statement(&["surface", "app", "#101014"]),
+                statement(&["space", "xs", "0.25rem"]),
+                statement(&["radius", "huge", "2rem"]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("--frame-color-accent: #ff00ff;"));
+    assert!(css.contains("--frame-surface-app: #101014;"));
+    assert!(css.contains("--frame-space-xs: 0.25rem;"));
+    assert!(css.contains("--frame-radius-huge: 2rem;"));
+    // Defaults that were not overridden stay available.
+    assert!(css.contains("--frame-color-muted: #a3a3a3;"));
+}
+
+#[test]
+fn token_references_resolve_to_custom_properties() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Tokens,
+                "default",
+                vec![statement(&["surface", "app", "#101014"])],
+            ),
+            declaration(
+                DeclarationKind::Card,
+                "Panel",
+                vec![
+                    statement(&["background", "token(surface.app)"]),
+                    statement(&["padding", "token(space.medium)"]),
+                    statement(&["radius", "token(radius.large)"]),
+                    statement(&["color", "token(color.main)"]),
+                ],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("background: var(--frame-surface-app);"));
+    assert!(css.contains("padding: var(--frame-space-medium);"));
+    assert!(css.contains("border-radius: var(--frame-radius-large);"));
+    assert!(css.contains("color: var(--frame-color-main);"));
+}
+
+#[test]
+fn scoped_themes_emit_data_attribute_rules() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            extended(
+                DeclarationKind::Theme,
+                "dark",
+                "default",
+                vec![
+                    statement(&["surface", "panel", "#171722"]),
+                    statement(&["color", "main", "#f5f5f5"]),
+                ],
+            ),
+            extended(
+                DeclarationKind::Theme,
+                "light",
+                "default",
+                vec![
+                    statement(&["surface", "panel", "#f4f4f8"]),
+                    statement(&["color", "main", "#111111"]),
+                ],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    // First theme is the document default and binds to :root.
+    assert!(css.contains(":root,\n[data-frame-theme=\"dark\"] {"));
+    assert!(css.contains("[data-frame-theme=\"light\"] {"));
+    let light_pos = css.find("[data-frame-theme=\"light\"]").unwrap();
+    assert!(css[light_pos..].contains("--frame-surface-panel: #f4f4f8;"));
+    assert!(css[light_pos..].contains("--frame-color-main: #111111;"));
+}
+
+#[test]
+fn breakpoint_tokens_drive_responsive_conditions() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Tokens,
+                "default",
+                vec![
+                    statement(&["breakpoint", "tablet", "40rem"]),
+                    statement(&["container", "content", "70rem"]),
+                ],
+            ),
+            declaration(
+                DeclarationKind::Card,
+                "Panel",
+                vec![
+                    Node::Block(frame_core::Block {
+                        name: "below tablet".to_string(),
+                        body: vec![statement(&["padding", "small"])],
+                        span: Span::default(),
+                    }),
+                    Node::Block(frame_core::Block {
+                        name: "container content".to_string(),
+                        body: vec![statement(&["gap", "small"])],
+                        span: Span::default(),
+                    }),
+                ],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains("@media (max-width: 39.9375rem)"));
+    assert!(css.contains("@container (max-width: 70rem)"));
+}
+
+#[test]
+fn raw_lengths_work_as_breakpoint_escape_hatch() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Card,
+            "Panel",
+            vec![Node::Block(frame_core::Block {
+                name: "below 32rem".to_string(),
+                body: vec![statement(&["padding", "small"])],
+                span: Span::default(),
+            })],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+    assert!(css.contains("@media (max-width: 31.9375rem)"));
+}
+
+#[test]
+fn inheritance_merges_border_by_property_path() {
+    // Parent declares a full border; child only widens it. With first-word
+    // merging the child used to clobber the parent's border color.
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Card,
+                "Base",
+                vec![statement(&["border", "accent"])],
+            ),
+            extended(
+                DeclarationKind::Card,
+                "Wide",
+                "Base",
+                vec![statement(&["border", "width", "large"])],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+    let wide_pos = css.find(".fr-Wide").unwrap();
+    let wide = &css[wide_pos..css[wide_pos..].find("}").unwrap() + wide_pos];
+
+    // The inherited shorthand survives, and the width override follows it.
+    assert!(wide.contains("border: 1px solid var(--frame-color-accent);"));
+    assert!(wide.contains("border-width: 3px;"));
+    let shorthand = wide.find("border: 1px solid").unwrap();
+    let width = wide.find("border-width: 3px").unwrap();
+    assert!(
+        shorthand < width,
+        "longhand override must come after shorthand"
+    );
+}
+
+#[test]
+fn inheritance_replaces_background_across_surface_and_background() {
+    // `surface` and `background` share the background property path, so a
+    // child background must replace an inherited surface.
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Card,
+                "Base",
+                vec![statement(&["surface", "panel"])],
+            ),
+            extended(
+                DeclarationKind::Card,
+                "Accent",
+                "Base",
+                vec![statement(&["background", "accent"])],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+    let accent_pos = css.find(".fr-Accent").unwrap();
+    let accent = &css[accent_pos..css[accent_pos..].find("}").unwrap() + accent_pos];
+
+    assert!(accent.contains("background: var(--frame-color-accent);"));
+    assert!(!accent.contains("--frame-surface-panel"));
+}
+
+#[test]
+fn inheritance_keeps_axis_padding_overrides_partial() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Card,
+                "Base",
+                vec![statement(&["padding", "large"])],
+            ),
+            extended(
+                DeclarationKind::Card,
+                "Tight",
+                "Base",
+                vec![statement(&["padding", "x", "small"])],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+    let tight_pos = css.find(".fr-Tight").unwrap();
+    let tight = &css[tight_pos..css[tight_pos..].find("}").unwrap() + tight_pos];
+
+    // Both survive: the base padding plus the axis override after it.
+    assert!(tight.contains("padding: var(--frame-space-large);"));
+    assert!(tight.contains("padding-inline: var(--frame-space-small);"));
+}
+
+#[test]
+fn inheritance_merges_transition_and_animation_paths() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Card,
+                "Base",
+                vec![
+                    statement(&["transition", "smooth"]),
+                    statement(&["animation", "fade-in"]),
+                ],
+            ),
+            extended(
+                DeclarationKind::Card,
+                "Fast",
+                "Base",
+                vec![
+                    statement(&["duration", "fast"]),
+                    statement(&["animate", "pulse"]),
+                ],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+    let fast_pos = css.find(".fr-Fast").unwrap();
+    let fast = &css[fast_pos..css[fast_pos..].find("}").unwrap() + fast_pos];
+
+    // duration refines the inherited transition instead of clobbering it,
+    // while animate/animation share one path and override each other.
+    assert!(fast.contains("transition: all 200ms ease;"));
+    assert!(fast.contains("transition-duration: 120ms;"));
+    assert!(fast.contains("animation: frame-pulse 240ms ease both;"));
+    assert!(!fast.contains("frame-fade-in"));
+}
+
+#[test]
+fn inheritance_merges_typography_and_layout_paths() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Text,
+                "Base",
+                vec![
+                    statement(&["size", "heading"]),
+                    statement(&["weight", "bold"]),
+                    statement(&["align", "center"]),
+                ],
+            ),
+            extended(
+                DeclarationKind::Text,
+                "Caption",
+                "Base",
+                vec![
+                    statement(&["size", "caption"]),
+                    statement(&["justify", "between"]),
+                ],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+    let caption_pos = css.find(".fr-Caption").unwrap();
+    let caption = &css[caption_pos..css[caption_pos..].find("}").unwrap() + caption_pos];
+
+    assert!(caption.contains("font-size: 0.875rem;"));
+    assert!(!caption.contains("font-size: 2rem;"));
+    assert!(caption.contains("font-weight: 700;"));
+    assert!(caption.contains("align-items: center;"));
+    assert!(caption.contains("justify-content: space-between;"));
+}
+
+#[test]
+fn inheritance_merges_responsive_condition_scopes() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Card,
+                "Base",
+                vec![Node::Block(frame_core::Block {
+                    name: "below tablet".to_string(),
+                    body: vec![
+                        statement(&["padding", "small"]),
+                        statement(&["gap", "small"]),
+                    ],
+                    span: Span::default(),
+                })],
+            ),
+            extended(
+                DeclarationKind::Card,
+                "Child",
+                "Base",
+                vec![Node::Block(frame_core::Block {
+                    name: "below tablet".to_string(),
+                    body: vec![statement(&["padding", "medium"])],
+                    span: Span::default(),
+                })],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+    let child_pos = css
+        .find("@media (max-width: 47.9375rem) {\n  .fr-Child")
+        .unwrap();
+    let child = &css[child_pos..];
+
+    // Scopes merge by condition: gap survives, padding is overridden.
+    assert!(child.contains("padding: var(--frame-space-medium);"));
+    assert!(child.contains("gap: var(--frame-space-small);"));
+    assert!(!child.contains("padding: var(--frame-space-small);"));
+}

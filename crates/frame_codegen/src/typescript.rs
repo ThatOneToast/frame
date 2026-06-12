@@ -1,3 +1,4 @@
+use frame_core::style::document_themes;
 use frame_core::{DeclarationKind, Document};
 
 pub fn generate_typescript(document: &Document) -> String {
@@ -6,7 +7,7 @@ pub fn generate_typescript(document: &Document) -> String {
     for declaration in &document.declarations {
         if matches!(
             declaration.kind,
-            DeclarationKind::Tokens | DeclarationKind::Keyframes
+            DeclarationKind::Tokens | DeclarationKind::Theme | DeclarationKind::Keyframes
         ) {
             continue;
         }
@@ -19,6 +20,28 @@ pub fn generate_typescript(document: &Document) -> String {
 
     ts.push_str("} as const;\n\n");
     ts.push_str("export type UiClass = keyof typeof ui;\n");
+
+    let themes = document_themes(document);
+    if !themes.is_empty() {
+        ts.push('\n');
+        ts.push_str("export const themes = [");
+        ts.push_str(
+            &themes
+                .iter()
+                .map(|theme| format!("'{}'", theme.name))
+                .collect::<Vec<_>>()
+                .join(", "),
+        );
+        ts.push_str("] as const;\n\n");
+        ts.push_str("export type FrameTheme = (typeof themes)[number];\n\n");
+        ts.push_str(&format!(
+            "export const defaultTheme: FrameTheme = '{}';\n\n",
+            themes[0].name
+        ));
+        ts.push_str(
+            "export function applyTheme(theme: FrameTheme, root: HTMLElement = document.documentElement): void {\n  root.setAttribute('data-frame-theme', theme);\n}\n",
+        );
+    }
     ts
 }
 
@@ -61,5 +84,36 @@ mod tests {
 
         let ts = generate_typescript(&document);
         assert!(ts.contains("QuickLinkCard: 'fr-QuickLinkCard'"));
+    }
+
+    #[test]
+    fn generates_theme_exports() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                Declaration {
+                    kind: DeclarationKind::Theme,
+                    name: Identifier::new("dark", Span::default()),
+                    extends: Some(Identifier::new("default", Span::default())),
+                    body: vec![],
+                    span: Span::default(),
+                },
+                Declaration {
+                    kind: DeclarationKind::Theme,
+                    name: Identifier::new("light", Span::default()),
+                    extends: Some(Identifier::new("default", Span::default())),
+                    body: vec![],
+                    span: Span::default(),
+                },
+            ],
+            components: Vec::new(),
+        };
+
+        let ts = generate_typescript(&document);
+        assert!(ts.contains("export const themes = ['dark', 'light'] as const;"));
+        assert!(ts.contains("export const defaultTheme: FrameTheme = 'dark';"));
+        assert!(ts.contains("export function applyTheme"));
+        // Themes are not classes.
+        assert!(!ts.contains("dark: 'fr-dark'"));
     }
 }

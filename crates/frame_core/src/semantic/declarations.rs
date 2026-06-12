@@ -1,3 +1,4 @@
+use crate::style::tokens::TokenContract;
 use crate::{
     language, symbols::SymbolIndex, Declaration, DeclarationKind, Diagnostic, Node, Span, Statement,
 };
@@ -8,6 +9,7 @@ use super::statements::*;
 pub(crate) fn validate_supports_declaration(
     declaration: &Declaration,
     symbols: &SymbolIndex,
+    contract: &TokenContract,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     validate_supports_predicate(&declaration.name.text, declaration.name.span, diagnostics);
@@ -52,7 +54,7 @@ pub(crate) fn validate_supports_declaration(
                     continue;
                 }
 
-                validate_statements(&nested, symbols, diagnostics);
+                validate_statements(&nested, symbols, contract, diagnostics);
                 if nested.kind == DeclarationKind::Area {
                     validate_area(&nested, symbols, diagnostics);
                 }
@@ -64,6 +66,7 @@ pub(crate) fn validate_supports_declaration(
 pub(crate) fn validate_style_group_declaration(
     declaration: &Declaration,
     symbols: &SymbolIndex,
+    contract: &TokenContract,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     if !is_valid_style_identifier(&declaration.name.text) {
@@ -116,7 +119,7 @@ pub(crate) fn validate_style_group_declaration(
                     continue;
                 }
 
-                validate_statements(&nested, symbols, diagnostics);
+                validate_statements(&nested, symbols, contract, diagnostics);
                 if nested.kind == DeclarationKind::Area {
                     validate_area(&nested, symbols, diagnostics);
                 }
@@ -297,16 +300,26 @@ pub(crate) fn validate_keyframe_block(block: &crate::Block, diagnostics: &mut Ve
     }
 }
 
-pub(crate) fn validate_section_block(block: &crate::Block, diagnostics: &mut Vec<Diagnostic>) {
+pub(crate) fn validate_section_block(
+    block: &crate::Block,
+    contract: &TokenContract,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     for node in &block.body {
         let Node::Statement(statement) = node else {
             continue;
         };
         match statement.words.first().map(String::as_str) {
-            Some("padding" | "margin") => validate_box_space(statement, diagnostics),
+            Some("padding" | "margin") => validate_box_space(statement, contract, diagnostics),
             Some("align") => validate_value(statement, language::ALIGN, diagnostics),
             Some("justify") => validate_value(statement, language::JUSTIFY, diagnostics),
-            Some("gap") => validate_value(statement, language::SPACING, diagnostics),
+            Some("gap") => validate_value_with_tokens(
+                statement,
+                language::SPACING,
+                crate::style::tokens::TokenKind::Space,
+                contract,
+                diagnostics,
+            ),
             Some(
                 "width"
                 | "height"
@@ -320,7 +333,7 @@ pub(crate) fn validate_section_block(block: &crate::Block, diagnostics: &mut Vec
                 | "max-inline-size"
                 | "min-block-size"
                 | "max-block-size",
-            ) => validate_size_value(statement, diagnostics),
+            ) => validate_size_value(statement, contract, diagnostics),
             Some(other) => diagnostics.push(Diagnostic::error(
                 format!(
                     "Unknown section property `{other}`.\n\nUse spacing and alignment properties like `padding top small`, `margin bottom medium`, `align center`, or `justify between`."
@@ -358,15 +371,34 @@ pub(crate) fn validate_token_statement(
     symbols: &SymbolIndex,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
+    use crate::style::tokens::TokenKind;
+
     let Some(keyword) = first_word(statement) else {
         return;
     };
 
-    if keyword != "color" {
+    let Some(kind) = TokenKind::from_keyword(keyword) else {
+        let kinds = TokenKind::ALL
+            .iter()
+            .map(|kind| format!("`{}`", kind.keyword()))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let suggestion =
+            crate::style::closest_name(keyword, TokenKind::ALL.iter().map(|kind| kind.keyword()))
+                .map(|value| format!(" Did you mean `{value}`?"))
+                .unwrap_or_default();
         diagnostics.push(Diagnostic::error(
             format!(
-                "Unknown token kind `{keyword}`.\n\nSupported token definitions use `color name #hex` or `gradient name {{ ... }}`."
+                "Unknown token kind `{keyword}`.{suggestion}\n\nTokens are typed contracts. Supported kinds: {kinds}. Gradients use `gradient name {{ ... }}` blocks."
             ),
+            statement.span,
+        ));
+        return;
+    };
+
+    if kind == TokenKind::Gradient {
+        diagnostics.push(Diagnostic::error(
+            "Gradient tokens are defined as blocks.\n\nUse `gradient name { angle 135deg stop #22162f 0% stop #123047 100% }`.",
             statement.span,
         ));
         return;
@@ -374,32 +406,78 @@ pub(crate) fn validate_token_statement(
 
     if statement.words.len() < 3 {
         diagnostics.push(Diagnostic::error(
-            "Color token definition is incomplete.\n\nUse the form `color name #hex` where `#hex` is a valid hex color like `#fff`, `#ffffff`, or `#ffffffff`.",
+            format!(
+                "{keyword} token definition is incomplete.\n\nUse the form `{keyword} name value`, for example `{}`.",
+                token_kind_example(kind)
+            ),
             statement.span,
         ));
         return;
     }
 
-    let value = &statement.words[2];
-    if !is_hex_color(value) {
-        diagnostics.push(Diagnostic::error(
-            format!(
-                "`{value}` is not a valid color token value.\n\nUse hex colors like `#fff`, `#ffffff`, or `#ffffffff`.\n\nFunction colors such as `rgb(...)` are planned for a later Frame release."
-            ),
-            statement.span,
-        ));
+    let value = statement.words[2..].join(" ");
+    match kind {
+        TokenKind::Color | TokenKind::Surface => {
+            if !is_hex_color(&value) && !is_css_color_function(&value) && value != "transparent" {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "`{value}` is not a valid {keyword} token value.\n\nUse hex colors like `#fff` and `#ffffff`, `transparent`, or color functions like `rgba(...)` and `oklch(...)`."
+                    ),
+                    statement.span,
+                ));
+            }
+        }
+        TokenKind::Space | TokenKind::Radius | TokenKind::Breakpoint | TokenKind::Container => {
+            if !super::statements::is_css_length(&value) {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "`{value}` is not a valid {keyword} token value.\n\nUse a CSS length like `0.5rem`, `16px`, or `0`."
+                    ),
+                    statement.span,
+                ));
+            }
+        }
+        // Shadows and glows accept raw box-shadow values or an alias to an
+        // existing token of the same kind (`shadow panel soft`).
+        TokenKind::Shadow | TokenKind::Glow | TokenKind::Gradient => {}
     }
 
-    if let Some(name) = statement.words.get(1) {
-        if symbols.gradients.contains_key(name) {
-            diagnostics.push(Diagnostic::error(
-                format!(
-                    "Duplicate token `{name}`.\n\nA color and gradient cannot share a token name."
-                ),
-                statement.span,
-            ));
+    if kind == TokenKind::Color {
+        if let Some(name) = statement.words.get(1) {
+            if symbols.gradients.contains_key(name) {
+                diagnostics.push(Diagnostic::error(
+                    format!(
+                        "Duplicate token `{name}`.\n\nA color and gradient cannot share a token name."
+                    ),
+                    statement.span,
+                ));
+            }
         }
     }
+}
+
+fn token_kind_example(kind: crate::style::tokens::TokenKind) -> &'static str {
+    use crate::style::tokens::TokenKind;
+    match kind {
+        TokenKind::Color => "color accent #8ab4ff",
+        TokenKind::Surface => "surface panel #171722",
+        TokenKind::Gradient => "gradient dusk { ... }",
+        TokenKind::Space => "space md 1rem",
+        TokenKind::Radius => "radius lg 1rem",
+        TokenKind::Shadow => "shadow panel soft",
+        TokenKind::Glow => "glow accent soft",
+        TokenKind::Breakpoint => "breakpoint tablet 48rem",
+        TokenKind::Container => "container content 64rem",
+    }
+}
+
+fn is_css_color_function(value: &str) -> bool {
+    value.ends_with(')')
+        && [
+            "rgb(", "rgba(", "hsl(", "hsla(", "oklch(", "oklab(", "color(",
+        ]
+        .iter()
+        .any(|prefix| value.starts_with(prefix))
 }
 
 pub(crate) fn validate_token_block(
