@@ -54,7 +54,42 @@ pub(crate) fn emit_declaration_css(
     let class_name = format!("fr-{}", declaration.name.text);
 
     match declaration.kind {
-        DeclarationKind::Tokens | DeclarationKind::Theme => {}
+        DeclarationKind::Tokens | DeclarationKind::Theme | DeclarationKind::Motion => {}
+        DeclarationKind::Layout => {
+            let mut style = frame_core::style::lower_layout(&declaration.body, ctx);
+            frame_core::style::expand_motion_references(&mut style, ctx.motions);
+            css.push_str(&format!(".{class_name} {{\n"));
+            write_facts(css, &style.facts, "  ");
+            css.push_str("}\n\n");
+            emit_grid_section_rules(css, &class_name, &style);
+            emit_scopes(css, &class_name, &style, ctx);
+        }
+        DeclarationKind::Recipe => {
+            let contract_ctx = ctx;
+            let recipe = frame_core::style::recipes::lower_recipe(
+                &declaration.name.text,
+                &declaration.body,
+                contract_ctx,
+            );
+            let mut base = recipe.base.clone();
+            frame_core::style::expand_motion_references(&mut base, ctx.motions);
+            css.push_str(&format!(".{} {{\n", recipe.base_class()));
+            write_facts(css, &base.facts, "  ");
+            css.push_str("}\n\n");
+            emit_scopes(css, &recipe.base_class(), &base, ctx);
+
+            for group in &recipe.variants {
+                for (option, style) in &group.options {
+                    let mut style = style.clone();
+                    frame_core::style::expand_motion_references(&mut style, ctx.motions);
+                    let variant_class = recipe.variant_class(&group.name, option);
+                    css.push_str(&format!(".{variant_class} {{\n"));
+                    write_facts(css, &style.facts, "  ");
+                    css.push_str("}\n\n");
+                    emit_scopes(css, &variant_class, &style, ctx);
+                }
+            }
+        }
         DeclarationKind::Keyframes => {
             emit_custom_keyframes(css, &declaration.name.text, &declaration.body);
         }
@@ -78,6 +113,7 @@ pub(crate) fn emit_declaration_css(
         _ => {
             let mut style = resolve_style(declaration, all_declarations, ctx);
             frame_core::style::normalize::apply_kind_defaults(&mut style, &declaration.kind);
+            frame_core::style::expand_motion_references(&mut style, ctx.motions);
 
             css.push_str(&format!(".{class_name} {{\n"));
             write_facts(css, &style.facts, "  ");
@@ -87,25 +123,34 @@ pub(crate) fn emit_declaration_css(
                 emit_grid_section_rules(css, &class_name, &style);
             }
 
-            for state in &style.states {
-                let Some(selector) = properties::state_selector(&state.state) else {
-                    continue;
-                };
-                css.push_str(&format!(".{class_name}{selector} {{\n"));
-                write_facts(css, &state.facts, "  ");
-                css.push_str("}\n\n");
-            }
-
-            for condition in &style.conditions {
-                let Some(rule) = properties::condition_rule(&condition.condition, ctx.contract)
-                else {
-                    continue;
-                };
-                css.push_str(&format!("{rule} {{\n  .{class_name} {{\n"));
-                write_facts(css, &condition.facts, "    ");
-                css.push_str("  }\n}\n\n");
-            }
+            emit_scopes(css, &class_name, &style, ctx);
         }
+    }
+}
+
+/// Emit state and condition scopes for a class.
+pub(crate) fn emit_scopes(
+    css: &mut String,
+    class_name: &str,
+    style: &frame_core::style::NormalizedStyle,
+    ctx: &StyleContext,
+) {
+    for state in &style.states {
+        let Some(selector) = properties::state_selector(&state.state) else {
+            continue;
+        };
+        css.push_str(&format!(".{class_name}{selector} {{\n"));
+        write_facts(css, &state.facts, "  ");
+        css.push_str("}\n\n");
+    }
+
+    for condition in &style.conditions {
+        let Some(rule) = properties::condition_rule(&condition.condition, ctx.contract) else {
+            continue;
+        };
+        css.push_str(&format!("{rule} {{\n  .{class_name} {{\n"));
+        write_facts(css, &condition.facts, "    ");
+        css.push_str("  }\n}\n\n");
     }
 }
 

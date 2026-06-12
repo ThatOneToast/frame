@@ -23,6 +23,12 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
     let mut names = HashSet::new();
     let symbols = index_document("", document);
     let contract = crate::style::document_contract(document);
+    let motion_names: Vec<String> = document
+        .declarations
+        .iter()
+        .filter(|declaration| declaration.kind == DeclarationKind::Motion)
+        .map(|declaration| declaration.name.text.clone())
+        .collect();
 
     for declaration in &document.declarations {
         if !matches!(
@@ -79,12 +85,41 @@ pub fn validate(document: &Document) -> Vec<Diagnostic> {
             continue;
         }
 
+        if declaration.kind == DeclarationKind::Motion {
+            validate_motion_declaration(declaration, &symbols, &mut diagnostics);
+            continue;
+        }
+
+        if declaration.kind == DeclarationKind::Layout {
+            validate_layout_declaration(declaration, &symbols, &contract, &mut diagnostics);
+            continue;
+        }
+
+        if declaration.kind == DeclarationKind::Recipe {
+            validate_recipe_declaration(
+                declaration,
+                &symbols,
+                &contract,
+                &motion_names,
+                &mut diagnostics,
+            );
+            continue;
+        }
+
         // Validate `extends` inheritance.
         if let Some(ref base) = declaration.extends {
             validate_extends(declaration, base, &document.declarations, &mut diagnostics);
         }
 
         validate_statements(declaration, &symbols, &contract, &mut diagnostics);
+
+        for node in &declaration.body {
+            if let crate::Node::Statement(statement) = node {
+                if statement.words.first().map(String::as_str) == Some("motion") {
+                    validate_motion_reference(statement, &motion_names, &mut diagnostics);
+                }
+            }
+        }
 
         if declaration.kind == DeclarationKind::Area {
             validate_area(declaration, &symbols, &mut diagnostics);
@@ -2746,5 +2781,107 @@ mod tests {
         };
 
         assert!(validate(&document).is_empty());
+    }
+
+    #[test]
+    fn validates_motion_layout_and_recipe_declarations() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Motion,
+                    "Pressable",
+                    vec![
+                        statement(&["enter", "fade", "up", "soft"]),
+                        statement(&["hover", "lift", "sm"]),
+                        statement(&["duration", "normal"]),
+                        statement(&["easing", "smooth"]),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Layout,
+                    "Shell",
+                    vec![
+                        block(
+                            "shell",
+                            vec![
+                                statement(&["sidebar", "left", "fixed", "18rem"]),
+                                statement(&["main", "fluid"]),
+                            ],
+                        ),
+                        statement(&["gap", "large"]),
+                        block("below tablet", vec![statement(&["shell", "stacked"])]),
+                    ],
+                ),
+                declaration(
+                    DeclarationKind::Recipe,
+                    "Button",
+                    vec![
+                        block("base", vec![statement(&["motion", "Pressable"])]),
+                        block(
+                            "variant tone",
+                            vec![block("primary", vec![statement(&["background", "accent"])])],
+                        ),
+                    ],
+                ),
+            ],
+            components: Vec::new(),
+        };
+
+        assert!(validate(&document).is_empty(), "{:?}", validate(&document));
+    }
+
+    #[test]
+    fn rejects_unknown_motion_statement_and_reference() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Motion,
+                    "Pressable",
+                    vec![statement(&["wobble", "hard"])],
+                ),
+                declaration(
+                    DeclarationKind::Card,
+                    "Panel",
+                    vec![statement(&["motion", "Presable"])],
+                ),
+            ],
+            components: Vec::new(),
+        };
+
+        let diagnostics = validate(&document);
+        assert_eq!(diagnostics.len(), 2, "{diagnostics:?}");
+        assert!(diagnostics[0]
+            .message
+            .contains("Unknown motion statement `wobble`"));
+        assert!(diagnostics[1].message.contains("Unknown motion `Presable`"));
+        assert!(diagnostics[1].message.contains("Did you mean `Pressable`?"));
+    }
+
+    #[test]
+    fn rejects_layout_without_shell_and_loose_recipe_statements() {
+        let document = Document {
+            includes: Vec::new(),
+            declarations: vec![
+                declaration(
+                    DeclarationKind::Layout,
+                    "Empty",
+                    vec![statement(&["gap", "large"])],
+                ),
+                declaration(
+                    DeclarationKind::Recipe,
+                    "Button",
+                    vec![statement(&["radius", "medium"])],
+                ),
+            ],
+            components: Vec::new(),
+        };
+
+        let diagnostics = validate(&document);
+        assert_eq!(diagnostics.len(), 3, "{diagnostics:?}");
+        assert!(diagnostics[0].message.contains("no `shell` block"));
+        assert!(diagnostics[1].message.contains("not loose statements"));
+        assert!(diagnostics[2].message.contains("no `base` block"));
     }
 }

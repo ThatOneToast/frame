@@ -822,4 +822,51 @@ component Demo {
         assert_eq!(document.declarations[0].name.text, "default");
         assert_eq!(document.declarations[0].body.len(), 3);
     }
+
+    #[test]
+    fn parses_layout_motion_and_recipe_declarations() {
+        let source = r#"
+layout DashboardShell {
+  shell {
+    sidebar left fixed 18rem
+    main fluid
+  }
+  gap large
+  below tablet {
+    shell stacked
+  }
+}
+motion Pressable {
+  enter fade up soft
+  hover lift sm
+  duration normal
+  easing smooth
+}
+recipe Button {
+  base {
+    radius medium
+    motion Pressable
+  }
+  variant tone {
+    primary {
+      background token(color.accent)
+    }
+    ghost {
+      background transparent
+    }
+  }
+}
+"#;
+
+        let document = parse(source).expect("parse should succeed");
+
+        assert_eq!(document.declarations.len(), 3);
+        assert_eq!(document.declarations[0].kind, DeclarationKind::Layout);
+        assert_eq!(document.declarations[1].kind, DeclarationKind::Motion);
+        assert_eq!(document.declarations[2].kind, DeclarationKind::Recipe);
+
+        // Recipe parses nested variant option blocks freely.
+        let recipe = &document.declarations[2];
+        assert_eq!(recipe.body.len(), 2);
+    }
 }

@@ -641,10 +641,20 @@ pub(crate) fn validate_tuned_amount_at(
             (amount, Some(percent))
         });
 
+    // t-shirt aliases map onto each five-step scale by position.
+    let amount = match amount {
+        "xs" => scale[0],
+        "sm" => scale[1],
+        "md" => scale[2],
+        "lg" => scale[3],
+        "xl" => scale[4],
+        other => other,
+    };
+
     if !scale.contains(&amount) {
         diagnostics.push(Diagnostic::error(
             format!(
-                "Unknown {label} `{value}`.\n\nUse `{}`. Add `%0` through `%100` for fine tuning, such as `{}%44`.",
+                "Unknown {label} `{value}`.\n\nUse `{}` (or t-shirt aliases `xs`..`xl`). Add `%0` through `%100` for fine tuning, such as `{}%44`.",
                 scale.join("`, `"),
                 scale[0]
             ),

@@ -551,6 +551,163 @@ pub static REGISTRY: &[LanguageItem] = &[LanguageItem {
         },
     item!("button", Declaration, Layout, Declaration, Keyword),
     LanguageItem {
+            name: "motion",
+            kind: LanguageItemKind::Declaration,
+            layer: LanguageLayer::Motion,
+            detail: "motion",
+            summary: "Defines named motion intent.",
+            description: "Defines semantic motion intent: an enter animation, interaction-state effects, and transition feel. Apply it inside any styled declaration or recipe with `motion Name`.",
+            documentation: "",
+            generated_css: Some("Lowers to built-in keyframes, transforms, and transition declarations on the classes that reference it."),
+            frame_examples: &[r#"motion Pressable {
+  enter fade up soft
+  hover lift sm
+  active press
+  focus ring accent
+  duration normal
+  easing smooth
+}
+
+button PrimaryButton {
+  background accent
+  motion Pressable
+}"#],
+            svelte_examples: &[],
+            allowed_in: &[FrameScope::Root],
+            related: &["enter", "duration", "easing", "hover", "recipe"],
+            values: &[],
+            aliases: &[],
+            lowers_to: None,
+            docs_anchor: Some("docs/language-redesign.md"),
+            status: LanguageItemStatus::Stable,
+            completion_category: CompletionCategory::Declaration,
+            semantic_class: SemanticTokenClass::Keyword,
+        },
+    LanguageItem {
+            name: "recipe",
+            kind: LanguageItemKind::Declaration,
+            layer: LanguageLayer::Style,
+            detail: "recipe",
+            summary: "Defines a component style with variants.",
+            description: "Defines a first-class component style: a `base` block plus named `variant` groups, compiled to static classes like `fr-Button` and `fr-Button--tone-primary`.",
+            documentation: "",
+            generated_css: Some("Emits a base class plus one class per variant option."),
+            frame_examples: &[r#"recipe Button {
+  base {
+    align center
+    gap small
+    radius medium
+    motion Pressable
+  }
+  variant tone {
+    primary { background token(color.accent) }
+    ghost { background transparent }
+  }
+}"#],
+            svelte_examples: &[r#"<button class="fr-Button fr-Button--tone-primary">Save</button>"#],
+            allowed_in: &[FrameScope::Root],
+            related: &["motion", "tokens", "theme"],
+            values: &[],
+            aliases: &[],
+            lowers_to: None,
+            docs_anchor: Some("docs/language-redesign.md"),
+            status: LanguageItemStatus::Stable,
+            completion_category: CompletionCategory::Declaration,
+            semantic_class: SemanticTokenClass::Keyword,
+        },
+    LanguageItem {
+            name: "shell",
+            kind: LanguageItemKind::Property,
+            layer: LanguageLayer::Layout,
+            detail: "shell",
+            summary: "Declares app-shell regions inside a layout.",
+            description: "Declares app-shell regions inside a `layout` declaration. Each region line reads `<name> [left|right] [fixed <size> | fluid | <size-expr>]`. Inside responsive conditions, `shell stacked` stacks the regions vertically.",
+            documentation: "",
+            generated_css: Some("Lowers to grid-template-columns and grid-template-areas."),
+            frame_examples: &[r#"layout DashboardShell {
+  shell {
+    sidebar left fixed 18rem
+    main fluid
+    inspector right clamp(20rem, 28vw, 28rem)
+  }
+  gap large
+  below tablet { shell stacked }
+}"#],
+            svelte_examples: &[],
+            allowed_in: &[],
+            related: &["gap", "density", "below"],
+            values: &["stacked"],
+            aliases: &[],
+            lowers_to: None,
+            docs_anchor: Some("docs/layout-system.md"),
+            status: LanguageItemStatus::Stable,
+            completion_category: CompletionCategory::LayoutProperty,
+            semantic_class: SemanticTokenClass::Property,
+        },
+    LanguageItem {
+            name: "easing",
+            kind: LanguageItemKind::Property,
+            layer: LanguageLayer::Motion,
+            detail: "easing",
+            summary: "Sets the transition feel of a motion.",
+            description: "Sets the easing curve of a `motion` declaration: `smooth`, `linear`, `bounce`, or `sharp`.",
+            documentation: "",
+            generated_css: None,
+            frame_examples: &[],
+            svelte_examples: &[],
+            allowed_in: &[],
+            related: &["motion", "duration", "ease"],
+            values: &["smooth", "linear", "bounce", "sharp"],
+            aliases: &["ease"],
+            lowers_to: None,
+            docs_anchor: None,
+            status: LanguageItemStatus::Stable,
+            completion_category: CompletionCategory::MotionProperty,
+            semantic_class: SemanticTokenClass::Property,
+        },
+    LanguageItem {
+            name: "density",
+            kind: LanguageItemKind::Property,
+            layer: LanguageLayer::Layout,
+            detail: "density",
+            summary: "Sets layout density.",
+            description: "Sets the padding density of a `layout`: `compact`, `comfortable`, or `spacious`.",
+            documentation: "",
+            generated_css: Some("Lowers to padding on the layout class."),
+            frame_examples: &[],
+            svelte_examples: &[],
+            allowed_in: &[],
+            related: &["layout", "gap", "padding"],
+            values: &["compact", "comfortable", "spacious"],
+            aliases: &[],
+            lowers_to: None,
+            docs_anchor: None,
+            status: LanguageItemStatus::Stable,
+            completion_category: CompletionCategory::LayoutProperty,
+            semantic_class: SemanticTokenClass::Property,
+        },
+    LanguageItem {
+            name: "variant",
+            kind: LanguageItemKind::Special,
+            layer: LanguageLayer::Style,
+            detail: "variant",
+            summary: "A named variant group of a recipe.",
+            description: "A named variant group inside a `recipe`. Each child block is one option, compiled to `fr-Name--group-option` classes.",
+            documentation: "",
+            generated_css: None,
+            frame_examples: &[],
+            svelte_examples: &[],
+            allowed_in: &[],
+            related: &["recipe", "base"],
+            values: &[],
+            aliases: &[],
+            lowers_to: None,
+            docs_anchor: None,
+            status: LanguageItemStatus::Stable,
+            completion_category: CompletionCategory::StateBlock,
+            semantic_class: SemanticTokenClass::Keyword,
+        },
+    LanguageItem {
             name: "card",
             kind: LanguageItemKind::Declaration,
             layer: LanguageLayer::Layout,

@@ -658,3 +658,336 @@ pub(crate) fn validate_grid_conflicts(
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// Semantic motion, layout, and recipe declarations
+// ---------------------------------------------------------------------------
+
+const MOTION_STATE_KEYWORDS: &[&str] = &["hover", "active", "focus", "focus-within", "disabled"];
+const ENTER_WORDS: &[&str] = &[
+    "fade", "pop", "slide", "up", "down", "soft", "normal", "brisk",
+];
+
+pub(crate) fn validate_motion_declaration(
+    declaration: &Declaration,
+    symbols: &SymbolIndex,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for node in &declaration.body {
+        match node {
+            Node::Block(block) => diagnostics.push(Diagnostic::error(
+                format!(
+                    "motion declarations contain motion statements, not blocks.\n\nUnexpected block `{}`. Use lines like `enter fade up soft`, `hover lift sm`, `duration normal`, and `easing smooth`.",
+                    block.name
+                ),
+                block.span,
+            )),
+            Node::Statement(statement) => {
+                let Some(keyword) = first_word(statement) else {
+                    continue;
+                };
+                match keyword {
+                    "enter" => {
+                        if statement.words.len() < 2 {
+                            diagnostics.push(Diagnostic::error(
+                                "enter expects an animation intent, for example `enter fade up soft`.",
+                                statement.span,
+                            ));
+                            continue;
+                        }
+                        for word in statement.words.iter().skip(1) {
+                            if !ENTER_WORDS.contains(&word.as_str()) {
+                                let suggestion = closest(word, ENTER_WORDS)
+                                    .map(|value| format!("\n\nDid you mean `{value}`?"))
+                                    .unwrap_or_default();
+                                diagnostics.push(Diagnostic::error(
+                                    format!(
+                                        "Unknown enter intent `{word}`.{suggestion}\n\nUse `fade`, `pop`, or `slide`, optionally with `up`/`down` and `soft`/`normal`/`brisk`."
+                                    ),
+                                    statement.span,
+                                ));
+                            }
+                        }
+                    }
+                    "duration" => validate_value(statement, language::DURATIONS, diagnostics),
+                    "easing" | "ease" => validate_value(statement, language::EASES, diagnostics),
+                    state if MOTION_STATE_KEYWORDS.contains(&state) => {
+                        if statement.words.len() < 2 {
+                            diagnostics.push(Diagnostic::error(
+                                format!(
+                                    "`{state}` expects an effect, for example `{state} lift sm`."
+                                ),
+                                statement.span,
+                            ));
+                            continue;
+                        }
+                        let effect = Statement {
+                            words: statement.words[1..].to_vec(),
+                            span: statement.span,
+                        };
+                        validate_effect_statement(&effect, symbols, diagnostics);
+                    }
+                    other => {
+                        let mut candidates: Vec<&str> =
+                            vec!["enter", "duration", "easing"];
+                        candidates.extend_from_slice(MOTION_STATE_KEYWORDS);
+                        let suggestion = closest(other, &candidates)
+                            .map(|value| format!("\n\nDid you mean `{value}`?"))
+                            .unwrap_or_default();
+                        diagnostics.push(Diagnostic::error(
+                            format!(
+                                "Unknown motion statement `{other}`.{suggestion}\n\nMotions support `enter`, interaction states (`hover`, `active`, `focus`, ...), `duration`, and `easing`."
+                            ),
+                            statement.span,
+                        ));
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub(crate) fn validate_layout_declaration(
+    declaration: &Declaration,
+    symbols: &SymbolIndex,
+    contract: &crate::style::tokens::TokenContract,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let mut has_shell = false;
+    for node in &declaration.body {
+        match node {
+            Node::Block(block) if block.name == "shell" => {
+                has_shell = true;
+                validate_shell_block(block, diagnostics);
+            }
+            Node::Block(block) if super::helpers::is_condition_block(&block.name) => {
+                validate_condition_header(&block.name, contract, diagnostics, block.span);
+                for child in &block.body {
+                    let Node::Statement(statement) = child else {
+                        continue;
+                    };
+                    if first_word(statement) == Some("shell") {
+                        if statement.words.get(1).map(String::as_str) != Some("stacked") {
+                            diagnostics.push(Diagnostic::error(
+                                "Inside responsive conditions, `shell` only supports `shell stacked`.",
+                                statement.span,
+                            ));
+                        }
+                        continue;
+                    }
+                    validate_statement(statement, symbols, contract, diagnostics);
+                }
+            }
+            Node::Block(block) => diagnostics.push(Diagnostic::error(
+                format!(
+                    "Unknown layout block `{}`.\n\nLayouts support a `shell {{ ... }}` block and responsive conditions like `below tablet {{ shell stacked }}`.",
+                    block.name
+                ),
+                block.span,
+            )),
+            Node::Statement(statement) => match first_word(statement) {
+                Some("density") => {
+                    validate_value(
+                        statement,
+                        &["compact", "comfortable", "spacious"],
+                        diagnostics,
+                    );
+                }
+                _ => validate_statement(statement, symbols, contract, diagnostics),
+            },
+        }
+    }
+
+    if !has_shell {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "layout `{}` has no `shell` block.\n\nDescribe the app regions, for example:\n\n```frame\nshell {{\n  sidebar left fixed 18rem\n  main fluid\n}}\n```",
+                declaration.name.text
+            ),
+            declaration.span,
+        ));
+    }
+}
+
+fn validate_shell_block(block: &crate::Block, diagnostics: &mut Vec<Diagnostic>) {
+    let mut seen_names: std::collections::HashSet<String> = std::collections::HashSet::new();
+    for node in &block.body {
+        match node {
+            Node::Block(inner) => diagnostics.push(Diagnostic::error(
+                format!(
+                    "shell blocks contain region lines, not nested blocks (`{}`).",
+                    inner.name
+                ),
+                inner.span,
+            )),
+            Node::Statement(statement) => {
+                let Some(name) = statement.words.first() else {
+                    continue;
+                };
+                if !seen_names.insert(name.clone()) {
+                    diagnostics.push(Diagnostic::error(
+                        format!("Duplicate shell region `{name}`."),
+                        statement.span,
+                    ));
+                }
+                let mut index = 1;
+                while index < statement.words.len() {
+                    match statement.words[index].as_str() {
+                        "left" | "right" | "fluid" => {}
+                        "fixed" => {
+                            if statement.words.get(index + 1).is_none() {
+                                diagnostics.push(Diagnostic::error(
+                                    format!("`{name} fixed` expects a size, for example `{name} left fixed 18rem`."),
+                                    statement.span,
+                                ));
+                            }
+                            index += 1;
+                        }
+                        // Raw size expressions (18rem, clamp(...)) pass through.
+                        _ => {}
+                    }
+                    index += 1;
+                }
+            }
+        }
+    }
+}
+
+pub(crate) fn validate_recipe_declaration(
+    declaration: &Declaration,
+    symbols: &SymbolIndex,
+    contract: &crate::style::tokens::TokenContract,
+    motion_names: &[String],
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let mut has_base = false;
+    for node in &declaration.body {
+        match node {
+            Node::Statement(statement) => diagnostics.push(Diagnostic::error(
+                format!(
+                    "recipes contain `base` and `variant` blocks, not loose statements.\n\nMove `{}` inside `base {{ ... }}`.",
+                    statement.words.join(" ")
+                ),
+                statement.span,
+            )),
+            Node::Block(block) if block.name == "base" => {
+                has_base = true;
+                validate_recipe_body(block, symbols, contract, motion_names, diagnostics);
+            }
+            Node::Block(block) if block.name.starts_with("variant ") => {
+                let group = block.name.trim_start_matches("variant ").trim();
+                if group.is_empty() || group.contains(char::is_whitespace) {
+                    diagnostics.push(Diagnostic::error(
+                        "variant groups expect exactly one name, for example `variant tone { ... }`.",
+                        block.span,
+                    ));
+                }
+                for option in &block.body {
+                    match option {
+                        Node::Block(option_block) => {
+                            if option_block.name.contains(char::is_whitespace) {
+                                diagnostics.push(Diagnostic::error(
+                                    format!(
+                                        "Variant option names are single identifiers; found `{}`.",
+                                        option_block.name
+                                    ),
+                                    option_block.span,
+                                ));
+                            }
+                            validate_recipe_body(
+                                option_block,
+                                symbols,
+                                contract,
+                                motion_names,
+                                diagnostics,
+                            );
+                        }
+                        Node::Statement(statement) => diagnostics.push(Diagnostic::error(
+                            format!(
+                                "variant groups contain option blocks, not loose statements.\n\nWrap `{}` inside an option like `primary {{ ... }}`.",
+                                statement.words.join(" ")
+                            ),
+                            statement.span,
+                        )),
+                    }
+                }
+            }
+            Node::Block(block) => diagnostics.push(Diagnostic::error(
+                format!(
+                    "Unknown recipe block `{}`.\n\nRecipes support one `base {{ ... }}` block and `variant <group> {{ ... }}` blocks.",
+                    block.name
+                ),
+                block.span,
+            )),
+        }
+    }
+
+    if !has_base {
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "recipe `{}` has no `base` block.\n\nAdd `base {{ ... }}` with the shared styles.",
+                declaration.name.text
+            ),
+            declaration.span,
+        ));
+    }
+}
+
+fn validate_recipe_body(
+    block: &crate::Block,
+    symbols: &SymbolIndex,
+    contract: &crate::style::tokens::TokenContract,
+    motion_names: &[String],
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for node in &block.body {
+        match node {
+            Node::Statement(statement) if first_word(statement) == Some("motion") => {
+                validate_motion_reference(statement, motion_names, diagnostics);
+            }
+            Node::Statement(statement) => {
+                validate_statement(statement, symbols, contract, diagnostics)
+            }
+            Node::Block(inner) if super::helpers::is_condition_block(&inner.name) => {
+                validate_condition_header(&inner.name, contract, diagnostics, inner.span);
+                for child in &inner.body {
+                    if let Node::Statement(statement) = child {
+                        validate_statement(statement, symbols, contract, diagnostics);
+                    }
+                }
+            }
+            Node::Block(inner) => {
+                for child in &inner.body {
+                    if let Node::Statement(statement) = child {
+                        validate_effect_statement(statement, symbols, diagnostics);
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub(crate) fn validate_motion_reference(
+    statement: &Statement,
+    motion_names: &[String],
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let Some(name) = statement.words.get(1) else {
+        diagnostics.push(Diagnostic::error(
+            "motion expects a motion name, for example `motion Pressable`.",
+            statement.span,
+        ));
+        return;
+    };
+    if !motion_names.iter().any(|candidate| candidate == name) {
+        let suggestion = crate::style::closest_name(name, motion_names.iter().map(String::as_str))
+            .map(|value| format!("\n\nDid you mean `{value}`?"))
+            .unwrap_or_default();
+        diagnostics.push(Diagnostic::error(
+            format!(
+                "Unknown motion `{name}`.{suggestion}\n\nDeclare `motion {name} {{ ... }}` before referencing it."
+            ),
+            statement.span,
+        ));
+    }
+}

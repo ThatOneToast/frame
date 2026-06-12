@@ -1,4 +1,4 @@
-use frame_core::style::{document_contract, document_themes, StyleContext};
+use frame_core::style::{document_contract, document_motions, document_themes, StyleContext};
 use frame_core::Document;
 
 mod emit;
@@ -13,7 +13,8 @@ pub fn generate_css(document: &Document) -> String {
     let mut css = String::new();
     let contract = document_contract(document);
     let themes = document_themes(document);
-    let ctx = StyleContext::new(&contract);
+    let motions = document_motions(document);
+    let ctx = StyleContext::with_motions(&contract, &motions);
 
     css.push_str(":root {\n");
     for (variable, value) in contract.css_variables() {

@@ -1,4 +1,4 @@
-use frame_core::style::document_themes;
+use frame_core::style::{document_contract, document_recipes, document_themes, StyleContext};
 use frame_core::{DeclarationKind, Document};
 
 pub fn generate_typescript(document: &Document) -> String {
@@ -7,7 +7,10 @@ pub fn generate_typescript(document: &Document) -> String {
     for declaration in &document.declarations {
         if matches!(
             declaration.kind,
-            DeclarationKind::Tokens | DeclarationKind::Theme | DeclarationKind::Keyframes
+            DeclarationKind::Tokens
+                | DeclarationKind::Theme
+                | DeclarationKind::Motion
+                | DeclarationKind::Keyframes
         ) {
             continue;
         }
@@ -41,6 +44,35 @@ pub fn generate_typescript(document: &Document) -> String {
         ts.push_str(
             "export function applyTheme(theme: FrameTheme, root: HTMLElement = document.documentElement): void {\n  root.setAttribute('data-frame-theme', theme);\n}\n",
         );
+    }
+
+    let contract = document_contract(document);
+    let ctx = StyleContext::new(&contract);
+    let recipes = document_recipes(document, &ctx);
+    if !recipes.is_empty() {
+        ts.push('\n');
+        ts.push_str("export const recipes = {\n");
+        for recipe in &recipes {
+            ts.push_str(&format!(
+                "  {}: {{\n    base: '{}',\n    variants: {{\n",
+                property_name(&recipe.name),
+                recipe.base_class()
+            ));
+            for group in &recipe.variants {
+                ts.push_str(&format!("      {}: {{\n", property_name(&group.name)));
+                for (option, _) in &group.options {
+                    ts.push_str(&format!(
+                        "        {}: '{}',\n",
+                        property_name(option),
+                        recipe.variant_class(&group.name, option)
+                    ));
+                }
+                ts.push_str("      },\n");
+            }
+            ts.push_str("    },\n  },\n");
+        }
+        ts.push_str("} as const;\n\n");
+        ts.push_str("export type RecipeName = keyof typeof recipes;\n");
     }
     ts
 }

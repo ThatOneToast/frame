@@ -2393,3 +2393,186 @@ fn inheritance_merges_responsive_condition_scopes() {
     assert!(child.contains("gap: var(--frame-space-small);"));
     assert!(!child.contains("padding: var(--frame-space-small);"));
 }
+
+// ---------------------------------------------------------------------------
+// Semantic layout, motion, and recipes
+// ---------------------------------------------------------------------------
+
+fn block(name: &str, body: Vec<Node>) -> Node {
+    Node::Block(frame_core::Block {
+        name: name.to_string(),
+        body,
+        span: Span::default(),
+    })
+}
+
+#[test]
+fn layout_shell_lowers_to_grid_with_stacked_breakpoint() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![declaration(
+            DeclarationKind::Layout,
+            "DashboardShell",
+            vec![
+                block(
+                    "shell",
+                    vec![
+                        statement(&["sidebar", "left", "fixed", "18rem"]),
+                        statement(&["main", "fluid"]),
+                        statement(&["inspector", "right", "clamp(20rem,28vw,28rem)"]),
+                    ],
+                ),
+                statement(&["gap", "large"]),
+                statement(&["density", "comfortable"]),
+                block("below tablet", vec![statement(&["shell", "stacked"])]),
+            ],
+        )],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains(".fr-DashboardShell {"));
+    assert!(css.contains("display: grid;"));
+    assert!(css.contains("grid-template-columns: 18rem minmax(0, 1fr) clamp(20rem,28vw,28rem);"));
+    assert!(css.contains("grid-template-areas: \"sidebar main inspector\";"));
+    assert!(css.contains("gap: var(--frame-space-large);"));
+    assert!(css.contains("padding: var(--frame-space-medium);"));
+    // Region attachment rules, like grids.
+    assert!(css.contains("[data-frame-section=\"sidebar\"]"));
+    assert!(css.contains("grid-area: inspector;"));
+    // Stacked under tablet.
+    let media = css.find("@media (max-width: 47.9375rem)").unwrap();
+    assert!(css[media..].contains("grid-template-columns: minmax(0, 1fr);"));
+    assert!(css[media..].contains("grid-template-areas: \"sidebar\" \"main\" \"inspector\";"));
+}
+
+#[test]
+fn motion_expands_into_referencing_declarations() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Motion,
+                "Pressable",
+                vec![
+                    statement(&["enter", "fade", "up", "soft"]),
+                    statement(&["hover", "lift", "sm"]),
+                    statement(&["active", "press"]),
+                    statement(&["duration", "fast"]),
+                    statement(&["easing", "smooth"]),
+                ],
+            ),
+            declaration(
+                DeclarationKind::Button,
+                "PrimaryButton",
+                vec![
+                    statement(&["background", "accent"]),
+                    statement(&["motion", "Pressable"]),
+                ],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    // Motions emit nothing standalone.
+    assert!(!css.contains(".fr-Pressable"));
+
+    let button = css.find(".fr-PrimaryButton {").unwrap();
+    assert!(css[button..].contains("animation: frame-slide-up 320ms ease both;"));
+    assert!(css[button..].contains("transition: all 120ms ease;"));
+    assert!(css.contains(".fr-PrimaryButton:hover {"));
+    let hover = css.find(".fr-PrimaryButton:hover {").unwrap();
+    assert!(css[hover..].contains("transform: translateY(-4px);"));
+    assert!(css.contains(".fr-PrimaryButton:active {"));
+}
+
+#[test]
+fn declaration_hover_overrides_motion_hover_by_path() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Motion,
+                "Pressable",
+                vec![statement(&["hover", "lift", "sm"])],
+            ),
+            declaration(
+                DeclarationKind::Card,
+                "Panel",
+                vec![
+                    statement(&["motion", "Pressable"]),
+                    block("hover", vec![statement(&["lift", "large"])]),
+                ],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+    let hover = css.find(".fr-Panel:hover {").unwrap();
+    let hover_rule = &css[hover..css[hover..].find("}").unwrap() + hover];
+    assert!(hover_rule.contains("transform: translateY(-12px);"));
+    assert!(!hover_rule.contains("translateY(-4px)"));
+}
+
+#[test]
+fn recipes_emit_base_and_variant_classes() {
+    let document = Document {
+        includes: Vec::new(),
+        declarations: vec![
+            declaration(
+                DeclarationKind::Motion,
+                "Pressable",
+                vec![statement(&["hover", "lift", "sm"])],
+            ),
+            declaration(
+                DeclarationKind::Recipe,
+                "Button",
+                vec![
+                    block(
+                        "base",
+                        vec![
+                            statement(&["align", "center"]),
+                            statement(&["gap", "small"]),
+                            statement(&["radius", "medium"]),
+                            statement(&["motion", "Pressable"]),
+                        ],
+                    ),
+                    block(
+                        "variant tone",
+                        vec![
+                            block(
+                                "primary",
+                                vec![statement(&["background", "token(color.accent)"])],
+                            ),
+                            block("ghost", vec![statement(&["background", "transparent"])]),
+                        ],
+                    ),
+                    block(
+                        "variant size",
+                        vec![
+                            block("sm", vec![statement(&["padding", "small"])]),
+                            block("lg", vec![statement(&["padding", "large"])]),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+        components: Vec::new(),
+    };
+
+    let css = generate_css(&document);
+
+    assert!(css.contains(".fr-Button {"));
+    assert!(css.contains("align-items: center;"));
+    assert!(css.contains(".fr-Button:hover {"));
+    assert!(css.contains(".fr-Button--tone-primary {"));
+    assert!(css.contains("background: var(--frame-color-accent);"));
+    assert!(css.contains(".fr-Button--tone-ghost {"));
+    assert!(css.contains("background: transparent;"));
+    assert!(css.contains(".fr-Button--size-sm {"));
+    assert!(css.contains(".fr-Button--size-lg {"));
+}

@@ -322,6 +322,15 @@ pub fn tuned_value(value: Option<&str>, scale: &[(&str, f32)]) -> f32 {
                 percent.parse::<f32>().unwrap_or(0.0).clamp(0.0, 100.0) / 100.0,
             )
         });
+    // t-shirt aliases map onto each five-step scale by position.
+    let name = match name {
+        "xs" => scale[0].0,
+        "sm" => scale[1].0,
+        "md" => scale[2].0,
+        "lg" => scale[3].0,
+        "xl" => scale[4].0,
+        other => other,
+    };
     let Some(index) = scale.iter().position(|(entry, _)| *entry == name) else {
         return scale[1].1;
     };

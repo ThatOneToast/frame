@@ -90,8 +90,21 @@ impl<'a> Parser<'a> {
         };
 
         self.advance();
+        // Layouts, motions, recipes, tokens, and themes own their inner
+        // grammar (shell blocks, variant groups, gradient blocks), so any
+        // nested block name parses; semantic validation checks meaning.
+        let free_blocks = matches!(
+            kind,
+            DeclarationKind::Layout
+                | DeclarationKind::Motion
+                | DeclarationKind::Recipe
+                | DeclarationKind::Tokens
+                | DeclarationKind::Theme
+        );
         let body = if empty_body {
             Vec::new()
+        } else if free_blocks {
+            self.parse_nodes_until_close_free()?
         } else {
             self.parse_nodes_until_close()?
         };
@@ -220,6 +233,64 @@ impl<'a> Parser<'a> {
 
     pub(crate) fn parse_nodes_until_close(&mut self) -> Result<Vec<Node>, ParseError> {
         self.parse_nodes_until_close_with_declaration_blocks(false)
+    }
+
+    /// Parse nodes accepting any nested block name (recursively).
+    pub(crate) fn parse_nodes_until_close_free(&mut self) -> Result<Vec<Node>, ParseError> {
+        let mut nodes = Vec::new();
+
+        while let Some(line) = self.current_line() {
+            let content = content_without_comment(line.text);
+
+            if content.is_empty() {
+                self.advance();
+                continue;
+            }
+
+            if content == "}" {
+                self.advance();
+                return Ok(nodes);
+            }
+
+            if content.ends_with('{') {
+                let name = content.trim_end_matches('{').trim();
+                self.advance();
+                let body = self.parse_nodes_until_close_free()?;
+                let end = self
+                    .previous_line()
+                    .map(|line| line.end)
+                    .unwrap_or(line.end);
+                nodes.push(Node::Block(Block {
+                    name: name.to_string(),
+                    body,
+                    span: Span {
+                        start: line.start,
+                        end,
+                    },
+                }));
+                continue;
+            }
+
+            let words = content.split_whitespace().map(ToOwned::to_owned).collect();
+            self.advance();
+            nodes.push(Node::Statement(Statement {
+                words,
+                span: Span {
+                    start: line.start,
+                    end: line.end,
+                },
+            }));
+        }
+
+        Err(ParseError::one(
+            "missing closing `}`",
+            self.previous_line()
+                .map(|line| Span {
+                    start: line.start,
+                    end: line.end,
+                })
+                .unwrap_or_default(),
+        ))
     }
 
     pub(crate) fn parse_nodes_until_close_with_declaration_blocks(

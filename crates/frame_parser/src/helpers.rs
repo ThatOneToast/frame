@@ -2,6 +2,15 @@ use crate::Line;
 use frame_core::{DataRef, DeclarationKind, Identifier, Span, StateDefault};
 
 pub fn declaration_kind(kind: &str) -> DeclarationKind {
+    // `layout` is also a style property, so it cannot be classified as a
+    // declaration in the registry; at declaration position it always means
+    // a semantic layout.
+    match kind {
+        "layout" => return DeclarationKind::Layout,
+        "motion" => return DeclarationKind::Motion,
+        "recipe" => return DeclarationKind::Recipe,
+        _ => {}
+    }
     frame_core::language::item(kind)
         .filter(|i| {
             i.kind == frame_core::language::LanguageItemKind::Declaration

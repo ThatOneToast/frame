@@ -15,14 +15,20 @@
 //! - [`diagnostics`] holds shared did-you-mean helpers.
 
 pub mod diagnostics;
+pub mod layout;
+pub mod motion;
 pub mod normalize;
 pub mod properties;
+pub mod recipes;
 pub mod schema;
 pub mod theme;
 pub mod tokens;
 
 pub use diagnostics::closest_name;
+pub use layout::lower_layout;
+pub use motion::{document_motions, expand_motion_references, Motion};
 pub use normalize::{normalize_declaration, normalize_statements};
+pub use recipes::{document_recipes, Recipe};
 pub use schema::{
     merge_facts, ConditionScope, CssDecl, NormalizedStyle, StateScope, StyleFact, FILTER_PART,
     TRANSFORM_PART,
@@ -35,15 +41,24 @@ pub use tokens::{
 
 use crate::Node;
 
-/// Shared context for normalization: the resolved token contract.
+/// Shared context for normalization: the resolved token contract plus the
+/// document's semantic motions.
 #[derive(Debug, Clone)]
 pub struct StyleContext<'a> {
     pub contract: &'a TokenContract,
+    pub motions: &'a [Motion],
 }
 
 impl<'a> StyleContext<'a> {
     pub fn new(contract: &'a TokenContract) -> Self {
-        Self { contract }
+        Self {
+            contract,
+            motions: &[],
+        }
+    }
+
+    pub fn with_motions(contract: &'a TokenContract, motions: &'a [Motion]) -> Self {
+        Self { contract, motions }
     }
 }
 
